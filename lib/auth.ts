@@ -29,42 +29,50 @@ declare module "next-auth/jwt" {
   }
 }
 
-export const authOptions: NextAuthOptions = {
-  providers: [
-    CredentialsProvider({
-      name: "credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Please enter your email and password");
-        }
+const providers = [
+  CredentialsProvider({
+    name: "credentials",
+    credentials: {
+      email: { label: "Email", type: "email" },
+      password: { label: "Password", type: "password" },
+    },
+    async authorize(credentials) {
+      if (!credentials?.email || !credentials?.password) {
+        throw new Error("Please enter your email and password");
+      }
 
-        const user = findUserByEmail(credentials.email);
-        if (!user) {
-          throw new Error("No account found with this email");
-        }
+      const user = findUserByEmail(credentials.email);
+      if (!user) {
+        throw new Error("No account found with this email");
+      }
 
-        const isValid = validatePassword(credentials.password, user.password);
-        if (!isValid) {
-          throw new Error("Invalid password");
-        }
+      const isValid = validatePassword(credentials.password, user.password);
+      if (!isValid) {
+        throw new Error("Invalid password");
+      }
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        };
-      },
-    }),
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      };
+    },
+  }),
+];
+
+// Only add Google provider if credentials are configured
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  providers.push(
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-    }),
-  ],
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }) as any
+  );
+}
+
+export const authOptions: NextAuthOptions = {
+  providers,
   session: {
     strategy: "jwt",
   },

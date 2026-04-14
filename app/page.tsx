@@ -4,8 +4,11 @@ import HealthConcernCard from "@/components/HealthConcernCard";
 import SpecialtyCard from "@/components/SpecialtyCard";
 import TestimonialCard from "@/components/TestimonialCard";
 import StatsSection from "@/components/StatsSection";
+import WorkingHours from "@/components/WorkingHours";
+import AwardsSection from "@/components/AwardsSection";
+import BlogCard from "@/components/BlogCard";
 import Link from "next/link";
-import { healthConcerns, specialties, testimonials } from "@/lib/data";
+import { healthConcerns, specialties, testimonials, blogPosts } from "@/lib/data";
 
 const services = [
   { icon: "📹", title: "Video Consultation", description: "Consult top doctors from home", href: "/consult", color: "bg-blue-50" },
@@ -14,12 +17,6 @@ const services = [
   { icon: "🏥", title: "Surgeries", description: "Safe & trusted surgery centers", href: "#", color: "bg-orange-50" },
 ];
 
-const articles = [
-  { title: "10 Tips for a Healthy Heart", category: "Cardiology", readTime: "5 min read", color: "bg-red-50" },
-  { title: "Understanding Diabetes: A Complete Guide", category: "Endocrinology", readTime: "8 min read", color: "bg-blue-50" },
-  { title: "Mental Health: Breaking the Stigma", category: "Psychology", readTime: "6 min read", color: "bg-purple-50" },
-  { title: "Nutrition Basics for Busy People", category: "Wellness", readTime: "4 min read", color: "bg-green-50" },
-];
 
 export default function HomePage() {
   return (
@@ -79,24 +76,20 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Articles */}
+      {/* Latest Blog Posts */}
       <section className="bg-gray-50 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="section-title text-center">Health Articles & Tips</h2>
-          <p className="section-subtitle text-center">Stay informed about your health</p>
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {articles.map((a) => (
-              <div key={a.title} className="card group cursor-pointer">
-                <div className={`mb-4 h-36 rounded-lg ${a.color}`} />
-                <span className="text-xs font-semibold uppercase tracking-wider text-primary-600">
-                  {a.category}
-                </span>
-                <h3 className="mt-1 font-semibold text-gray-900 group-hover:text-primary-600">
-                  {a.title}
-                </h3>
-                <p className="mt-2 text-xs text-gray-400">{a.readTime}</p>
-              </div>
+          <h2 className="section-title text-center">Latest Blog Posts</h2>
+          <p className="section-subtitle text-center">Expert health insights from our medical professionals</p>
+          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {blogPosts.slice(0, 3).map((post) => (
+              <BlogCard key={post.id} post={post} />
             ))}
+          </div>
+          <div className="mt-8 text-center">
+            <Link href="/blog" className="btn-outline">
+              View All Articles
+            </Link>
           </div>
         </div>
       </section>
@@ -114,8 +107,42 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Working Hours */}
+      <section className="py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <h2 className="section-title">Visit Our Clinic</h2>
+              <p className="section-subtitle">
+                Our doors are open for in-person consultations. Check our working hours and visit us at your convenience.
+              </p>
+              <div className="mt-6 space-y-4">
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 text-xl">📍</span>
+                  <div>
+                    <p className="font-semibold text-gray-900">OduDoc Health Center</p>
+                    <p className="text-sm text-gray-500">123 Health Avenue, Suite 500, New York, NY 10001</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 text-xl">📞</span>
+                  <div>
+                    <p className="font-semibold text-gray-900">+1 (800) 123-4567</p>
+                    <p className="text-sm text-gray-500">Call us for appointments or inquiries</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <WorkingHours />
+          </div>
+        </div>
+      </section>
+
       {/* Stats */}
       <StatsSection />
+
+      {/* Awards */}
+      <AwardsSection />
 
       {/* App Download CTA */}
       <section className="py-20">

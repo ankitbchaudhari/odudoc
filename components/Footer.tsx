@@ -5,7 +5,7 @@ const footerSections = [
     title: "OduDoc",
     links: [
       { label: "About", href: "/about" },
-      { label: "Blog", href: "#" },
+      { label: "Blog", href: "/blog" },
       { label: "Careers", href: "#" },
       { label: "Press", href: "#" },
       { label: "Contact Us", href: "/contact" },
@@ -18,7 +18,8 @@ const footerSections = [
       { label: "Video Consult", href: "/consult" },
       { label: "Lab Tests", href: "/tests" },
       { label: "Surgeries", href: "#" },
-      { label: "Health Articles", href: "#" },
+      { label: "Health Articles", href: "/blog" },
+      { label: "Gallery", href: "/gallery" },
     ],
   },
   {

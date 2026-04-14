@@ -2,6 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+@keyframes slide-up {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -27,4 +59,27 @@
   .section-subtitle {
     @apply mt-2 text-gray-500;
   }
+}
+
+/* Blog article content styles */
+.blog-content h2 {
+  @apply mt-10 mb-4 text-2xl font-bold text-gray-900;
+}
+.blog-content h3 {
+  @apply mt-8 mb-3 text-xl font-bold text-gray-900;
+}
+.blog-content p {
+  @apply mb-4 leading-relaxed text-gray-600;
+}
+.blog-content ul {
+  @apply mb-6 ml-6 list-disc space-y-2;
+}
+.blog-content li {
+  @apply text-gray-600;
+}
+.blog-content blockquote {
+  @apply my-6 border-l-4 border-primary-500 bg-primary-50 py-4 pl-6 pr-4 text-gray-700 rounded-r-lg;
+}
+.blog-content a {
+  @apply text-primary-600 underline hover:text-primary-700;
 }

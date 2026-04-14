@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { useCart } from "@/lib/cart-context";
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -10,10 +11,15 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { data: session, status } = useSession();
 
+  const { totalItems } = useCart();
+
   const links = [
     { href: "/doctors", label: "Find Doctors" },
+    { href: "/departments", label: "Departments" },
     { href: "/consult", label: "Video Consult" },
-    { href: "/tests", label: "Lab Tests" },
+    { href: "/blog", label: "Blog" },
+    { href: "/gallery", label: "Gallery" },
+    { href: "/shop", label: "Shop" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
   ];
@@ -63,6 +69,20 @@ export default function Navbar() {
 
         {/* Desktop Auth Buttons / User Menu */}
         <div className="hidden items-center gap-3 md:flex">
+          {/* Cart Icon */}
+          <Link
+            href="/cart"
+            className="relative rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-50 hover:text-primary-600"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+            </svg>
+            {totalItems > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-primary-600 text-[10px] font-bold text-white min-w-[18px] h-[18px]">
+                {totalItems > 99 ? "99+" : totalItems}
+              </span>
+            )}
+          </Link>
           {status === "loading" ? (
             <div className="h-9 w-24 animate-pulse rounded-lg bg-gray-100" />
           ) : session ? (
@@ -143,7 +163,22 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Hamburger */}
+        {/* Mobile Cart + Hamburger */}
+        <div className="flex items-center gap-1 md:hidden">
+          <Link
+            href="/cart"
+            className="relative flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+            </svg>
+            {totalItems > 0 && (
+              <span className="absolute right-0.5 top-0.5 flex items-center justify-center rounded-full bg-primary-600 text-[10px] font-bold text-white min-w-[18px] h-[18px]">
+                {totalItems > 99 ? "99+" : totalItems}
+              </span>
+            )}
+          </Link>
+        </div>
         <button
           className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 md:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}

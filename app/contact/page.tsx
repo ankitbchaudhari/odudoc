@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import WorkingHours from "@/components/WorkingHours";
 
 const contactInfo = [
   {
@@ -54,6 +55,9 @@ export default function ContactPage() {
                 </div>
               </div>
             ))}
+
+            {/* Working Hours */}
+            <WorkingHours />
 
             {/* Map placeholder */}
             <div className="card">

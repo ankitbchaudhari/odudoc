@@ -6,6 +6,15 @@ import { useParams } from "next/navigation";
 import BlogCard from "@/components/BlogCard";
 import { blogPosts, blogComments, categoryGradients } from "@/lib/data";
 
+const categoryIcons: Record<string, string> = {
+  Wellness: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
+  Nutrition: "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z",
+  "Mental Health": "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z",
+  Fitness: "M13 10V3L4 14h7v7l9-11h-7z",
+  "Medical Tips": "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01",
+  News: "M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z",
+};
+
 export default function BlogPostPage() {
   const params = useParams();
   const slug = params.slug as string;
@@ -16,14 +25,20 @@ export default function BlogPostPage() {
   const [commentText, setCommentText] = useState("");
   const [localComments, setLocalComments] = useState(blogComments);
   const [copied, setCopied] = useState(false);
+  const [commentSuccess, setCommentSuccess] = useState(false);
 
   if (!post) {
     return (
-      <div className="flex min-h-[50vh] flex-col items-center justify-center">
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-50">
+          <svg className="h-10 w-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
         <h1 className="text-2xl font-bold text-gray-900">Article Not Found</h1>
-        <p className="mt-2 text-gray-500">The article you are looking for does not exist.</p>
-        <Link href="/blog" className="btn-primary mt-6">
-          Back to Blog
+        <p className="text-gray-500">This article doesn't exist or may have been removed.</p>
+        <Link href="/blog" className="btn-primary mt-2">
+          ← Back to Blog
         </Link>
       </div>
     );
@@ -31,9 +46,15 @@ export default function BlogPostPage() {
 
   const postComments = localComments.filter((c) => c.postId === post.id);
   const relatedPosts = blogPosts
-    .filter((p) => p.id !== post.id && (p.category === post.category || p.tags.some((t) => post.tags.includes(t))))
+    .filter(
+      (p) =>
+        p.id !== post.id &&
+        (p.category === post.category || p.tags.some((t) => post.tags.includes(t)))
+    )
     .slice(0, 3);
-  const gradient = categoryGradients[post.category] || "from-gray-400 to-gray-600";
+
+  const gradient = categoryGradients[post.category] || "from-primary-500 to-teal-600";
+  const icon = categoryIcons[post.category] || categoryIcons["Medical Tips"];
 
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,226 +63,288 @@ export default function BlogPostPage() {
         id: `local-${Date.now()}`,
         postId: post.id,
         name: commentName,
-        date: new Date().toISOString().split("T")[0],
+        date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
         text: commentText,
       };
       setLocalComments([newComment, ...localComments]);
       setCommentName("");
       setCommentEmail("");
       setCommentText("");
+      setCommentSuccess(true);
+      setTimeout(() => setCommentSuccess(false), 3000);
     }
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (typeof window !== "undefined") {
+      navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
+  const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+
   return (
-    <>
-      {/* Breadcrumb */}
-      <div className="border-b border-gray-100 bg-gray-50">
-        <div className="mx-auto flex max-w-4xl items-center gap-2 px-4 py-3 text-sm text-gray-500 sm:px-6">
-          <Link href="/" className="hover:text-primary-600">Home</Link>
-          <span>/</span>
-          <Link href="/blog" className="hover:text-primary-600">Blog</Link>
-          <span>/</span>
-          <span className="truncate text-gray-700">{post.title}</span>
+    <div className="min-h-screen bg-gray-50">
+      {/* ── Hero / Cover ── */}
+      <div className={`bg-gradient-to-br ${gradient} py-16 text-white`}>
+        <div className="mx-auto max-w-4xl px-4 sm:px-6">
+          {/* Breadcrumb */}
+          <nav className="mb-6 flex items-center gap-2 text-sm text-white/70">
+            <Link href="/" className="hover:text-white">Home</Link>
+            <span>/</span>
+            <Link href="/blog" className="hover:text-white">Blog</Link>
+            <span>/</span>
+            <span className="truncate text-white/90">{post.title}</span>
+          </nav>
+
+          <div className="flex flex-col gap-6 md:flex-row md:items-center">
+            {/* Icon */}
+            <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
+              <svg className="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={icon} />
+              </svg>
+            </div>
+            <div>
+              <span className="mb-3 inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
+                {post.category}
+              </span>
+              <h1 className="text-2xl font-extrabold leading-tight sm:text-3xl lg:text-4xl">
+                {post.title}
+              </h1>
+              <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-white/80">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-xs font-bold">
+                    {post.authorInitials}
+                  </div>
+                  <span>{post.author}</span>
+                </div>
+                <span>·</span>
+                <span>{post.date}</span>
+                <span>·</span>
+                <span className="flex items-center gap-1">
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {post.readTime}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <article className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
-        {/* Header */}
-        <header className="mb-10">
-          <span className="mb-3 inline-block rounded-full bg-primary-50 px-4 py-1.5 text-sm font-semibold text-primary-600">
-            {post.category}
-          </span>
-          <h1 className="mb-6 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
-            {post.title}
-          </h1>
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700">
-              {post.authorInitials}
+      {/* ── Article Body ── */}
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+        <div className="flex flex-col gap-8 lg:flex-row">
+          {/* Main article */}
+          <article className="flex-1 min-w-0">
+            <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8 md:p-10">
+              <div
+                className="blog-content max-w-none"
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
+
+              {/* Tags */}
+              <div className="mt-10 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-6">
+                <span className="text-sm font-semibold text-gray-500">Tags:</span>
+                {post.tags.map((tag) => (
+                  <Link
+                    key={tag}
+                    href={`/blog?q=${encodeURIComponent(tag)}`}
+                    className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs text-gray-600 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+                  >
+                    #{tag}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Share */}
+              <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-6">
+                <span className="text-sm font-semibold text-gray-500">Share:</span>
+                <a
+                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(currentUrl)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1DA1F2] text-xs font-bold text-white transition-transform hover:scale-110"
+                  title="Share on X (Twitter)"
+                >X</a>
+                <a
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1877F2] text-xs font-bold text-white transition-transform hover:scale-110"
+                  title="Share on Facebook"
+                >f</a>
+                <a
+                  href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0A66C2] text-xs font-bold text-white transition-transform hover:scale-110"
+                  title="Share on LinkedIn"
+                >in</a>
+                <button
+                  onClick={handleCopyLink}
+                  className="flex h-9 items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100"
+                >
+                  {copied ? (
+                    <><svg className="h-3.5 w-3.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>Copied!</>
+                  ) : (
+                    <><svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>Copy Link</>
+                  )}
+                </button>
+              </div>
+
+              {/* Author Bio */}
+              <div className="mt-8 flex flex-col gap-4 rounded-2xl border border-gray-100 bg-gray-50 p-6 sm:flex-row sm:items-start">
+                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-primary-100 text-xl font-bold text-primary-700">
+                  {post.authorInitials}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Written by</p>
+                  <p className="mt-0.5 font-bold text-gray-900">{post.author}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-600">{post.authorBio}</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="font-medium text-gray-900">{post.author}</p>
-              <p className="text-sm text-gray-500">
-                {post.date} &middot; {post.readTime}
-              </p>
+
+            {/* Comments */}
+            <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+              <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-gray-900">
+                <svg className="h-5 w-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                Comments ({postComments.length})
+              </h2>
+
+              {/* Comment form */}
+              <form onSubmit={handleCommentSubmit} className="mb-8 rounded-xl border border-gray-100 bg-gray-50 p-5">
+                <h3 className="mb-4 font-semibold text-gray-800">Leave a Comment</h3>
+                {commentSuccess && (
+                  <div className="mb-4 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+                    ✓ Comment posted successfully!
+                  </div>
+                )}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <input
+                    type="text"
+                    value={commentName}
+                    onChange={(e) => setCommentName(e.target.value)}
+                    placeholder="Your Name *"
+                    required
+                    className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                  />
+                  <input
+                    type="email"
+                    value={commentEmail}
+                    onChange={(e) => setCommentEmail(e.target.value)}
+                    placeholder="Your Email (optional)"
+                    className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                  />
+                </div>
+                <textarea
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder="Write your thoughts..."
+                  required
+                  rows={4}
+                  className="mt-3 w-full resize-none rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                />
+                <button type="submit" className="btn-primary mt-3">
+                  Post Comment
+                </button>
+              </form>
+
+              {/* Comments list */}
+              <div className="space-y-5">
+                {postComments.length === 0 ? (
+                  <p className="rounded-xl bg-gray-50 py-10 text-center text-sm text-gray-400">
+                    No comments yet. Be the first to share your thoughts!
+                  </p>
+                ) : (
+                  postComments.map((comment) => (
+                    <div key={comment.id} className="flex gap-4">
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700">
+                        {comment.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 rounded-xl border border-gray-100 bg-gray-50 p-4">
+                        <div className="mb-2 flex items-center justify-between">
+                          <p className="text-sm font-semibold text-gray-900">{comment.name}</p>
+                          <p className="text-xs text-gray-400">{comment.date}</p>
+                        </div>
+                        <p className="text-sm leading-relaxed text-gray-700">{comment.text}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-          </div>
-        </header>
+          </article>
 
-        {/* Image placeholder */}
-        <div className={`mb-10 flex h-64 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} sm:h-80 lg:h-96`}>
-          <span className="text-6xl text-white/50">
-            {post.category === "Wellness" && "🌿"}
-            {post.category === "Nutrition" && "🥗"}
-            {post.category === "Mental Health" && "🧠"}
-            {post.category === "Fitness" && "💪"}
-            {post.category === "Medical Tips" && "🩺"}
-            {post.category === "News" && "📰"}
-          </span>
-        </div>
-
-        {/* Article body */}
-        <div
-          className="blog-content mx-auto max-w-none"
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        />
-
-        {/* Tags */}
-        <div className="mt-10 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-6">
-          <span className="text-sm font-medium text-gray-500">Tags:</span>
-          {post.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-500"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        {/* Share Buttons */}
-        <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-6">
-          <span className="text-sm font-medium text-gray-500">Share:</span>
-          <a
-            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1DA1F2] text-xs font-bold text-white transition-transform hover:scale-110"
-          >
-            X
-          </a>
-          <a
-            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1877F2] text-xs font-bold text-white transition-transform hover:scale-110"
-          >
-            f
-          </a>
-          <a
-            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0A66C2] text-xs font-bold text-white transition-transform hover:scale-110"
-          >
-            in
-          </a>
-          <button
-            onClick={handleCopyLink}
-            className="flex h-9 items-center gap-1.5 rounded-full border border-gray-200 px-3 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50"
-          >
-            {copied ? (
-              <>
-                <svg className="h-3.5 w-3.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          {/* Sticky sidebar (desktop) */}
+          <aside className="hidden w-64 shrink-0 lg:block">
+            <div className="sticky top-24 space-y-5">
+              {/* Back to blog */}
+              <Link
+                href="/blog"
+                className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-600 shadow-sm hover:bg-primary-50 hover:text-primary-700"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
-                Copied!
-              </>
-            ) : (
-              <>
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                </svg>
-                Copy Link
-              </>
-            )}
-          </button>
+                All Articles
+              </Link>
+
+              {/* Related posts */}
+              {relatedPosts.length > 0 && (
+                <div className="rounded-2xl bg-white p-5 shadow-sm">
+                  <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-gray-500">
+                    Related Articles
+                  </h3>
+                  <div className="space-y-4">
+                    {relatedPosts.map((rp) => (
+                      <Link key={rp.id} href={`/blog/${rp.slug}`} className="group block">
+                        <div className={`mb-2 h-2 w-8 rounded-full bg-gradient-to-r ${categoryGradients[rp.category] || "from-gray-300 to-gray-400"}`} />
+                        <p className="text-sm font-medium text-gray-700 line-clamp-2 transition-colors group-hover:text-primary-600">
+                          {rp.title}
+                        </p>
+                        <p className="mt-1 text-xs text-gray-400">{rp.readTime}</p>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Book a doctor CTA */}
+              <div className="rounded-2xl bg-gradient-to-br from-primary-600 to-teal-600 p-5 text-white">
+                <p className="font-bold">Need a Doctor?</p>
+                <p className="mt-1 text-sm text-primary-100">
+                  Consult a specialist online in minutes.
+                </p>
+                <Link
+                  href="/doctors"
+                  className="mt-4 block rounded-xl bg-white px-4 py-2.5 text-center text-sm font-bold text-primary-700 hover:bg-gray-50"
+                >
+                  Find Doctors →
+                </Link>
+              </div>
+            </div>
+          </aside>
         </div>
 
-        {/* Author Bio */}
-        <div className="mt-10 rounded-xl bg-gray-50 p-6 sm:flex sm:items-start sm:gap-5">
-          <div className="mx-auto mb-4 flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary-100 text-lg font-bold text-primary-700 sm:mx-0 sm:mb-0">
-            {post.authorInitials}
-          </div>
-          <div className="text-center sm:text-left">
-            <p className="font-semibold text-gray-900">About {post.author}</p>
-            <p className="mt-2 text-sm leading-relaxed text-gray-600">{post.authorBio}</p>
-          </div>
-        </div>
-
-        {/* Related Articles */}
+        {/* Related articles (mobile) */}
         {relatedPosts.length > 0 && (
-          <section className="mt-16">
-            <h2 className="mb-8 text-2xl font-bold text-gray-900">Related Articles</h2>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {relatedPosts.map((p) => (
-                <BlogCard key={p.id} post={p} />
+          <section className="mt-10 lg:hidden">
+            <h2 className="mb-5 text-xl font-bold text-gray-900">Related Articles</h2>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              {relatedPosts.map((rp) => (
+                <BlogCard key={rp.id} post={rp} />
               ))}
             </div>
           </section>
         )}
-
-        {/* Comments Section */}
-        <section className="mt-16">
-          <h2 className="mb-8 text-2xl font-bold text-gray-900">
-            Comments ({postComments.length})
-          </h2>
-
-          {/* Comment Form */}
-          <form onSubmit={handleCommentSubmit} className="mb-10 rounded-xl bg-gray-50 p-6">
-            <h3 className="mb-4 text-lg font-semibold text-gray-900">Leave a Comment</h3>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <input
-                type="text"
-                value={commentName}
-                onChange={(e) => setCommentName(e.target.value)}
-                placeholder="Your Name"
-                required
-                className="rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-              />
-              <input
-                type="email"
-                value={commentEmail}
-                onChange={(e) => setCommentEmail(e.target.value)}
-                placeholder="Your Email"
-                className="rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-              />
-            </div>
-            <textarea
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Write your comment..."
-              required
-              rows={4}
-              className="mt-4 w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-            />
-            <button type="submit" className="btn-primary mt-4 !py-2.5">
-              Submit Comment
-            </button>
-          </form>
-
-          {/* Comments List */}
-          <div className="space-y-6">
-            {postComments.map((comment) => (
-              <div key={comment.id} className="border-b border-gray-100 pb-6 last:border-0">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700">
-                    {comment.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">{comment.name}</p>
-                    <p className="text-xs text-gray-400">{comment.date}</p>
-                  </div>
-                </div>
-                <p className="mt-3 text-sm leading-relaxed text-gray-600">{comment.text}</p>
-                <button className="mt-2 text-xs font-medium text-primary-600 hover:text-primary-700">
-                  Reply
-                </button>
-              </div>
-            ))}
-            {postComments.length === 0 && (
-              <p className="text-center text-sm text-gray-400">
-                No comments yet. Be the first to comment!
-              </p>
-            )}
-          </div>
-        </section>
-      </article>
-    </>
+      </div>
+    </div>
   );
 }

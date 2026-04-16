@@ -4,6 +4,11 @@ import "./globals.css";
 import ConditionalLayout from "@/components/ConditionalLayout";
 import { AuthProvider } from "@/lib/auth-context";
 import { CartProvider } from "@/lib/cart-context";
+import { LanguageProvider } from "@/lib/language-context";
+import CookieConsent from "@/components/CookieConsent";
+import BackToTop from "@/components/BackToTop";
+import AIChatbot from "@/components/AIChatbot";
+import LoadingBar from "@/components/LoadingBar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,7 +28,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.className} flex min-h-screen flex-col`}>
         <AuthProvider>
           <CartProvider>
-            <ConditionalLayout>{children}</ConditionalLayout>
+            <LanguageProvider>
+              <LoadingBar />
+              <ConditionalLayout>{children}</ConditionalLayout>
+              <CookieConsent />
+              <AIChatbot />
+              <BackToTop />
+            </LanguageProvider>
           </CartProvider>
         </AuthProvider>
       </body>

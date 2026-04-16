@@ -1,0 +1,126 @@
+"use client";
+
+import { useRef } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper";
+import { testimonials } from "@/lib/data";
+
+import "swiper/css";
+
+export default function TestimonialWithGallery() {
+  const swiperRef = useRef<SwiperType | null>(null);
+  const avatarItems = testimonials.slice(0, 4);
+  const remaining = Math.max(0, testimonials.length - 4);
+
+  return (
+    <section className="py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+          {/* Left: Heading + Avatar Gallery */}
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wider text-primary-600">
+              Testimonials
+            </p>
+            <h2 className="mt-3 text-4xl font-bold text-gray-900">
+              Trusted by Thousands of Happy Patients
+            </h2>
+            <p className="mt-4 leading-relaxed text-gray-500">
+              Our patients trust us with their health. Read what they have to say about
+              their experience with OduDoc healthcare services.
+            </p>
+
+            {/* Avatar gallery */}
+            <div className="mt-8 flex items-center">
+              <div className="flex -space-x-2">
+                {avatarItems.map((t) => (
+                  <div
+                    key={t.id}
+                    className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 ring-2 ring-white text-sm font-bold text-primary-700"
+                  >
+                    {t.initials}
+                  </div>
+                ))}
+              </div>
+              {remaining > 0 && (
+                <div className="-ml-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary-600 ring-2 ring-white text-sm font-bold text-white">
+                  +{remaining}
+                </div>
+              )}
+              <p className="ml-4 text-sm text-gray-500">
+                <span className="font-semibold text-gray-900">{testimonials.length}+ patients</span> shared their story
+              </p>
+            </div>
+          </div>
+
+          {/* Right: Testimonial Carousel */}
+          <div>
+            <Swiper
+              modules={[Navigation, Autoplay]}
+              onSwiper={(swiper) => { swiperRef.current = swiper; }}
+              spaceBetween={24}
+              slidesPerView={1}
+              autoplay={{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }}
+            >
+              {testimonials.map((t) => (
+                <SwiperSlide key={t.id}>
+                  <div className="rounded-2xl bg-white p-8 shadow-lg">
+                    <svg className="mb-4 h-8 w-8 text-primary-200" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z" />
+                    </svg>
+                    <p className="leading-relaxed text-gray-600">&ldquo;{t.text}&rdquo;</p>
+
+                    <div className="mt-4 flex gap-0.5">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <svg
+                          key={i}
+                          className={`h-4 w-4 ${i < t.rating ? "text-yellow-400" : "text-gray-200"}`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
+
+                    <div className="mt-5 flex items-center gap-3 border-t border-gray-100 pt-5">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700">
+                        {t.initials}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">{t.name}</p>
+                        <p className="text-xs text-gray-400">{t.location}</p>
+                      </div>
+                    </div>
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+
+            {/* Nav arrows */}
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => swiperRef.current?.slidePrev()}
+                className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary-600 text-primary-600 transition-all duration-300 hover:bg-primary-600 hover:text-white"
+                aria-label="Previous"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+              </button>
+              <button
+                onClick={() => swiperRef.current?.slideNext()}
+                className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary-600 text-primary-600 transition-all duration-300 hover:bg-primary-600 hover:text-white"
+                aria-label="Next"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

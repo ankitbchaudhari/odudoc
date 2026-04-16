@@ -4,6 +4,7 @@ import {
   getBookings,
   type Booking,
 } from '@/lib/bookings-store';
+import { notifyAppointmentBooked } from '@/lib/notifications';
 
 export async function GET() {
   try {
@@ -48,6 +49,24 @@ export async function POST(request: NextRequest) {
       fee,
       paymentStatus: paymentStatus || 'paid',
       paymentIntentId: paymentIntentId || '',
+    });
+
+    // Send booking confirmation notifications
+    const patientEmail = body.patientEmail || `${patientName.toLowerCase().replace(/\s+/g, '.')}@placeholder.com`;
+    const doctorEmail = body.doctorEmail || `${doctorName.toLowerCase().replace(/\s+/g, '.')}@odudoc.com`;
+    const appointmentType = body.appointmentType || 'in-person';
+    const appointmentDate = body.date || new Date().toLocaleDateString();
+
+    notifyAppointmentBooked({
+      patientName,
+      patientEmail,
+      patientPhone,
+      doctorName,
+      doctorEmail,
+      doctorPhone: body.doctorPhone,
+      date: appointmentDate,
+      time: timeSlot,
+      type: appointmentType,
     });
 
     return NextResponse.json({ booking }, { status: 201 });

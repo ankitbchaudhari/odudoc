@@ -4,27 +4,31 @@ import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useCart } from "@/lib/cart-context";
+import { useLanguage } from "@/lib/language-context";
+import GlobalSearch from "@/components/GlobalSearch";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import Logo from "@/components/Logo";
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { data: session, status } = useSession();
+  const { t } = useLanguage();
 
   const { totalItems } = useCart();
 
   const links = [
-    { href: "/doctors", label: "Find Doctors" },
-    { href: "/departments", label: "Departments" },
-    { href: "/consult", label: "Video Consult" },
-    { href: "/blog", label: "Blog" },
-    { href: "/gallery", label: "Gallery" },
-    { href: "/shop", label: "Shop" },
-    { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" },
+    { href: "/doctors", label: t("nav.doctors") },
+    { href: "/departments", label: t("nav.departments") },
+    { href: "/consult", label: t("nav.videoConsult") },
+    { href: "/blog", label: t("nav.blog") },
+    { href: "/shop", label: t("nav.shop") },
+    { href: "/about", label: t("nav.about") },
   ];
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -38,6 +42,18 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Ctrl+K shortcut for search
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const userInitial =
     session?.user?.name?.charAt(0)?.toUpperCase() || "U";
 
@@ -45,14 +61,7 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600 text-lg font-bold text-white">
-            O
-          </span>
-          <span className="text-xl font-bold text-gray-900">
-            Odu<span className="text-primary-600">Doc</span>
-          </span>
-        </Link>
+        <Logo size="sm" />
 
         {/* Desktop Nav */}
         <div className="hidden items-center gap-1 md:flex">
@@ -69,6 +78,19 @@ export default function Navbar() {
 
         {/* Desktop Auth Buttons / User Menu */}
         <div className="hidden items-center gap-3 md:flex">
+          {/* Search Icon */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-50 hover:text-primary-600"
+            aria-label="Search (Ctrl+K)"
+            title="Search (Ctrl+K)"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+          {/* Language Switcher */}
+          <LanguageSwitcher />
           {/* Cart Icon */}
           <Link
             href="/cart"
@@ -154,10 +176,10 @@ export default function Navbar() {
                 href="/auth/login"
                 className="rounded-lg px-4 py-2 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50"
               >
-                Login
+                {t("common.login")}
               </Link>
               <Link href="/auth/register" className="btn-primary !py-2 !text-sm">
-                Sign Up
+                {t("common.signUp")}
               </Link>
             </>
           )}
@@ -252,20 +274,22 @@ export default function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className="flex-1 rounded-lg border border-primary-600 py-2 text-center text-sm font-medium text-primary-600"
                 >
-                  Login
+                  {t("common.login")}
                 </Link>
                 <Link
                   href="/auth/register"
                   onClick={() => setMobileOpen(false)}
                   className="btn-primary flex-1 !py-2 !text-sm text-center"
                 >
-                  Sign Up
+                  {t("common.signUp")}
                 </Link>
               </div>
             )}
           </div>
         </div>
       )}
+      {/* Global Search Modal */}
+      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </nav>
   );
 }

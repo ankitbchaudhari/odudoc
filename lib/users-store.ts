@@ -6,7 +6,7 @@ export interface User {
   email: string;
   phone: string;
   password: string; // hashed
-  role: "patient" | "doctor";
+  role: "patient" | "doctor" | "admin";
   createdAt: string;
 }
 
@@ -34,6 +34,18 @@ users.push({
   phone: "+1234567891",
   password: DEMO_DOCTOR_HASH,
   role: "doctor",
+  createdAt: new Date().toISOString(),
+});
+
+// Pre-seed admin
+const DEMO_ADMIN_HASH = bcrypt.hashSync("admin123", 10);
+users.push({
+  id: "admin-001",
+  name: "OduDoc Admin",
+  email: "admin@odudoc.com",
+  phone: "+1234567892",
+  password: DEMO_ADMIN_HASH,
+  role: "admin",
   createdAt: new Date().toISOString(),
 });
 

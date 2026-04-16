@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
     role: "patient" as "patient" | "doctor",
+    country: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -50,6 +52,7 @@ export default function RegisterPage() {
           phone: form.phone,
           password: form.password,
           role: form.role,
+          country: form.country,
         }),
       });
 
@@ -73,9 +76,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600 text-2xl font-bold text-white">
-            O
-          </div>
+          <Image src="/images/logo-full.png" alt="OduDoc" width={750} height={200} className="mx-auto mb-6 h-14 w-auto" />
           <h1 className="text-2xl font-bold text-gray-900">
             Create your account
           </h1>
@@ -151,6 +152,46 @@ export default function RegisterPage() {
                 placeholder="+1 (555) 000-0000"
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
+            </div>
+
+            {/* Country */}
+            <div>
+              <label
+                htmlFor="country"
+                className="mb-1.5 block text-sm font-medium text-gray-700"
+              >
+                Country
+              </label>
+              <select
+                id="country"
+                name="country"
+                required
+                value={form.country}
+                onChange={handleChange}
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              >
+                <option value="">Select a country...</option>
+                <option>United States</option>
+                <option>United Kingdom</option>
+                <option>Canada</option>
+                <option>Australia</option>
+                <option>India</option>
+                <option>Germany</option>
+                <option>France</option>
+                <option>Brazil</option>
+                <option>Nigeria</option>
+                <option>South Africa</option>
+                <option>Mexico</option>
+                <option>Japan</option>
+                <option>China</option>
+                <option>South Korea</option>
+                <option>United Arab Emirates</option>
+                <option>Saudi Arabia</option>
+                <option>Singapore</option>
+                <option>Philippines</option>
+                <option>Pakistan</option>
+                <option>Egypt</option>
+              </select>
             </div>
 
             {/* Role */}

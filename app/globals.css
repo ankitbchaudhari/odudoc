@@ -19,6 +19,19 @@
   animation-play-state: paused;
 }
 
+@keyframes spin-slow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
 @keyframes slide-up {
   0% {
     transform: translateY(100%);
@@ -82,4 +95,39 @@
 }
 .blog-content a {
   @apply text-primary-600 underline hover:text-primary-700;
+}
+
+/* Modal animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.3s ease-out;
+}
+
+/* Swiper custom styles */
+.swiper-container-custom .swiper-button-prev,
+.swiper-container-custom .swiper-button-next {
+  @apply text-primary-600;
+}
+
+.swiper-container-custom .swiper-button-prev::after,
+.swiper-container-custom .swiper-button-next::after {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.swiper-container-custom .swiper-pagination-bullet-active {
+  @apply bg-primary-600;
 }

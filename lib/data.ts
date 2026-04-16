@@ -16,6 +16,8 @@ export interface Doctor {
   about: string;
   services: string[];
   timeSlots: string[];
+  country: string;
+  clinicAddress?: string;
   imageColor: string;
   initials: string;
 }
@@ -96,6 +98,7 @@ export const doctors: Doctor[] = [
     about: "Dr. Sarah Johnson is a highly experienced general physician with over 14 years of practice. She specializes in preventive care, chronic disease management, and comprehensive health assessments. Known for her patient-centric approach, she ensures each patient receives personalized attention.",
     services: ["General Consultation", "Preventive Health Checkup", "Chronic Disease Management", "Diabetes Care", "Hypertension Management", "Thyroid Disorders"],
     timeSlots: ["9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "2:00 PM", "2:30 PM", "3:00 PM", "4:00 PM"],
+    country: "United States",
     imageColor: "bg-teal-500",
     initials: "SJ",
   },
@@ -115,6 +118,7 @@ export const doctors: Doctor[] = [
     about: "Dr. Michael Chen is a board-certified dermatologist with expertise in medical and cosmetic dermatology. With 10 years of experience, he treats everything from common skin conditions to advanced aesthetic procedures.",
     services: ["Acne Treatment", "Skin Allergy", "Hair Loss Treatment", "Cosmetic Dermatology", "Psoriasis Treatment", "Laser Therapy"],
     timeSlots: ["10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "3:00 PM", "3:30 PM", "4:00 PM", "4:30 PM"],
+    country: "United States",
     imageColor: "bg-blue-500",
     initials: "MC",
   },
@@ -134,6 +138,7 @@ export const doctors: Doctor[] = [
     about: "Dr. Priya Patel is a renowned gynecologist and obstetrician with 18 years of experience. She provides comprehensive women's health care, from routine check-ups to complex gynecological surgeries.",
     services: ["Prenatal Care", "High-Risk Pregnancy", "PCOS Treatment", "Fertility Consultation", "Menopause Management", "Gynecological Surgery"],
     timeSlots: ["9:00 AM", "9:30 AM", "10:00 AM", "11:00 AM", "2:00 PM", "3:00 PM", "3:30 PM"],
+    country: "United States",
     imageColor: "bg-pink-500",
     initials: "PP",
   },
@@ -153,6 +158,7 @@ export const doctors: Doctor[] = [
     about: "Dr. James Wilson is a compassionate pediatrician dedicated to children's health. With 12 years of experience and a fellowship in neonatology, he provides expert care for newborns through adolescents.",
     services: ["Newborn Care", "Vaccination", "Growth Monitoring", "Childhood Infections", "Asthma Management", "Nutritional Counseling"],
     timeSlots: ["9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "2:00 PM", "2:30 PM", "3:00 PM"],
+    country: "United States",
     imageColor: "bg-green-500",
     initials: "JW",
   },
@@ -172,6 +178,7 @@ export const doctors: Doctor[] = [
     about: "Dr. Anita Sharma is a skilled dentist specializing in orthodontics and cosmetic dentistry. With 9 years of experience, she combines the latest technology with gentle care to provide the best dental treatments.",
     services: ["Dental Cleaning", "Root Canal", "Orthodontics", "Teeth Whitening", "Dental Implants", "Wisdom Tooth Extraction"],
     timeSlots: ["10:00 AM", "10:30 AM", "11:00 AM", "2:00 PM", "2:30 PM", "3:00 PM", "3:30 PM", "4:00 PM"],
+    country: "United States",
     imageColor: "bg-purple-500",
     initials: "AS",
   },
@@ -191,6 +198,7 @@ export const doctors: Doctor[] = [
     about: "Dr. Robert Kumar is a leading orthopedic surgeon with over 20 years of experience. He specializes in joint replacements, sports injuries, and spine surgery, having performed over 5,000 successful surgeries.",
     services: ["Joint Replacement", "Sports Injury Treatment", "Spine Surgery", "Fracture Treatment", "Arthroscopy", "Physical Rehabilitation"],
     timeSlots: ["9:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "3:00 PM", "4:00 PM"],
+    country: "United States",
     imageColor: "bg-orange-500",
     initials: "RK",
   },
@@ -210,6 +218,7 @@ export const doctors: Doctor[] = [
     about: "Dr. Emily Zhang is a compassionate psychiatrist with 11 years of experience in treating mental health disorders. She takes a holistic approach combining medication management with therapy techniques.",
     services: ["Depression Treatment", "Anxiety Disorders", "PTSD Therapy", "OCD Treatment", "Bipolar Disorder", "Counseling & Psychotherapy"],
     timeSlots: ["10:00 AM", "11:00 AM", "12:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"],
+    country: "United States",
     imageColor: "bg-indigo-500",
     initials: "EZ",
   },
@@ -229,6 +238,7 @@ export const doctors: Doctor[] = [
     about: "Dr. David Brown is one of the most respected cardiologists in the country with 22 years of experience. He specializes in interventional cardiology and has pioneered several minimally invasive heart procedures.",
     services: ["Cardiac Consultation", "ECG & Echocardiography", "Angioplasty", "Heart Failure Management", "Cholesterol Management", "Cardiac Rehabilitation"],
     timeSlots: ["9:00 AM", "9:30 AM", "10:00 AM", "11:00 AM", "2:00 PM", "3:00 PM"],
+    country: "United States",
     imageColor: "bg-red-500",
     initials: "DB",
   },
@@ -1614,4 +1624,73 @@ export const galleryItems: GalleryItem[] = [
   { id: "g18", title: "Recovery Story - Sarah K.", description: "Overcoming chronic pain with comprehensive orthopedic care.", category: "Patient Stories", color: "from-lime-400 to-green-500" },
   { id: "g19", title: "Pharmacy", description: "In-house pharmacy with comprehensive medication inventory.", category: "Hospital", color: "from-teal-500 to-cyan-600" },
   { id: "g20", title: "Blood Donation Drive", description: "Regular blood donation camps in partnership with the national blood bank.", category: "Events", color: "from-red-500 to-rose-600" },
+];
+
+// ============ HERO / HOMEPAGE VARIANT DATA ============
+
+export const heroSliderWords: string[] = ["Health", "Wellness", "Care", "Life"];
+
+export const workingProcessSteps = [
+  { number: 1, title: "Make Appointment", description: "Choose your preferred doctor and book an appointment at your convenience." },
+  { number: 2, title: "Meet Doctor", description: "Visit the doctor in person or connect online via video consultation." },
+  { number: 3, title: "Get Treatment", description: "Receive a personalized treatment plan tailored to your health needs." },
+  { number: 4, title: "Recovery", description: "Follow up with your doctor and get back to your healthy, active life." },
+];
+
+export const partnerLogos = [
+  { name: "MedTech Labs", color: "bg-blue-500" },
+  { name: "HealthFirst", color: "bg-teal-500" },
+  { name: "BioGenix", color: "bg-purple-500" },
+  { name: "CarePlus", color: "bg-green-500" },
+  { name: "MedSync", color: "bg-cyan-500" },
+  { name: "PharmaCo", color: "bg-indigo-500" },
+  { name: "VitalCare", color: "bg-rose-500" },
+  { name: "NovaMed", color: "bg-amber-500" },
+  { name: "LifeScience", color: "bg-emerald-500" },
+  { name: "WellPath", color: "bg-sky-500" },
+];
+
+export const coreValues = [
+  { title: "Compassion", description: "We treat every patient with empathy, respect, and genuine care for their well-being.", color: "rose" },
+  { title: "Excellence", description: "We strive for the highest standards in medical care, technology, and patient outcomes.", color: "blue" },
+  { title: "Innovation", description: "We embrace cutting-edge technology and research to advance healthcare solutions.", color: "amber" },
+  { title: "Integrity", description: "We uphold honesty and transparency in everything we do, building trust with our patients.", color: "emerald" },
+];
+
+// ============ TEAM MEMBERS (extended) ============
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  specialty: string;
+  designation: string;
+  experience: number;
+  imageColor: string;
+  initials: string;
+  socialLinks: { platform: string; url: string }[];
+}
+
+export const teamMembers: TeamMember[] = [
+  { id: "tm1", name: "Dr. Sarah Johnson", specialty: "General Physician", designation: "Chief Medical Officer", experience: 14, imageColor: "bg-teal-500", initials: "SJ", socialLinks: [{ platform: "facebook", url: "#" }, { platform: "twitter", url: "#" }, { platform: "linkedin", url: "#" }] },
+  { id: "tm2", name: "Dr. Michael Chen", specialty: "Dermatologist", designation: "Head of Dermatology", experience: 10, imageColor: "bg-blue-500", initials: "MC", socialLinks: [{ platform: "facebook", url: "#" }, { platform: "twitter", url: "#" }, { platform: "linkedin", url: "#" }] },
+  { id: "tm3", name: "Dr. Priya Patel", specialty: "Gynecologist", designation: "Senior Consultant", experience: 18, imageColor: "bg-pink-500", initials: "PP", socialLinks: [{ platform: "facebook", url: "#" }, { platform: "twitter", url: "#" }, { platform: "linkedin", url: "#" }] },
+  { id: "tm4", name: "Dr. James Wilson", specialty: "Pediatrician", designation: "Head of Pediatrics", experience: 12, imageColor: "bg-green-500", initials: "JW", socialLinks: [{ platform: "facebook", url: "#" }, { platform: "linkedin", url: "#" }, { platform: "instagram", url: "#" }] },
+  { id: "tm5", name: "Dr. David Brown", specialty: "Cardiologist", designation: "Director of Cardiology", experience: 22, imageColor: "bg-red-500", initials: "DB", socialLinks: [{ platform: "facebook", url: "#" }, { platform: "twitter", url: "#" }, { platform: "linkedin", url: "#" }] },
+  { id: "tm6", name: "Dr. Emily Zhang", specialty: "Psychiatrist", designation: "Mental Health Lead", experience: 8, imageColor: "bg-indigo-500", initials: "EZ", socialLinks: [{ platform: "twitter", url: "#" }, { platform: "linkedin", url: "#" }, { platform: "instagram", url: "#" }] },
+];
+
+// ============ WHY CHOOSE US FEATURES ============
+
+export interface WhyChooseUsFeature {
+  id: string;
+  title: string;
+  description: string;
+  iconName: string;
+}
+
+export const whyChooseUsFeatures: WhyChooseUsFeature[] = [
+  { id: "wcu1", title: "Expert Doctors", description: "Board-certified physicians with extensive experience across all medical specialties.", iconName: "users" },
+  { id: "wcu2", title: "24/7 Emergency", description: "Round-the-clock emergency services with rapid response teams ready to help.", iconName: "clock" },
+  { id: "wcu3", title: "Modern Equipment", description: "State-of-the-art diagnostic and treatment equipment for precise medical care.", iconName: "beaker" },
+  { id: "wcu4", title: "Affordable Prices", description: "Quality healthcare at transparent, competitive prices with flexible payment options.", iconName: "currency" },
 ];

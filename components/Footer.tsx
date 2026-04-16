@@ -1,50 +1,56 @@
-import Link from "next/link";
+"use client";
 
-const footerSections = [
-  {
-    title: "OduDoc",
-    links: [
-      { label: "About", href: "/about" },
-      { label: "Blog", href: "/blog" },
-      { label: "Careers", href: "#" },
-      { label: "Press", href: "#" },
-      { label: "Contact Us", href: "/contact" },
-    ],
-  },
-  {
-    title: "For Patients",
-    links: [
-      { label: "Find Doctors", href: "/doctors" },
-      { label: "Video Consult", href: "/consult" },
-      { label: "Lab Tests", href: "/tests" },
-      { label: "Surgeries", href: "#" },
-      { label: "Health Articles", href: "/blog" },
-      { label: "Gallery", href: "/gallery" },
-    ],
-  },
-  {
-    title: "For Doctors",
-    links: [
-      { label: "OduDoc Profile", href: "#" },
-      { label: "For Clinics", href: "#" },
-      { label: "Ray by OduDoc", href: "#" },
-      { label: "OduDoc Reach", href: "#" },
-      { label: "OduDoc Drive", href: "#" },
-    ],
-  },
-  {
-    title: "More",
-    links: [
-      { label: "Help", href: "#" },
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms & Conditions", href: "#" },
-      { label: "Healthcare Directory", href: "#" },
-      { label: "OduDoc Health Wiki", href: "#" },
-    ],
-  },
-];
+import Link from "next/link";
+import { useLanguage } from "@/lib/language-context";
+import Logo from "@/components/Logo";
 
 export default function Footer() {
+  const { t } = useLanguage();
+
+  const footerSections = [
+    {
+      title: "OduDoc",
+      links: [
+        { label: t("nav.about"), href: "/about" },
+        { label: t("nav.blog"), href: "/blog" },
+        { label: "Careers", href: "/careers" },
+        { label: "Press", href: "/press" },
+        { label: t("nav.contact"), href: "/contact" },
+      ],
+    },
+    {
+      title: t("footer.forPatients"),
+      links: [
+        { label: t("footer.findDoctors"), href: "/doctors" },
+        { label: t("footer.videoConsult"), href: "/consult" },
+        { label: t("footer.labTests"), href: "/tests" },
+        { label: t("footer.surgeries"), href: "/surgeries" },
+        { label: t("footer.healthArticles"), href: "/blog" },
+        { label: t("nav.gallery"), href: "/gallery" },
+      ],
+    },
+    {
+      title: t("footer.forDoctors"),
+      links: [
+        { label: "OduDoc Profile", href: "/for-doctors" },
+        { label: "For Clinics", href: "/for-clinics" },
+        { label: "Ray by OduDoc", href: "/ray" },
+        { label: "OduDoc Reach", href: "/reach" },
+        { label: "OduDoc Drive", href: "/drive" },
+      ],
+    },
+    {
+      title: t("footer.more"),
+      links: [
+        { label: t("footer.help"), href: "/help" },
+        { label: t("footer.privacy"), href: "/privacy" },
+        { label: t("footer.terms"), href: "/terms" },
+        { label: t("footer.directory"), href: "/directory" },
+        { label: t("footer.wiki"), href: "/wiki" },
+      ],
+    },
+  ];
+
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
@@ -72,14 +78,7 @@ export default function Footer() {
 
         {/* Social & Bottom */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-gray-800 pt-8 md:flex-row">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-sm font-bold text-white">
-              O
-            </span>
-            <span className="text-lg font-bold text-white">
-              Odu<span className="text-primary-400">Doc</span>
-            </span>
-          </div>
+          <Logo size="md" />
 
           <div className="flex gap-4">
             {["Facebook", "Twitter", "Instagram", "LinkedIn"].map((s) => (
@@ -95,7 +94,7 @@ export default function Footer() {
           </div>
 
           <p className="text-sm text-gray-500">
-            &copy; {new Date().getFullYear()} OduDoc. All rights reserved.
+            &copy; {new Date().getFullYear()} OduDoc. {t("footer.rights")}
           </p>
         </div>
       </div>

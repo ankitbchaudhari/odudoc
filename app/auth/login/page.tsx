@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 function LoginForm() {
   const router = useRouter();
@@ -33,7 +34,15 @@ function LoginForm() {
       if (result?.error) {
         setError(result.error);
       } else if (result?.url) {
-        router.push(result.url);
+        // After successful login, check role for proper redirect
+        const session = await fetch('/api/auth/session').then(r => r.json());
+        if (session?.user?.role === 'admin') {
+          router.push('/admin');
+        } else if (session?.user?.role === 'doctor') {
+          router.push('/dashboard/doctor');
+        } else {
+          router.push(result.url || '/dashboard');
+        }
         router.refresh();
       }
     } catch {
@@ -47,9 +56,7 @@ function LoginForm() {
     <div className="w-full max-w-md">
       {/* Header */}
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600 text-2xl font-bold text-white">
-          O
-        </div>
+        <Image src="/images/logo-full.png" alt="OduDoc" width={750} height={200} className="mx-auto mb-6 h-14 w-auto" />
         <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
         <p className="mt-2 text-gray-500">
           Sign in to your OduDoc account

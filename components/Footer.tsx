@@ -34,7 +34,7 @@ export default function Footer() {
       links: [
         { label: "OduDoc Profile", href: "/for-doctors" },
         { label: "For Clinics", href: "/for-clinics" },
-        { label: "Ray by OduDoc", href: "/ray" },
+        { label: "OduDoc AI", href: "/ray" },
         { label: "OduDoc Reach", href: "/reach" },
         { label: "OduDoc Drive", href: "/drive" },
       ],

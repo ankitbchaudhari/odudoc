@@ -8,11 +8,14 @@ interface LogoProps {
   className?: string;
 }
 
+// Note: source image is square (1:1) with internal padding around the mark,
+// so displayed heights need to be larger than a typical wordmark would be for
+// the logo to read at the intended weight.
 const sizes: Record<string, string> = {
-  sm: "h-9",
-  md: "h-11",
-  lg: "h-16",
-  xl: "h-24",
+  sm: "h-14",
+  md: "h-20",
+  lg: "h-28",
+  xl: "h-40",
 };
 
 export default function Logo({ size = "sm", link = true, className = "" }: LogoProps) {
@@ -20,8 +23,8 @@ export default function Logo({ size = "sm", link = true, className = "" }: LogoP
     <Image
       src="/images/logo-full.png"
       alt="OduDoc"
-      width={750}
-      height={200}
+      width={512}
+      height={512}
       className={`${sizes[size]} w-auto object-contain ${className}`}
       priority
     />

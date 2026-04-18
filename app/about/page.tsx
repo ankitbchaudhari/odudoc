@@ -6,13 +6,21 @@ export const metadata: Metadata = {
   description: "Learn about OduDoc's mission to make quality healthcare accessible to everyone.",
 };
 
-const team = [
-  { name: "Dr. Adebayo Odu", role: "Founder & CEO", initials: "AO", color: "bg-primary-500" },
-  { name: "Jessica Rivera", role: "Chief Medical Officer", initials: "JR", color: "bg-teal-500" },
-  { name: "Arjun Mehta", role: "CTO", initials: "AM", color: "bg-indigo-500" },
-  { name: "Sarah Kim", role: "Head of Operations", initials: "SK", color: "bg-pink-500" },
-  { name: "David Okonkwo", role: "Head of Growth", initials: "DO", color: "bg-orange-500" },
-  { name: "Maria Santos", role: "Head of Patient Success", initials: "MS", color: "bg-purple-500" },
+interface TeamMember {
+  name: string;
+  role: string;
+  initials: string;
+  color: string;
+  photo?: string;
+}
+
+const team: TeamMember[] = [
+  { name: "Dr. Kaushik Sutariya", role: "Founder & CEO", initials: "KS", color: "bg-primary-500" },
+  { name: "Dr. Dixit Velani", role: "Chief Medical Officer", initials: "DV", color: "bg-teal-500", photo: "/team/dixit-velani.png" },
+  { name: "Dr. Ankitkumar Chaudhari", role: "CTO", initials: "AC", color: "bg-indigo-500" },
+  { name: "Dr. Prutha Chaudhary", role: "Head of Growth", initials: "PC", color: "bg-orange-500" },
+  { name: "Dr. Dharmistha Vadher", role: "Doctor of Medicine", initials: "DV", color: "bg-pink-500" },
+  { name: "Lawan Bala", role: "Head of Pharmacy", initials: "LB", color: "bg-emerald-500" },
 ];
 
 const values = [
@@ -84,11 +92,20 @@ export default function AboutPage() {
           <div className="mt-10 grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-6">
             {team.map((t) => (
               <div key={t.name} className="card text-center">
-                <div
-                  className={`mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full text-xl font-bold text-white ${t.color}`}
-                >
-                  {t.initials}
-                </div>
+                {t.photo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={t.photo}
+                    alt={t.name}
+                    className="mx-auto mb-4 h-20 w-20 rounded-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className={`mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full text-xl font-bold text-white ${t.color}`}
+                  >
+                    {t.initials}
+                  </div>
+                )}
                 <h3 className="font-semibold text-gray-900">{t.name}</h3>
                 <p className="mt-1 text-xs text-gray-500">{t.role}</p>
               </div>

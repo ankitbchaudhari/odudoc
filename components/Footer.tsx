@@ -23,7 +23,6 @@ export default function Footer() {
       links: [
         { label: t("footer.findDoctors"), href: "/doctors" },
         { label: t("footer.videoConsult"), href: "/consult" },
-        { label: t("footer.labTests"), href: "/tests" },
         { label: t("footer.surgeries"), href: "/surgeries" },
         { label: t("footer.healthArticles"), href: "/blog" },
         { label: t("nav.gallery"), href: "/gallery" },
@@ -34,9 +33,8 @@ export default function Footer() {
       links: [
         { label: "OduDoc Profile", href: "/for-doctors" },
         { label: "For Clinics", href: "/for-clinics" },
+        { label: "Sell on OduDoc", href: "/sell" },
         { label: "OduDoc AI", href: "/ray" },
-        { label: "OduDoc Reach", href: "/reach" },
-        { label: "OduDoc Drive", href: "/drive" },
       ],
     },
     {
@@ -78,7 +76,9 @@ export default function Footer() {
 
         {/* Social & Bottom */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-gray-800 pt-8 md:flex-row">
-          <Logo size="md" />
+          <div className="inline-flex items-center rounded-xl bg-white px-4 py-2 shadow-sm">
+            <Logo size="md" />
+          </div>
 
           <div className="flex gap-4">
             {["Facebook", "Twitter", "Instagram", "LinkedIn"].map((s) => (

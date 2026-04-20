@@ -21,11 +21,11 @@ export default function Navbar() {
 
   const links = [
     { href: "/doctors", label: t("nav.doctors") },
-    { href: "/departments", label: t("nav.departments") },
     { href: "/consult", label: t("nav.videoConsult") },
     { href: "/blog", label: t("nav.blog") },
     { href: "/shop", label: t("nav.shop") },
     { href: "/about", label: t("nav.about") },
+    { href: "/corporate", label: "For Hospitals" },
   ];
 
   // Close dropdowns when clicking outside
@@ -56,6 +56,33 @@ export default function Navbar() {
 
   const userInitial =
     session?.user?.name?.charAt(0)?.toUpperCase() || "U";
+
+  // Pick up the avatar the user uploaded on /profile (stored client-side in
+  // localStorage keyed by email). We watch focus + storage events so the
+  // navbar updates immediately after they save the new photo in another tab.
+  const [avatar, setAvatar] = useState<string | null>(null);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const email = session?.user?.email;
+    if (!email) {
+      setAvatar(null);
+      return;
+    }
+    const key = `odudoc:avatar:${email}`;
+    const read = () => setAvatar(localStorage.getItem(key));
+    read();
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === key) read();
+    };
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("focus", read);
+    window.addEventListener("odudoc:avatar-changed", read);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("focus", read);
+      window.removeEventListener("odudoc:avatar-changed", read);
+    };
+  }, [session?.user?.email]);
 
   return (
     <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-md">
@@ -113,9 +140,18 @@ export default function Navbar() {
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-gray-50"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700">
-                  {userInitial}
-                </div>
+                {avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={avatar}
+                    alt={session.user.name || "Profile"}
+                    className="h-8 w-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700">
+                    {userInitial}
+                  </div>
+                )}
                 <span className="text-sm font-medium text-gray-700">
                   {session.user.name?.split(" ")[0]}
                 </span>
@@ -231,9 +267,18 @@ export default function Navbar() {
             {session ? (
               <div className="space-y-1">
                 <div className="flex items-center gap-3 px-3 py-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700">
-                    {userInitial}
-                  </div>
+                  {avatar ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={avatar}
+                      alt={session.user.name || "Profile"}
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700">
+                      {userInitial}
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm font-medium text-gray-900">
                       {session.user.name}

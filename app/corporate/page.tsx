@@ -1,0 +1,324 @@
+import Link from "next/link";
+import type { Metadata } from "next";
+import DemoRequestForm from "./DemoRequestForm";
+
+export const metadata: Metadata = {
+  title: "OduDoc for Hospitals — ERP + EMR + AI",
+  description:
+    "An intuitive, modular healthcare platform combining ERP, EMR, Telemedicine and AI for hospitals, clinics and diagnostic chains.",
+};
+
+const modules = [
+  { icon: "🧑‍⚕️", title: "Patient Management", desc: "Longitudinal EMR, allergies, vitals, visit timeline." },
+  { icon: "🛏️", title: "IPD / OPD Management", desc: "Bed map, admissions, transfers, discharge summaries." },
+  { icon: "👩‍⚕️", title: "Medical Staff Management", desc: "Shifts, credentials, license expiry, payroll inputs." },
+  { icon: "📋", title: "Quick Consultations", desc: "OPD queue, token numbers, consult notes in one click." },
+  { icon: "🎙️", title: "AI & Voice Consultation", desc: "Realtime speech-to-note, auto-drafted prescriptions." },
+  { icon: "🧪", title: "Lab Management", desc: "Order → sample → result → signed report PDF." },
+  { icon: "💊", title: "Pharmacy", desc: "Batch & expiry tracking, prescription-linked dispensing." },
+  { icon: "🧾", title: "Billing & Accounting", desc: "Invoices, insurance claims, GST, ledger, P&L." },
+  { icon: "📦", title: "Inventory Management", desc: "Reorder points, suppliers, PO workflow, stock audits." },
+  { icon: "🔪", title: "Surgery / OT", desc: "OT calendar, surgical team, consumables log, pre/post-op." },
+  { icon: "🩻", title: "Radiology & DICOM", desc: "Integrated DICOM viewer, report sign-off, PACS hooks." },
+  { icon: "📹", title: "Telemedicine", desc: "Video consults, e-prescriptions, follow-up scheduling." },
+];
+
+const plans = [
+  {
+    name: "Clinic",
+    price: "$149",
+    unit: "/ month",
+    blurb: "Single-location clinic, up to 10 staff.",
+    features: ["OPD + Patient EMR", "Pharmacy + Billing", "Telemedicine", "Email support"],
+    cta: "Start free 14-day trial",
+  },
+  {
+    name: "Hospital",
+    price: "$749",
+    unit: "/ month",
+    blurb: "Multi-department hospital up to 100 beds.",
+    features: [
+      "Everything in Clinic",
+      "IPD + OT + Inventory",
+      "Lab Management",
+      "AI Voice Consultation",
+      "Priority phone support",
+    ],
+    cta: "Request pricing",
+    highlight: true,
+  },
+  {
+    name: "Enterprise",
+    price: "Custom",
+    unit: "",
+    blurb: "100+ beds, multi-branch, or diagnostic chain.",
+    features: [
+      "Everything in Hospital",
+      "Radiology + DICOM Viewer",
+      "HL7/FHIR integrations",
+      "Dedicated infra + SLA",
+      "On-site training",
+    ],
+    cta: "Talk to sales",
+  },
+];
+
+const differentiators = [
+  { icon: "🧩", title: "Modular, not monolithic", desc: "Buy only the modules you need. Turn others on later without re-platforming." },
+  { icon: "🛡️", title: "Compliance-ready", desc: "Audit logs on every record, role-based access, HIPAA/GDPR/DPDP aligned." },
+  { icon: "⚡", title: "Modern stack", desc: "Built on Next.js + Postgres. Deployed on Vercel. Fast, reliable, browser-native." },
+  { icon: "🤝", title: "No lock-in", desc: "Your data, exportable any time. HL7/FHIR and CSV exports built-in." },
+];
+
+const trustStats = [
+  { value: "12", label: "Integrated modules" },
+  { value: "HIPAA", label: "Compliance track" },
+  { value: "99.9%", label: "Target uptime" },
+  { value: "24×7", label: "Platform" },
+];
+
+export default function CorporatePage() {
+  return (
+    <>
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-900 text-white">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-teal-500/20 blur-3xl" />
+        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-wider backdrop-blur-sm">
+              For Hospitals &amp; Clinics
+            </span>
+            <h1 className="mt-5 text-4xl font-extrabold leading-tight sm:text-5xl md:text-6xl">
+              An intuitive healthcare solution —{" "}
+              <span className="bg-gradient-to-r from-teal-300 via-sky-300 to-indigo-300 bg-clip-text text-transparent">
+                ERP + EMR + AI
+              </span>
+            </h1>
+            <p className="mt-5 max-w-xl text-lg text-slate-300">
+              Replace 6 disconnected tools with one platform. Patient records, OPD/IPD,
+              pharmacy, lab, billing, telemedicine and AI — unified and modular.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="#demo"
+                className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-900 shadow-lg transition-transform hover:scale-[1.02]"
+              >
+                Request a demo
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+              <Link
+                href="#modules"
+                className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold backdrop-blur-sm transition-colors hover:bg-white/10"
+              >
+                See all modules
+              </Link>
+            </div>
+            <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-4">
+              {trustStats.map((s) => (
+                <div key={s.label}>
+                  <p className="text-2xl font-extrabold">{s.value}</p>
+                  <p className="text-xs text-slate-400">{s.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: module constellation */}
+          <div className="relative hidden lg:block">
+            <div className="relative mx-auto h-[460px] w-[460px]">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/5 to-white/0 blur-2xl" />
+              <div className="absolute left-1/2 top-1/2 flex h-40 w-40 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-3xl bg-gradient-to-br from-teal-400 to-indigo-500 text-lg font-bold shadow-2xl">
+                <div className="text-center">
+                  <p className="text-xs uppercase tracking-widest text-white/70">Core</p>
+                  <p className="mt-1 text-2xl font-extrabold">OduDoc</p>
+                  <p className="text-xs text-white/70">Hospital OS</p>
+                </div>
+              </div>
+              {modules.slice(0, 8).map((m, i) => {
+                const angle = (i / 8) * Math.PI * 2 - Math.PI / 2;
+                const r = 180;
+                const x = Math.cos(angle) * r;
+                const y = Math.sin(angle) * r;
+                return (
+                  <div
+                    key={m.title}
+                    className="absolute flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-2xl ring-1 ring-white/20 backdrop-blur-sm"
+                    style={{
+                      left: `calc(50% + ${x}px - 28px)`,
+                      top: `calc(50% + ${y}px - 28px)`,
+                    }}
+                    title={m.title}
+                  >
+                    {m.icon}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Differentiators */}
+      <section className="bg-white py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {differentiators.map((d) => (
+              <div key={d.title} className="rounded-2xl border border-gray-100 p-6 shadow-sm">
+                <span className="mb-3 block text-3xl">{d.icon}</span>
+                <h3 className="text-lg font-bold text-gray-900">{d.title}</h3>
+                <p className="mt-2 text-sm text-gray-500">{d.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Modules grid */}
+      <section id="modules" className="bg-gray-50 py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <span className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-indigo-700">
+              The platform
+            </span>
+            <h2 className="mt-4 text-3xl font-extrabold text-gray-900 sm:text-4xl">
+              One system. Twelve modules.
+            </h2>
+            <p className="mt-3 text-gray-500">
+              Turn modules on per branch, per department — pay only for what you use.
+            </p>
+          </div>
+          <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {modules.map((m) => (
+              <div
+                key={m.title}
+                className="flex gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-teal-50 text-2xl">
+                  {m.icon}
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900">{m.title}</h3>
+                  <p className="mt-1 text-sm text-gray-500">{m.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="bg-white py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">Simple, transparent pricing</h2>
+            <p className="mt-3 text-gray-500">Start with a 14-day trial. No credit card required.</p>
+          </div>
+          <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-3">
+            {plans.map((p) => (
+              <div
+                key={p.name}
+                className={`relative rounded-2xl border p-8 shadow-sm transition-transform hover:-translate-y-1 ${
+                  p.highlight
+                    ? "border-indigo-500 bg-gradient-to-br from-indigo-50 to-white ring-2 ring-indigo-500"
+                    : "border-gray-100 bg-white"
+                }`}
+              >
+                {p.highlight && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-indigo-600 px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-white">
+                    Most popular
+                  </span>
+                )}
+                <h3 className="text-xl font-bold text-gray-900">{p.name}</h3>
+                <p className="mt-1 text-sm text-gray-500">{p.blurb}</p>
+                <div className="mt-5 flex items-baseline gap-1">
+                  <span className="text-4xl font-extrabold text-gray-900">{p.price}</span>
+                  <span className="text-sm text-gray-500">{p.unit}</span>
+                </div>
+                <ul className="mt-6 space-y-3">
+                  {p.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
+                      <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="#demo"
+                  className={`mt-8 block w-full rounded-xl px-4 py-3 text-center text-sm font-bold transition-colors ${
+                    p.highlight
+                      ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                      : "border border-gray-300 text-gray-900 hover:bg-gray-50"
+                  }`}
+                >
+                  {p.cta}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Security & compliance */}
+      <section className="bg-slate-900 py-20 text-white">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+          <div>
+            <h2 className="text-3xl font-extrabold sm:text-4xl">Built for hospitals that can&apos;t afford downtime.</h2>
+            <p className="mt-4 text-slate-300">
+              Every patient record is audit-logged. Role-based access for 10+ clinical roles.
+              Daily encrypted backups with point-in-time restore. On request, we deploy in your
+              cloud account with a signed BAA.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { label: "Audit logs", value: "Every read + write" },
+              { label: "Encryption", value: "TLS 1.3 + AES-256 at rest" },
+              { label: "Backups", value: "Hourly PITR" },
+              { label: "Roles", value: "10+ clinical presets" },
+              { label: "Exports", value: "HL7 / FHIR / CSV" },
+              { label: "Hosting", value: "EU / US / IN regions" },
+            ].map((b) => (
+              <div key={b.label} className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+                <p className="text-xs uppercase tracking-wider text-slate-400">{b.label}</p>
+                <p className="mt-1 text-sm font-semibold">{b.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Demo form */}
+      <section id="demo" className="bg-gradient-to-br from-indigo-50 via-white to-teal-50 py-20">
+        <div className="mx-auto grid max-w-6xl items-start gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+          <div>
+            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">Book a personalised demo</h2>
+            <p className="mt-3 text-gray-500">
+              30-minute walkthrough of the modules that matter to you. Bring your CMO or IT lead —
+              we&apos;ll go deep on workflows, migration, and pricing.
+            </p>
+            <ul className="mt-6 space-y-3 text-sm text-gray-700">
+              <li className="flex gap-2">
+                <span className="text-emerald-500">✓</span> No-obligation demo, tailored to your hospital
+              </li>
+              <li className="flex gap-2">
+                <span className="text-emerald-500">✓</span> 14-day sandbox seeded with your departments
+              </li>
+              <li className="flex gap-2">
+                <span className="text-emerald-500">✓</span> Migration path from existing HMS
+              </li>
+              <li className="flex gap-2">
+                <span className="text-emerald-500">✓</span> Pricing quote within 48 hours
+              </li>
+            </ul>
+          </div>
+          <DemoRequestForm />
+        </div>
+      </section>
+    </>
+  );
+}

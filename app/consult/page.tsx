@@ -127,7 +127,6 @@ export default async function ConsultPage() {
     getPublicDoctorsFresh(),
     getServerSession(authOptions),
   ]);
-  const hidePhoto = !session;
   return (
     <>
       {/* ── Hero ── */}
@@ -335,8 +334,8 @@ export default async function ConsultPage() {
         </div>
       </section>
 
-      {/* ── Available Doctors (admin-managed) ── */}
-      {doctors.length > 0 && (
+      {/* ── Available Doctors (admin-managed, signed-in only) ── */}
+      {session && doctors.length > 0 && (
         <section className="py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-end">
@@ -358,7 +357,7 @@ export default async function ConsultPage() {
 
             <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {doctors.slice(0, 8).map((doc) => (
-                <DoctorCard key={doc.id} doctor={doc} hidePhoto={hidePhoto} />
+                <DoctorCard key={doc.id} doctor={doc} />
               ))}
             </div>
           </div>

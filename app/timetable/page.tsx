@@ -1,8 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo } from "react";
-import { timetableEntries } from "@/lib/data";
+import { useEffect, useState, useMemo } from "react";
+
+interface TimetableEntry {
+  id: string;
+  doctorName: string;
+  department: string;
+  day: string;
+  timeSlot: string;
+  time: string;
+  color: string;
+}
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const TIME_SLOTS = [
@@ -24,10 +33,20 @@ const DEPT_COLORS: Record<string, string> = {
 
 export default function TimetablePage() {
   const [filterDept, setFilterDept] = useState("");
+  const [timetableEntries, setTimetableEntries] = useState<TimetableEntry[]>([]);
+
+  useEffect(() => {
+    fetch("/api/timetable", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && Array.isArray(d.entries)) setTimetableEntries(d.entries);
+      })
+      .catch(() => {});
+  }, []);
 
   const allDepartments = useMemo(
     () => Array.from(new Set(timetableEntries.map((e) => e.department))).sort(),
-    []
+    [timetableEntries]
   );
 
   const filtered = useMemo(
@@ -35,7 +54,7 @@ export default function TimetablePage() {
       filterDept
         ? timetableEntries.filter((e) => e.department === filterDept)
         : timetableEntries,
-    [filterDept]
+    [filterDept, timetableEntries]
   );
 
   const getEntries = (day: string, slot: string) =>

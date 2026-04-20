@@ -1,17 +1,27 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
-import { testimonials } from "@/lib/data";
+import type { Testimonial } from "@/lib/data";
 
 import "swiper/css";
 
 export default function TestimonialWithGallery() {
   const swiperRef = useRef<SwiperType | null>(null);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  useEffect(() => {
+    fetch("/api/testimonials", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && Array.isArray(d.testimonials)) setTestimonials(d.testimonials);
+      })
+      .catch(() => {});
+  }, []);
   const avatarItems = testimonials.slice(0, 4);
   const remaining = Math.max(0, testimonials.length - 4);
+  if (testimonials.length === 0) return null;
 
   return (
     <section className="py-20">

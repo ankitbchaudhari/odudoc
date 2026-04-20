@@ -1,16 +1,26 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
-import { testimonials } from "@/lib/data";
+import type { Testimonial } from "@/lib/data";
 
 import "swiper/css";
 import "swiper/css/navigation";
 
 export default function TestimonialCarousel() {
   const swiperRef = useRef<SwiperType | null>(null);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  useEffect(() => {
+    fetch("/api/testimonials", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && Array.isArray(d.testimonials)) setTestimonials(d.testimonials);
+      })
+      .catch(() => {});
+  }, []);
+  if (testimonials.length === 0) return null;
 
   return (
     <section className="bg-gray-50 py-20">

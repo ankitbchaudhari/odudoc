@@ -1,35 +1,59 @@
 "use client";
 
-import { useState } from "react";
-import { galleryItems, galleryCategories } from "@/lib/data";
+import { useEffect, useState } from "react";
+
+interface GalleryItem {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  color: string;
+  imageUrl?: string;
+}
+
+const CATEGORIES = ["All", "Hospital", "Doctors", "Equipment", "Events", "Patient Stories"];
+
+const tabGradients: Record<string, string> = {
+  All: "from-primary-600 via-teal-600 to-emerald-600",
+  Hospital: "from-sky-500 to-indigo-600",
+  Doctors: "from-emerald-500 to-teal-600",
+  Equipment: "from-fuchsia-500 to-pink-600",
+  Events: "from-amber-500 to-orange-600",
+  "Patient Stories": "from-rose-500 to-red-600",
+};
 
 export default function GalleryPage() {
   const [activeCategory, setActiveCategory] = useState("All");
-  const [selectedItem, setSelectedItem] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [items, setItems] = useState<GalleryItem[]>([]);
 
-  const filteredItems = galleryItems.filter(
+  useEffect(() => {
+    fetch("/api/gallery", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && Array.isArray(d.items)) setItems(d.items);
+      })
+      .catch(() => {});
+  }, []);
+
+  const filteredItems = items.filter(
     (item) => activeCategory === "All" || item.category === activeCategory
   );
 
-  const currentIndex = selectedItem !== null
-    ? filteredItems.findIndex((item) => item.id === galleryItems[selectedItem]?.id)
+  const currentIndex = selectedId !== null
+    ? filteredItems.findIndex((i) => i.id === selectedId)
     : -1;
+  const selected = currentIndex >= 0 ? filteredItems[currentIndex] : null;
 
   const handlePrev = () => {
-    if (currentIndex > 0) {
-      const prevItem = filteredItems[currentIndex - 1];
-      setSelectedItem(galleryItems.findIndex((g) => g.id === prevItem.id));
-    }
+    if (currentIndex > 0) setSelectedId(filteredItems[currentIndex - 1].id);
   };
-
   const handleNext = () => {
-    if (currentIndex < filteredItems.length - 1) {
-      const nextItem = filteredItems[currentIndex + 1];
-      setSelectedItem(galleryItems.findIndex((g) => g.id === nextItem.id));
+    if (currentIndex >= 0 && currentIndex < filteredItems.length - 1) {
+      setSelectedId(filteredItems[currentIndex + 1].id);
     }
   };
 
-  // Grid sizes pattern for masonry-like effect
   const sizeClasses = [
     "col-span-1 row-span-1 h-64",
     "col-span-1 row-span-1 h-64",
@@ -43,78 +67,86 @@ export default function GalleryPage() {
     "col-span-1 row-span-1 h-80 md:col-span-1 md:row-span-2",
   ];
 
+  const categoryIcon = (cat: string) => {
+    if (cat === "Hospital") return "🏥";
+    if (cat === "Doctors") return "👨‍⚕️";
+    if (cat === "Equipment") return "🔬";
+    if (cat === "Events") return "🎉";
+    if (cat === "Patient Stories") return "❤️";
+    return "📸";
+  };
+
   return (
     <>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-primary-50 via-white to-teal-50 py-16">
-        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
-            Our Facilities & <span className="text-primary-600">Gallery</span>
+      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-sky-50 to-purple-50 py-20">
+        <div className="pointer-events-none absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-sky-200/40 to-indigo-200/40 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 -right-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-purple-200/40 to-rose-200/40 blur-3xl" />
+        <div className="relative mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+          <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-100 to-purple-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-indigo-700">
+            <span>📸</span> Virtual tour
+          </span>
+          <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-6xl">
+            Our facilities &amp;{" "}
+            <span className="bg-gradient-to-r from-indigo-600 via-purple-500 to-rose-500 bg-clip-text text-transparent">
+              gallery
+            </span>
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-500">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
             Take a virtual tour of our world-class healthcare facilities, meet our doctors, and explore our medical equipment.
           </p>
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Filter Tabs */}
-        <div className="mb-8 flex flex-wrap justify-center gap-2">
-          {galleryCategories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${
-                activeCategory === cat
-                  ? "bg-primary-600 text-white shadow-md"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        <div className="mb-10 flex flex-wrap justify-center gap-2">
+          {CATEGORIES.map((cat) => {
+            const grad = tabGradients[cat] || "from-primary-600 to-teal-600";
+            const isActive = activeCategory === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
+                  isActive
+                    ? `bg-gradient-to-r ${grad} text-white shadow-lg hover:scale-105`
+                    : "border border-gray-200 bg-white text-gray-600 hover:border-primary-200 hover:text-primary-700 hover:shadow-sm"
+                }`}
+              >
+                {cat}
+              </button>
+            );
+          })}
         </div>
 
         {/* Gallery Grid */}
         <div className="grid auto-rows-auto grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredItems.map((item, index) => {
-            const globalIndex = galleryItems.findIndex((g) => g.id === item.id);
             const sizeClass = sizeClasses[index % sizeClasses.length];
-
             return (
               <div
                 key={item.id}
-                className={`group relative cursor-pointer overflow-hidden rounded-xl ${sizeClass}`}
-                onClick={() => setSelectedItem(globalIndex)}
+                className={`group relative cursor-pointer overflow-hidden rounded-2xl shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl ${sizeClass}`}
+                onClick={() => setSelectedId(item.id)}
               >
-                {/* Colored gradient placeholder */}
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${item.color} transition-transform duration-500 group-hover:scale-110`}
                 />
-
-                {/* Icon overlay */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-5xl text-white/30">
-                    {item.category === "Hospital" && "🏥"}
-                    {item.category === "Doctors" && "👨‍⚕️"}
-                    {item.category === "Equipment" && "🔬"}
-                    {item.category === "Events" && "🎉"}
-                    {item.category === "Patient Stories" && "❤️"}
+                  <span className="text-5xl text-white/30 transition-transform duration-500 group-hover:scale-110">
+                    {categoryIcon(item.category)}
                   </span>
                 </div>
-
-                {/* Hover overlay */}
-                <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/70 via-black/20 to-transparent p-5 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                  <span className="mb-2 inline-block w-fit rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-black/30 to-transparent p-5 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  <span className="mb-2 inline-block w-fit rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
                     {item.category}
                   </span>
                   <h3 className="text-lg font-bold text-white">{item.title}</h3>
                   <p className="mt-1 line-clamp-2 text-sm text-white/80">{item.description}</p>
                 </div>
-
-                {/* Category badge (always visible) */}
                 <div className="absolute right-3 top-3">
-                  <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                  <span className="rounded-full bg-white/25 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm ring-1 ring-white/30">
                     {item.category}
                   </span>
                 </div>
@@ -124,25 +156,41 @@ export default function GalleryPage() {
         </div>
 
         {filteredItems.length === 0 && (
-          <div className="rounded-xl bg-gray-50 py-16 text-center">
-            <p className="text-lg font-medium text-gray-500">No items found in this category.</p>
+          <div className="rounded-2xl border border-gray-100 bg-gradient-to-br from-slate-50 to-primary-50/40 py-16 text-center shadow-sm">
+            <p className="text-lg font-semibold text-gray-500">No items found in this category.</p>
           </div>
         )}
       </div>
 
+      {/* Bottom accent section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-purple-50 py-16">
+        <div className="pointer-events-none absolute -top-20 -left-20 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-sky-200/40 to-indigo-200/40 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -right-20 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-rose-200/40 to-amber-200/40 blur-3xl" />
+        <div className="relative mx-auto max-w-3xl px-4 text-center">
+          <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">
+            Want to{" "}
+            <span className="bg-gradient-to-r from-primary-600 via-purple-500 to-rose-500 bg-clip-text text-transparent">
+              visit in person?
+            </span>
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-gray-600">
+            Schedule a facility tour or connect with our team to learn more about our partner hospitals.
+          </p>
+        </div>
+      </section>
+
       {/* Lightbox Modal */}
-      {selectedItem !== null && galleryItems[selectedItem] && (
+      {selected && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
-          onClick={() => setSelectedItem(null)}
+          onClick={() => setSelectedId(null)}
         >
           <div
-            className="relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+            className="relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close button */}
             <button
-              onClick={() => setSelectedItem(null)}
+              onClick={() => setSelectedId(null)}
               className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition-colors hover:bg-black/70"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -150,26 +198,13 @@ export default function GalleryPage() {
               </svg>
             </button>
 
-            {/* Image area */}
-            <div
-              className={`flex h-72 items-center justify-center bg-gradient-to-br ${galleryItems[selectedItem].color} sm:h-96 lg:h-[28rem]`}
-            >
-              <span className="text-7xl text-white/40">
-                {galleryItems[selectedItem].category === "Hospital" && "🏥"}
-                {galleryItems[selectedItem].category === "Doctors" && "👨‍⚕️"}
-                {galleryItems[selectedItem].category === "Equipment" && "🔬"}
-                {galleryItems[selectedItem].category === "Events" && "🎉"}
-                {galleryItems[selectedItem].category === "Patient Stories" && "❤️"}
-              </span>
+            <div className={`flex h-72 items-center justify-center bg-gradient-to-br ${selected.color} sm:h-96 lg:h-[28rem]`}>
+              <span className="text-7xl text-white/40">{categoryIcon(selected.category)}</span>
             </div>
 
-            {/* Navigation arrows */}
             {currentIndex > 0 && (
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePrev();
-                }}
+                onClick={(e) => { e.stopPropagation(); handlePrev(); }}
                 className="absolute left-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition-colors hover:bg-black/70"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -179,10 +214,7 @@ export default function GalleryPage() {
             )}
             {currentIndex < filteredItems.length - 1 && (
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleNext();
-                }}
+                onClick={(e) => { e.stopPropagation(); handleNext(); }}
                 className="absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition-colors hover:bg-black/70"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -191,22 +223,17 @@ export default function GalleryPage() {
               </button>
             )}
 
-            {/* Info */}
             <div className="p-6">
               <div className="flex items-center justify-between">
-                <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-600">
-                  {galleryItems[selectedItem].category}
+                <span className="rounded-full bg-gradient-to-r from-primary-100 to-teal-100 px-3 py-1 text-xs font-semibold text-primary-700">
+                  {selected.category}
                 </span>
                 <span className="text-sm text-gray-400">
                   {currentIndex + 1} / {filteredItems.length}
                 </span>
               </div>
-              <h3 className="mt-3 text-xl font-bold text-gray-900">
-                {galleryItems[selectedItem].title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                {galleryItems[selectedItem].description}
-              </p>
+              <h3 className="mt-3 text-xl font-bold text-gray-900">{selected.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-gray-600">{selected.description}</p>
             </div>
           </div>
         </div>

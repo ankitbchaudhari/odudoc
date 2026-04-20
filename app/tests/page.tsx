@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { labTests } from "@/lib/data";
+import { useEffect, useState, useMemo } from "react";
+import type { LabTest } from "@/lib/data";
 
 const steps = [
   { icon: "📋", title: "Select a Test", desc: "Choose from a wide range of health packages and individual tests" },
@@ -18,6 +18,15 @@ const safetyMeasures = [
 
 export default function TestsPage() {
   const [search, setSearch] = useState("");
+  const [labTests, setLabTests] = useState<LabTest[]>([]);
+  useEffect(() => {
+    fetch("/api/lab-tests", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && Array.isArray(d.tests)) setLabTests(d.tests);
+      })
+      .catch(() => {});
+  }, []);
 
   const filtered = useMemo(() => {
     if (!search) return labTests;
@@ -27,7 +36,7 @@ export default function TestsPage() {
         t.name.toLowerCase().includes(q) ||
         t.description.toLowerCase().includes(q)
     );
-  }, [search]);
+  }, [search, labTests]);
 
   return (
     <>

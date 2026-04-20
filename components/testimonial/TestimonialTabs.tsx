@@ -1,12 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { testimonials } from "@/lib/data";
+import { useEffect, useState } from "react";
+import type { Testimonial } from "@/lib/data";
 
 export default function TestimonialTabs() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  useEffect(() => {
+    fetch("/api/testimonials", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && Array.isArray(d.testimonials)) setTestimonials(d.testimonials);
+      })
+      .catch(() => {});
+  }, []);
   const items = testimonials.slice(0, 6);
   const active = items[activeIndex];
+  if (items.length === 0) return null;
 
   return (
     <section className="py-20">

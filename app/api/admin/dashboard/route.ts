@@ -11,11 +11,27 @@ import { getApplications } from "@/lib/careers-store";
 import { listSubscribers, countSubscribers } from "@/lib/subscribers-store";
 import { listComments, countComments } from "@/lib/comments-store";
 import { departments } from "@/lib/data";
+import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
 
 function isAdmin(role: string | undefined): boolean {
   return role === "admin";
+}
+
+// Resilient wrapper: if one store throws (Postgres hiccup, missing table
+// on a fresh deploy, etc.) we want the dashboard to still render the
+// other tiles instead of the whole page 500'ing.
+async function safe<T>(label: string, fn: () => T | Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    log.error("admin_dashboard.stat_failed", {
+      stat: label,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return fallback;
+  }
 }
 
 export async function GET() {
@@ -25,18 +41,19 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const [posts, users, products, doctors, orders, bookings, applications] = await Promise.all([
-    listPosts(),
-    Promise.resolve(listUsers()),
-    Promise.resolve(listProducts()),
-    Promise.resolve(listDoctors()),
-    Promise.resolve(listOrders()),
-    Promise.resolve(getBookings()),
-    Promise.resolve(getApplications()),
+  const [posts, users, products, doctors, orders, bookings, applications, subscribers, comments, subscriberCount, commentCount] = await Promise.all([
+    safe("posts", () => listPosts(), []),
+    safe("users", () => listUsers(), []),
+    safe("products", () => listProducts(), []),
+    safe("doctors", () => listDoctors(), []),
+    safe("orders", () => listOrders(), []),
+    safe("bookings", () => getBookings(), []),
+    safe("applications", () => getApplications(), []),
+    safe("subscribers", () => listSubscribers({ activeOnly: true, limit: 8 }), []),
+    safe("comments", () => listComments({ limit: 5 }), []),
+    safe("subscriberCount", () => countSubscribers(), 0),
+    safe("commentCount", () => countComments(), 0),
   ]);
-
-  const subscribers = listSubscribers({ activeOnly: true, limit: 8 });
-  const comments = listComments({ limit: 5 });
 
   const stats = {
     posts: posts.length,
@@ -44,14 +61,13 @@ export async function GET() {
     products: products.length,
     doctors: doctors.length,
     departments: departments.length,
-    comments: countComments(),
-    subscribers: countSubscribers(),
+    comments: commentCount,
+    subscribers: subscriberCount,
     formResponses: applications.length + bookings.length,
     orders: orders.length,
     bookings: bookings.length,
   };
 
-  // Lightweight revenue + recent orders for the dashboard
   const revenue = orders
     .filter((o) => o.orderStatus !== "Cancelled")
     .reduce((sum, o) => sum + (o.total || 0), 0);

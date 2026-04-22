@@ -5,6 +5,7 @@ import { createVerificationToken } from "@/lib/email-verification-store";
 import { addAdminNotification } from "@/lib/admin-notifications-store";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 import { parseJson, z, nonEmptyString, emailSchema, phoneSchema } from "@/lib/validate";
+import { awaitAllFlushes } from "@/lib/persistent-array";
 
 import { log } from "@/lib/log";
 const RegisterSchema = z.object({
@@ -53,6 +54,13 @@ export async function POST(request: NextRequest) {
     // Create the user in "unverified" state — they must click the link in
     // the verification email before they can sign in.
     const user = createUser({ name, email, phone, password, role });
+
+    // Drain all pending Postgres writes BEFORE we send the verification
+    // email or return. If the Lambda freezes on response-flush, the
+    // createUser() write-back gets cancelled and the account is lost —
+    // user clicks the verify link, gets "Email verified", then login
+    // says "No account found". Draining here makes the write durable.
+    await awaitAllFlushes();
 
     // Notify admin of new signup.
     try {

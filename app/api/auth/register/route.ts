@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     // flushes — a fire-and-forget promise would get cancelled before Resend
     // receives it. If the send itself errors, we still return success: the
     // token exists and the user can resend via the login flow.
-    const tok = createVerificationToken(user.email, "signup");
+    const tok = await createVerificationToken(user.email, "signup");
     const verifyUrl = `${siteUrlFrom(request)}/api/auth/verify?token=${tok.token}`;
 
     try {

@@ -4,12 +4,13 @@
 //   - "signup": new account must verify before first login
 //   - "reactivate": user returning after >3 days of inactivity
 //
-// Stored in memory for now (will move to MySQL with the other stores). On a
-// single Vercel serverless instance this is fine for a demo; in production
-// with multiple instances each will have its own tokens, so a user might have
-// to click the most recent link. That's acceptable for a 10-minute window.
+// Persisted to the `app_kv` table via bindPersistentArray so tokens survive
+// Vercel Lambda recycles and, critically, are visible to OTHER Lambda
+// instances — the one that sends the email is rarely the one that handles
+// the user's click on the verification link.
 
 import crypto from "crypto";
+import { bindPersistentArray, awaitAllFlushes } from "./persistent-array";
 
 export type TokenPurpose = "signup" | "reactivate";
 
@@ -23,27 +24,37 @@ export interface VerificationToken {
 
 const TOKEN_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
-const tokens = new Map<string, VerificationToken>();
+const tokens: VerificationToken[] = [];
+const handle = bindPersistentArray<VerificationToken>(
+  "email-verification-tokens",
+  tokens,
+  () => []
+);
+
+async function ready(): Promise<void> {
+  await handle;
+}
 
 function cleanupExpired() {
   const now = Date.now();
-  tokens.forEach((v, k) => {
-    if (v.expiresAt < now) tokens.delete(k);
-  });
+  for (let i = tokens.length - 1; i >= 0; i--) {
+    if (tokens[i].expiresAt < now) tokens.splice(i, 1);
+  }
 }
 
-export function createVerificationToken(
+export async function createVerificationToken(
   email: string,
   purpose: TokenPurpose
-): VerificationToken {
+): Promise<VerificationToken> {
+  await ready();
   cleanupExpired();
 
   // Invalidate any outstanding token for this email — only one active link
   // at a time so the user never wonders which mail to click.
   const lowerEmail = email.toLowerCase();
-  tokens.forEach((v, k) => {
-    if (v.email.toLowerCase() === lowerEmail) tokens.delete(k);
-  });
+  for (let i = tokens.length - 1; i >= 0; i--) {
+    if (tokens[i].email.toLowerCase() === lowerEmail) tokens.splice(i, 1);
+  }
 
   const token = crypto.randomBytes(32).toString("hex");
   const now = Date.now();
@@ -54,7 +65,10 @@ export function createVerificationToken(
     createdAt: now,
     expiresAt: now + TOKEN_TTL_MS,
   };
-  tokens.set(token, record);
+  tokens.push(record);
+  // Make sure the write lands before the caller sends the verification email —
+  // otherwise a different Lambda handling the click can't find the token.
+  await awaitAllFlushes();
   return record;
 }
 
@@ -63,19 +77,25 @@ export type ConsumeResult =
   | { ok: false; reason: "not_found" | "expired" };
 
 // Single-use: looking up a valid token also deletes it.
-export function consumeVerificationToken(token: string): ConsumeResult {
+export async function consumeVerificationToken(
+  token: string
+): Promise<ConsumeResult> {
+  await ready();
   cleanupExpired();
-  const record = tokens.get(token);
-  if (!record) return { ok: false, reason: "not_found" };
-  tokens.delete(token);
+  const idx = tokens.findIndex((t) => t.token === token);
+  if (idx === -1) return { ok: false, reason: "not_found" };
+  const record = tokens[idx];
+  tokens.splice(idx, 1);
+  await awaitAllFlushes();
   if (record.expiresAt < Date.now()) return { ok: false, reason: "expired" };
   return { ok: true, email: record.email, purpose: record.purpose };
 }
 
 // Returns remaining ms until the token expires, or 0 if missing/expired.
 // Useful for UI hints. Does not consume.
-export function peekTokenTtl(token: string): number {
-  const record = tokens.get(token);
+export async function peekTokenTtl(token: string): Promise<number> {
+  await ready();
+  const record = tokens.find((t) => t.token === token);
   if (!record) return 0;
   return Math.max(0, record.expiresAt - Date.now());
 }

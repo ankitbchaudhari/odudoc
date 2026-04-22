@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${origin}/auth/verify-email?status=missing`);
   }
 
-  const result = consumeVerificationToken(token);
+  const result = await consumeVerificationToken(token);
   if (!result.ok) {
     const status = result.reason === "expired" ? "expired" : "invalid";
     return NextResponse.redirect(`${origin}/auth/verify-email?status=${status}`);

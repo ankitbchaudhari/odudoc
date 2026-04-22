@@ -26,10 +26,7 @@ async function safe<T>(label: string, fn: () => T | Promise<T>, fallback: T): Pr
   try {
     return await fn();
   } catch (err) {
-    log.error("admin_dashboard.stat_failed", {
-      stat: label,
-      error: err instanceof Error ? err.message : String(err),
-    });
+    log.error("admin_dashboard.stat_failed", err, { stat: label });
     return fallback;
   }
 }

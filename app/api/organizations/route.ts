@@ -7,31 +7,35 @@ import {
   createOrganization,
   updateOrganization,
   deleteOrganization,
+  getOrganizationById,
   type OrgPlan,
   type OrgStatus,
+  type Organization,
 } from "@/lib/organizations-store";
 import { deleteMembershipsForOrg } from "@/lib/memberships-store";
+import { recordAudit, type AuditAction } from "@/lib/audit-log-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-async function guard(): Promise<NextResponse | null> {
+async function guard(): Promise<{ email: string } | NextResponse> {
   const s = await getServerSession(authOptions);
-  if (!s?.user?.email || !isSuperAdmin(s.user.email)) {
+  const email = s?.user?.email;
+  if (!email || !isSuperAdmin(email)) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
-  return null;
+  return { email };
 }
 
 export async function GET() {
   const g = await guard();
-  if (g) return g;
+  if (g instanceof NextResponse) return g;
   return NextResponse.json({ organizations: listOrganizations() });
 }
 
 export async function POST(req: NextRequest) {
   const g = await guard();
-  if (g) return g;
+  if (g instanceof NextResponse) return g;
   const body = await req.json();
   if (!body.name || !body.contactEmail) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
@@ -45,14 +49,26 @@ export async function POST(req: NextRequest) {
     trialDays: body.trialDays ? Number(body.trialDays) : undefined,
     modules: body.modules,
   });
+  recordAudit({
+    actorEmail: g.email,
+    action: "org.create",
+    orgId: org.id,
+    orgName: org.name,
+    summary: `Created organization "${org.name}" on ${org.plan} plan`,
+    meta: { plan: org.plan, modules: org.modules },
+  });
   return NextResponse.json({ organization: org });
 }
 
 export async function PATCH(req: NextRequest) {
   const g = await guard();
-  if (g) return g;
+  if (g instanceof NextResponse) return g;
   const body = await req.json();
   if (!body.id) return NextResponse.json({ error: "missing_id" }, { status: 400 });
+  const before = getOrganizationById(String(body.id));
+  if (!before) return NextResponse.json({ error: "not_found" }, { status: 404 });
+  const snapshot: Organization = { ...before, modules: { ...before.modules } };
+
   const updated = updateOrganization(String(body.id), {
     name: body.name,
     contactEmail: body.contactEmail,
@@ -64,15 +80,84 @@ export async function PATCH(req: NextRequest) {
     trialEndsAt: body.trialEndsAt,
   });
   if (!updated) return NextResponse.json({ error: "not_found" }, { status: 404 });
+
+  // Emit one audit entry per "thing that actually changed" so the log
+  // reads naturally — avoids a single noisy "updated" blob that forces
+  // the reader to diff JSON to understand what happened.
+  const events: Array<{ action: AuditAction; summary: string; meta?: Record<string, unknown> }> = [];
+  if (snapshot.plan !== updated.plan) {
+    events.push({
+      action: "org.plan_change",
+      summary: `Plan: ${snapshot.plan} → ${updated.plan}`,
+      meta: { from: snapshot.plan, to: updated.plan },
+    });
+  }
+  if (snapshot.status !== updated.status) {
+    events.push({
+      action: "org.status_change",
+      summary: `Status: ${snapshot.status} → ${updated.status}`,
+      meta: { from: snapshot.status, to: updated.status },
+    });
+  }
+  const moduleDiffs: string[] = [];
+  for (const k of Object.keys(updated.modules) as (keyof Organization["modules"])[]) {
+    if (snapshot.modules[k] !== updated.modules[k]) {
+      moduleDiffs.push(`${k}: ${snapshot.modules[k] ? "on" : "off"} → ${updated.modules[k] ? "on" : "off"}`);
+    }
+  }
+  if (moduleDiffs.length > 0) {
+    events.push({
+      action: "org.modules_change",
+      summary: `Modules: ${moduleDiffs.join(", ")}`,
+      meta: { diff: moduleDiffs, before: snapshot.modules, after: updated.modules },
+    });
+  }
+  // Catch-all for field edits that don't have their own action code, so
+  // contact-info changes aren't silently invisible.
+  const fieldChanges: string[] = [];
+  if (snapshot.name !== updated.name) fieldChanges.push(`name: "${snapshot.name}" → "${updated.name}"`);
+  if (snapshot.contactEmail !== updated.contactEmail) fieldChanges.push(`contactEmail: ${snapshot.contactEmail} → ${updated.contactEmail}`);
+  if (snapshot.contactPhone !== updated.contactPhone) fieldChanges.push(`contactPhone changed`);
+  if (snapshot.country !== updated.country) fieldChanges.push(`country: ${snapshot.country || "—"} → ${updated.country || "—"}`);
+  if (fieldChanges.length > 0 && events.every((e) => e.action !== "org.update")) {
+    events.push({
+      action: "org.update",
+      summary: fieldChanges.join("; "),
+      meta: { changes: fieldChanges },
+    });
+  }
+
+  for (const ev of events) {
+    recordAudit({
+      actorEmail: g.email,
+      action: ev.action,
+      orgId: updated.id,
+      orgName: updated.name,
+      summary: ev.summary,
+      meta: ev.meta,
+    });
+  }
+
   return NextResponse.json({ organization: updated });
 }
 
 export async function DELETE(req: NextRequest) {
   const g = await guard();
-  if (g) return g;
+  if (g instanceof NextResponse) return g;
   const body = await req.json();
   if (!body.id) return NextResponse.json({ error: "missing_id" }, { status: 400 });
+  const before = getOrganizationById(String(body.id));
   const ok = deleteOrganization(String(body.id));
-  if (ok) deleteMembershipsForOrg(String(body.id));
+  if (ok) {
+    deleteMembershipsForOrg(String(body.id));
+    recordAudit({
+      actorEmail: g.email,
+      action: "org.delete",
+      orgId: String(body.id),
+      orgName: before?.name,
+      summary: `Deleted organization "${before?.name || body.id}"`,
+      meta: { plan: before?.plan, status: before?.status },
+    });
+  }
   return NextResponse.json({ ok });
 }

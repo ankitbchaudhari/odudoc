@@ -53,7 +53,7 @@ export default function AboutSplit() {
               </div>
               <div>
                 <p className="font-semibold text-gray-900">24/7 Support</p>
-                <p className="text-sm text-primary-600">+1 (800) 123-4567</p>
+                <p className="text-sm text-primary-600">+1 (302) 899-2625</p>
               </div>
             </div>
           </div>

@@ -22,6 +22,15 @@ const config: Config = {
         },
         accent: "#14b8a6",
       },
+      keyframes: {
+        shimmer: {
+          "0%": { backgroundPosition: "200% 0" },
+          "100%": { backgroundPosition: "-200% 0" },
+        },
+      },
+      animation: {
+        shimmer: "shimmer 6s linear infinite",
+      },
     },
   },
   plugins: [],

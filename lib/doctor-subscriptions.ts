@@ -57,31 +57,9 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   },
 ];
 
-// Mock in-memory subscription store
-const subscriptions: DoctorSubscription[] = [
-  {
-    id: "sub-1",
-    doctorId: "d1",
-    plan: "premium",
-    consultationsUsed: 42,
-    consultationsLimit: Number.POSITIVE_INFINITY,
-    startedAt: "2026-01-01T00:00:00.000Z",
-    expiresAt: "2026-05-01T00:00:00.000Z",
-    status: "active",
-    fee: 250,
-  },
-  {
-    id: "sub-2",
-    doctorId: "d2",
-    plan: "free",
-    consultationsUsed: 15,
-    consultationsLimit: 25,
-    startedAt: "2026-03-14T00:00:00.000Z",
-    expiresAt: "2026-04-14T00:00:00.000Z",
-    status: "active",
-    fee: 150,
-  },
-];
+// In-memory subscription store. Real doctor subscriptions are added via
+// the subscribe/upgrade flows; no demo records are seeded.
+const subscriptions: DoctorSubscription[] = [];
 
 export function getPlan(id: "free" | "premium"): SubscriptionPlan {
   return SUBSCRIPTION_PLANS.find((p) => p.id === id)!;
@@ -130,6 +108,24 @@ export function upgradeSubscription(doctorId: string): DoctorSubscription | null
   return sub;
 }
 
+// Push the expiry forward by `days` (default 30). If the subscription had
+// lapsed, the new window starts from today so we don't give retroactive time.
+export function extendSubscription(
+  doctorId: string,
+  days: number = 30
+): DoctorSubscription | null {
+  const sub = subscriptions.find((s) => s.doctorId === doctorId);
+  if (!sub) return null;
+  const base = new Date(sub.expiresAt);
+  const now = new Date();
+  const start = base.getTime() > now.getTime() ? base : now;
+  const next = new Date(start);
+  next.setDate(next.getDate() + days);
+  sub.expiresAt = next.toISOString();
+  sub.status = "active";
+  return sub;
+}
+
 export function cancelSubscription(doctorId: string): DoctorSubscription | null {
   const sub = subscriptions.find((s) => s.doctorId === doctorId);
   if (!sub) return null;
@@ -156,7 +152,9 @@ export function daysRemaining(sub: DoctorSubscription): number {
   return Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
 }
 
-// Mock billing history
+// Billing history — populated from real subscription payments via the
+// IndusPays webhook. The type stays exported so the dashboard keeps
+// compiling; the list starts empty until the first charge lands.
 export interface BillingRecord {
   id: string;
   date: string;
@@ -166,9 +164,4 @@ export interface BillingRecord {
   invoice: string;
 }
 
-export const mockBillingHistory: BillingRecord[] = [
-  { id: "inv-001", date: "2026-04-01", description: "Premium Plan - Monthly", amount: 250, status: "paid", invoice: "INV-2026-04-001" },
-  { id: "inv-002", date: "2026-03-01", description: "Premium Plan - Monthly", amount: 250, status: "paid", invoice: "INV-2026-03-001" },
-  { id: "inv-003", date: "2026-02-01", description: "Premium Plan - Monthly", amount: 250, status: "paid", invoice: "INV-2026-02-001" },
-  { id: "inv-004", date: "2026-01-01", description: "Premium Plan - Monthly", amount: 250, status: "paid", invoice: "INV-2026-01-001" },
-];
+export const mockBillingHistory: BillingRecord[] = [];

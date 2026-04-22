@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addApplication } from "@/lib/doctor-applications-store";
+import { addAdminNotification } from "@/lib/admin-notifications-store";
+import { sendDoctorApplicationReceivedEmail } from "@/lib/email";
 
+import { log } from "@/lib/log";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -60,9 +63,31 @@ export async function POST(req: NextRequest) {
       fee: Number(body.fee) || 100,
     });
 
+    try {
+      addAdminNotification({
+        type: "doctor_application",
+        title: "New doctor application",
+        body: `${app.fullName} applied to practice ${app.specialty}.`,
+        link: "/admin/applications",
+      });
+    } catch (err) {
+      log.error("[doctor-register] admin notification failed:", err);
+    }
+
+    // Confirmation email to the applicant. Non-blocking — never let a
+    // mail failure fail the registration.
+    void sendDoctorApplicationReceivedEmail({
+      to: app.email,
+      fullName: app.fullName,
+      applicationId: app.id,
+      specialty: app.specialty,
+    }).catch((err) =>
+      log.error("[doctor-register] applicant email failed:", err)
+    );
+
     return NextResponse.json({ id: app.id, status: app.status }, { status: 201 });
   } catch (err) {
-    console.error("Doctor registration error:", err);
+    log.error("Doctor registration error:", err);
     return NextResponse.json({ error: "Invalid request payload" }, { status: 400 });
   }
 }

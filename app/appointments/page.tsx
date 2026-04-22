@@ -44,15 +44,18 @@ export default function AppointmentsPage() {
                 </h3>
                 <div className="space-y-2 text-sm">
                   {[
-                    { day: "Monday - Friday", time: "8:00 AM - 9:00 PM" },
-                    { day: "Saturday", time: "9:00 AM - 6:00 PM" },
-                    { day: "Sunday", time: "10:00 AM - 4:00 PM" },
+                    { day: "Monday - Friday", time: "24 Hours" },
+                    { day: "Saturday", time: "24 Hours" },
+                    { day: "Sunday", time: "24 Hours" },
                   ].map((item) => (
                     <div key={item.day} className="flex justify-between">
                       <span className="text-gray-600">{item.day}</span>
                       <span className="font-medium text-gray-900">{item.time}</span>
                     </div>
                   ))}
+                  <p className="mt-3 rounded-lg bg-green-50 px-3 py-2 text-center text-xs font-semibold text-green-700">
+                    🟢 Available 24/7 — including holidays
+                  </p>
                 </div>
               </div>
 

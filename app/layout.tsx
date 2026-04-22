@@ -9,22 +9,127 @@ import CookieConsent from "@/components/CookieConsent";
 import BackToTop from "@/components/BackToTop";
 import AIChatbot from "@/components/AIChatbot";
 import LoadingBar from "@/components/LoadingBar";
+import { OrganizationLd, WebsiteLd } from "@/components/StructuredData";
 
 const inter = Inter({ subsets: ["latin"] });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.odudoc.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "OduDoc - Your Health, Our Priority",
+    default: "OduDoc — Online Doctor Consultations, Lab Tests & Hospital Software",
     template: "%s | OduDoc",
   },
   description:
-    "Find and book appointments with top doctors, consult online via video, book lab tests, and access quality healthcare from the comfort of your home.",
-  keywords: ["healthcare", "doctors", "online consultation", "lab tests", "medical", "health"],
+    "Book video consultations with verified doctors, order lab tests, and manage hospitals on OduDoc — a secure, multi-tenant healthcare platform trusted by clinics and patients.",
+  keywords: [
+    "online doctor consultation",
+    "telemedicine",
+    "video consultation",
+    "book doctor appointment",
+    "lab tests online",
+    "hospital management software",
+    "clinic software",
+    "electronic health records",
+    "EHR",
+    "digital healthcare",
+    "OduDoc",
+  ],
+  authors: [{ name: "OduDoc" }],
+  creator: "OduDoc",
+  publisher: "OduDoc",
+  applicationName: "OduDoc",
+  category: "health",
+  alternates: {
+    canonical: "/",
+    // The app serves content in 11 languages via an in-page switcher backed by
+    // the same URL — so hreflang points every locale at the same canonical
+    // path plus x-default. Safe declaration that lets search engines surface
+    // the page in the searcher's language.
+    languages: {
+      "x-default": "/",
+      en: "/",
+      es: "/",
+      fr: "/",
+      de: "/",
+      pt: "/",
+      zh: "/",
+      ar: "/",
+      ru: "/",
+      sw: "/",
+      ha: "/",
+      am: "/",
+    },
+  },
+  openGraph: {
+    type: "website",
+    siteName: "OduDoc",
+    title: "OduDoc — Online Doctor Consultations, Lab Tests & Hospital Software",
+    description:
+      "Book video consultations with verified doctors, order lab tests, and manage hospitals on OduDoc.",
+    url: SITE_URL,
+    locale: "en_US",
+    alternateLocale: [
+      "es_ES",
+      "fr_FR",
+      "de_DE",
+      "pt_PT",
+      "zh_CN",
+      "ar_AE",
+      "ru_RU",
+      "sw_KE",
+      "ha_NG",
+      "am_ET",
+    ],
+    // Image supplied by app/opengraph-image.tsx (dynamic, 1200×630).
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "OduDoc — Online Doctor Consultations, Lab Tests & Hospital Software",
+    description:
+      "Book video consultations with verified doctors, order lab tests, and manage hospitals on OduDoc.",
+    creator: "@odudoc",
+    // Image supplied by app/twitter-image.tsx.
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  // icons + apple-icon supplied by app/icon.tsx and app/apple-icon.tsx.
+  manifest: "/manifest.webmanifest",
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        {/* Speed up handshake for origins we hit on almost every page load.
+            preconnect opens the TCP/TLS connection eagerly; dns-prefetch is
+            the cheaper fallback for browsers that ignore preconnect. */}
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <OrganizationLd />
+        <WebsiteLd />
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="OduDoc Blog"
+          href="/feed.xml"
+        />
+      </head>
       <body className={`${inter.className} flex min-h-screen flex-col`}>
         <AuthProvider>
           <CartProvider>

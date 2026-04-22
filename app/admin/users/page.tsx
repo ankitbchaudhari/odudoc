@@ -1,170 +1,351 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-interface User {
+// Mirrors AdminUserView in lib/users-store.ts (kept in sync manually — the
+// admin page only renders the fields it needs, so drift here is low-risk).
+interface AdminUser {
   id: string;
   name: string;
   email: string;
-  role: "Admin" | "Doctor" | "Patient";
-  status: "Active" | "Suspended";
-  joinDate: string;
-  initials: string;
+  phone: string;
+  role: "patient" | "doctor" | "admin" | "staff";
+  createdAt: string;
+  emailVerified: boolean;
+  lastLoginAt: string | null;
+  status: "active" | "banned";
+  banReason?: string;
+  bannedAt?: string;
+  warningsCount: number;
 }
 
-const initialUsers: User[] = [
-  { id: "u1", name: "Admin User", email: "admin@odudoc.com", role: "Admin", status: "Active", joinDate: "Jan 01, 2026", initials: "AU" },
-  { id: "u2", name: "Dr. Sarah Johnson", email: "sarah.j@odudoc.com", role: "Doctor", status: "Active", joinDate: "Jan 15, 2026", initials: "SJ" },
-  { id: "u3", name: "Dr. Michael Chen", email: "michael.c@odudoc.com", role: "Doctor", status: "Active", joinDate: "Feb 01, 2026", initials: "MC" },
-  { id: "u4", name: "John Smith", email: "john@example.com", role: "Patient", status: "Active", joinDate: "Feb 10, 2026", initials: "JS" },
-  { id: "u5", name: "Emily Davis", email: "emily@example.com", role: "Patient", status: "Active", joinDate: "Feb 15, 2026", initials: "ED" },
-  { id: "u6", name: "Dr. Priya Patel", email: "priya.p@odudoc.com", role: "Doctor", status: "Active", joinDate: "Feb 20, 2026", initials: "PP" },
-  { id: "u7", name: "Robert Wilson", email: "robert@example.com", role: "Patient", status: "Suspended", joinDate: "Mar 01, 2026", initials: "RW" },
-  { id: "u8", name: "Maria Garcia", email: "maria@example.com", role: "Patient", status: "Active", joinDate: "Mar 10, 2026", initials: "MG" },
-  { id: "u9", name: "Dr. James Wilson", email: "james.w@odudoc.com", role: "Doctor", status: "Active", joinDate: "Mar 15, 2026", initials: "JW" },
-  { id: "u10", name: "David Lee", email: "david@example.com", role: "Patient", status: "Active", joinDate: "Mar 20, 2026", initials: "DL" },
+type TabKey = "all" | "patient" | "doctor" | "admin" | "staff" | "banned";
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "patient", label: "Patient" },
+  { key: "doctor", label: "Doctor" },
+  { key: "admin", label: "Admin" },
+  { key: "staff", label: "Staff" },
+  { key: "banned", label: "Banned" },
 ];
 
-const roleColors: Record<string, string> = {
-  Admin: "bg-purple-100 text-purple-700",
-  Doctor: "bg-blue-100 text-blue-700",
-  Patient: "bg-green-100 text-green-700",
+const ROLE_BADGE: Record<AdminUser["role"], string> = {
+  admin: "bg-purple-100 text-purple-700",
+  doctor: "bg-blue-100 text-blue-700",
+  patient: "bg-green-100 text-green-700",
+  staff: "bg-amber-100 text-amber-700",
 };
 
-const avatarColors: Record<string, string> = {
-  Admin: "bg-purple-200 text-purple-700",
-  Doctor: "bg-blue-200 text-blue-700",
-  Patient: "bg-green-200 text-green-700",
+const AVATAR_COLOR: Record<AdminUser["role"], string> = {
+  admin: "bg-purple-200 text-purple-700",
+  doctor: "bg-blue-200 text-blue-700",
+  patient: "bg-green-200 text-green-700",
+  staff: "bg-amber-200 text-amber-700",
 };
 
-const roleTabs = ["All", "Admin", "Doctor", "Patient"];
+function initialsOf(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((p) => p[0])
+    .filter(Boolean)
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
 
-export default function AdminUsers() {
-  const [users, setUsers] = useState(initialUsers);
-  const [activeTab, setActiveTab] = useState("All");
-  const [showForm, setShowForm] = useState(false);
-  const [formName, setFormName] = useState("");
-  const [formEmail, setFormEmail] = useState("");
-  const [formRole, setFormRole] = useState<User["role"]>("Patient");
+function fmtDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
 
-  const filtered = users.filter((u) => activeTab === "All" || u.role === activeTab);
+export default function AdminUsersPage() {
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabKey>("all");
+  const [search, setSearch] = useState("");
+  const [toast, setToast] = useState<string | null>(null);
 
-  const adminCount = users.filter((u) => u.role === "Admin").length;
-  const doctorCount = users.filter((u) => u.role === "Doctor").length;
-  const patientCount = users.filter((u) => u.role === "Patient").length;
+  // Modal state
+  const [warningFor, setWarningFor] = useState<AdminUser | null>(null);
+  const [warningMsg, setWarningMsg] = useState("");
+  const [banFor, setBanFor] = useState<AdminUser | null>(null);
+  const [banReason, setBanReason] = useState("");
+  const [roleFor, setRoleFor] = useState<AdminUser | null>(null);
+  const [newRole, setNewRole] = useState<AdminUser["role"]>("patient");
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  const handleAddUser = () => {
-    if (!formName || !formEmail) return;
-    const initials = formName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
-    const newUser: User = {
-      id: `u${Date.now()}`,
-      name: formName,
-      email: formEmail,
-      role: formRole,
-      status: "Active",
-      joinDate: "Apr 13, 2026",
-      initials,
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/users", { cache: "no-store" });
+      if (!res.ok) {
+        throw new Error(`Failed to load users (${res.status})`);
+      }
+      const data = (await res.json()) as { users: AdminUser[] };
+      setUsers(data.users || []);
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load users");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const showToast = useCallback((msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  }, []);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return users.filter((u) => {
+      if (activeTab === "banned") {
+        if (u.status !== "banned") return false;
+      } else if (activeTab !== "all") {
+        if (u.role !== activeTab) return false;
+      }
+      if (!q) return true;
+      return (
+        u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+      );
+    });
+  }, [users, activeTab, search]);
+
+  const stats = useMemo(() => {
+    return {
+      total: users.length,
+      patients: users.filter((u) => u.role === "patient").length,
+      doctors: users.filter((u) => u.role === "doctor").length,
+      admins: users.filter((u) => u.role === "admin").length,
+      banned: users.filter((u) => u.status === "banned").length,
     };
-    setUsers([...users, newUser]);
-    setShowForm(false); setFormName(""); setFormEmail(""); setFormRole("Patient");
-  };
+  }, [users]);
 
-  const handleToggleStatus = (id: string) => {
-    setUsers(users.map((u) =>
-      u.id === id ? { ...u, status: u.status === "Active" ? "Suspended" : "Active" } : u
-    ));
-  };
+  async function doBan() {
+    if (!banFor) return;
+    const reason = banReason.trim();
+    if (!reason) return;
+    setBusyId(banFor.id);
+    try {
+      const res = await fetch(`/api/admin/users/${banFor.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "ban", reason }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      showToast(`Banned ${banFor.name} — email sent.`);
+      setBanFor(null);
+      setBanReason("");
+      await load();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Ban failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
 
-  const handleChangeRole = (id: string, role: User["role"]) => {
-    setUsers(users.map((u) => u.id === id ? { ...u, role } : u));
-  };
+  async function doUnban(u: AdminUser) {
+    if (!confirm(`Unban ${u.name}?`)) return;
+    setBusyId(u.id);
+    try {
+      const res = await fetch(`/api/admin/users/${u.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "unban" }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      showToast(`Unbanned ${u.name}.`);
+      await load();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Unban failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
 
-  const handleDelete = (id: string) => {
-    setUsers(users.filter((u) => u.id !== id));
-  };
+  async function doSendWarning() {
+    if (!warningFor) return;
+    const message = warningMsg.trim();
+    if (!message) return;
+    setBusyId(warningFor.id);
+    try {
+      const res = await fetch(
+        `/api/admin/users/${warningFor.id}/warning`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ message }),
+        }
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      showToast(`Warning sent to ${warningFor.name}.`);
+      setWarningFor(null);
+      setWarningMsg("");
+      await load();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Warning failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function doChangeRole() {
+    if (!roleFor) return;
+    if (newRole === roleFor.role) {
+      setRoleFor(null);
+      return;
+    }
+    setBusyId(roleFor.id);
+    try {
+      const res = await fetch(`/api/admin/users/${roleFor.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "change-role", role: newRole }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      const data = (await res.json()) as { createdDoctorId?: string | null };
+      if (newRole === "doctor" && data.createdDoctorId) {
+        showToast(
+          `${roleFor.name} is now a doctor — profile created in /admin/doctors.`
+        );
+      } else {
+        showToast(`${roleFor.name} role changed to ${newRole}.`);
+      }
+      setRoleFor(null);
+      await load();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Role change failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function doDelete(u: AdminUser) {
+    if (
+      !confirm(
+        `Permanently delete ${u.name} (${u.email})?\n\nThis cannot be undone. Their login will stop working immediately. Any prescriptions/orders tied to their email remain on record for audit.`
+      )
+    )
+      return;
+    setBusyId(u.id);
+    try {
+      const res = await fetch(`/api/admin/users/${u.id}`, { method: "DELETE" });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      showToast(`Deleted ${u.name}.`);
+      await load();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Delete failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function doResetPassword(u: AdminUser) {
+    if (
+      !confirm(
+        `Reset password for ${u.name}? A temporary password will be emailed to them.`
+      )
+    )
+      return;
+    setBusyId(u.id);
+    try {
+      const res = await fetch(`/api/admin/users/${u.id}/reset-password`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      showToast(`Password reset — new temp password emailed to ${u.email}.`);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Reset failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   return (
     <div>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Users & Roles</h2>
-          <p className="mt-1 text-sm text-gray-500">{users.length} total users</p>
-        </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-          Add User
-        </button>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Users & Roles</h2>
+        <p className="mt-1 text-sm text-gray-500">
+          {loading ? "Loading…" : `${users.length} total users`}
+        </p>
       </div>
 
-      {/* Stats */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <div className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Total Users</p>
-          <p className="mt-1 text-2xl font-bold text-gray-900">{users.length}</p>
-        </div>
-        <div className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Admins</p>
-          <p className="mt-1 text-2xl font-bold text-purple-600">{adminCount}</p>
-        </div>
-        <div className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Doctors</p>
-          <p className="mt-1 text-2xl font-bold text-blue-600">{doctorCount}</p>
-        </div>
-        <div className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Patients</p>
-          <p className="mt-1 text-2xl font-bold text-green-600">{patientCount}</p>
-        </div>
-      </div>
-
-      {/* Add User Form */}
-      {showForm && (
-        <div className="mb-6 rounded-xl bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900">Add New User</h3>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Full Name</label>
-              <input type="text" value={formName} onChange={(e) => setFormName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500" placeholder="John Doe" />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
-              <input type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500" placeholder="john@example.com" />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Role</label>
-              <select value={formRole} onChange={(e) => setFormRole(e.target.value as User["role"])} className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500">
-                <option value="Patient">Patient</option>
-                <option value="Doctor">Doctor</option>
-                <option value="Admin">Admin</option>
-              </select>
-            </div>
-          </div>
-          <div className="mt-4 flex gap-3">
-            <button onClick={handleAddUser} className="rounded-lg bg-primary-600 px-6 py-2 text-sm font-medium text-white hover:bg-primary-700">Save User</button>
-            <button onClick={() => setShowForm(false)} className="rounded-lg border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-          </div>
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
         </div>
       )}
 
-      {/* Role Tabs */}
-      <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl bg-white p-1.5 shadow-sm">
-        {roleTabs.map((tab) => {
-          const count = tab === "All" ? users.length : users.filter((u) => u.role === tab).length;
-          return (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === tab ? "bg-primary-600 text-white" : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              {tab}
-              <span className={`rounded-full px-2 py-0.5 text-xs ${activeTab === tab ? "bg-white/20" : "bg-gray-100"}`}>{count}</span>
-            </button>
-          );
-        })}
+      {/* Stats */}
+      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-5">
+        <StatCard label="Total" value={stats.total} tint="text-gray-900" />
+        <StatCard
+          label="Patients"
+          value={stats.patients}
+          tint="text-green-600"
+        />
+        <StatCard label="Doctors" value={stats.doctors} tint="text-blue-600" />
+        <StatCard label="Admins" value={stats.admins} tint="text-purple-600" />
+        <StatCard label="Banned" value={stats.banned} tint="text-red-600" />
+      </div>
+
+      {/* Filters */}
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-1 rounded-xl bg-white p-1.5 shadow-sm">
+          {TABS.map((tab) => {
+            const count =
+              tab.key === "all"
+                ? users.length
+                : tab.key === "banned"
+                ? stats.banned
+                : users.filter((u) => u.role === tab.key).length;
+            const active = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  active
+                    ? "bg-primary-600 text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                {tab.label}
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[11px] ${
+                    active ? "bg-white/20" : "bg-gray-100"
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="relative w-full sm:w-72">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search name or email…"
+            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+          />
+        </div>
       </div>
 
       {/* Table */}
@@ -177,47 +358,117 @@ export default function AdminUsers() {
                 <th className="px-4 py-3 font-medium">Email</th>
                 <th className="px-4 py-3 font-medium">Role</th>
                 <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Join Date</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
+                <th className="px-4 py-3 font-medium">Joined</th>
+                <th className="px-4 py-3 font-medium">Last login</th>
+                <th className="px-4 py-3 text-right font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((user) => (
-                <tr key={user.id} className="border-b border-gray-50 transition-colors hover:bg-gray-50">
+              {filtered.map((u) => (
+                <tr
+                  key={u.id}
+                  className="border-b border-gray-50 transition-colors hover:bg-gray-50"
+                >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold ${avatarColors[user.role]}`}>
-                        {user.initials}
+                      <div
+                        className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold ${AVATAR_COLOR[u.role]}`}
+                      >
+                        {initialsOf(u.name)}
                       </div>
-                      <span className="font-medium text-gray-900">{user.name}</span>
+                      <div className="min-w-0">
+                        <div className="truncate font-medium text-gray-900">
+                          {u.name}
+                        </div>
+                        {u.warningsCount > 0 && (
+                          <div className="text-[11px] text-amber-600">
+                            {u.warningsCount} warning
+                            {u.warningsCount > 1 ? "s" : ""}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{user.email}</td>
+                  <td className="px-4 py-3 text-gray-600">{u.email}</td>
                   <td className="px-4 py-3">
-                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${roleColors[user.role]}`}>{user.role}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${user.status === "Active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                      {user.status}
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${ROLE_BADGE[u.role]}`}
+                    >
+                      {u.role}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{user.joinDate}</td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <select
-                        value={user.role}
-                        onChange={(e) => handleChangeRole(user.id, e.target.value as User["role"])}
-                        className="rounded border border-gray-200 px-2 py-1 text-xs outline-none focus:border-primary-500"
+                    {u.status === "banned" ? (
+                      <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                        Banned
+                      </span>
+                    ) : (
+                      <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                        Active
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {fmtDate(u.createdAt)}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {fmtDate(u.lastLoginAt)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1">
+                      {u.status === "active" ? (
+                        <button
+                          onClick={() => setBanFor(u)}
+                          disabled={busyId === u.id}
+                          className="rounded px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+                          title="Ban user"
+                        >
+                          Ban
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => doUnban(u)}
+                          disabled={busyId === u.id}
+                          className="rounded px-2 py-1 text-xs font-medium text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
+                          title="Unban user"
+                        >
+                          Unban
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setWarningFor(u)}
+                        disabled={busyId === u.id}
+                        className="rounded px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-50 disabled:opacity-50"
+                        title="Send warning"
                       >
-                        <option value="Patient">Patient</option>
-                        <option value="Doctor">Doctor</option>
-                        <option value="Admin">Admin</option>
-                      </select>
-                      <button onClick={() => handleToggleStatus(user.id)} className="rounded p-1.5 text-gray-400 hover:bg-yellow-50 hover:text-yellow-600" title={user.status === "Active" ? "Suspend" : "Activate"}>
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                        Warn
                       </button>
-                      <button onClick={() => handleDelete(user.id)} className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600">
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      <button
+                        onClick={() => {
+                          setNewRole(u.role);
+                          setRoleFor(u);
+                        }}
+                        disabled={busyId === u.id}
+                        className="rounded px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 disabled:opacity-50"
+                        title="Change role"
+                      >
+                        Role
+                      </button>
+                      <button
+                        onClick={() => doResetPassword(u)}
+                        disabled={busyId === u.id}
+                        className="rounded px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                        title="Reset password"
+                      >
+                        Reset pw
+                      </button>
+                      <button
+                        onClick={() => doDelete(u)}
+                        disabled={busyId === u.id}
+                        className="rounded px-2 py-1 text-xs font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+                        title="Delete user"
+                      >
+                        Delete
                       </button>
                     </div>
                   </td>
@@ -226,9 +477,215 @@ export default function AdminUsers() {
             </tbody>
           </table>
         </div>
-        {filtered.length === 0 && (
-          <div className="py-12 text-center text-sm text-gray-400">No users found.</div>
+        {!loading && filtered.length === 0 && (
+          <div className="py-12 text-center text-sm text-gray-400">
+            No users found.
+          </div>
         )}
+      </div>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 rounded-lg bg-slate-900 px-4 py-2 text-sm text-white shadow-lg">
+          {toast}
+        </div>
+      )}
+
+      {/* Ban modal */}
+      {banFor && (
+        <Modal
+          title={`Ban ${banFor.name}`}
+          onClose={() => {
+            setBanFor(null);
+            setBanReason("");
+          }}
+        >
+          <p className="mb-3 text-sm text-gray-600">
+            This user will be unable to sign in. They will receive an email
+            notifying them of the ban.
+          </p>
+          <label className="mb-1 block text-xs font-medium text-gray-700">
+            Reason (shown in email)
+          </label>
+          <textarea
+            value={banReason}
+            onChange={(e) => setBanReason(e.target.value)}
+            rows={4}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+            placeholder="Explain why this account is being banned…"
+          />
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              onClick={() => {
+                setBanFor(null);
+                setBanReason("");
+              }}
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={doBan}
+              disabled={!banReason.trim() || busyId === banFor.id}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              Ban user
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Role-change modal */}
+      {roleFor && (
+        <Modal
+          title={`Change role for ${roleFor.name}`}
+          onClose={() => setRoleFor(null)}
+        >
+          <p className="mb-3 text-sm text-gray-600">
+            Current role:{" "}
+            <span className="font-semibold capitalize">{roleFor.role}</span>.
+            Changing the role will update this user&apos;s dashboard and
+            permissions. Promoting to <b>doctor</b> automatically creates a
+            profile in <code>/admin/doctors</code> where you can set their
+            department, specialty, and fee.
+          </p>
+          <label className="mb-1 block text-xs font-medium text-gray-700">
+            New role
+          </label>
+          <select
+            value={newRole}
+            onChange={(e) => setNewRole(e.target.value as AdminUser["role"])}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+          >
+            <option value="patient">Patient</option>
+            <option value="doctor">Doctor</option>
+            <option value="staff">Staff</option>
+            <option value="admin">Admin</option>
+          </select>
+          {newRole === "doctor" && roleFor.role !== "doctor" && (
+            <p className="mt-3 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-700">
+              A doctor profile will be auto-created with specialty &quot;General
+              Physician&quot;. Visit /admin/doctors after to set their
+              department and fee.
+            </p>
+          )}
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              onClick={() => setRoleFor(null)}
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={doChangeRole}
+              disabled={newRole === roleFor.role || busyId === roleFor.id}
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            >
+              Change role
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Warning modal */}
+      {warningFor && (
+        <Modal
+          title={`Send warning to ${warningFor.name}`}
+          onClose={() => {
+            setWarningFor(null);
+            setWarningMsg("");
+          }}
+        >
+          <p className="mb-3 text-sm text-gray-600">
+            This will email a formal warning to the user and record it against
+            their account.
+          </p>
+          <label className="mb-1 block text-xs font-medium text-gray-700">
+            Warning message
+          </label>
+          <textarea
+            value={warningMsg}
+            onChange={(e) => setWarningMsg(e.target.value)}
+            rows={5}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+            placeholder="Describe the behaviour that led to this warning…"
+          />
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              onClick={() => {
+                setWarningFor(null);
+                setWarningMsg("");
+              }}
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={doSendWarning}
+              disabled={!warningMsg.trim() || busyId === warningFor.id}
+              className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+            >
+              Send warning
+            </button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  tint,
+}: {
+  label: string;
+  value: number;
+  tint: string;
+}) {
+  return (
+    <div className="rounded-xl bg-white p-5 shadow-sm">
+      <p className="text-sm font-medium text-gray-500">{label}</p>
+      <p className={`mt-1 text-2xl font-bold ${tint}`}>{value}</p>
+    </div>
+  );
+}
+
+function Modal({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+        <div className="mb-4 flex items-start justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <button
+            onClick={onClose}
+            className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            aria-label="Close"
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        {children}
       </div>
     </div>
   );

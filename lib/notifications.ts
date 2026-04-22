@@ -1,6 +1,7 @@
 // Notification system for OduDoc appointment bookings
 // Currently logs notifications — in production, integrate with SendGrid (email) and Twilio (SMS)
 
+import { log } from "./log";
 export interface NotificationPayload {
   to: string; // email or phone
   type: 'email' | 'sms';
@@ -34,9 +35,9 @@ export function getNotificationLogs(): NotificationLogEntry[] {
 
 export async function sendNotification(payload: NotificationPayload): Promise<boolean> {
   // Log for now — in production, integrate with SendGrid/Twilio
-  console.log(
+  log.info("console.log", { args: [
     `[NOTIFICATION] ${payload.type.toUpperCase()} to ${payload.to}: ${payload.subject || ''} - ${payload.message}`
-  );
+  ] });
 
   // Store in memory for admin panel visibility
   addNotificationLog(payload);

@@ -1,14 +1,46 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import DoctorCard from "@/components/DoctorCard";
-import { doctors, specialties } from "@/lib/data";
+import { useState, useMemo, useEffect } from "react";
+import DoctorListRow from "@/components/DoctorListRow";
+import { specialties, type Doctor } from "@/lib/data";
+import { getDoctorPresence } from "@/lib/doctor-presence";
 
 export default function DoctorsPage() {
+  // Doctors come exclusively from the admin-managed API. No static fallback —
+  // if the admin hasn't added any, the list is empty.
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [doctorsLoaded, setDoctorsLoaded] = useState(false);
+  useEffect(() => {
+    fetch("/api/doctors", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && Array.isArray(d.doctors)) setDoctors(d.doctors);
+      })
+      .catch(() => {})
+      .finally(() => setDoctorsLoaded(true));
+  }, []);
   const [search, setSearch] = useState("");
   const [specialty, setSpecialty] = useState("");
   const [gender, setGender] = useState("");
-  const [sortBy, setSortBy] = useState("");
+  const [sortBy, setSortBy] = useState("online");
+  const [onlineOnly, setOnlineOnly] = useState(false);
+  const [minExperience, setMinExperience] = useState(0);
+  const [maxFee, setMaxFee] = useState(0); // 0 = no cap
+  const [minRating, setMinRating] = useState(0);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  // Presence is computed client-side; recompute every 30s so the list refreshes.
+  const [nowTick, setNowTick] = useState(0);
+  useEffect(() => {
+    setNowTick(Date.now());
+    const t = setInterval(() => setNowTick(Date.now()), 30_000);
+    return () => clearInterval(t);
+  }, []);
+
+  const onlineCount = useMemo(() => {
+    if (!nowTick) return 0;
+    return doctors.filter((d) => getDoctorPresence(d.id, nowTick).online).length;
+  }, [nowTick]);
 
   const filtered = useMemo(() => {
     let list = [...doctors];
@@ -23,50 +55,223 @@ export default function DoctorsPage() {
       );
     }
 
-    if (specialty) {
-      list = list.filter((d) => d.specialty === specialty);
-    }
+    if (specialty) list = list.filter((d) => d.specialty === specialty);
+    if (gender) list = list.filter((d) => d.gender === gender);
+    if (minExperience > 0) list = list.filter((d) => d.experience >= minExperience);
+    if (maxFee > 0) list = list.filter((d) => d.fee <= maxFee);
+    if (minRating > 0) list = list.filter((d) => d.rating >= minRating);
 
-    if (gender) {
-      list = list.filter((d) => d.gender === gender);
+    if (onlineOnly && nowTick) {
+      list = list.filter((d) => getDoctorPresence(d.id, nowTick).online);
     }
 
     if (sortBy === "rating") list.sort((a, b) => b.rating - a.rating);
     if (sortBy === "experience") list.sort((a, b) => b.experience - a.experience);
     if (sortBy === "fee-low") list.sort((a, b) => a.fee - b.fee);
     if (sortBy === "fee-high") list.sort((a, b) => b.fee - a.fee);
+    if (sortBy === "online" && nowTick) {
+      list.sort((a, b) => {
+        const pa = getDoctorPresence(a.id, nowTick);
+        const pb = getDoctorPresence(b.id, nowTick);
+        if (pa.online !== pb.online) return pa.online ? -1 : 1;
+        if (pa.online && pb.online) {
+          if (pa.inCall !== pb.inCall) return pa.inCall ? 1 : -1;
+          return b.rating - a.rating;
+        }
+        return pa.lastSeenMinutesAgo - pb.lastSeenMinutesAgo;
+      });
+    }
 
     return list;
-  }, [search, specialty, gender, sortBy]);
+  }, [search, specialty, gender, sortBy, onlineOnly, minExperience, maxFee, minRating, nowTick]);
 
   const uniqueSpecialties = Array.from(new Set(doctors.map((d) => d.specialty)));
+
+  function clearFilters() {
+    setSearch("");
+    setSpecialty("");
+    setGender("");
+    setSortBy("online");
+    setOnlineOnly(false);
+    setMinExperience(0);
+    setMaxFee(0);
+    setMinRating(0);
+  }
+
+  const activeFilterCount =
+    (specialty ? 1 : 0) +
+    (gender ? 1 : 0) +
+    (onlineOnly ? 1 : 0) +
+    (minExperience ? 1 : 0) +
+    (maxFee ? 1 : 0) +
+    (minRating ? 1 : 0);
+
+  const FiltersPanel = (
+    <div className="space-y-6">
+      {/* Gender */}
+      <div>
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Gender</h4>
+        <div className="space-y-1.5">
+          {[
+            { v: "", label: "Any" },
+            { v: "Male", label: "Male" },
+            { v: "Female", label: "Female" },
+          ].map((opt) => (
+            <label key={opt.v} className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+              <input
+                type="radio"
+                name="gender"
+                checked={gender === opt.v}
+                onChange={() => setGender(opt.v)}
+                className="h-4 w-4 accent-primary-600"
+              />
+              {opt.label}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Experience */}
+      <div>
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Experience</h4>
+        <div className="space-y-1.5">
+          {[
+            { v: 0, label: "Any" },
+            { v: 5, label: "5+ years" },
+            { v: 10, label: "10+ years" },
+            { v: 15, label: "15+ years" },
+            { v: 20, label: "20+ years" },
+          ].map((opt) => (
+            <label key={opt.v} className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+              <input
+                type="radio"
+                name="exp"
+                checked={minExperience === opt.v}
+                onChange={() => setMinExperience(opt.v)}
+                className="h-4 w-4 accent-primary-600"
+              />
+              {opt.label}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Consultation Fee */}
+      <div>
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Fees</h4>
+        <div className="space-y-1.5">
+          {[
+            { v: 0, label: "Any" },
+            { v: 50, label: "Under $50" },
+            { v: 100, label: "Under $100" },
+            { v: 200, label: "Under $200" },
+          ].map((opt) => (
+            <label key={opt.v} className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+              <input
+                type="radio"
+                name="fee"
+                checked={maxFee === opt.v}
+                onChange={() => setMaxFee(opt.v)}
+                className="h-4 w-4 accent-primary-600"
+              />
+              {opt.label}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Rating */}
+      <div>
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Rating</h4>
+        <div className="space-y-1.5">
+          {[
+            { v: 0, label: "Any" },
+            { v: 4, label: "4.0+" },
+            { v: 4.5, label: "4.5+" },
+            { v: 4.8, label: "4.8+" },
+          ].map((opt) => (
+            <label key={opt.v} className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+              <input
+                type="radio"
+                name="rating"
+                checked={minRating === opt.v}
+                onChange={() => setMinRating(opt.v)}
+                className="h-4 w-4 accent-primary-600"
+              />
+              {opt.label}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Availability */}
+      <div>
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Availability</h4>
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={onlineOnly}
+            onChange={(e) => setOnlineOnly(e.target.checked)}
+            className="h-4 w-4 accent-green-600"
+          />
+          <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
+          Online now
+        </label>
+      </div>
+
+      {activeFilterCount > 0 && (
+        <button
+          onClick={clearFilters}
+          className="w-full rounded-lg border border-gray-200 bg-white py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+        >
+          Clear all filters
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <div className="bg-gray-50 py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Find Doctors</h1>
-          <p className="mt-1 text-gray-500">
-            Book appointments with verified, experienced doctors
-          </p>
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Find Doctors</h1>
+            <p className="mt-1 text-gray-500">
+              Book appointments with verified, experienced doctors
+            </p>
+          </div>
+          {nowTick > 0 && (
+            <div className="inline-flex items-center gap-2 self-start rounded-full bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-700">
+              <span className="relative inline-flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+              </span>
+              {onlineCount} doctor{onlineCount === 1 ? "" : "s"} online now
+            </div>
+          )}
         </div>
 
-        {/* Filters */}
-        <div className="mb-8 grid grid-cols-1 gap-3 rounded-xl bg-white p-4 shadow-sm sm:grid-cols-2 md:grid-cols-5">
-          <div className="md:col-span-2">
-            <input
-              type="text"
-              placeholder="Search by name, specialty, city..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-primary-500"
-            />
+        {/* Search bar + specialty + sort */}
+        <div className="mb-6 grid grid-cols-1 gap-3 rounded-xl bg-white p-4 shadow-sm sm:grid-cols-12">
+          <div className="sm:col-span-6">
+            <div className="relative">
+              <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search doctors, specialties, clinics"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-lg border border-gray-200 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-primary-500"
+              />
+            </div>
           </div>
           <select
             value={specialty}
             onChange={(e) => setSpecialty(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-600 outline-none focus:border-primary-500"
+            className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-600 outline-none focus:border-primary-500 sm:col-span-3"
           >
             <option value="">All Specialties</option>
             {uniqueSpecialties.map((s) => (
@@ -74,59 +279,123 @@ export default function DoctorsPage() {
             ))}
           </select>
           <select
-            value={gender}
-            onChange={(e) => setGender(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-600 outline-none focus:border-primary-500"
-          >
-            <option value="">Any Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-          </select>
-          <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-600 outline-none focus:border-primary-500"
+            className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-600 outline-none focus:border-primary-500 sm:col-span-3"
           >
-            <option value="">Sort By</option>
-            <option value="rating">Highest Rating</option>
+            <option value="online">🟢 Online First</option>
+            <option value="rating">Relevance (Rating)</option>
             <option value="experience">Most Experience</option>
             <option value="fee-low">Fee: Low to High</option>
             <option value="fee-high">Fee: High to Low</option>
           </select>
         </div>
 
-        {/* Results count */}
-        <p className="mb-4 text-sm text-gray-500">
-          {filtered.length} doctor{filtered.length !== 1 ? "s" : ""} found
-        </p>
-
-        {/* Doctor List */}
-        <div className="space-y-4">
-          {filtered.length > 0 ? (
-            filtered.map((d) => <DoctorCard key={d.id} doctor={d} />)
-          ) : (
-            <div className="rounded-xl bg-white py-16 text-center">
-              <p className="text-4xl">🔍</p>
-              <p className="mt-4 text-lg font-semibold text-gray-900">No doctors found</p>
-              <p className="mt-1 text-sm text-gray-500">Try adjusting your filters</p>
-            </div>
-          )}
+        {/* Mobile filter toggle */}
+        <div className="mb-4 flex items-center justify-between lg:hidden">
+          <p className="text-sm text-gray-500">
+            {filtered.length} doctor{filtered.length !== 1 ? "s" : ""} found
+          </p>
+          <button
+            onClick={() => setMobileFiltersOpen((v) => !v)}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            Filters {activeFilterCount > 0 && (
+              <span className="rounded-full bg-primary-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
         </div>
 
-        {/* Specialty Browse */}
-        <div className="mt-16">
-          <h2 className="mb-6 text-xl font-bold text-gray-900">Browse by Specialty</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            {specialties.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => setSpecialty(s.name)}
-                className="card flex flex-col items-center py-4 text-center"
-              >
-                <span className="text-2xl">{s.icon}</span>
-                <span className="mt-2 text-xs font-medium text-gray-700">{s.name}</span>
-              </button>
-            ))}
+        {/* Main: sidebar + results */}
+        <div className="flex flex-col gap-6 lg:flex-row">
+          {/* Sidebar (desktop) */}
+          <aside className="hidden w-64 flex-shrink-0 lg:block">
+            <div className="sticky top-6 rounded-xl bg-white p-5 shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-base font-semibold text-gray-900">Filters</h3>
+                {activeFilterCount > 0 && (
+                  <button
+                    onClick={clearFilters}
+                    className="text-xs font-medium text-primary-600 hover:text-primary-700"
+                  >
+                    Clear all
+                  </button>
+                )}
+              </div>
+              {FiltersPanel}
+            </div>
+          </aside>
+
+          {/* Mobile sidebar drawer */}
+          {mobileFiltersOpen && (
+            <div className="fixed inset-0 z-50 flex lg:hidden">
+              <div
+                className="flex-1 bg-black/40"
+                onClick={() => setMobileFiltersOpen(false)}
+              />
+              <div className="h-full w-80 max-w-[90vw] overflow-y-auto bg-white p-6 shadow-xl">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-base font-semibold text-gray-900">Filters</h3>
+                  <button
+                    onClick={() => setMobileFiltersOpen(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                    aria-label="Close filters"
+                  >
+                    ✕
+                  </button>
+                </div>
+                {FiltersPanel}
+              </div>
+            </div>
+          )}
+
+          {/* Results */}
+          <div className="min-w-0 flex-1">
+            <p className="mb-3 hidden text-sm text-gray-600 lg:block">
+              <span className="font-semibold text-gray-900">{filtered.length}</span> doctor{filtered.length !== 1 ? "s" : ""} found
+            </p>
+
+            <div className="flex flex-col gap-4">
+              {filtered.length > 0 ? (
+                filtered.map((d) => <DoctorListRow key={d.id} doctor={d} />)
+              ) : (
+                <div className="rounded-xl bg-white py-16 text-center shadow-sm">
+                  <p className="text-4xl">🔍</p>
+                  <p className="mt-4 text-lg font-semibold text-gray-900">No doctors found</p>
+                  <p className="mt-1 text-sm text-gray-500">Try adjusting your filters</p>
+                  {activeFilterCount > 0 && (
+                    <button
+                      onClick={clearFilters}
+                      className="mt-4 rounded-lg bg-primary-600 px-5 py-2 text-sm font-medium text-white hover:bg-primary-700"
+                    >
+                      Clear all filters
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Specialty Browse */}
+            <div className="mt-14">
+              <h2 className="mb-6 text-xl font-bold text-gray-900">Browse by Specialty</h2>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                {specialties.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => setSpecialty(s.name)}
+                    className="card flex flex-col items-center py-4 text-center"
+                  >
+                    <span className="text-2xl">{s.icon}</span>
+                    <span className="mt-2 text-xs font-medium text-gray-700">{s.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

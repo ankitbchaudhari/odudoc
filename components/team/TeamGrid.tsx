@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import { doctors } from "@/lib/data";
+import { useEffect, useState } from "react";
 import type { Doctor } from "@/lib/data";
 
 const socialIcons = [
@@ -13,7 +15,19 @@ interface TeamGridProps {
 }
 
 export default function TeamGrid({ limit = 6 }: TeamGridProps) {
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  useEffect(() => {
+    fetch("/api/doctors", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && Array.isArray(d.doctors)) setDoctors(d.doctors);
+      })
+      .catch(() => {});
+  }, []);
+
   const teamMembers = doctors.slice(0, limit);
+
+  if (teamMembers.length === 0) return null;
 
   return (
     <section className="py-20">

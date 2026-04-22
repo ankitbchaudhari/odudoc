@@ -12,6 +12,16 @@ import {
   getTemplateById,
 } from "@/lib/prescription-templates";
 import PrescriptionRenderer from "@/components/PrescriptionRenderer";
+import {
+  COMMON_SYMPTOMS,
+  COMMON_DIAGNOSES,
+  COMMON_MEDICINES,
+  COMMON_DOSES,
+  COMMON_FREQUENCIES,
+  COMMON_DURATIONS,
+  COMMON_INSTRUCTIONS,
+  COMMON_TESTS,
+} from "@/lib/medical-suggestions";
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                           */
@@ -61,10 +71,10 @@ function WritePrescriptionModal({
     doctorQualification: "",
     doctorRegistration: "",
     doctorSpecialty: "",
-    clinicName: "OduDoc Medical Center",
-    clinicAddress: "",
-    clinicPhone: "",
-    clinicEmail: session?.user?.email || "",
+    clinicName: "OduDoc E Medical Center",
+    clinicAddress: "8 The Green, Suite A, Dover, DE 19901, United States",
+    clinicPhone: "+1 (302) 899-2625",
+    clinicEmail: session?.user?.email || "support@odudoc.com",
     patientName: "",
     patientAge: "",
     patientGender: "Male",
@@ -87,6 +97,9 @@ function WritePrescriptionModal({
   });
 
   const [testInput, setTestInput] = useState("");
+  const [patientEmail, setPatientEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const set = (key: keyof PrescriptionData, val: string) =>
     setForm((p) => ({ ...p, [key]: val }));
@@ -128,7 +141,7 @@ function WritePrescriptionModal({
       tests: (p.tests || []).filter((_, i) => i !== idx),
     }));
 
-  const handlePrint = () => {
+  const openPrintWindow = () => {
     if (!printRef.current) return;
     const win = window.open("", "_blank");
     if (!win) return;
@@ -142,14 +155,102 @@ function WritePrescriptionModal({
     }, 400);
   };
 
+  // Save first (so the record exists for the patient / admin audit) and only
+  // take the follow-up action after a successful persist. If save fails we
+  // surface the error — avoids the "printed but nothing stored" trap.
+  const saveRx = async (notifyPatient = false): Promise<boolean> => {
+    setSaveError(null);
+    setSaving(true);
+    try {
+      const res = await fetch("/api/prescriptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patientEmail: patientEmail.trim(),
+          templateId,
+          data: form,
+          notifyPatient,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `Save failed (${res.status})`);
+      }
+      return true;
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Save failed");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveAndPrint = async () => {
+    if (await saveRx(false)) openPrintWindow();
+  };
+
+  // "Save as PDF" uses the same print window — browser's print dialog exposes
+  // a "Save as PDF" destination on every major platform (Chrome, Safari, Edge,
+  // Firefox). This just labels the button so doctors know they can pick PDF.
+  const handleSaveAsPdf = async () => {
+    if (await saveRx(false)) openPrintWindow();
+  };
+
+  const [toast, setToast] = useState<string | null>(null);
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  const handleSendToPatient = async () => {
+    if (await saveRx(true)) {
+      showToast(`Prescription emailed to ${patientEmail.trim()}`);
+    }
+  };
+
+  const handleShare = async () => {
+    const saved = await saveRx(false);
+    if (!saved) return;
+    const url = `${window.location.origin}/dashboard/prescriptions`;
+    const shareText = `Prescription from ${form.doctorName || "OduDoc"} for ${
+      form.patientName
+    } — view it in your OduDoc dashboard.`;
+    if (typeof navigator !== "undefined" && "share" in navigator) {
+      try {
+        await (navigator as Navigator & { share: (d: ShareData) => Promise<void> }).share({
+          title: "OduDoc Prescription",
+          text: shareText,
+          url,
+        });
+        return;
+      } catch {
+        // user cancelled — fall through to clipboard
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n${url}`);
+      showToast("Shareable link copied to clipboard");
+    } catch {
+      showToast("Saved — open the dashboard to share the link");
+    }
+  };
+
   const isValid =
-    form.patientName && form.diagnosis && form.medications[0]?.name;
+    form.patientName &&
+    form.diagnosis &&
+    form.medications[0]?.name &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patientEmail.trim());
 
   return (
     <div
       className="fixed inset-0 z-50 flex bg-black/50 backdrop-blur-sm"
       onClick={onClose}
     >
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm text-white shadow-2xl">
+          {toast}
+        </div>
+      )}
       <div
         className="flex h-full w-full"
         onClick={(e) => e.stopPropagation()}
@@ -179,6 +280,38 @@ function WritePrescriptionModal({
               </svg>
             </button>
           </div>
+
+          {/* Shared datalists — HTML5 native autocomplete for every matching input */}
+          <datalist id="dl-medicines">
+            {COMMON_MEDICINES.map((m) => (
+              <option key={m} value={m} />
+            ))}
+          </datalist>
+          <datalist id="dl-doses">
+            {COMMON_DOSES.map((m) => (
+              <option key={m} value={m} />
+            ))}
+          </datalist>
+          <datalist id="dl-frequencies">
+            {COMMON_FREQUENCIES.map((m) => (
+              <option key={m} value={m} />
+            ))}
+          </datalist>
+          <datalist id="dl-durations">
+            {COMMON_DURATIONS.map((m) => (
+              <option key={m} value={m} />
+            ))}
+          </datalist>
+          <datalist id="dl-instructions">
+            {COMMON_INSTRUCTIONS.map((m) => (
+              <option key={m} value={m} />
+            ))}
+          </datalist>
+          <datalist id="dl-tests">
+            {COMMON_TESTS.map((m) => (
+              <option key={m} value={m} />
+            ))}
+          </datalist>
 
           <div className="space-y-5">
             {/* Doctor Info */}
@@ -265,6 +398,19 @@ function WritePrescriptionModal({
                   value={form.patientId || ""}
                   onChange={(v) => set("patientId", v)}
                 />
+                <div className="col-span-2">
+                  <Input
+                    label="Patient Email *"
+                    value={patientEmail}
+                    onChange={setPatientEmail}
+                    placeholder="patient@example.com"
+                    required
+                  />
+                  <p className="mt-1 text-[11px] text-gray-500">
+                    Must match the email they use to sign in — this is how the
+                    patient&apos;s dashboard finds this prescription.
+                  </p>
+                </div>
               </div>
             </fieldset>
 
@@ -273,20 +419,34 @@ function WritePrescriptionModal({
               <legend className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
                 Clinical Information
               </legend>
-              <div className="space-y-3">
-                <TextArea
-                  label="Symptoms"
-                  value={form.symptoms || ""}
-                  onChange={(v) => set("symptoms", v)}
-                  rows={2}
-                />
-                <TextArea
-                  label="Diagnosis *"
-                  value={form.diagnosis}
-                  onChange={(v) => set("diagnosis", v)}
-                  rows={2}
-                  required
-                />
+              <div className="space-y-4">
+                <div>
+                  <TextArea
+                    label="Symptoms"
+                    value={form.symptoms || ""}
+                    onChange={(v) => set("symptoms", v)}
+                    rows={2}
+                  />
+                  <ChipPicker
+                    options={COMMON_SYMPTOMS}
+                    current={form.symptoms || ""}
+                    onPick={(v) => set("symptoms", appendToField(form.symptoms || "", v))}
+                  />
+                </div>
+                <div>
+                  <TextArea
+                    label="Diagnosis *"
+                    value={form.diagnosis}
+                    onChange={(v) => set("diagnosis", v)}
+                    rows={2}
+                    required
+                  />
+                  <ChipPicker
+                    options={COMMON_DIAGNOSES}
+                    current={form.diagnosis}
+                    onPick={(v) => set("diagnosis", appendToField(form.diagnosis, v))}
+                  />
+                </div>
               </div>
             </fieldset>
 
@@ -328,6 +488,7 @@ function WritePrescriptionModal({
                           value={med.name}
                           onChange={(v) => setMed(i, "name", v)}
                           placeholder="Amoxicillin 500mg"
+                          listId="dl-medicines"
                         />
                       </div>
                       <Input
@@ -335,24 +496,28 @@ function WritePrescriptionModal({
                         value={med.dose}
                         onChange={(v) => setMed(i, "dose", v)}
                         placeholder="1 tablet"
+                        listId="dl-doses"
                       />
                       <Input
                         label="Frequency"
                         value={med.frequency}
                         onChange={(v) => setMed(i, "frequency", v)}
                         placeholder="3 times daily"
+                        listId="dl-frequencies"
                       />
                       <Input
                         label="Duration"
                         value={med.duration}
                         onChange={(v) => setMed(i, "duration", v)}
                         placeholder="7 days"
+                        listId="dl-durations"
                       />
                       <Input
                         label="Instructions"
                         value={med.instructions || ""}
                         onChange={(v) => setMed(i, "instructions", v)}
                         placeholder="After meals"
+                        listId="dl-instructions"
                       />
                     </div>
                   </div>
@@ -391,6 +556,7 @@ function WritePrescriptionModal({
                   onChange={(e) => setTestInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTest())}
                   placeholder="CBC, X-Ray..."
+                  list="dl-tests"
                   className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                 />
                 <button
@@ -429,16 +595,56 @@ function WritePrescriptionModal({
         {/* Right: Live Preview */}
         <div className="hidden border-l border-gray-200 bg-gray-100 lg:flex lg:w-1/2 lg:flex-col">
           <div className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
-            <h3 className="text-sm font-semibold text-gray-700">
-              Live Preview
-            </h3>
-            <button
-              onClick={handlePrint}
-              disabled={!isValid}
-              className="btn-primary !py-2 !px-4 !text-xs disabled:opacity-40"
-            >
-              Print / Save PDF
-            </button>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700">
+                Live Preview
+              </h3>
+              {saveError && (
+                <p className="mt-0.5 text-[11px] text-red-600">{saveError}</p>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={handleSaveAsPdf}
+                disabled={!isValid || saving}
+                className="flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-40"
+                title="Save as PDF (choose 'Save as PDF' as the destination in the print dialog)"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                PDF
+              </button>
+              <button
+                onClick={handleShare}
+                disabled={!isValid || saving}
+                className="flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-40"
+                title="Share a link to this prescription"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                Share
+              </button>
+              <button
+                onClick={handleSendToPatient}
+                disabled={!isValid || saving}
+                className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-40"
+                title="Save and email the prescription to the patient"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Email
+              </button>
+              <button
+                onClick={handleSaveAndPrint}
+                disabled={!isValid || saving}
+                className="btn-primary !py-2 !px-4 !text-xs disabled:opacity-40"
+              >
+                {saving ? "Saving…" : "Save & Print"}
+              </button>
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto p-6">
             <div
@@ -465,12 +671,14 @@ function Input({
   onChange,
   placeholder,
   required,
+  listId,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   required?: boolean;
+  listId?: string;
 }) {
   return (
     <div>
@@ -482,10 +690,62 @@ function Input({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        list={listId}
         className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
       />
     </div>
   );
+}
+
+/**
+ * Clickable suggestion chips rendered below a free-text field. Tapping a chip
+ * appends that term to the field (comma-separated), so doctors can build up a
+ * symptom/diagnosis list without typing each one. Chips already present in
+ * the field are hidden to avoid duplicate adds.
+ */
+function ChipPicker({
+  options,
+  current,
+  onPick,
+  limit = 12,
+}: {
+  options: string[];
+  current: string;
+  onPick: (v: string) => void;
+  limit?: number;
+}) {
+  const picked = current
+    .toLowerCase()
+    .split(/[,;\n]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const available = options
+    .filter((o) => !picked.includes(o.toLowerCase()))
+    .slice(0, limit);
+  if (available.length === 0) return null;
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5">
+      {available.map((opt) => (
+        <button
+          key={opt}
+          type="button"
+          onClick={() => onPick(opt)}
+          className="rounded-full border border-gray-200 bg-white px-2.5 py-0.5 text-[11px] text-gray-600 hover:border-primary-400 hover:bg-primary-50 hover:text-primary-700"
+        >
+          + {opt}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function appendToField(current: string, value: string): string {
+  const trimmed = current.trim();
+  if (!trimmed) return value;
+  // Separate with a comma + space; if the current text already ends with a
+  // newline or comma, just append.
+  if (/[,\n]\s*$/.test(current)) return current + value;
+  return `${trimmed}, ${value}`;
 }
 
 function TextArea({
@@ -537,94 +797,102 @@ export default function DoctorPrescriptionsPage() {
     : null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/40 to-purple-50/30">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+        {/* Hero Header */}
+        <div className="relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-br from-primary-600 via-indigo-600 to-purple-600 p-8 text-white shadow-xl">
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
+          <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-fuchsia-300/20 blur-2xl" />
+          <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <Link
                 href="/dashboard/doctor"
-                className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                className="rounded-lg bg-white/15 p-2 text-white backdrop-blur-sm hover:bg-white/25"
               >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </Link>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Prescription Templates
-                </h1>
-                <p className="mt-0.5 text-sm text-gray-500">
-                  Choose a design, then write prescriptions with live preview
+                <p className="text-sm font-medium text-white/80">Prescription Designs ✨</p>
+                <h1 className="mt-1 text-3xl font-bold md:text-4xl">Choose a Template</h1>
+                <p className="mt-1 max-w-lg text-sm text-white/80">
+                  Pick a design you love — your prescriptions will use it
+                  automatically with a live preview as you type.
                 </p>
               </div>
             </div>
-          </div>
-          <button
-            onClick={() => setWriting(true)}
-            className="btn-primary !py-2.5 !text-sm flex items-center gap-2"
-          >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+            <button
+              onClick={() => setWriting(true)}
+              className="flex items-center gap-2 self-start rounded-xl bg-white px-5 py-3 text-sm font-semibold text-primary-700 shadow-md transition-transform hover:-translate-y-0.5 hover:shadow-lg sm:self-auto"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-              />
-            </svg>
-            Write Prescription
-          </button>
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              Write Prescription
+            </button>
+          </div>
         </div>
 
         {/* Active template banner */}
-        <div className="mb-6 flex items-center gap-3 rounded-xl border border-primary-200 bg-primary-50 px-5 py-3">
-          <div
-            className="h-4 w-4 rounded-full"
-            style={{
-              backgroundColor:
-                PRESCRIPTION_TEMPLATES.find((t) => t.id === selectedId)
-                  ?.accentColor || "#0E7490",
-            }}
-          />
-          <p className="text-sm text-primary-800">
-            <span className="font-semibold">Active template:</span>{" "}
-            {PRESCRIPTION_TEMPLATES.find((t) => t.id === selectedId)?.name ||
-              "Classic Blue"}
-          </p>
-        </div>
+        {(() => {
+          const active = PRESCRIPTION_TEMPLATES.find((t) => t.id === selectedId) || PRESCRIPTION_TEMPLATES[0];
+          return (
+            <div
+              className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 bg-white p-4 shadow-sm"
+              style={{ borderColor: active.accentColor }}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-md"
+                  style={{ background: active.accentColor }}
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Active template</p>
+                  <p className="text-base font-bold text-gray-900">{active.name}</p>
+                </div>
+              </div>
+              <span className="rounded-full bg-gradient-to-r from-emerald-100 to-teal-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                {PRESCRIPTION_TEMPLATES.length} designs available
+              </span>
+            </div>
+          );
+        })()}
 
         {/* Style Filters */}
-        <div className="mb-6 flex flex-wrap gap-2">
+        <div className="mb-6 flex flex-wrap gap-2 rounded-2xl bg-white p-2 shadow-sm ring-1 ring-gray-100">
           {["all", "classic", "modern", "minimal", "colorful", "professional"].map(
-            (s) => (
-              <button
-                key={s}
-                onClick={() => setFilterStyle(s)}
-                className={`rounded-lg px-4 py-2 text-sm font-medium capitalize transition-colors ${
-                  filterStyle === s
-                    ? "bg-primary-600 text-white"
-                    : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                {s === "all" ? "All Styles" : STYLE_LABELS[s] || s}
-              </button>
-            )
+            (s) => {
+              const count =
+                s === "all"
+                  ? PRESCRIPTION_TEMPLATES.length
+                  : PRESCRIPTION_TEMPLATES.filter((t) => t.style === s).length;
+              const active = filterStyle === s;
+              return (
+                <button
+                  key={s}
+                  onClick={() => setFilterStyle(s)}
+                  className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold capitalize transition-all ${
+                    active
+                      ? "bg-gradient-to-r from-primary-600 to-indigo-600 text-white shadow-md"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {s === "all" ? "All Styles" : STYLE_LABELS[s] || s}
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] ${
+                      active ? "bg-white/25" : "bg-gray-100 text-gray-500"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            }
           )}
         </div>
 
@@ -742,14 +1010,28 @@ function TemplateCard({
 }) {
   return (
     <div
-      className={`group relative overflow-hidden rounded-xl border-2 bg-white shadow-sm transition-all hover:shadow-md ${
-        isActive ? "border-primary-500 ring-2 ring-primary-500/20" : "border-gray-100"
+      className={`group relative overflow-hidden rounded-2xl border-2 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
+        isActive
+          ? "scale-[1.01] shadow-lg"
+          : "border-gray-100"
       }`}
+      style={
+        isActive
+          ? {
+              borderColor: tpl.accentColor,
+              boxShadow: `0 10px 25px -5px ${tpl.accentColor}33, 0 8px 10px -6px ${tpl.accentColor}22`,
+            }
+          : undefined
+      }
     >
+      {/* Active check badge */}
       {isActive && (
-        <div className="absolute right-3 top-3 z-10 rounded-full bg-primary-600 p-1">
+        <div
+          className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full text-white shadow-lg ring-2 ring-white"
+          style={{ backgroundColor: tpl.accentColor }}
+        >
           <svg
-            className="h-3.5 w-3.5 text-white"
+            className="h-4 w-4"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -764,10 +1046,20 @@ function TemplateCard({
         </div>
       )}
 
+      {/* Accent top bar */}
+      <div
+        className="h-1.5 w-full"
+        style={{
+          background: `linear-gradient(90deg, ${tpl.accentColor}, ${tpl.accentColor}80)`,
+        }}
+      />
+
       {/* Mini Preview */}
       <div
         className="relative h-48 overflow-hidden"
-        style={{ backgroundColor: tpl.previewBg }}
+        style={{
+          background: `linear-gradient(135deg, ${tpl.previewBg} 0%, ${tpl.accentColor}15 100%)`,
+        }}
       >
         <div
           className="absolute inset-0 flex items-center justify-center"
@@ -781,19 +1073,20 @@ function TemplateCard({
           </div>
         </div>
         {/* Hover overlay */}
-        <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-all group-hover:bg-black/40 group-hover:opacity-100">
+        <div className="absolute inset-0 flex items-center justify-center gap-2 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 transition-all duration-300 group-hover:opacity-100">
           <button
             onClick={onPreview}
-            className="rounded-lg bg-white px-4 py-2 text-xs font-semibold text-gray-900 shadow-lg hover:bg-gray-50"
+            className="rounded-lg bg-white/95 px-4 py-2 text-xs font-semibold text-gray-900 shadow-lg backdrop-blur hover:bg-white"
           >
-            Preview
+            👁 Preview
           </button>
           {!isActive && (
             <button
               onClick={onSelect}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-xs font-semibold text-white shadow-lg hover:bg-primary-700"
+              className="rounded-lg px-4 py-2 text-xs font-semibold text-white shadow-lg transition-transform hover:scale-105"
+              style={{ backgroundColor: tpl.accentColor }}
             >
-              Use This
+              ✓ Use This
             </button>
           )}
         </div>
@@ -801,17 +1094,28 @@ function TemplateCard({
 
       {/* Info */}
       <div className="p-4">
-        <div className="mb-1 flex items-center gap-2">
+        <div className="mb-1.5 flex items-center gap-2">
           <div
-            className="h-3 w-3 rounded-full"
-            style={{ backgroundColor: tpl.accentColor }}
+            className="h-3 w-3 flex-shrink-0 rounded-full ring-2 ring-offset-1"
+            style={{
+              backgroundColor: tpl.accentColor,
+              boxShadow: `0 0 0 2px ${tpl.accentColor}22`,
+            }}
           />
-          <h3 className="text-sm font-bold text-gray-900">{tpl.name}</h3>
-          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium capitalize text-gray-500">
+          <h3 className="truncate text-sm font-bold text-gray-900">{tpl.name}</h3>
+          <span
+            className="ml-auto flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize"
+            style={{
+              backgroundColor: `${tpl.accentColor}15`,
+              color: tpl.accentColor,
+            }}
+          >
             {tpl.style}
           </span>
         </div>
-        <p className="text-xs text-gray-500 line-clamp-2">{tpl.description}</p>
+        <p className="text-xs leading-relaxed text-gray-500 line-clamp-2">
+          {tpl.description}
+        </p>
       </div>
     </div>
   );

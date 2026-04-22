@@ -1,0 +1,71 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import {
+  getWithdrawal,
+  updateWithdrawalStatus,
+  type WithdrawalStatus,
+} from "@/lib/withdrawals-store";
+import { sendWithdrawalStatusEmail } from "@/lib/email";
+
+import { log } from "@/lib/log";
+export const runtime = "nodejs";
+
+// PATCH /api/withdrawals/:id
+// Admin only. Moves a request between statuses:
+//   pending → approved / rejected
+//   approved → paid (after the transfer actually goes out)
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSession(authOptions);
+  const user = session?.user as { email?: string; role?: string } | undefined;
+  if (!user?.email) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (user.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { id } = await params;
+  const existing = getWithdrawal(id);
+  if (!existing) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  let body: { status?: WithdrawalStatus; adminNote?: string };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const status = body.status;
+  const allowed: WithdrawalStatus[] = ["pending", "approved", "rejected", "paid"];
+  if (!status || !allowed.includes(status)) {
+    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+  }
+
+  const updated = updateWithdrawalStatus(id, status, body.adminNote);
+
+  // Notify the doctor whenever the status moves to a meaningful terminal-ish
+  // state. "pending" transitions (e.g. an admin reopening a request) don't
+  // warrant an email.
+  if (
+    updated &&
+    (status === "approved" || status === "rejected" || status === "paid")
+  ) {
+    sendWithdrawalStatusEmail({
+      to: updated.doctorEmail,
+      doctorName: updated.doctorName,
+      amount: updated.amount,
+      status,
+      adminNote: updated.adminNote,
+    }).catch((err) =>
+      log.error("[withdrawals] status email failed:", err)
+    );
+  }
+
+  return NextResponse.json({ withdrawal: updated });
+}

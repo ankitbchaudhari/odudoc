@@ -2,11 +2,31 @@ import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { createDailyRoom, createDailyToken, generateRoomName, isDailyConfigured } from "@/lib/daily";
 import { createRoom, getRoom, getAllRooms } from "@/lib/rooms-store";
+import { consumeConsultToken } from "@/lib/consult-otp";
 
+import { log } from "@/lib/log";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { doctorId, doctorName, patientName, specialty, fee, bookingId } = body;
+    const { doctorId, doctorName, specialty, fee, bookingId, consultToken } = body;
+    let { patientName } = body;
+    let patientPhone: string | undefined;
+
+    // Guest video-consult flow: client sends the short-lived OTP token it
+    // got from /api/consult/otp/verify. We consume it here and take the
+    // trusted name + phone from the server-side record, so a random caller
+    // can't just POST arbitrary patientName into /api/rooms.
+    if (consultToken) {
+      const rec = consumeConsultToken(consultToken);
+      if (!rec) {
+        return NextResponse.json(
+          { error: "Your verification has expired. Please verify your phone again." },
+          { status: 401 },
+        );
+      }
+      patientName = `${rec.firstName} ${rec.lastName}`.trim();
+      patientPhone = rec.phone;
+    }
 
     if (!doctorId || !patientName) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -43,6 +63,7 @@ export async function POST(req: NextRequest) {
       doctorId,
       doctorName: doctorName || "Doctor",
       patientName,
+      patientPhone,
       bookingId: bId,
       specialty: specialty || "General",
       fee: fee || 0,
@@ -59,7 +80,7 @@ export async function POST(req: NextRequest) {
       demoMode,
     });
   } catch (err) {
-    console.error("Error creating room:", err);
+    log.error("Error creating room:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

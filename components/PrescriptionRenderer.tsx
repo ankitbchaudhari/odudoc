@@ -39,6 +39,22 @@ export default function PrescriptionRenderer({
       return <DentalClean color={color} data={data} />;
     case "telehealth-digital":
       return <TelehealthDigital color={color} data={data} />;
+    case "sunset-gradient":
+      return <SunsetGradient color={color} data={data} />;
+    case "midnight-navy":
+      return <MidnightNavy color={color} data={data} />;
+    case "soft-pastel":
+      return <SoftPastel color={color} data={data} />;
+    case "clinical-grid":
+      return <ClinicalGrid color={color} data={data} />;
+    case "bold-contrast":
+      return <BoldContrast color={color} data={data} />;
+    case "eco-green":
+      return <EcoGreen color={color} data={data} />;
+    case "crimson-red":
+      return <CrimsonRed color={color} data={data} />;
+    case "sky-breeze":
+      return <SkyBreeze color={color} data={data} />;
     default:
       return <ClassicBlue color={color} data={data} />;
   }
@@ -102,6 +118,30 @@ function PatientRow({ data }: { data: PrescriptionData }) {
   );
 }
 
+// Decorative brand mark — small circular Rx badge tinted with the template's
+// accent color. Replaces the old bitmap logo so prescriptions stay on-brand
+// without a raster asset.
+function BrandMark({ color, size = 44, inverted = false }: { color: string; size?: number; inverted?: boolean }) {
+  const bg = inverted ? "rgba(255,255,255,0.15)" : color;
+  const fg = inverted ? "#ffffff" : "#ffffff";
+  const ring = inverted ? "rgba(255,255,255,0.35)" : `${color}33`;
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        background: bg,
+        color: fg,
+        boxShadow: `0 0 0 4px ${ring}`,
+        fontFamily: "Georgia, serif",
+      }}
+      className="flex items-center justify-center rounded-full font-bold"
+    >
+      <span style={{ fontSize: size * 0.5, lineHeight: 1 }}>℞</span>
+    </div>
+  );
+}
+
 function Signature({ data, color }: { data: PrescriptionData; color: string }) {
   return (
     <div className="mt-8 text-right">
@@ -120,12 +160,14 @@ function ClassicBlue({ color, data }: Props) {
   return (
     <div className="bg-white p-8 text-gray-900" style={{ fontFamily: "Georgia, serif" }}>
       <header className="border-b-2 pb-4" style={{ borderColor: color }}>
-        <div className="flex items-end justify-between">
-          <div>
-            <img src="/images/logo-full.png" alt="OduDoc" style={{ height: '32px', marginBottom: '8px' }} />
-            <h1 className="text-2xl font-bold" style={{ color }}>{data.clinicName}</h1>
-            <p className="text-xs text-gray-500">{data.clinicAddress}</p>
-            <p className="text-xs text-gray-500">{data.clinicPhone} · {data.clinicEmail}</p>
+        <div className="flex items-end justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <BrandMark color={color} size={52} />
+            <div>
+              <h1 className="text-2xl font-bold leading-tight" style={{ color }}>{data.clinicName}</h1>
+              <p className="text-xs text-gray-500">{data.clinicAddress}</p>
+              <p className="text-xs text-gray-500">{data.clinicPhone} · {data.clinicEmail}</p>
+            </div>
           </div>
           <div className="text-right">
             <p className="text-lg font-bold">{data.doctorName}</p>
@@ -154,11 +196,13 @@ function ClassicBlue({ color, data }: Props) {
 function ModernMinimal({ color, data }: Props) {
   return (
     <div className="bg-white p-10 text-gray-900" style={{ fontFamily: "Inter, sans-serif" }}>
-      <header className="mb-8">
-        <img src="/images/logo-full.png" alt="OduDoc" style={{ height: '32px', marginBottom: '8px' }} />
-        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">Prescription</p>
-        <h1 className="mt-1 text-3xl font-bold">{data.clinicName}</h1>
-        <p className="mt-1 text-sm text-gray-500">{data.doctorName} · {data.doctorSpecialty}</p>
+      <header className="mb-8 flex items-center gap-4">
+        <BrandMark color={color} size={56} />
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">Prescription</p>
+          <h1 className="mt-1 text-3xl font-bold leading-tight">{data.clinicName}</h1>
+          <p className="mt-1 text-sm text-gray-500">{data.doctorName} · {data.doctorSpecialty}</p>
+        </div>
       </header>
       <div className="mb-8 border-y border-gray-900 py-4"><PatientRow data={data} /></div>
       {data.diagnosis && (
@@ -185,7 +229,6 @@ function TealGradient({ color, data }: Props) {
       <header className="p-6 text-white" style={{ background: `linear-gradient(135deg, ${color}, #06B6D4)` }}>
         <div className="flex items-center justify-between">
           <div>
-            <img src="/images/logo-full.png" alt="OduDoc" style={{ height: '32px', marginBottom: '8px', filter: 'brightness(0) invert(1)' }} />
             <h1 className="text-2xl font-bold">{data.clinicName}</h1>
             <p className="mt-1 text-sm opacity-90">{data.clinicAddress}</p>
           </div>
@@ -214,10 +257,12 @@ function CorporateNavy({ color, data }: Props) {
   return (
     <div className="bg-white text-gray-900">
       <header className="flex items-center justify-between p-6 text-white" style={{ background: color }}>
-        <div>
-          <img src="/images/logo-full.png" alt="OduDoc" style={{ height: '32px', marginBottom: '8px', filter: 'brightness(0) invert(1)' }} />
-          <h1 className="text-xl font-bold uppercase tracking-wider">{data.clinicName}</h1>
-          <p className="text-xs opacity-80">{data.clinicAddress}</p>
+        <div className="flex items-center gap-4">
+          <BrandMark color={color} size={48} inverted />
+          <div>
+            <h1 className="text-xl font-bold uppercase tracking-wider">{data.clinicName}</h1>
+            <p className="text-xs opacity-80">{data.clinicAddress}</p>
+          </div>
         </div>
         <div className="text-right">
           <p className="font-bold">{data.doctorName}</p>
@@ -340,10 +385,12 @@ function DarkElegant({ color, data }: Props) {
   return (
     <div className="bg-slate-900 p-8 text-white">
       <header className="mb-6 flex items-center justify-between border-b border-slate-700 pb-4">
-        <div>
-          <img src="/images/logo-full.png" alt="OduDoc" style={{ height: '32px', marginBottom: '8px', filter: 'brightness(0) invert(1)' }} />
-          <h1 className="text-xl font-bold">{data.clinicName}</h1>
-          <p className="text-xs text-slate-400">{data.clinicAddress}</p>
+        <div className="flex items-center gap-4">
+          <BrandMark color={color} size={48} inverted />
+          <div>
+            <h1 className="text-xl font-bold">{data.clinicName}</h1>
+            <p className="text-xs text-slate-400">{data.clinicAddress}</p>
+          </div>
         </div>
         <div className="text-right">
           <p className="font-bold">{data.doctorName}</p>
@@ -555,6 +602,275 @@ function TelehealthDigital({ color, data }: Props) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ============ 16. Sunset Gradient ============
+function SunsetGradient({ color, data }: Props) {
+  return (
+    <div className="bg-white text-gray-900">
+      <header className="p-6 text-white" style={{ background: `linear-gradient(135deg, ${color}, #EC4899)` }}>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <BrandMark color={color} size={52} inverted />
+            <div>
+              <h1 className="text-2xl font-bold leading-tight">{data.clinicName}</h1>
+              <p className="mt-1 text-sm opacity-90">{data.clinicAddress}</p>
+              <p className="text-xs opacity-80">{data.clinicPhone} · {data.clinicEmail}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="font-bold">{data.doctorName}</p>
+            <p className="text-xs opacity-80">{data.doctorSpecialty}</p>
+          </div>
+        </div>
+      </header>
+      <div className="p-8">
+        <div className="rounded-xl bg-gradient-to-br from-orange-50 to-rose-50 p-4"><PatientRow data={data} /></div>
+        {data.diagnosis && <p className="my-4 rounded-lg border-l-4 p-3 text-sm" style={{ borderColor: color, background: "#FFF7ED" }}><b>Dx: </b>{data.diagnosis}</p>}
+        <MedTable data={data} color={color} />
+        {data.advice && <p className="mt-4 text-sm text-gray-700"><b>Advice: </b>{data.advice}</p>}
+        <Signature data={data} color={color} />
+      </div>
+    </div>
+  );
+}
+
+// ============ 17. Midnight Navy ============
+function MidnightNavy({ color, data }: Props) {
+  return (
+    <div className="bg-white text-gray-900">
+      <header className="relative overflow-hidden p-8 text-white" style={{ background: color }}>
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full" style={{ background: "#06B6D4", opacity: 0.15 }} />
+        <div className="relative flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <BrandMark color="#06B6D4" size={52} inverted />
+            <div>
+              <p className="text-xs uppercase tracking-widest text-cyan-200">Medical Prescription</p>
+              <h1 className="mt-1 text-2xl font-bold leading-tight">{data.clinicName}</h1>
+              <p className="text-xs opacity-80">{data.clinicAddress}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="font-bold">{data.doctorName}</p>
+            <p className="text-xs text-cyan-200">{data.doctorQualification}</p>
+            <p className="text-xs opacity-80">{data.doctorRegistration}</p>
+          </div>
+        </div>
+      </header>
+      <div className="h-1" style={{ background: "linear-gradient(90deg, #06B6D4, #0F172A)" }} />
+      <div className="p-8">
+        <div className="mb-5"><PatientRow data={data} /></div>
+        {data.diagnosis && <p className="mb-4 text-sm"><b style={{ color }}>Diagnosis:</b> {data.diagnosis}</p>}
+        <MedTable data={data} color={color} />
+        {data.advice && <p className="mt-4 text-sm"><b style={{ color }}>Advice:</b> {data.advice}</p>}
+        {data.followUp && <p className="mt-2 text-sm"><b style={{ color }}>Follow-up:</b> {data.followUp}</p>}
+        <Signature data={data} color={color} />
+      </div>
+    </div>
+  );
+}
+
+// ============ 18. Soft Pastel ============
+function SoftPastel({ color, data }: Props) {
+  return (
+    <div className="bg-white p-8 text-gray-900" style={{ fontFamily: "Inter, sans-serif" }}>
+      <header className="mb-6 rounded-3xl p-6" style={{ background: "linear-gradient(135deg, #F3E8FF, #FCE7F3)" }}>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <BrandMark color={color} size={52} />
+            <div>
+              <h1 className="text-2xl font-bold leading-tight" style={{ color: "#6B21A8" }}>{data.clinicName}</h1>
+              <p className="text-xs text-gray-600">{data.clinicAddress}</p>
+              <p className="text-xs text-gray-500">{data.clinicPhone} · {data.clinicEmail}</p>
+            </div>
+          </div>
+          <div className="rounded-2xl bg-white/70 px-4 py-3 text-right backdrop-blur-sm">
+            <p className="font-bold" style={{ color: "#6B21A8" }}>{data.doctorName}</p>
+            <p className="text-xs text-gray-600">{data.doctorSpecialty}</p>
+          </div>
+        </div>
+      </header>
+      <div className="mb-5 rounded-2xl border border-purple-100 p-4"><PatientRow data={data} /></div>
+      {data.diagnosis && <p className="mb-4 rounded-xl bg-purple-50 p-3 text-sm"><b style={{ color }}>Diagnosis:</b> {data.diagnosis}</p>}
+      <MedTable data={data} color={color} />
+      {data.advice && <p className="mt-4 text-sm text-gray-700">{data.advice}</p>}
+      <Signature data={data} color={color} />
+    </div>
+  );
+}
+
+// ============ 19. Clinical Grid ============
+function ClinicalGrid({ color, data }: Props) {
+  return (
+    <div className="bg-white p-6 text-gray-900" style={{ fontFamily: "Courier New, monospace" }}>
+      <header className="mb-4 border-2 p-4" style={{ borderColor: color }}>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center gap-3">
+            <BrandMark color={color} size={44} />
+            <div>
+              <h1 className="text-lg font-bold" style={{ color }}>{data.clinicName}</h1>
+              <p className="text-[11px] text-gray-600">{data.clinicAddress}</p>
+              <p className="text-[11px] text-gray-500">{data.clinicPhone}</p>
+            </div>
+          </div>
+          <div className="border-l-2 pl-4 text-right" style={{ borderColor: color }}>
+            <p className="text-sm font-bold">{data.doctorName}</p>
+            <p className="text-[11px]">{data.doctorQualification}</p>
+            <p className="text-[11px]">{data.doctorSpecialty}</p>
+            <p className="text-[11px] text-gray-500">{data.doctorRegistration}</p>
+          </div>
+        </div>
+      </header>
+      <div className="mb-4 grid grid-cols-4 border-2 text-sm" style={{ borderColor: color }}>
+        <GridCell label="PATIENT" value={data.patientName} color={color} />
+        <GridCell label="AGE/SEX" value={`${data.patientAge} / ${data.patientGender}`} color={color} />
+        <GridCell label="ID" value={data.patientId || "-"} color={color} />
+        <GridCell label="DATE" value={data.date} color={color} />
+      </div>
+      {data.diagnosis && <div className="mb-3 border-l-4 bg-gray-50 p-2 text-sm" style={{ borderColor: color }}><b>DIAGNOSIS:</b> {data.diagnosis}</div>}
+      <div className="border" style={{ borderColor: color }}>
+        <MedTable data={data} color={color} />
+      </div>
+      {data.advice && <p className="mt-3 text-xs"><b>ADVICE:</b> {data.advice}</p>}
+      {data.followUp && <p className="mt-1 text-xs"><b>FOLLOW-UP:</b> {data.followUp}</p>}
+      <Signature data={data} color={color} />
+    </div>
+  );
+}
+
+function GridCell({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <div className="border-r p-2 last:border-r-0" style={{ borderColor: color }}>
+      <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color }}>{label}</p>
+      <p className="mt-0.5 font-semibold">{value || "-"}</p>
+    </div>
+  );
+}
+
+// ============ 20. Bold Contrast ============
+function BoldContrast({ color, data }: Props) {
+  return (
+    <div className="bg-white p-8 text-gray-900" style={{ fontFamily: "Impact, Arial Black, sans-serif" }}>
+      <header className="mb-6">
+        <div className="flex items-center gap-4">
+          <div className="h-16 w-2" style={{ background: color }} />
+          <div>
+            <h1 className="text-4xl font-black uppercase tracking-tight" style={{ color }}>{data.clinicName}</h1>
+            <p className="text-xs text-gray-600" style={{ fontFamily: "Arial, sans-serif" }}>{data.clinicAddress}</p>
+            <p className="text-xs text-gray-500" style={{ fontFamily: "Arial, sans-serif" }}>{data.clinicPhone} · {data.clinicEmail}</p>
+          </div>
+        </div>
+        <div className="mt-3 flex items-center justify-between border-y-4 py-3" style={{ borderColor: color }}>
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Prescription</p>
+          <p className="text-sm font-bold">{data.doctorName}</p>
+        </div>
+      </header>
+      <div className="mb-5" style={{ fontFamily: "Arial, sans-serif" }}><PatientRow data={data} /></div>
+      {data.diagnosis && <p className="mb-4 bg-gray-900 p-3 text-sm text-white" style={{ fontFamily: "Arial, sans-serif" }}><b>DX: </b>{data.diagnosis}</p>}
+      <div style={{ fontFamily: "Arial, sans-serif" }}>
+        <MedTable data={data} color={color} />
+      </div>
+      {data.advice && <p className="mt-4 text-sm" style={{ fontFamily: "Arial, sans-serif" }}>{data.advice}</p>}
+      <Signature data={data} color={color} />
+    </div>
+  );
+}
+
+// ============ 21. Eco Green ============
+function EcoGreen({ color, data }: Props) {
+  return (
+    <div className="bg-white text-gray-900" style={{ fontFamily: "Georgia, serif" }}>
+      <header className="relative overflow-hidden p-8" style={{ background: "linear-gradient(135deg, #ECFCCB, #D9F99D)" }}>
+        <div className="absolute -right-4 top-2 text-[120px] opacity-20">🌿</div>
+        <div className="relative flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <BrandMark color={color} size={52} />
+            <div>
+              <h1 className="text-2xl font-bold leading-tight" style={{ color: "#3F6212" }}>{data.clinicName}</h1>
+              <p className="text-xs text-gray-700">{data.clinicAddress}</p>
+              <p className="text-xs text-gray-600">{data.clinicPhone} · {data.clinicEmail}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="font-bold" style={{ color: "#3F6212" }}>{data.doctorName}</p>
+            <p className="text-xs text-gray-700">{data.doctorSpecialty}</p>
+          </div>
+        </div>
+      </header>
+      <div className="h-1" style={{ background: color }} />
+      <div className="p-8">
+        <div className="mb-5 rounded-xl bg-lime-50 p-4"><PatientRow data={data} /></div>
+        {data.diagnosis && <p className="mb-4 text-sm"><b style={{ color }}>Diagnosis:</b> {data.diagnosis}</p>}
+        <MedTable data={data} color={color} />
+        {data.advice && <p className="mt-4 text-sm italic">🍃 {data.advice}</p>}
+        <Signature data={data} color={color} />
+      </div>
+    </div>
+  );
+}
+
+// ============ 22. Crimson Red ============
+function CrimsonRed({ color, data }: Props) {
+  return (
+    <div className="bg-white text-gray-900" style={{ fontFamily: "Georgia, serif" }}>
+      <header className="p-6 text-white" style={{ background: color }}>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <BrandMark color="#FBBF24" size={52} />
+            <div>
+              <h1 className="text-2xl font-bold leading-tight">{data.clinicName}</h1>
+              <p className="text-xs opacity-90">{data.clinicAddress}</p>
+              <p className="text-xs opacity-80">{data.clinicPhone} · {data.clinicEmail}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="font-bold">{data.doctorName}</p>
+            <p className="text-xs opacity-80">{data.doctorQualification}</p>
+            <p className="text-xs opacity-80">{data.doctorRegistration}</p>
+          </div>
+        </div>
+      </header>
+      <div className="h-1" style={{ background: "#FBBF24" }} />
+      <div className="p-8">
+        <div className="mb-5 border-y-2 py-3" style={{ borderColor: color }}><PatientRow data={data} /></div>
+        {data.diagnosis && <p className="mb-4 text-sm"><b style={{ color }}>Diagnosis:</b> {data.diagnosis}</p>}
+        <MedTable data={data} color={color} />
+        {data.advice && <p className="mt-4 text-sm">{data.advice}</p>}
+        <Signature data={data} color={color} />
+      </div>
+    </div>
+  );
+}
+
+// ============ 23. Sky Breeze ============
+function SkyBreeze({ color, data }: Props) {
+  return (
+    <div className="bg-white p-8 text-gray-900" style={{ fontFamily: "Inter, sans-serif" }}>
+      <header className="mb-6 rounded-3xl bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-50 p-6 shadow-sm">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <BrandMark color={color} size={52} />
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-sky-600">Prescription</p>
+              <h1 className="text-2xl font-bold leading-tight text-sky-900">{data.clinicName}</h1>
+              <p className="text-xs text-gray-600">{data.clinicAddress}</p>
+              <p className="text-xs text-gray-500">{data.clinicPhone} · {data.clinicEmail}</p>
+            </div>
+          </div>
+          <div className="rounded-2xl bg-white/80 p-3 text-right shadow backdrop-blur-sm">
+            <p className="font-bold text-sky-900">{data.doctorName}</p>
+            <p className="text-xs text-gray-600">{data.doctorSpecialty}</p>
+            <p className="text-[11px] text-gray-500">{data.doctorRegistration}</p>
+          </div>
+        </div>
+      </header>
+      <div className="mb-5 rounded-2xl bg-sky-50/50 p-4"><PatientRow data={data} /></div>
+      {data.diagnosis && <p className="mb-4 rounded-xl border-l-4 bg-sky-50 p-3 text-sm" style={{ borderColor: color }}><b>Diagnosis:</b> {data.diagnosis}</p>}
+      <MedTable data={data} color={color} />
+      {data.advice && <p className="mt-4 text-sm text-gray-700">{data.advice}</p>}
+      <Signature data={data} color={color} />
     </div>
   );
 }

@@ -3,11 +3,32 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
+import PrescriptionUploader from "@/components/PrescriptionUploader";
+
+interface UploadedRx {
+  filename: string;
+  previewUrl?: string | null;
+  originalName: string;
+}
 
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, subtotal, totalItems, clearCart } = useCart();
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
+  const [rxUploads, setRxUploads] = useState<Record<string, UploadedRx>>({});
+
+  const setRx = (productId: string, rx: UploadedRx | null) => {
+    setRxUploads((prev) => {
+      const next = { ...prev };
+      if (rx) next[productId] = rx;
+      else delete next[productId];
+      return next;
+    });
+  };
+
+  const rxItems = items.filter(({ product }) => product.prescriptionRequired);
+  const missingRx = rxItems.filter(({ product }) => !rxUploads[product.id]);
+  const canCheckout = missingRx.length === 0;
 
   const shipping = subtotal > 50 ? 0 : 5.99;
   const tax = subtotal * 0.08;
@@ -80,9 +101,17 @@ export default function CartPage() {
                         </Link>
                         <p className="mt-0.5 text-xs text-gray-400">{product.category}</p>
                         {product.prescriptionRequired && (
-                          <span className="mt-1 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
-                            Rx Required
-                          </span>
+                          <>
+                            <span className="mt-1 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                              Rx Required
+                            </span>
+                            <PrescriptionUploader
+                              productId={product.id}
+                              productName={product.name}
+                              value={rxUploads[product.id] || null}
+                              onChange={setRx}
+                            />
+                          </>
                         )}
                       </div>
                       <button
@@ -208,7 +237,15 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <button className="btn-primary mt-6 w-full">
+              {!canCheckout && (
+                <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                  Upload a prescription for {missingRx.length} item{missingRx.length === 1 ? "" : "s"} before checkout.
+                </p>
+              )}
+              <button
+                disabled={!canCheckout}
+                className="btn-primary mt-6 w-full disabled:cursor-not-allowed disabled:opacity-50"
+              >
                 Proceed to Checkout
               </button>
 

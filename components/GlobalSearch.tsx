@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { doctors, departments, blogPosts, products } from "@/lib/data";
+import type { Doctor, BlogPost, Product } from "@/lib/data";
 
 interface SearchResult {
   category: string;
@@ -57,12 +57,15 @@ function getIcon(type: string) {
   }
 }
 
-function searchAll(query: string): SearchResult[] {
+function searchAll(
+  query: string,
+  sources: { doctors: Doctor[]; blogPosts: BlogPost[]; products: Product[] }
+): SearchResult[] {
   if (!query.trim()) return [];
   const q = query.toLowerCase();
   const results: SearchResult[] = [];
 
-  doctors
+  sources.doctors
     .filter((d) => d.name.toLowerCase().includes(q) || d.specialty.toLowerCase().includes(q))
     .slice(0, 5)
     .forEach((d) =>
@@ -75,20 +78,7 @@ function searchAll(query: string): SearchResult[] {
       })
     );
 
-  departments
-    .filter((d) => d.name.toLowerCase().includes(q))
-    .slice(0, 5)
-    .forEach((d) =>
-      results.push({
-        category: "Departments",
-        title: d.name,
-        subtitle: d.shortDescription,
-        href: `/departments/${d.slug}`,
-        icon: "department",
-      })
-    );
-
-  blogPosts
+  sources.blogPosts
     .filter((b) => b.title.toLowerCase().includes(q))
     .slice(0, 5)
     .forEach((b) =>
@@ -101,15 +91,16 @@ function searchAll(query: string): SearchResult[] {
       })
     );
 
-  products
-    .filter((p) => p.name.toLowerCase().includes(q))
+  sources.products
+    .filter((p) => (p.name || "").toLowerCase().includes(q))
     .slice(0, 5)
     .forEach((p) =>
       results.push({
         category: "Products",
         title: p.name,
         subtitle: `$${p.price}`,
-        href: `/shop/${p.slug}`,
+        // Products in the store use `id` for routing (no slug).
+        href: `/shop/${(p as Product & { slug?: string }).slug ?? p.id}`,
         icon: "product",
       })
     );
@@ -124,17 +115,46 @@ function searchAll(query: string): SearchResult[] {
 export default function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  const results = searchAll(query);
+  const results = searchAll(query, { doctors, blogPosts, products });
 
   useEffect(() => {
     if (open) {
       setQuery("");
       setActiveIndex(0);
       setTimeout(() => inputRef.current?.focus(), 100);
+      // Lazy-load search corpus the first time the dialog opens
+      if (doctors.length === 0) {
+        fetch("/api/doctors", { cache: "no-store" })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (d && Array.isArray(d.doctors)) setDoctors(d.doctors);
+          })
+          .catch(() => {});
+      }
+      if (blogPosts.length === 0) {
+        fetch("/api/blog", { cache: "no-store" })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (d && Array.isArray(d.posts)) setBlogPosts(d.posts);
+          })
+          .catch(() => {});
+      }
+      if (products.length === 0) {
+        fetch("/api/products", { cache: "no-store" })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (d && Array.isArray(d.products)) setProducts(d.products);
+          })
+          .catch(() => {});
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   useEffect(() => {
@@ -194,7 +214,7 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
           <input
             ref={inputRef}
             type="text"
-            placeholder="Search doctors, departments, blog posts..."
+            placeholder="Search doctors, blog posts, products..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}

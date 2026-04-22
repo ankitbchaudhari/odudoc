@@ -11,7 +11,7 @@ const contactCards = [
       </svg>
     ),
     title: "Emergency",
-    detail: "+1 (800) 123-4567",
+    detail: "+1 (302) 899-2625",
     subtext: "24/7 Available",
   },
   {
@@ -32,8 +32,8 @@ const contactCards = [
       </svg>
     ),
     title: "Visit Us",
-    detail: "123 Health Avenue",
-    subtext: "New York, NY 10001",
+    detail: "8 The Green, Ste A",
+    subtext: "Dover, DE 19901",
   },
 ];
 

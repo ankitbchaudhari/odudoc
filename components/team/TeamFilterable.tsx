@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { doctors } from "@/lib/data";
 import type { Doctor } from "@/lib/data";
 
 const specialtyFilters = ["All", "General Physician", "Dermatologist", "Gynecologist", "Pediatrician", "Dentist", "Orthopedist", "Cardiologist", "Psychiatrist"];
@@ -12,11 +11,20 @@ export default function TeamFilterable() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [currentPage, setCurrentPage] = useState(1);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  useEffect(() => {
+    fetch("/api/doctors", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && Array.isArray(d.doctors)) setDoctors(d.doctors);
+      })
+      .catch(() => {});
+  }, []);
 
   const filtered = useMemo(() => {
     if (activeFilter === "All") return doctors;
     return doctors.filter((d) => d.specialty === activeFilter);
-  }, [activeFilter]);
+  }, [activeFilter, doctors]);
 
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
   const paginated = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);

@@ -1,3 +1,5 @@
+import { bindPersistentArray } from "./persistent-array";
+
 export interface Coupon {
   id: string;
   code: string;
@@ -10,41 +12,27 @@ export interface Coupon {
   active: boolean;
 }
 
-let coupons: Coupon[] = [
-  {
-    id: "c1",
-    code: "HEALTH10",
-    discountType: "percentage",
-    discountValue: 10,
-    minOrder: 0,
-    maxUses: 1000,
-    usedCount: 342,
-    expiresAt: "2026-12-31",
-    active: true,
-  },
-  {
-    id: "c2",
-    code: "WELCOME20",
-    discountType: "percentage",
-    discountValue: 20,
-    minOrder: 0,
-    maxUses: 500,
-    usedCount: 128,
-    expiresAt: "2026-06-30",
-    active: true,
-  },
-  {
-    id: "c3",
-    code: "FLAT50",
-    discountType: "fixed",
-    discountValue: 50,
-    minOrder: 200,
-    maxUses: 200,
-    usedCount: 45,
-    expiresAt: "2026-09-30",
-    active: true,
-  },
-];
+const coupons: Coupon[] = [];
+const { hydrate, flush } = bindPersistentArray<Coupon>(
+  "coupons",
+  coupons,
+  () => []
+);
+await hydrate();
+
+// One-time cleanup: drop the demo coupons that shipped with the initial
+// seed. Admin creates real coupons via /admin/coupons.
+(function removeLegacySeedCoupons() {
+  const legacyIds = new Set(["c1", "c2", "c3"]);
+  let dirty = false;
+  for (let i = coupons.length - 1; i >= 0; i--) {
+    if (legacyIds.has(coupons[i].id)) {
+      coupons.splice(i, 1);
+      dirty = true;
+    }
+  }
+  if (dirty) flush();
+})();
 
 export function getCoupons(): Coupon[] {
   return [...coupons];
@@ -91,14 +79,21 @@ export function applyCoupon(
 
 export function addCoupon(coupon: Omit<Coupon, "id">): Coupon {
   const newCoupon = { ...coupon, id: `c${Date.now()}` };
-  coupons = [...coupons, newCoupon];
+  coupons.push(newCoupon);
+  flush();
   return newCoupon;
 }
 
 export function updateCoupon(id: string, updates: Partial<Coupon>): void {
-  coupons = coupons.map((c) => (c.id === id ? { ...c, ...updates } : c));
+  const idx = coupons.findIndex((c) => c.id === id);
+  if (idx < 0) return;
+  coupons[idx] = { ...coupons[idx], ...updates };
+  flush();
 }
 
 export function deleteCoupon(id: string): void {
-  coupons = coupons.filter((c) => c.id !== id);
+  const idx = coupons.findIndex((c) => c.id === id);
+  if (idx < 0) return;
+  coupons.splice(idx, 1);
+  flush();
 }

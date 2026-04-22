@@ -1,5 +1,6 @@
 // Daily.co configuration and helpers for video consultations
 
+import { log } from "./log";
 export const DAILY_API_KEY = process.env.DAILY_API_KEY || "";
 export const DAILY_API_URL = process.env.DAILY_API_URL || "https://api.daily.co/v1";
 
@@ -35,14 +36,14 @@ export async function createDailyRoom(roomName: string): Promise<{
     });
 
     if (!res.ok) {
-      console.error("Failed to create Daily room:", await res.text());
+      log.error("Failed to create Daily room:", await res.text());
       return null;
     }
 
     const data = await res.json();
     return { url: data.url, name: data.name, id: data.id };
   } catch (err) {
-    console.error("Error creating Daily room:", err);
+    log.error("Error creating Daily room:", err);
     return null;
   }
 }
@@ -74,14 +75,14 @@ export async function createDailyToken(
     });
 
     if (!res.ok) {
-      console.error("Failed to create Daily token:", await res.text());
+      log.error("Failed to create Daily token:", await res.text());
       return null;
     }
 
     const data = await res.json();
     return data.token;
   } catch (err) {
-    console.error("Error creating Daily token:", err);
+    log.error("Error creating Daily token:", err);
     return null;
   }
 }

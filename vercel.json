@@ -1,0 +1,24 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/appointment-reminders",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/review-nudges",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/daily-blog",
+      "schedule": "30 5 * * *"
+    },
+    {
+      "path": "/api/cron/notifications-dispatch",
+      "schedule": "15 6 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-demos",
+      "schedule": "0 7 * * *"
+    }
+  ]
+}

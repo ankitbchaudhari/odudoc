@@ -2,10 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import VideoCall from "@/components/VideoCall";
 import WaitingRoom from "@/components/WaitingRoom";
 import Prescription from "@/components/Prescription";
+import DoctorNotesPanel from "@/components/DoctorNotesPanel";
+import ConsultPrescriptionView, {
+  type ConsultPrescription,
+} from "@/components/ConsultPrescriptionView";
 
 interface RoomInfo {
   id: string;
@@ -25,7 +30,9 @@ type Stage = "loading" | "waiting" | "in-call" | "post-call";
 export default function ConsultationRoomPage() {
   const params = useParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const roomId = params.roomId as string;
+  const isDoctor = session?.user?.role === "doctor";
 
   const [stage, setStage] = useState<Stage>("loading");
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
@@ -35,6 +42,23 @@ export default function ConsultationRoomPage() {
   const [showPrescription, setShowPrescription] = useState(false);
   const [error, setError] = useState("");
   const [demoMode, setDemoMode] = useState(false);
+  const [consultRx, setConsultRx] = useState<ConsultPrescription | null>(null);
+
+  // When the call ends, patients pick up any prescription the doctor sent
+  // (stored in localStorage by DoctorNotesPanel keyed by roomId).
+  useEffect(() => {
+    if (stage !== "post-call" || typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem(`odudoc:rx:${roomId}`);
+      if (raw) {
+        setConsultRx(JSON.parse(raw) as ConsultPrescription);
+        // Auto-open so the patient sees it without having to click
+        setShowPrescription(true);
+      }
+    } catch {
+      /* ignore parse errors */
+    }
+  }, [stage, roomId]);
 
   useEffect(() => {
     fetchRoomInfo();
@@ -118,13 +142,24 @@ export default function ConsultationRoomPage() {
 
   if (stage === "in-call" && roomInfo) {
     return (
-      <VideoCall
-        roomUrl={roomInfo.roomUrl}
-        userName={roomInfo.patientName}
-        token={null}
-        demoMode={demoMode}
-        onLeave={handleLeaveCall}
-      />
+      <>
+        <VideoCall
+          roomUrl={roomInfo.roomUrl}
+          userName={isDoctor ? roomInfo.doctorName : roomInfo.patientName}
+          token={null}
+          demoMode={demoMode}
+          onLeave={handleLeaveCall}
+        />
+        {isDoctor && (
+          <DoctorNotesPanel
+            roomId={roomId}
+            doctorName={roomInfo.doctorName}
+            patientName={roomInfo.patientName}
+            specialty={roomInfo.specialty}
+            onEndCall={handleLeaveCall}
+          />
+        )}
+      </>
     );
   }
 
@@ -229,12 +264,16 @@ export default function ConsultationRoomPage() {
           {/* Prescription */}
           {showPrescription && (
             <div className="mt-8">
-              <Prescription
-                doctorName={roomInfo.doctorName}
-                doctorSpecialty={roomInfo.specialty}
-                patientName={roomInfo.patientName}
-                date={new Date(roomInfo.createdAt).toLocaleDateString()}
-              />
+              {consultRx ? (
+                <ConsultPrescriptionView rx={consultRx} />
+              ) : (
+                <Prescription
+                  doctorName={roomInfo.doctorName}
+                  doctorSpecialty={roomInfo.specialty}
+                  patientName={roomInfo.patientName}
+                  date={new Date(roomInfo.createdAt).toLocaleDateString()}
+                />
+              )}
             </div>
           )}
         </div>

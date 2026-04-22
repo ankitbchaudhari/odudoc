@@ -130,6 +130,44 @@ export async function requireOrg(): Promise<{
   return { ctx, orgId: ctx.organization.id };
 }
 
+/**
+ * Like `requireOrg()` but additionally fails with `billing_blocked` when the
+ * org's Stripe subscription is past_due / unpaid / canceled. Use this at the
+ * top of any mutating hospital API route to enforce read-only mode.
+ *
+ * The import is dynamic so edge-runtime routes (middleware, etc.) can still
+ * import lib/tenant.ts without pulling the Neon client.
+ */
+export async function requireActiveBilling(
+  req?: { method: string; headers: Headers; url: string }
+): Promise<{ ctx: TenantContext; orgId: string }> {
+  // CSRF origin check runs first — cross-origin mutators never reach the
+  // store layer. Callers that don't pass `req` (older call sites) skip the
+  // check; new/migrated routes should pass the NextRequest.
+  if (req) {
+    const { assertSameOrigin, CsrfError } = await import("./csrf");
+    try {
+      assertSameOrigin(req);
+    } catch (e) {
+      if (e instanceof CsrfError) throw new TenantError("csrf_origin_mismatch", 403);
+      throw e;
+    }
+  }
+  const result = await requireOrg();
+  // Super-admins bypass billing and maintenance mode.
+  if (result.ctx.isSuperAdmin) return result;
+  // Global maintenance mode: when MAINTENANCE_MODE=1 every mutating route
+  // fails with 503 so the on-call can halt writes without a redeploy.
+  if (process.env.MAINTENANCE_MODE === "1") {
+    throw new TenantError("maintenance_mode", 503);
+  }
+  const { isOrgBillingBlocked } = await import("./hospital/subscription-store");
+  if (isOrgBillingBlocked(result.orgId)) {
+    throw new TenantError("billing_blocked", 402);
+  }
+  return result;
+}
+
 export async function requireOrgRole(allowed: OrgRole[]): Promise<TenantContext> {
   const ctx = await getTenantContext();
   if (ctx.isSuperAdmin) return ctx;

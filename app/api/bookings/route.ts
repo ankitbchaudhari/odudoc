@@ -6,12 +6,13 @@ import {
 } from '@/lib/bookings-store';
 import { notifyAppointmentBooked } from '@/lib/notifications';
 
+import { log } from "@/lib/log";
 export async function GET() {
   try {
     const bookings = getBookings();
     return NextResponse.json({ bookings });
   } catch (error: unknown) {
-    console.error('Failed to fetch bookings:', error);
+    log.error('Failed to fetch bookings:', error);
     return NextResponse.json(
       { error: 'Failed to fetch bookings' },
       { status: 500 }
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ booking }, { status: 201 });
   } catch (error: unknown) {
-    console.error('Failed to create booking:', error);
+    log.error('Failed to create booking:', error);
     return NextResponse.json(
       { error: 'Failed to create booking' },
       { status: 500 }

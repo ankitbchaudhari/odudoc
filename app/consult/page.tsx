@@ -6,6 +6,7 @@ import { getPublicDoctorsFresh } from "@/lib/public-doctors";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import type { Metadata } from "next";
+import { ServiceLd, BreadcrumbLd } from "@/components/StructuredData";
 
 export const dynamic = "force-dynamic";
 
@@ -129,6 +130,19 @@ export default async function ConsultPage() {
   ]);
   return (
     <>
+      <ServiceLd
+        name="Online Doctor Video Consultation"
+        description="Private, secure video consultations with verified doctors for common health concerns — consultation, dermatology, mental health, paediatrics, and more."
+        url="/consult"
+        serviceType="Telemedicine"
+      />
+      <BreadcrumbLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: "Online Consultation", url: "/consult" },
+        ]}
+      />
+
       {/* ── Hero ── */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-teal-700 text-white">
         {/* Decorative blobs */}

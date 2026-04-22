@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 
 const schedule = [
-  { day: "Monday - Friday", time: "8:00 AM - 6:00 PM" },
-  { day: "Saturday", time: "9:00 AM - 4:00 PM" },
-  { day: "Sunday", time: "Emergency Only" },
+  { day: "Monday - Friday", time: "24 Hours" },
+  { day: "Saturday", time: "24 Hours" },
+  { day: "Sunday", time: "24 Hours" },
 ];
 
 export default function HeroWithSchedule() {

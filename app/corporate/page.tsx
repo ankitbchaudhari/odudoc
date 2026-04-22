@@ -1,11 +1,28 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import DemoRequestForm from "./DemoRequestForm";
+import { ServiceLd, BreadcrumbLd } from "@/components/StructuredData";
 
 export const metadata: Metadata = {
-  title: "OduDoc for Hospitals — ERP + EMR + AI",
+  title: "OduDoc for Hospitals — ERP + EMR + Telemedicine + AI",
   description:
-    "An intuitive, modular healthcare platform combining ERP, EMR, Telemedicine and AI for hospitals, clinics and diagnostic chains.",
+    "A modular healthcare ERP combining EMR, telemedicine, billing, pharmacy, lab, and AI — for hospitals, clinics, and diagnostic chains.",
+  keywords: [
+    "hospital ERP",
+    "EMR software",
+    "hospital information system",
+    "healthcare AI",
+    "clinic chain software",
+    "diagnostic centre software",
+  ],
+  alternates: { canonical: "/corporate" },
+  openGraph: {
+    title: "OduDoc for Hospitals — ERP + EMR + Telemedicine + AI",
+    description:
+      "Modular healthcare platform — EMR, telemedicine, billing, pharmacy, lab, AI. Built for hospitals and clinic chains.",
+    url: "/corporate",
+    type: "website",
+  },
 };
 
 const modules = [
@@ -80,6 +97,19 @@ const trustStats = [
 export default function CorporatePage() {
   return (
     <>
+      <ServiceLd
+        name="OduDoc for Hospitals — Hospital ERP"
+        description="Hospital and clinic-chain ERP: EMR, telemedicine, billing, pharmacy, lab, HR, and AI."
+        url="/corporate"
+        serviceType="Hospital information system"
+      />
+      <BreadcrumbLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: "For Hospitals", url: "/corporate" },
+        ]}
+      />
+
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-900 text-white">
         <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl" />

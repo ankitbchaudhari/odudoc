@@ -1,3 +1,5 @@
+import { bindPersistentArray } from "./persistent-array";
+
 export interface Booking {
   id: string;
   doctorId: string;
@@ -11,46 +13,35 @@ export interface Booking {
   createdAt: string;
 }
 
-const bookings: Booking[] = [
-  {
-    id: 'BK-1001',
-    doctorId: 'dr-sarah-johnson',
-    doctorName: 'Dr. Sarah Johnson',
-    patientName: 'John Doe',
-    patientPhone: '+1-555-0101',
-    timeSlot: '9:00 AM',
-    fee: 40,
-    paymentStatus: 'paid',
-    paymentIntentId: 'pi_sample_001',
-    createdAt: '2026-04-10T08:30:00Z',
-  },
-  {
-    id: 'BK-1002',
-    doctorId: 'dr-michael-chen',
-    doctorName: 'Dr. Michael Chen',
-    patientName: 'Jane Smith',
-    patientPhone: '+1-555-0102',
-    timeSlot: '10:30 AM',
-    fee: 50,
-    paymentStatus: 'paid',
-    paymentIntentId: 'pi_sample_002',
-    createdAt: '2026-04-11T10:15:00Z',
-  },
-  {
-    id: 'BK-1003',
-    doctorId: 'dr-david-brown',
-    doctorName: 'Dr. David Brown',
-    patientName: 'Robert Wilson',
-    patientPhone: '+1-555-0103',
-    timeSlot: '2:00 PM',
-    fee: 75,
-    paymentStatus: 'pending',
-    paymentIntentId: 'pi_sample_003',
-    createdAt: '2026-04-12T14:00:00Z',
-  },
-];
+const bookings: Booking[] = [];
+const { hydrate, flush } = bindPersistentArray<Booking>(
+  "bookings",
+  bookings,
+  () => []
+);
+await hydrate();
 
-let nextId = 1004;
+// One-time cleanup: drop the original demo bookings (BK-1001/1002/1003)
+// that shipped with the initial seed so production doesn't carry fake
+// patients forever. IDs are unique so this is safe to re-run.
+(function removeLegacySeedBookings() {
+  const legacyIds = new Set(["BK-1001", "BK-1002", "BK-1003"]);
+  let dirty = false;
+  for (let i = bookings.length - 1; i >= 0; i--) {
+    if (legacyIds.has(bookings[i].id)) {
+      bookings.splice(i, 1);
+      dirty = true;
+    }
+  }
+  if (dirty) flush();
+})();
+
+// Derive counter from hydrated state so IDs don't collide.
+let nextId = bookings.reduce((max, b) => {
+  const m = /^BK-(\d+)$/.exec(b.id);
+  const n = m ? parseInt(m[1], 10) : 0;
+  return n > max ? n : max;
+}, 1003) + 1;
 
 export function createBooking(
   data: Omit<Booking, 'id' | 'createdAt'>
@@ -61,6 +52,7 @@ export function createBooking(
     createdAt: new Date().toISOString(),
   };
   bookings.push(booking);
+  flush();
   return booking;
 }
 
@@ -81,6 +73,7 @@ export function updateBookingStatus(
   const booking = bookings.find((b) => b.paymentIntentId === paymentIntentId);
   if (booking) {
     booking.paymentStatus = status;
+    flush();
   }
   return booking;
 }

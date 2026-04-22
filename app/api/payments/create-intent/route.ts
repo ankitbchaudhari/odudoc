@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 
+import { log } from "@/lib/log";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
       paymentIntentId: paymentIntent.id,
     });
   } catch (error: unknown) {
-    console.error('Payment intent creation failed:', error);
+    log.error('Payment intent creation failed:', error);
     const message =
       error instanceof Error ? error.message : 'Failed to create payment intent';
     return NextResponse.json({ error: message }, { status: 500 });

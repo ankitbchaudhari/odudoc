@@ -1,61 +1,133 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type Stripe from 'stripe';
 import { stripe } from '@/lib/stripe';
 import { updateBookingStatus } from '@/lib/bookings-store';
+import { upsertSubscription, getSubscriptionByStripeId, getSubscriptionByCustomerId, type PlanTier, type SubStatus } from '@/lib/hospital/subscription-store';
+import { log } from '@/lib/log';
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+function planFromPrice(priceId?: string | null): PlanTier {
+  if (!priceId) return "starter";
+  const map = (process.env.STRIPE_PRICE_MAP || "").split(",").map((s) => s.trim()).filter(Boolean);
+  for (const entry of map) {
+    const [price, tier] = entry.split(":");
+    if (price === priceId) return (tier as PlanTier) || "starter";
+  }
+  return "starter";
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.text();
     const signature = request.headers.get('stripe-signature');
-
     if (!signature) {
-      return NextResponse.json(
-        { error: 'Missing stripe-signature header' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing stripe-signature header' }, { status: 400 });
     }
-
-    let event;
-
+    let event: Stripe.Event;
     if (webhookSecret) {
       try {
         event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Webhook signature verification failed';
-        console.error('Webhook signature verification failed:', message);
+        log.error('stripe.webhook.signature_failed', err, { message });
         return NextResponse.json({ error: message }, { status: 400 });
       }
     } else {
-      // In development without webhook secret, parse the body directly
-      event = JSON.parse(body);
+      event = JSON.parse(body) as Stripe.Event;
     }
 
     switch (event.type) {
       case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object;
-        console.log('Payment succeeded:', paymentIntent.id);
-        updateBookingStatus(paymentIntent.id, 'paid');
+        const pi = event.data.object as Stripe.PaymentIntent;
+        updateBookingStatus(pi.id, 'paid');
         break;
       }
-
       case 'payment_intent.payment_failed': {
-        const paymentIntent = event.data.object;
-        console.error('Payment failed:', paymentIntent.id);
-        updateBookingStatus(paymentIntent.id, 'failed');
+        const pi = event.data.object as Stripe.PaymentIntent;
+        updateBookingStatus(pi.id, 'failed');
         break;
       }
-
+      case 'checkout.session.completed': {
+        const s = event.data.object as Stripe.Checkout.Session;
+        const orgId = s.metadata?.organizationId;
+        if (orgId && s.subscription) {
+          const subId = typeof s.subscription === 'string' ? s.subscription : s.subscription.id;
+          const customerId = typeof s.customer === 'string' ? s.customer : s.customer?.id;
+          upsertSubscription(orgId, {
+            stripeCustomerId: customerId || undefined,
+            stripeSubscriptionId: subId,
+            status: 'active',
+          });
+        }
+        break;
+      }
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated':
+      case 'customer.subscription.deleted': {
+        const sub = event.data.object as Stripe.Subscription;
+        const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer.id;
+        const existing = getSubscriptionByStripeId(sub.id) || getSubscriptionByCustomerId(customerId);
+        const priceId = sub.items.data[0]?.price.id;
+        if (existing) {
+          upsertSubscription(existing.organizationId, {
+            stripeCustomerId: customerId,
+            stripeSubscriptionId: sub.id,
+            priceId,
+            planTier: planFromPrice(priceId),
+            status: sub.status as SubStatus,
+            currentPeriodStart: new Date(sub.current_period_start * 1000).toISOString(),
+            currentPeriodEnd: new Date(sub.current_period_end * 1000).toISOString(),
+            trialEnd: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : undefined,
+            cancelAt: sub.cancel_at ? new Date(sub.cancel_at * 1000).toISOString() : undefined,
+            cancelAtPeriodEnd: sub.cancel_at_period_end,
+            canceledAt: sub.canceled_at ? new Date(sub.canceled_at * 1000).toISOString() : undefined,
+            quantity: sub.items.data[0]?.quantity,
+          });
+        } else {
+          log.warn('stripe.webhook.unmatched_sub', { subId: sub.id });
+        }
+        break;
+      }
+      case 'invoice.paid':
+      case 'invoice.payment_succeeded': {
+        const inv = event.data.object as Stripe.Invoice;
+        const customerId = typeof inv.customer === 'string' ? inv.customer : inv.customer?.id;
+        if (customerId) {
+          const existing = getSubscriptionByCustomerId(customerId);
+          if (existing) {
+            upsertSubscription(existing.organizationId, {
+              lastInvoiceId: inv.id,
+              lastInvoiceAmount: inv.amount_paid,
+              lastInvoicePaidAt: new Date().toISOString(),
+              status: 'active',
+            });
+          }
+        }
+        break;
+      }
+      case 'invoice.payment_failed': {
+        const inv = event.data.object as Stripe.Invoice;
+        const customerId = typeof inv.customer === 'string' ? inv.customer : inv.customer?.id;
+        if (customerId) {
+          const existing = getSubscriptionByCustomerId(customerId);
+          if (existing) {
+            upsertSubscription(existing.organizationId, { status: 'past_due' });
+          }
+        }
+        break;
+      }
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        // silently ignore
+        break;
     }
 
     return NextResponse.json({ received: true });
   } catch (error: unknown) {
-    console.error('Webhook processing error:', error);
-    return NextResponse.json(
-      { error: 'Webhook processing failed' },
-      { status: 500 }
-    );
+    log.error('stripe.webhook.processing_error', error);
+    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
   }
 }

@@ -1,17 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { doctors, doctorReviews } from "@/lib/data";
+import { doctorReviews, type Doctor } from "@/lib/data";
 import BookingModal from "@/components/BookingModal";
+import DoctorPresenceBadge, { PresenceDot } from "@/components/DoctorPresenceBadge";
+import { pickDoctorPhoto } from "@/lib/doctor-photos";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import ConsultGateModal from "@/components/ConsultGateModal";
 
 export default function DoctorProfilePage() {
   const params = useParams();
   const router = useRouter();
-  const doctor = doctors.find((d) => d.id === params.id);
+  const [doctor, setDoctor] = useState<Doctor | null>(null);
+  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [videoLoading, setVideoLoading] = useState(false);
+  const [consultGateOpen, setConsultGateOpen] = useState(false);
+
+  // Refresh from the admin-managed API so edits show up live.
+  useEffect(() => {
+    if (!params.id) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    fetch(`/api/doctors/${params.id}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.doctor) setDoctor(d.doctor);
+        else setDoctor(null);
+      })
+      .catch(() => setDoctor(null))
+      .finally(() => setLoading(false));
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-gray-400">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-primary-600" />
+          <p className="text-sm">Loading doctor profile…</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!doctor) {
     return (
@@ -34,24 +68,43 @@ export default function DoctorProfilePage() {
     <div className="bg-gray-50 py-8">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
-        <nav className="mb-6 text-sm text-gray-400">
-          <Link href="/" className="hover:text-primary-600">Home</Link>
-          <span className="mx-2">/</span>
-          <Link href="/doctors" className="hover:text-primary-600">Doctors</Link>
-          <span className="mx-2">/</span>
-          <span className="text-gray-600">{doctor.name}</span>
-        </nav>
+        <div className="mb-6">
+          <Breadcrumbs
+            items={[
+              { name: "Home", href: "/" },
+              { name: "Doctors", href: "/doctors" },
+              { name: doctor.name, href: `/doctors/${doctor.id}` },
+            ]}
+          />
+        </div>
 
         {/* Profile Card */}
         <div className="card mb-6">
           <div className="flex flex-col gap-6 sm:flex-row">
-            <div
-              className={`flex h-28 w-28 flex-shrink-0 items-center justify-center self-center rounded-full text-3xl font-bold text-white sm:self-start ${doctor.imageColor}`}
-            >
-              {doctor.initials}
+            <div className="relative self-center sm:self-start">
+              <div
+                className={`relative h-40 w-40 flex-shrink-0 overflow-hidden rounded-2xl text-4xl font-bold text-white shadow-md ${doctor.imageColor}`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={pickDoctorPhoto({ id: doctor.id, gender: doctor.gender, explicit: doctor.photoUrl })}
+                  alt={doctor.name}
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
+                />
+                <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center">
+                  {doctor.initials}
+                </div>
+              </div>
+              <PresenceDot doctorId={doctor.id} />
             </div>
             <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-2xl font-bold text-gray-900">{doctor.name}</h1>
+              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:justify-start">
+                <h1 className="text-2xl font-bold text-gray-900">{doctor.name}</h1>
+                <DoctorPresenceBadge doctorId={doctor.id} size="md" />
+              </div>
               <p className="text-primary-600">{doctor.specialty}</p>
               <p className="text-sm text-gray-500">{doctor.qualifications}</p>
               <div className="mt-3 flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600 sm:justify-start">
@@ -70,30 +123,7 @@ export default function DoctorProfilePage() {
                 Book Appointment
               </button>
               <button
-                onClick={async () => {
-                  setVideoLoading(true);
-                  try {
-                    const res = await fetch("/api/rooms", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        doctorId: doctor.id,
-                        doctorName: doctor.name,
-                        patientName: "Patient",
-                        specialty: doctor.specialty,
-                        fee: doctor.fee,
-                      }),
-                    });
-                    const data = await res.json();
-                    if (data.roomId) {
-                      router.push(`/consultation/${data.roomId}`);
-                    }
-                  } catch (err) {
-                    console.error("Failed to start video consult:", err);
-                  } finally {
-                    setVideoLoading(false);
-                  }
-                }}
+                onClick={() => setConsultGateOpen(true)}
                 disabled={videoLoading}
                 className="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:underline disabled:opacity-50"
               >
@@ -203,15 +233,65 @@ export default function DoctorProfilePage() {
               <h2 className="mb-3 text-lg font-bold text-gray-900">Clinic Location</h2>
               <p className="text-sm text-gray-600">{doctor.location}</p>
               <p className="text-sm text-gray-400">{doctor.city}</p>
-              <div className="mt-4 h-40 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
-                Map Placeholder
+              <div className="mt-4 h-48 overflow-hidden rounded-lg border border-gray-200">
+                <iframe
+                  title={`${doctor.location} on map`}
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(`${doctor.location}, ${doctor.city}`)}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+                  className="h-full w-full"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
               </div>
+              <a
+                href={`https://maps.google.com/maps?q=${encodeURIComponent(`${doctor.location}, ${doctor.city}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-block text-xs text-primary-600 hover:underline"
+              >
+                Open in Google Maps →
+              </a>
             </div>
           </div>
         </div>
       </div>
 
       <BookingModal doctor={doctor} open={modalOpen} onClose={() => setModalOpen(false)} />
+
+      <ConsultGateModal
+        open={consultGateOpen}
+        onClose={() => setConsultGateOpen(false)}
+        doctor={{
+          id: doctor.id,
+          name: doctor.name,
+          specialty: doctor.specialty,
+          fee: doctor.fee,
+        }}
+        onVerified={async ({ consultToken }) => {
+          setVideoLoading(true);
+          try {
+            const res = await fetch("/api/rooms", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                doctorId: doctor.id,
+                doctorName: doctor.name,
+                specialty: doctor.specialty,
+                fee: doctor.fee,
+                consultToken,
+              }),
+            });
+            const data = await res.json();
+            if (data.roomId) {
+              router.push(`/consultation/${data.roomId}`);
+            }
+          } catch (err) {
+            console.error("Failed to start video consult:", err);
+          } finally {
+            setVideoLoading(false);
+            setConsultGateOpen(false);
+          }
+        }}
+      />
     </div>
   );
 }

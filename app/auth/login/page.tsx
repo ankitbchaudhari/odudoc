@@ -11,6 +11,9 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const registered = searchParams.get("registered");
+  const verified = searchParams.get("verified");
+  const verifiedReason = searchParams.get("reason"); // "signup" | "reactivate"
+  const oauthError = searchParams.get("error"); // e.g. "verify_google"
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,27 +27,58 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-        callbackUrl,
+      // Step 1: validate credentials + send OTP codes via email and phone.
+      // We intentionally do NOT call signIn() here — NextAuth authorize
+      // requires an OTP token which is only issued after /auth/verify.
+      const res = await fetch("/api/auth/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
+      const data = await res.json();
 
-      if (result?.error) {
-        setError(result.error);
-      } else if (result?.url) {
-        // After successful login, check role for proper redirect
-        const session = await fetch('/api/auth/session').then(r => r.json());
-        if (session?.user?.role === 'admin') {
-          router.push('/admin');
-        } else if (session?.user?.role === 'doctor') {
-          router.push('/dashboard/doctor');
-        } else {
-          router.push(result.url || '/dashboard');
-        }
-        router.refresh();
+      if (!res.ok) {
+        setError(data.error || "Login failed");
+        return;
       }
+
+      // Admin + demo accounts bypass 2FA — sign in directly. Admins land on
+      // /admin; demo doctor goes to the doctor dashboard; everyone else falls
+      // back to the callbackUrl (typically /dashboard).
+      if (data.skipOtp) {
+        const result = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
+        if (result?.error) {
+          setError(result.error);
+          return;
+        }
+        const dest =
+          data.role === "admin"
+            ? "/admin"
+            : data.role === "staff"
+              ? "/admin/products"
+              : data.role === "doctor"
+                ? "/dashboard/doctor"
+                : callbackUrl;
+        router.push(dest);
+        router.refresh();
+        return;
+      }
+
+      // Redirect to the verify page carrying the password forward so the
+      // user can be signed in after OTP verification succeeds. The password
+      // is kept only in memory on the client (not stored or logged).
+      const qs = new URLSearchParams({
+        email,
+        p: password,
+        emailHint: data.emailHint || email,
+        phoneHint: data.phoneHint || "",
+        hasPhone: String(Boolean(data.hasPhone)),
+      });
+      router.push(`/auth/verify?${qs.toString()}`);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -67,8 +101,27 @@ function LoginForm() {
       <div className="rounded-2xl bg-white p-8 shadow-lg">
         {/* Success message after registration */}
         {registered && (
+          <div className="mb-6 rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 text-sm text-blue-700">
+            Account created! Please check your email for a verification link (expires in 10 minutes), then sign in.
+          </div>
+        )}
+
+        {/* Banned account banner */}
+        {oauthError === "banned" && (
+          <div className="mb-6 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            This account has been banned. If you believe this is a mistake, please contact support.
+          </div>
+        )}
+
+        {/* verify_google banner retired — Google sign-in now completes
+            without an email-link round-trip. */}
+
+        {/* Success message after clicking the email verification link */}
+        {verified && (
           <div className="mb-6 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
-            Account created successfully! Please sign in.
+            {verifiedReason === "reactivate"
+              ? "Thanks for confirming! You can now sign in."
+              : "Email verified — you can sign in now."}
           </div>
         )}
 
@@ -140,12 +193,12 @@ function LoginForm() {
               >
                 Password
               </label>
-              <button
-                type="button"
+              <Link
+                href="/auth/forgot-password"
                 className="text-sm text-primary-600 hover:text-primary-700"
               >
                 Forgot password?
-              </button>
+              </Link>
             </div>
             <div className="relative">
               <input
@@ -187,18 +240,6 @@ function LoginForm() {
           </button>
         </form>
 
-        {/* Demo credentials */}
-        <div className="mt-6 rounded-lg bg-gray-50 p-4">
-          <p className="mb-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-            Demo Credentials
-          </p>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Patient:</span> demo@odudoc.com / password123
-          </p>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Doctor:</span> doctor@odudoc.com / doctor123
-          </p>
-        </div>
       </div>
 
       {/* Footer link */}

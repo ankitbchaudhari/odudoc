@@ -218,7 +218,7 @@ const sections = [
           </div>
           <div>
             <p className="text-xs text-gray-500">Address</p>
-            <p className="text-sm font-medium text-gray-900">123 Medical Center Dr, New York, NY 10001</p>
+            <p className="text-sm font-medium text-gray-900">8 The Green, Ste A, Dover, DE 19901</p>
           </div>
         </div>
       </div>
@@ -251,15 +251,15 @@ export default function PrivacyPolicyPage() {
       </section>
 
       {/* Table of contents */}
-      <div className="mx-auto -mt-8 max-w-4xl px-4">
-        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-lg">
-          <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-gray-400">Quick Navigation</h3>
+      <div className="relative z-10 mx-auto -mt-12 max-w-4xl px-4 sm:-mt-16">
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xl">
+          <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-gray-700">Quick Navigation</h3>
           <div className="flex flex-wrap gap-2">
             {sections.map((s, i) => (
               <a
                 key={s.id}
                 href={`#${s.id}`}
-                className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+                className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
               >
                 {i + 1}. {s.title}
               </a>

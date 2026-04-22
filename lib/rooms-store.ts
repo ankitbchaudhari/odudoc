@@ -1,4 +1,6 @@
-// In-memory room storage for video consultations
+// Room storage for video consultations — backed by Postgres via app_kv.
+
+import { bindPersistentArray } from "./persistent-array";
 
 export interface Room {
   id: string;
@@ -7,6 +9,7 @@ export interface Room {
   doctorId: string;
   doctorName: string;
   patientName: string;
+  patientPhone?: string;
   bookingId: string;
   specialty: string;
   fee: number;
@@ -14,30 +17,35 @@ export interface Room {
   createdAt: string;
 }
 
-const rooms = new Map<string, Room>();
+const rooms: Room[] = [];
+const { hydrate, flush } = bindPersistentArray<Room>("rooms", rooms, () => []);
+await hydrate();
 
 export function createRoom(room: Room): Room {
-  rooms.set(room.id, room);
+  const idx = rooms.findIndex((r) => r.id === room.id);
+  if (idx >= 0) rooms[idx] = room;
+  else rooms.push(room);
+  flush();
   return room;
 }
 
 export function getRoom(id: string): Room | undefined {
-  return rooms.get(id);
+  return rooms.find((r) => r.id === id);
 }
 
 export function updateRoomStatus(id: string, status: Room["status"]): Room | undefined {
-  const room = rooms.get(id);
+  const room = rooms.find((r) => r.id === id);
   if (room) {
     room.status = status;
-    rooms.set(id, room);
+    flush();
   }
   return room;
 }
 
 export function getRoomsByDoctor(doctorId: string): Room[] {
-  return Array.from(rooms.values()).filter((r) => r.doctorId === doctorId);
+  return rooms.filter((r) => r.doctorId === doctorId);
 }
 
 export function getAllRooms(): Room[] {
-  return Array.from(rooms.values());
+  return [...rooms];
 }

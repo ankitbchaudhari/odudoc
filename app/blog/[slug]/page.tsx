@@ -1,10 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import BlogCard from "@/components/BlogCard";
-import { blogPosts, blogComments, categoryGradients } from "@/lib/data";
+import {
+  blogPosts as seedBlogPosts,
+  blogComments,
+  categoryGradients,
+  type BlogPost,
+} from "@/lib/data";
+import { autolinkBlogHtml } from "@/lib/seo/auto-link";
 
 const categoryIcons: Record<string, string> = {
   Wellness: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
@@ -18,6 +24,32 @@ const categoryIcons: Record<string, string> = {
 export default function BlogPostPage() {
   const params = useParams();
   const slug = params.slug as string;
+  const searchParams = useSearchParams();
+  const isPreview = searchParams?.get("preview") === "1";
+
+  // Hydrate with seed immediately (so static posts still work when the API is
+  // unreachable), then fetch the live list to pick up admin edits + new posts.
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(seedBlogPosts);
+  const [loadedFromApi, setLoadedFromApi] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    fetch(isPreview ? "/api/blog?view=all" : "/api/blog", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (alive && Array.isArray(data.posts)) setBlogPosts(data.posts);
+      })
+      .catch(() => {
+        /* stay on seed */
+      })
+      .finally(() => {
+        if (alive) setLoadedFromApi(true);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [isPreview]);
+
   const post = blogPosts.find((p) => p.slug === slug);
 
   const [commentName, setCommentName] = useState("");
@@ -26,6 +58,16 @@ export default function BlogPostPage() {
   const [localComments, setLocalComments] = useState(blogComments);
   const [copied, setCopied] = useState(false);
   const [commentSuccess, setCommentSuccess] = useState(false);
+
+  // Wait until we've tried the API before showing the not-found state — the
+  // post may only exist in the live store (admin-created).
+  if (!post && !loadedFromApi) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary-600 border-t-transparent" />
+      </div>
+    );
+  }
 
   if (!post) {
     return (
@@ -87,9 +129,25 @@ export default function BlogPostPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {isPreview && (post as BlogPost & { status?: string }).status === "Draft" && (
+        <div className="bg-yellow-400 py-2 text-center text-sm font-semibold text-yellow-900">
+          👁️ Draft preview — this article is not published yet and is not visible to the public.
+        </div>
+      )}
       {/* ── Hero / Cover ── */}
-      <div className={`bg-gradient-to-br ${gradient} py-16 text-white`}>
-        <div className="mx-auto max-w-4xl px-4 sm:px-6">
+      <div className={`relative overflow-hidden bg-gradient-to-br ${gradient} py-16 text-white`}>
+        {post.imageUrl && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={post.imageUrl}
+              alt={post.title}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/60" />
+          </>
+        )}
+        <div className="relative mx-auto max-w-4xl px-4 sm:px-6">
           {/* Breadcrumb */}
           <nav className="mb-6 flex items-center gap-2 text-sm text-white/70">
             <Link href="/" className="hover:text-white">Home</Link>
@@ -143,7 +201,7 @@ export default function BlogPostPage() {
             <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8 md:p-10">
               <div
                 className="blog-content max-w-none"
-                dangerouslySetInnerHTML={{ __html: post.content }}
+                dangerouslySetInnerHTML={{ __html: autolinkBlogHtml(post.content) }}
               />
 
               {/* Tags */}

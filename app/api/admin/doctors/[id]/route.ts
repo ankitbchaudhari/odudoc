@@ -1,0 +1,91 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import {
+  getDoctorById,
+  updateDoctor,
+  deleteDoctor,
+  type DoctorStatus,
+} from "@/lib/doctors-store";
+
+export const runtime = "nodejs";
+
+function isAdmin(role: string | undefined): boolean {
+  return role === "admin";
+}
+
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSession(authOptions);
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  if (!isAdmin(role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  const { id } = await params;
+  const doctor = getDoctorById(id);
+  if (!doctor) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json({ doctor });
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSession(authOptions);
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  if (!isAdmin(role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  const { id } = await params;
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+  const patch: Parameters<typeof updateDoctor>[1] = {};
+  if (typeof body.name === "string") patch.name = body.name;
+  if (typeof body.specialty === "string") patch.specialty = body.specialty;
+  if (typeof body.email === "string") patch.email = body.email;
+  if (typeof body.phone === "string") patch.phone = body.phone;
+  if (body.status === "Active" || body.status === "Inactive")
+    patch.status = body.status as DoctorStatus;
+  if (typeof body.commission === "number") patch.commission = body.commission;
+  if (typeof body.rating === "number") patch.rating = body.rating;
+  if (typeof body.consultationCount === "number")
+    patch.consultationCount = body.consultationCount;
+  if (typeof body.bio === "string") patch.bio = body.bio;
+  if (typeof body.imageUrl === "string") patch.imageUrl = body.imageUrl;
+  if (typeof body.qualifications === "string") patch.qualifications = body.qualifications;
+  if (typeof body.experience === "number") patch.experience = body.experience;
+  if (typeof body.city === "string") patch.city = body.city;
+  if (typeof body.location === "string") patch.location = body.location;
+  if (typeof body.fee === "number") patch.fee = body.fee;
+  if (body.gender === "Male" || body.gender === "Female") patch.gender = body.gender;
+  if (typeof body.country === "string") patch.country = body.country;
+  if (Array.isArray(body.services))
+    patch.services = (body.services as unknown[]).filter((s): s is string => typeof s === "string");
+  if (Array.isArray(body.timeSlots))
+    patch.timeSlots = (body.timeSlots as unknown[]).filter((s): s is string => typeof s === "string");
+
+  const doctor = updateDoctor(id, patch);
+  if (!doctor) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json({ doctor });
+}
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSession(authOptions);
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  if (!isAdmin(role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  const { id } = await params;
+  const ok = deleteDoctor(id);
+  if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json({ ok: true });
+}

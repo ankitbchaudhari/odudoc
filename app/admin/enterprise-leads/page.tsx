@@ -37,6 +37,7 @@ export default function AdminEnterpriseLeads() {
   const [filter, setFilter] = useState<LeadStatus | "all">("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [notesDraft, setNotesDraft] = useState("");
+  const [seedingId, setSeedingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -71,6 +72,50 @@ export default function AdminEnterpriseLeads() {
       body: JSON.stringify({ id, notes: notesDraft }),
     });
     await load();
+  };
+
+  const createDemoForLead = async (l: Lead) => {
+    if (seedingId) return;
+    if (
+      !confirm(
+        `Seed a demo hospital for "${l.organizationName}" and email the login to ${l.contactEmail}?\n\n` +
+          `This creates a new demo org with 12 patients, 3 doctors, 1 receptionist, and an admin account. ` +
+          `The lead will be moved to "demoed".`,
+      )
+    ) {
+      return;
+    }
+    setSeedingId(l.id);
+    try {
+      const r = await fetch("/api/admin/super/seed-demo-for-lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leadId: l.id }),
+      });
+      const j = await r.json();
+      if (!r.ok) {
+        alert(j?.error || "failed_to_seed");
+        return;
+      }
+      const loginUrl = `${window.location.origin}${j.login.url}`;
+      const credsText =
+        `URL: ${loginUrl}\nEmail: ${j.login.email}\nPassword: ${j.login.password}`;
+      try {
+        await navigator.clipboard.writeText(credsText);
+      } catch {
+        /* clipboard may be blocked */
+      }
+      const emailLine = j.email?.sent
+        ? `✔ Credentials emailed to ${l.contactEmail}.`
+        : `✘ Email failed (${j.email?.error || "unknown"}). Send manually.`;
+      alert(
+        `Demo "${j.org.name}" created with ${j.counts.patients} patients, ${j.counts.appointments} appointments.\n\n` +
+          `${credsText}\n\n${emailLine}\n\n(Credentials copied to clipboard.)`,
+      );
+      await load();
+    } finally {
+      setSeedingId(null);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -163,6 +208,20 @@ export default function AdminEnterpriseLeads() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => createDemoForLead(l)}
+                  disabled={seedingId !== null}
+                  title="Seed a demo hospital with sample data and email the login to this lead"
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition ${
+                    seedingId === l.id
+                      ? "cursor-wait bg-gray-400"
+                      : seedingId
+                        ? "cursor-not-allowed bg-gray-300"
+                        : "bg-primary-600 hover:bg-primary-700"
+                  }`}
+                >
+                  {seedingId === l.id ? "Seeding…" : "Create demo"}
+                </button>
                 <select
                   value={l.status}
                   onChange={(e) => setStatus(l.id, e.target.value as LeadStatus)}

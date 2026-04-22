@@ -1,0 +1,17 @@
+{
+  "name": "odudoc-files",
+  "version": "1.0.0",
+  "description": "OduDoc file storage service — CVs, prescriptions, video recordings",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.1",
+    "multer": "^1.4.5-lts.1",
+    "morgan": "^1.10.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

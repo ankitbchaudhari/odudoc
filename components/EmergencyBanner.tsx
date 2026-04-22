@@ -30,10 +30,10 @@ export default function EmergencyBanner() {
           </a>{" "}
           or our 24/7 helpline:{" "}
           <a
-            href="tel:1-800-638-8362"
+            href="tel:+13028992625"
             className="inline-block animate-pulse font-bold underline"
           >
-            1-800-ODUDOC
+            +1 (302) 899-2625
           </a>
         </span>
       </div>

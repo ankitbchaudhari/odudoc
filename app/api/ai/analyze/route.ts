@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { doctors } from "@/lib/data";
 
+import { log } from "@/lib/log";
 // Symptom / keyword → specialty mapping
 const SYMPTOM_MAP: { keywords: string[]; specialty: string; conditions: string[] }[] = [
   {
@@ -174,7 +175,7 @@ export async function POST(req: NextRequest) {
       })),
     });
   } catch (err) {
-    console.error("AI analyze error:", err);
+    log.error("AI analyze error:", err);
     return NextResponse.json({ error: "Analysis failed. Please try again." }, { status: 500 });
   }
 }

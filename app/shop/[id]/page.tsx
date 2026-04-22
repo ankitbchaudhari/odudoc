@@ -1,18 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { products, productReviews } from "@/lib/data";
+import type { Product } from "@/lib/data";
 import { useCart } from "@/lib/cart-context";
+import { normalizeApiProduct, type ApiProduct } from "@/lib/product-normalize";
+
+type ShopProduct = Product & { stock?: number; vendorId?: string; vendorName?: string };
+
+const categoryIcons: Record<string, string> = {
+  Medicines: "M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18",
+  Supplements: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
+  "Personal Care": "M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z",
+  "Medical Devices": "M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z",
+  "Baby Care": "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
+  Wellness: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z",
+};
 
 export default function ProductDetailPage() {
   const params = useParams();
   const { addToCart } = useCart();
-  const product = products.find((p) => p.id === params.id);
+  const id = String(params?.id || "");
+  const [product, setProduct] = useState<ShopProduct | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [related, setRelated] = useState<ShopProduct[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
   const [addedAnimation, setAddedAnimation] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`/api/products/${id}`);
+        if (!res.ok) { setProduct(null); return; }
+        const data = await res.json();
+        if (data.product) setProduct(normalizeApiProduct(data.product as ApiProduct));
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [id]);
+
+  // Pull related products from the same category.
+  useEffect(() => {
+    if (!product) return;
+    fetch(`/api/products?category=${encodeURIComponent(product.category)}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d || !Array.isArray(d.products)) return;
+        const normalized = (d.products as ApiProduct[])
+          .map(normalizeApiProduct)
+          .filter((p) => p.id !== product.id)
+          .slice(0, 4);
+        setRelated(normalized);
+      })
+      .catch(() => {});
+  }, [product]);
+
+  if (loading) {
+    return <div className="p-12 text-center text-sm text-gray-400">Loading product…</div>;
+  }
 
   if (!product) {
     return (
@@ -28,10 +76,8 @@ export default function ProductDetailPage() {
     );
   }
 
-  const reviews = productReviews[product.id] || [];
-  const relatedProducts = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
+  const reviews: { name: string; rating: number; date: string; text: string }[] = [];
+  const relatedProducts = related;
 
   // Rating breakdown
   const ratingBreakdown = [5, 4, 3, 2, 1].map((star) => ({
@@ -78,8 +124,31 @@ export default function ProductDetailPage() {
         {/* Product Section */}
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Left: Image */}
-          <div className={`flex aspect-square items-center justify-center rounded-2xl bg-gradient-to-br ${product.color}`}>
-            <span className="text-8xl font-bold text-white/20">{product.name.charAt(0)}</span>
+          <div className={`relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br ${product.color}`}>
+            {/* Decorative circles */}
+            <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
+            <div className="absolute -bottom-8 -left-8 h-36 w-36 rounded-full bg-white/10" />
+            <div className="absolute top-1/4 left-1/4 h-16 w-16 rounded-full bg-white/5" />
+            {/* Icon container */}
+            <div className="relative flex h-36 w-36 items-center justify-center rounded-3xl bg-white/20 backdrop-blur-sm shadow-xl">
+              <svg
+                className="h-20 w-20 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.2}
+                  d={categoryIcons[product.category] || categoryIcons["Medicines"]}
+                />
+              </svg>
+            </div>
+            {/* Category label */}
+            <span className="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-black/20 px-4 py-1.5 text-sm font-semibold text-white backdrop-blur-sm whitespace-nowrap">
+              {product.category}
+            </span>
           </div>
 
           {/* Right: Details */}
@@ -88,6 +157,15 @@ export default function ProductDetailPage() {
               {product.category}
             </span>
             <h1 className="mt-3 text-2xl font-bold text-gray-900 md:text-3xl">{product.name}</h1>
+            {product.vendorName && (
+              <p className="mt-1 text-sm text-gray-500">
+                Sold by {product.vendorId ? (
+                  <Link href={`/shop/vendor/${product.vendorId}`} className="font-medium text-primary-600 hover:underline">
+                    {product.vendorName}
+                  </Link>
+                ) : <span className="font-medium text-gray-700">{product.vendorName}</span>}
+              </p>
+            )}
 
             {/* Rating */}
             <div className="mt-3 flex items-center gap-2">
@@ -331,8 +409,14 @@ export default function ProductDetailPage() {
                   href={`/shop/${rp.id}`}
                   className="group overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <div className={`h-40 bg-gradient-to-br ${rp.color} flex items-center justify-center`}>
-                    <span className="text-3xl font-bold text-white/30">{rp.name.charAt(0)}</span>
+                  <div className={`relative h-40 bg-gradient-to-br ${rp.color} flex items-center justify-center overflow-hidden`}>
+                    <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-white/10" />
+                    <div className="absolute -bottom-3 -left-3 h-12 w-12 rounded-full bg-white/10" />
+                    <div className="relative flex h-16 w-16 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                      <svg className="h-9 w-9 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={categoryIcons[rp.category] || categoryIcons["Medicines"]} />
+                      </svg>
+                    </div>
                   </div>
                   <div className="p-4">
                     <h3 className="font-semibold text-gray-900 group-hover:text-primary-600">

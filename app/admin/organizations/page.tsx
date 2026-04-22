@@ -36,6 +36,18 @@ interface Organization {
 const PLANS: OrgPlan[] = ["trial", "starter", "clinic", "hospital", "enterprise"];
 const STATUSES: OrgStatus[] = ["active", "suspended", "cancelled"];
 
+// Must stay in sync with PLAN_MODULE_ENTITLEMENTS in lib/organizations-store.ts.
+// Duplicated here (not fetched) so the disabled-state renders instantly as
+// the operator flips the plan dropdown. Server still re-clamps on save —
+// this is a UX hint, not a security boundary.
+const PLAN_MODULES: Record<OrgPlan, (keyof OrgModules)[]> = {
+  trial:      ["patient", "opd", "telemedicine"],
+  starter:    ["patient", "opd", "telemedicine"],
+  clinic:     ["patient", "opd", "lab", "pharmacy", "billing", "telemedicine"],
+  hospital:   ["patient", "opd", "ipd", "lab", "pharmacy", "billing", "surgery", "inventory", "radiology", "telemedicine"],
+  enterprise: ["patient", "opd", "ipd", "lab", "pharmacy", "billing", "surgery", "inventory", "radiology", "telemedicine", "aiVoice"],
+};
+
 const MODULE_LABELS: Record<keyof OrgModules, string> = {
   patient: "Patient Mgmt",
   opd: "OPD",
@@ -78,12 +90,22 @@ const DEFAULT_MODULES: OrgModules = {
   aiVoice: false,
 };
 
+interface RepairedStaff {
+  name: string;
+  email: string;
+  password: string;
+  title: string;
+  action: "created" | "already_existed" | "membership_added";
+}
+
 export default function AdminOrganizations() {
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [repairingId, setRepairingId] = useState<string | null>(null);
+  const [repairResult, setRepairResult] = useState<{ orgName: string; staff: RepairedStaff[] } | null>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -174,8 +196,51 @@ export default function AdminOrganizations() {
     await load();
   };
 
+  const allowedForPlan = new Set<keyof OrgModules>(PLAN_MODULES[form.plan]);
+
   const toggleModule = (key: keyof OrgModules) => {
+    // No-op if the current plan doesn't entitle this module. The backend
+    // would clamp it anyway, but bailing here keeps the UI honest.
+    if (!allowedForPlan.has(key)) return;
     setForm({ ...form, modules: { ...form.modules, [key]: !form.modules[key] } });
+  };
+
+  // When the plan changes, force-disable any modules that aren't in the new
+  // plan's entitlement so the operator sees exactly what they'll get.
+  const handlePlanChange = (plan: OrgPlan) => {
+    const allowed = new Set<keyof OrgModules>(PLAN_MODULES[plan]);
+    const nextModules = { ...form.modules };
+    (Object.keys(nextModules) as (keyof OrgModules)[]).forEach((k) => {
+      if (!allowed.has(k)) nextModules[k] = false;
+    });
+    setForm({ ...form, plan, modules: nextModules });
+  };
+
+  const handleRepairStaff = async (o: Organization) => {
+    if (!confirm(
+      `Repair demo staff for "${o.name}"?\n\n` +
+      `This re-creates the 3 doctors + 1 receptionist using the same emails and passwords as the original seed, so any previously-emailed credentials will work again. Existing users are left alone.`
+    )) return;
+    setRepairingId(o.id);
+    setRepairResult(null);
+    try {
+      const r = await fetch("/api/admin/super/repair-demo-staff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orgId: o.id }),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        setRepairResult({ orgName: o.name, staff: data.staff || [] });
+      } else {
+        const err = await r.json().catch(() => ({}));
+        alert(`Repair failed: ${err.error || r.statusText}`);
+      }
+    } catch (e) {
+      alert(`Repair failed: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setRepairingId(null);
+    }
   };
 
   return (
@@ -248,7 +313,7 @@ export default function AdminOrganizations() {
               <label className="mb-1 block text-sm font-medium text-gray-700">Plan</label>
               <select
                 value={form.plan}
-                onChange={(e) => setForm({ ...form, plan: e.target.value as OrgPlan })}
+                onChange={(e) => handlePlanChange(e.target.value as OrgPlan)}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm capitalize outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               >
                 {PLANS.map((p) => (
@@ -269,22 +334,35 @@ export default function AdminOrganizations() {
               </select>
             </div>
             <div className="sm:col-span-2">
-              <label className="mb-2 block text-sm font-medium text-gray-700">Enabled modules</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Enabled modules
+                <span className="ml-2 text-[11px] font-normal text-gray-400">
+                  · greyed modules aren&rsquo;t included in the <span className="capitalize">{form.plan}</span> plan
+                </span>
+              </label>
               <div className="flex flex-wrap gap-2">
-                {(Object.keys(MODULE_LABELS) as (keyof OrgModules)[]).map((key) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => toggleModule(key)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                      form.modules[key]
-                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                        : "border-gray-300 bg-white text-gray-500 hover:border-indigo-300"
-                    }`}
-                  >
-                    {MODULE_LABELS[key]}
-                  </button>
-                ))}
+                {(Object.keys(MODULE_LABELS) as (keyof OrgModules)[]).map((key) => {
+                  const allowed = allowedForPlan.has(key);
+                  const on = form.modules[key];
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => toggleModule(key)}
+                      disabled={!allowed}
+                      title={allowed ? undefined : `Not available on the ${form.plan} plan — upgrade to enable`}
+                      className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                        !allowed
+                          ? "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-300"
+                          : on
+                          ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                          : "border-gray-300 bg-white text-gray-500 hover:border-indigo-300"
+                      }`}
+                    >
+                      {MODULE_LABELS[key]}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -357,6 +435,7 @@ export default function AdminOrganizations() {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleEdit(o)}
+                          title="Edit"
                           className="rounded p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600"
                         >
                           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -364,7 +443,26 @@ export default function AdminOrganizations() {
                           </svg>
                         </button>
                         <button
+                          onClick={() => handleRepairStaff(o)}
+                          disabled={repairingId === o.id}
+                          title="Repair demo staff users (for orgs seeded before the flush-race fix)"
+                          className="rounded p-1.5 text-gray-400 hover:bg-amber-50 hover:text-amber-600 disabled:opacity-40"
+                        >
+                          {repairingId === o.id ? (
+                            <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <circle cx="12" cy="12" r="10" strokeWidth={3} className="opacity-25" />
+                              <path strokeLinecap="round" strokeWidth={3} d="M22 12a10 10 0 00-10-10" />
+                            </svg>
+                          ) : (
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                          )}
+                        </button>
+                        <button
                           onClick={() => handleDelete(o.id)}
+                          title="Delete"
                           className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
                         >
                           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -384,6 +482,76 @@ export default function AdminOrganizations() {
         )}
         {loading && <div className="py-12 text-center text-sm text-gray-400">Loading…</div>}
       </div>
+
+      {repairResult && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+          onClick={() => setRepairResult(null)}
+        >
+          <div
+            className="w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Staff repaired</h2>
+                <p className="mt-0.5 text-[13px] text-slate-500">
+                  {repairResult.orgName} — credentials below match the original seed email.
+                </p>
+              </div>
+              <button
+                onClick={() => setRepairResult(null)}
+                className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Close"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {repairResult.staff.map((s) => (
+                <div
+                  key={s.email}
+                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[13px]"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium text-slate-800">{s.name}</span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide ${
+                        s.action === "created"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : s.action === "membership_added"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-slate-200 text-slate-600"
+                      }`}
+                    >
+                      {s.action === "created"
+                        ? "created"
+                        : s.action === "membership_added"
+                        ? "membership added"
+                        : "already existed"}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-[11.5px] text-slate-500">{s.title}</p>
+                  <p className="mt-1 font-mono text-[11.5px] text-slate-700">{s.email}</p>
+                  <p className="font-mono text-[11.5px] text-slate-700">pw: {s.password}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setRepairResult(null)}
+                className="rounded-lg bg-primary-600 px-4 py-2 text-[13px] font-semibold text-white hover:bg-primary-700"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

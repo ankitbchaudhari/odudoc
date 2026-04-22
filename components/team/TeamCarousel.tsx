@@ -1,11 +1,10 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import Link from "next/link";
-import { doctors } from "@/lib/data";
 import type { Doctor } from "@/lib/data";
 
 import "swiper/css";
@@ -13,6 +12,17 @@ import "swiper/css/navigation";
 
 export default function TeamCarousel() {
   const swiperRef = useRef<SwiperType | null>(null);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  useEffect(() => {
+    fetch("/api/doctors", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && Array.isArray(d.doctors)) setDoctors(d.doctors);
+      })
+      .catch(() => {});
+  }, []);
+
+  if (doctors.length === 0) return null;
 
   return (
     <section className="py-20">

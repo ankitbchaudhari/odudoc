@@ -36,6 +36,10 @@ export interface Organization {
   };
   // Ops metadata.
   trialEndsAt?: string;
+  // Timestamp of when we last emailed the demo admin reminding them that
+  // their trial is ending. Used by /api/cron/cleanup-demos to deduplicate
+  // the 3-day-before reminder so we only nag once per demo org.
+  demoReminderSentAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -53,6 +57,45 @@ const DEFAULT_MODULES: Organization["modules"] = {
   telemedicine: true,
   aiVoice: false,
 };
+
+// Plan → modules the plan is entitled to. Anything not in this set is
+// forcibly off when an org is on that plan, regardless of what a super-
+// admin ticks in the UI. Source of truth for "what does $X/mo buy you".
+// Trial matches starter so demos feel real; enterprise gets everything.
+type ModuleKey = keyof Organization["modules"];
+const ALL_MODULES: readonly ModuleKey[] = [
+  "patient", "opd", "ipd", "lab", "pharmacy", "billing",
+  "surgery", "inventory", "radiology", "telemedicine", "aiVoice",
+];
+
+export const PLAN_MODULE_ENTITLEMENTS: Record<OrgPlan, readonly ModuleKey[]> = {
+  trial:      ["patient", "opd", "telemedicine"],
+  starter:    ["patient", "opd", "telemedicine"],
+  clinic:     ["patient", "opd", "lab", "pharmacy", "billing", "telemedicine"],
+  hospital:   ["patient", "opd", "ipd", "lab", "pharmacy", "billing", "surgery", "inventory", "radiology", "telemedicine"],
+  enterprise: ALL_MODULES,
+};
+
+export function allowedModulesForPlan(plan: OrgPlan): Set<ModuleKey> {
+  return new Set(PLAN_MODULE_ENTITLEMENTS[plan]);
+}
+
+// Clamp a module flag-set to the plan's entitlements. Any key the plan
+// doesn't allow is force-disabled. Used on both create and update so a
+// super-admin can't accidentally sell enterprise features on a starter
+// plan. Super-admin UIs surface a warning when clamping changes anything.
+export function clampModulesToPlan(
+  plan: OrgPlan,
+  modules: Partial<Organization["modules"]>
+): Organization["modules"] {
+  const allowed = allowedModulesForPlan(plan);
+  const merged = { ...DEFAULT_MODULES, ...modules };
+  const clamped = { ...merged };
+  for (const key of ALL_MODULES) {
+    if (!allowed.has(key)) clamped[key] = false;
+  }
+  return clamped;
+}
 
 const orgs: Organization[] = [];
 const { hydrate, flush } = bindPersistentArray<Organization>(
@@ -102,8 +145,9 @@ export interface OrgInput {
 
 export function createOrganization(input: OrgInput): Organization {
   const now = new Date().toISOString();
+  const plan: OrgPlan = input.plan ?? "trial";
   const trialEndsAt =
-    input.plan === "trial" || !input.plan
+    plan === "trial"
       ? new Date(Date.now() + (input.trialDays ?? 14) * 24 * 60 * 60 * 1000).toISOString()
       : undefined;
   const org: Organization = {
@@ -113,9 +157,11 @@ export function createOrganization(input: OrgInput): Organization {
     contactEmail: input.contactEmail.trim().toLowerCase(),
     contactPhone: input.contactPhone?.trim() || undefined,
     country: (input.country || "").trim(),
-    plan: input.plan ?? "trial",
+    plan,
     status: "active",
-    modules: { ...DEFAULT_MODULES, ...(input.modules || {}) },
+    // Clamp requested modules to the plan's entitlements — starter plans
+    // cannot have aiVoice etc. even if the UI ticks the box.
+    modules: clampModulesToPlan(plan, input.modules || {}),
     trialEndsAt,
     createdAt: now,
     updatedAt: now,
@@ -138,7 +184,12 @@ export function updateOrganization(
   if (patch.plan !== undefined) o.plan = patch.plan;
   if (patch.status !== undefined) o.status = patch.status;
   if (patch.modules !== undefined) o.modules = { ...o.modules, ...patch.modules };
+  // Re-clamp against the (possibly newly-changed) plan so a plan downgrade
+  // or a module bump-that-exceeds-the-plan can't slip through. This runs
+  // even when only one of plan/modules was touched.
+  o.modules = clampModulesToPlan(o.plan, o.modules);
   if (patch.trialEndsAt !== undefined) o.trialEndsAt = patch.trialEndsAt;
+  if (patch.demoReminderSentAt !== undefined) o.demoReminderSentAt = patch.demoReminderSentAt;
   o.updatedAt = new Date().toISOString();
   flush();
   return o;

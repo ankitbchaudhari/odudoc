@@ -8,33 +8,56 @@ export default function FAQAccordion({ items }: { items: FAQ[] }) {
 
   return (
     <div className="space-y-3">
-      {items.map((faq) => {
+      {items.map((faq, idx) => {
         const isOpen = openId === faq.id;
         return (
           <div
             key={faq.id}
-            className="overflow-hidden rounded-xl border border-gray-200 bg-white transition-shadow hover:shadow-sm"
+            className={`overflow-hidden rounded-2xl border bg-white transition-all ${
+              isOpen
+                ? "border-primary-300 shadow-lg shadow-primary-500/10"
+                : "border-gray-100 hover:border-primary-200 hover:shadow-md"
+            }`}
           >
             <button
               onClick={() => setOpenId(isOpen ? null : faq.id)}
-              className="flex w-full items-center justify-between px-6 py-4 text-left"
+              className="flex w-full items-center gap-4 px-6 py-4 text-left"
             >
-              <span className="pr-4 text-sm font-semibold text-gray-900">{faq.question}</span>
+              <span
+                className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl text-sm font-bold shadow-sm transition-colors ${
+                  isOpen
+                    ? "bg-gradient-to-br from-primary-500 to-teal-500 text-white"
+                    : "bg-primary-50 text-primary-600"
+                }`}
+              >
+                {String(idx + 1).padStart(2, "0")}
+              </span>
+              <span
+                className={`flex-1 pr-2 text-sm font-semibold ${
+                  isOpen ? "text-primary-700" : "text-gray-900"
+                }`}
+              >
+                {faq.question}
+              </span>
               <svg
-                className={`h-5 w-5 flex-shrink-0 text-gray-400 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+                className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ${
+                  isOpen ? "rotate-180 text-primary-600" : "text-gray-400"
+                }`}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
             <div
               className={`overflow-hidden transition-all duration-300 ${
-                isOpen ? "max-h-96 pb-4" : "max-h-0"
+                isOpen ? "max-h-96 pb-5" : "max-h-0"
               }`}
             >
-              <p className="px-6 text-sm leading-relaxed text-gray-600">{faq.answer}</p>
+              <p className="border-t border-gray-100 px-6 pt-4 text-sm leading-relaxed text-gray-600">
+                {faq.answer}
+              </p>
             </div>
           </div>
         );

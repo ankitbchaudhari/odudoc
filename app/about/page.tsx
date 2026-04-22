@@ -19,8 +19,8 @@ const team: TeamMember[] = [
   { name: "Dr. Dixit Velani", role: "Chief Medical Officer", initials: "DV", color: "bg-teal-500" },
   { name: "Dr. Ankitkumar Chaudhari", role: "CTO", initials: "AC", color: "bg-indigo-500" },
   { name: "Dr. Prutha Chaudhary", role: "Head of Growth", initials: "PC", color: "bg-orange-500" },
-  { name: "Dr. Dharmistha Vadher", role: "Doctor of Medicine", initials: "DV", color: "bg-pink-500" },
   { name: "Lawan Bala", role: "Head of Pharmacy", initials: "LB", color: "bg-emerald-500" },
+  { name: "Danlami Lawal", role: "Microbiologist", initials: "DL", color: "bg-cyan-500" },
 ];
 
 const values = [

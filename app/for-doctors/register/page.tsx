@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import DoctorPlanComparison from "@/components/DoctorPlanComparison";
+import { COUNTRIES } from "@/lib/countries";
 
 const SPECIALTIES = [
   "Cardiology",
@@ -68,6 +68,9 @@ const LANGUAGES = [
 interface UploadedFile {
   name: string;
   size: number;
+  // Populated after the file has been uploaded to Vercel Blob storage.
+  // Empty string while upload is in progress.
+  url: string;
 }
 
 interface FormState {
@@ -139,7 +142,7 @@ const STEPS = [
   { num: 1, label: "Personal" },
   { num: 2, label: "Professional" },
   { num: 3, label: "Documents" },
-  { num: 4, label: "Plan" },
+  { num: 4, label: "Fees" },
   { num: 5, label: "Review" },
 ];
 
@@ -189,17 +192,29 @@ function DoctorRegisterForm() {
       if (form.languages.length === 0) e.languages = "Select at least one language";
     }
     if (s === 3) {
-      if (!form.documents.medicalLicense) e.medicalLicense = "Required";
-      if (!form.documents.governmentId) e.governmentId = "Required";
-      if (!form.documents.medicalDegree) e.medicalDegree = "Required";
-      if (!form.documents.professionalPhoto) e.professionalPhoto = "Required";
+      // Require both presence AND a finished upload (url populated).
+      const needUrl = (f: UploadedFile | null) => !f || !f.url;
+      if (needUrl(form.documents.medicalLicense))
+        e.medicalLicense = form.documents.medicalLicense
+          ? "Still uploading — please wait"
+          : "Required";
+      if (needUrl(form.documents.governmentId))
+        e.governmentId = form.documents.governmentId
+          ? "Still uploading — please wait"
+          : "Required";
+      if (needUrl(form.documents.medicalDegree))
+        e.medicalDegree = form.documents.medicalDegree
+          ? "Still uploading — please wait"
+          : "Required";
+      if (needUrl(form.documents.professionalPhoto))
+        e.professionalPhoto = form.documents.professionalPhoto
+          ? "Still uploading — please wait"
+          : "Required";
     }
     if (s === 4) {
       const feeNum = parseFloat(form.fee);
-      const min = 100;
-      const max = form.plan === "premium" ? 500 : 250;
-      if (isNaN(feeNum) || feeNum < min || feeNum > max)
-        e.fee = `Fee must be between $${min} and $${max}`;
+      if (isNaN(feeNum) || feeNum < 20 || feeNum > 1000)
+        e.fee = `Fee must be between $20 and $1,000`;
     }
     if (s === 5) {
       if (!form.acceptTerms) e.acceptTerms = "You must accept the terms";
@@ -235,12 +250,24 @@ function DoctorRegisterForm() {
         affiliations: form.affiliations,
         languages: form.languages,
         documents: {
-          medicalLicense: form.documents.medicalLicense?.name,
-          governmentId: form.documents.governmentId?.name,
-          medicalDegree: form.documents.medicalDegree?.name,
-          professionalPhoto: form.documents.professionalPhoto?.name,
-          specialtyCertifications: form.documents.specialtyCertifications.map((f) => f.name),
-          hospitalAffiliationLetter: form.documents.hospitalAffiliationLetter?.name,
+          // Send the Blob URL (where the file actually lives) — admins open
+          // this URL to view/download. If upload is still in-flight or
+          // failed, fall back to the filename so the record isn't empty.
+          medicalLicense:
+            form.documents.medicalLicense?.url || form.documents.medicalLicense?.name,
+          governmentId:
+            form.documents.governmentId?.url || form.documents.governmentId?.name,
+          medicalDegree:
+            form.documents.medicalDegree?.url || form.documents.medicalDegree?.name,
+          professionalPhoto:
+            form.documents.professionalPhoto?.url ||
+            form.documents.professionalPhoto?.name,
+          specialtyCertifications: form.documents.specialtyCertifications.map(
+            (f) => f.url || f.name
+          ),
+          hospitalAffiliationLetter:
+            form.documents.hospitalAffiliationLetter?.url ||
+            form.documents.hospitalAffiliationLetter?.name,
         },
         plan: form.plan,
         fee: parseFloat(form.fee),
@@ -431,26 +458,9 @@ function Step1({
         <Field label="Country" error={errors.country} required>
           <select className={inputClass} value={form.country} onChange={(e) => update("country", e.target.value)}>
             <option value="">Select a country...</option>
-            <option>United States</option>
-            <option>United Kingdom</option>
-            <option>Canada</option>
-            <option>Australia</option>
-            <option>India</option>
-            <option>Germany</option>
-            <option>France</option>
-            <option>Brazil</option>
-            <option>Nigeria</option>
-            <option>South Africa</option>
-            <option>Mexico</option>
-            <option>Japan</option>
-            <option>China</option>
-            <option>South Korea</option>
-            <option>United Arab Emirates</option>
-            <option>Saudi Arabia</option>
-            <option>Singapore</option>
-            <option>Philippines</option>
-            <option>Pakistan</option>
-            <option>Egypt</option>
+            {COUNTRIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
           </select>
         </Field>
         <div className="sm:col-span-2">
@@ -547,6 +557,38 @@ function DropZone({
   error?: string;
   required?: boolean;
 }) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  async function handlePick(f: File) {
+    if (f.size > 4 * 1024 * 1024) {
+      setUploadError("File exceeds 4MB");
+      return;
+    }
+    setUploadError(null);
+    setUploading(true);
+    onChange({ name: f.name, size: f.size, url: "" });
+    try {
+      const fd = new FormData();
+      fd.append("file", f);
+      const res = await fetch("/api/blob/upload-doctor-doc", {
+        method: "POST",
+        body: fd,
+      });
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || `Upload failed (${res.status})`);
+      }
+      onChange({ name: f.name, size: f.size, url: data.url });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Upload failed";
+      setUploadError(msg);
+      onChange(null);
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
     <div>
       <label className="mb-1.5 block text-sm font-medium text-gray-700">
@@ -558,38 +600,48 @@ function DropZone({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
           </svg>
           <p className="mt-2 text-sm text-gray-600"><span className="font-semibold text-primary-600">Click to upload</span> or drag and drop</p>
-          <p className="text-xs text-gray-400">PDF, PNG, JPG (max 5MB)</p>
+          <p className="text-xs text-gray-400">PDF, PNG, JPG (max 4MB)</p>
           <input
             type="file"
             className="hidden"
-            accept=".pdf,.png,.jpg,.jpeg"
+            accept=".pdf,.png,.jpg,.jpeg,.webp"
             onChange={(e) => {
               const f = e.target.files?.[0];
-              if (f) {
-                if (f.size > 5 * 1024 * 1024) {
-                  alert("File exceeds 5MB");
-                  return;
-                }
-                onChange({ name: f.name, size: f.size });
-              }
+              if (f) void handlePick(f);
             }}
           />
         </label>
       ) : (
         <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
           <div className="flex h-10 w-10 items-center justify-center rounded bg-primary-100 text-primary-700">
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+            {uploading ? (
+              <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4} />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              </svg>
+            ) : file.url ? (
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            ) : (
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            )}
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-gray-900">{file.name}</p>
-            <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
+            <p className="text-xs text-gray-500">
+              {(file.size / 1024).toFixed(1)} KB
+              {uploading && <span className="ml-2 text-primary-600">· uploading…</span>}
+              {!uploading && file.url && <span className="ml-2 text-emerald-600">· uploaded ✓</span>}
+            </p>
           </div>
           <button
             type="button"
             onClick={() => onChange(null)}
             className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+            aria-label="Remove file"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -597,7 +649,9 @@ function DropZone({
           </button>
         </div>
       )}
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {(error || uploadError) && (
+        <p className="mt-1 text-xs text-red-600">{uploadError || error}</p>
+      )}
     </div>
   );
 }
@@ -666,9 +720,55 @@ function Step3({
               multiple
               className="hidden"
               accept=".pdf,.png,.jpg,.jpeg"
-              onChange={(e) => {
-                const files = Array.from(e.target.files || []).map((f) => ({ name: f.name, size: f.size }));
-                setDoc("specialtyCertifications", [...form.documents.specialtyCertifications, ...files]);
+              onChange={async (e) => {
+                const picked = Array.from(e.target.files || []);
+                if (picked.length === 0) return;
+                // Placeholder rows while each file uploads in parallel
+                const placeholders: UploadedFile[] = picked.map((f) => ({
+                  name: f.name,
+                  size: f.size,
+                  url: "",
+                }));
+                setDoc("specialtyCertifications", [
+                  ...form.documents.specialtyCertifications,
+                  ...placeholders,
+                ]);
+                const uploaded = await Promise.all(
+                  picked.map(async (f) => {
+                    if (f.size > 4 * 1024 * 1024) {
+                      return { name: f.name, size: f.size, url: "" };
+                    }
+                    try {
+                      const fd = new FormData();
+                      fd.append("file", f);
+                      const res = await fetch(
+                        "/api/blob/upload-doctor-doc",
+                        { method: "POST", body: fd }
+                      );
+                      const data = (await res.json()) as {
+                        url?: string;
+                        error?: string;
+                      };
+                      if (!res.ok || !data.url) throw new Error(data.error);
+                      return { name: f.name, size: f.size, url: data.url };
+                    } catch {
+                      return { name: f.name, size: f.size, url: "" };
+                    }
+                  })
+                );
+                // Swap placeholders for fully-uploaded rows
+                setForm((fs) => ({
+                  ...fs,
+                  documents: {
+                    ...fs.documents,
+                    specialtyCertifications: [
+                      ...fs.documents.specialtyCertifications.filter(
+                        (x) => !placeholders.some((p) => p.name === x.name && p.url === "" && x.url === "")
+                      ),
+                      ...uploaded,
+                    ],
+                  },
+                }));
               }}
             />
           </label>
@@ -708,47 +808,82 @@ function Step4({
   update: <K extends keyof FormState>(k: K, v: FormState[K]) => void;
   errors: Record<string, string>;
 }) {
-  const maxFee = form.plan === "premium" ? 500 : 250;
+  const feeNum = parseFloat(form.fee) || 0;
+  const commission = Math.round(feeNum * 0.3 * 100) / 100;
+  const payout = Math.round((feeNum - commission) * 100) / 100;
+
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900">Choose Your Plan</h2>
-      <p className="mt-1 text-sm text-gray-500">You can change this anytime from your dashboard</p>
-      <div className="mt-6">
-        <DoctorPlanComparison
-          selectedPlan={form.plan}
-          onSelect={(p) => update("plan", p)}
-          showCta={false}
-        />
+      <h2 className="text-xl font-semibold text-gray-900">Set Your Fee</h2>
+      <p className="mt-1 text-sm text-gray-500">
+        No subscription. No monthly fee. OduDoc takes a flat 30% commission per successful consultation.
+      </p>
+
+      {/* Commission explainer */}
+      <div className="mt-6 rounded-2xl border-2 border-primary-200 bg-gradient-to-br from-primary-50 to-white p-6">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-white">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </span>
+          <h3 className="text-base font-bold text-primary-900">How You Earn</h3>
+        </div>
+        <p className="mt-3 text-sm text-primary-900">
+          You set your per-consultation fee. For every successful consultation, you keep
+          <strong> 70% </strong> and OduDoc takes <strong>30%</strong> (covers payment processing, hosting, and patient acquisition).
+          No charge on cancellations or no-shows.
+        </p>
       </div>
 
-      <div className="mt-8 rounded-xl border border-gray-200 p-5">
-        <Field label={`Your per-consultation fee ($100 - $${maxFee})`} error={errors.fee} required>
+      {/* Fee input */}
+      <div className="mt-6 rounded-xl border border-gray-200 p-5">
+        <Field label="Your per-consultation fee ($20 – $1,000)" error={errors.fee} required>
           <div className="flex items-center gap-2">
             <span className="text-lg font-semibold text-gray-700">$</span>
             <input
               type="number"
-              min="100"
-              max={maxFee}
+              min="20"
+              max="1000"
               className={inputClass}
               value={form.fee}
               onChange={(e) => update("fee", e.target.value)}
+              placeholder="150"
             />
           </div>
         </Field>
+
+        {feeNum > 0 && (
+          <div className="mt-5 grid grid-cols-3 gap-3">
+            <div className="rounded-lg bg-gray-50 p-3 text-center">
+              <div className="text-xs text-gray-500">Patient Pays</div>
+              <div className="mt-1 text-xl font-bold text-gray-900">${feeNum.toFixed(2)}</div>
+            </div>
+            <div className="rounded-lg bg-green-50 p-3 text-center">
+              <div className="text-xs text-green-700">You Get (70%)</div>
+              <div className="mt-1 text-xl font-bold text-green-700">${payout.toFixed(2)}</div>
+            </div>
+            <div className="rounded-lg bg-primary-50 p-3 text-center">
+              <div className="text-xs text-primary-700">OduDoc (30%)</div>
+              <div className="mt-1 text-xl font-bold text-primary-700">${commission.toFixed(2)}</div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {form.plan === "premium" && (
-        <div className="mt-6 rounded-xl border border-primary-200 bg-primary-50 p-5">
-          <h3 className="font-semibold text-primary-900">Payment (Placeholder)</h3>
-          <p className="mt-1 text-sm text-primary-800">
-            $250/month will be charged after your application is approved. No payment required now.
-          </p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <input className={inputClass} placeholder="Card Number" />
-            <input className={inputClass} placeholder="MM / YY" />
+      <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-5">
+        <div className="flex items-start gap-3">
+          <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          <div>
+            <h4 className="text-sm font-semibold text-green-900">No payment required to register</h4>
+            <p className="mt-1 text-xs text-green-800">
+              Free signup. Free verification. Free dashboard access. You only share revenue when you earn from a consultation.
+            </p>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -801,9 +936,11 @@ function Step5({
             }
           />
         </Summary>
-        <Summary title="Subscription">
-          <Row k="Plan" v={form.plan === "premium" ? "Premium ($250/mo)" : "Free"} />
+        <Summary title="Earnings Model">
+          <Row k="Model" v="Commission-based (no monthly fee)" />
           <Row k="Per-Consultation Fee" v={`$${form.fee}`} />
+          <Row k="You Keep" v={`$${(parseFloat(form.fee || "0") * 0.7).toFixed(2)} per consultation (70%)`} />
+          <Row k="OduDoc Commission" v={`$${(parseFloat(form.fee || "0") * 0.3).toFixed(2)} per consultation (30%)`} />
         </Summary>
       </div>
 

@@ -201,8 +201,8 @@ function ApplicationForm({
     email: "",
     phone: "",
     coverLetter: "",
-    cvFileName: "",
   });
+  const [cvFile, setCvFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -215,27 +215,38 @@ function ApplicationForm({
       return;
     }
     setError("");
-    setForm({ ...form, cvFileName: file.name });
+    setCvFile(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.cvFileName) {
+    if (!cvFile) {
       setError("Please upload your CV");
       return;
     }
     setSubmitting(true);
     setError("");
     try {
+      const fd = new FormData();
+      fd.append("firstName", form.firstName);
+      fd.append("lastName", form.lastName);
+      fd.append("email", form.email);
+      fd.append("phone", form.phone);
+      fd.append("coverLetter", form.coverLetter);
+      if (jobId) fd.append("jobId", jobId);
+      fd.append("cv", cvFile, cvFile.name);
+
       const res = await fetch("/api/careers/applications", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, jobId }),
+        body: fd,
       });
-      if (!res.ok) throw new Error("Submission failed");
+      if (!res.ok) {
+        const j = (await res.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(j?.error || "Submission failed");
+      }
       setSuccess(true);
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -353,7 +364,7 @@ function ApplicationForm({
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
-                  {form.cvFileName || "Click to upload PDF / DOC"}
+                  {cvFile?.name || "Click to upload PDF / DOC"}
                   <input
                     type="file"
                     accept=".pdf,.doc,.docx"

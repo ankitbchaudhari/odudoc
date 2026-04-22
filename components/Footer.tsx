@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
 import Logo from "@/components/Logo";
+import { SPECIALTIES } from "@/lib/seo/specialties";
+import { CITIES } from "@/lib/seo/cities";
+import { SYMPTOMS } from "@/lib/seo/symptoms";
 
 export default function Footer() {
   const { t } = useLanguage();
@@ -14,7 +17,6 @@ export default function Footer() {
         { label: t("nav.about"), href: "/about" },
         { label: t("nav.blog"), href: "/blog" },
         { label: "Careers", href: "/careers" },
-        { label: "Press", href: "/press" },
         { label: t("nav.contact"), href: "/contact" },
       ],
     },
@@ -22,7 +24,12 @@ export default function Footer() {
       title: t("footer.forPatients"),
       links: [
         { label: t("footer.findDoctors"), href: "/doctors" },
+        { label: "Doctors A–Z", href: "/doctors-az" },
         { label: t("footer.videoConsult"), href: "/consult" },
+        { label: "Symptoms A–Z", href: "/symptoms" },
+        { label: "Conditions A–Z", href: "/conditions" },
+        { label: "Medical Glossary", href: "/glossary" },
+        { label: "Compare", href: "/compare" },
         { label: t("footer.surgeries"), href: "/surgeries" },
         { label: t("footer.healthArticles"), href: "/blog" },
         { label: t("nav.gallery"), href: "/gallery" },
@@ -51,6 +58,63 @@ export default function Footer() {
 
   return (
     <footer className="bg-gray-900 text-gray-300">
+      {/* SEO internal-link rails — top specialties + cities. Cheap, boring,
+          and enormously effective for long-tail rankings. */}
+      <div className="border-b border-gray-800 bg-gray-950/60">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          <div className="grid gap-8 md:grid-cols-3">
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-white">
+                Popular specialties
+              </h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {SPECIALTIES.map((s) => (
+                  <Link
+                    key={s.slug}
+                    href={`/specialty/${s.slug}`}
+                    className="rounded-full bg-gray-800 px-3 py-1 text-xs text-gray-300 transition-colors hover:bg-primary-600 hover:text-white"
+                  >
+                    {s.displayName}
+                  </Link>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-white">
+                Common symptoms
+              </h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {SYMPTOMS.map((s) => (
+                  <Link
+                    key={s.slug}
+                    href={`/symptoms/${s.slug}`}
+                    className="rounded-full bg-gray-800 px-3 py-1 text-xs text-gray-300 transition-colors hover:bg-primary-600 hover:text-white"
+                  >
+                    {s.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-white">
+                Popular cities
+              </h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {CITIES.map((c) => (
+                  <Link
+                    key={c.slug}
+                    href={`/doctors-in/${c.slug}`}
+                    className="rounded-full bg-gray-800 px-3 py-1 text-xs text-gray-300 transition-colors hover:bg-primary-600 hover:text-white"
+                  >
+                    {c.displayName}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           {footerSections.map((section) => (
@@ -81,14 +145,21 @@ export default function Footer() {
           </div>
 
           <div className="flex gap-4">
-            {["Facebook", "Twitter", "Instagram", "LinkedIn"].map((s) => (
+            {[
+              { name: "Facebook", url: "#", letter: "f" },
+              { name: "Twitter", url: "#", letter: "X" },
+              { name: "Instagram", url: "#", letter: "i" },
+              { name: "LinkedIn", url: "https://www.linkedin.com/company/115797909/", letter: "in" },
+            ].map((s) => (
               <a
-                key={s}
-                href="#"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 text-xs text-gray-400 transition-colors hover:bg-primary-600 hover:text-white"
-                aria-label={s}
+                key={s.name}
+                href={s.url}
+                target={s.url === "#" ? undefined : "_blank"}
+                rel={s.url === "#" ? undefined : "noopener noreferrer"}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 text-xs font-bold text-gray-400 transition-colors hover:bg-primary-600 hover:text-white"
+                aria-label={s.name}
               >
-                {s[0]}
+                {s.letter}
               </a>
             ))}
           </div>

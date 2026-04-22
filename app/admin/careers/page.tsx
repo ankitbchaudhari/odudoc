@@ -3,28 +3,38 @@
 import { useEffect, useState } from "react";
 import type { JobVacancy, JobApplication, EmploymentType } from "@/lib/careers-store";
 
+type AppView = "active" | "archived";
+
 export default function AdminCareersPage() {
   const [tab, setTab] = useState<"jobs" | "applications">("jobs");
   const [jobs, setJobs] = useState<JobVacancy[]>([]);
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [editing, setEditing] = useState<JobVacancy | null>(null);
   const [showNew, setShowNew] = useState(false);
+  const [appView, setAppView] = useState<AppView>("active");
+  const [busyAppId, setBusyAppId] = useState<string | null>(null);
 
   const loadJobs = () => {
     fetch("/api/careers/jobs?all=1")
       .then((r) => r.json())
       .then((d) => setJobs(d.jobs || []));
   };
-  const loadApplications = () => {
-    fetch("/api/careers/applications")
+  const loadApplications = (view: AppView = appView) => {
+    const qs = view === "archived" ? "?view=archived" : "";
+    fetch(`/api/careers/applications${qs}`)
       .then((r) => r.json())
       .then((d) => setApplications(d.applications || []));
   };
 
   useEffect(() => {
     loadJobs();
-    loadApplications();
+    loadApplications("active");
   }, []);
+
+  useEffect(() => {
+    loadApplications(appView);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appView]);
 
   const deleteJob = async (id: string) => {
     if (!confirm("Delete this vacancy?")) return;
@@ -42,12 +52,81 @@ export default function AdminCareersPage() {
   };
 
   const updateAppStatus = async (id: string, status: JobApplication["status"]) => {
-    await fetch("/api/careers/applications", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status }),
-    });
-    loadApplications();
+    setBusyAppId(id);
+    try {
+      await fetch("/api/careers/applications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+      loadApplications();
+    } finally {
+      setBusyAppId(null);
+    }
+  };
+
+  const archiveApp = async (id: string) => {
+    setBusyAppId(id);
+    try {
+      await fetch("/api/careers/applications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action: "archive" }),
+      });
+      loadApplications();
+    } finally {
+      setBusyAppId(null);
+    }
+  };
+
+  const unarchiveApp = async (id: string) => {
+    setBusyAppId(id);
+    try {
+      await fetch("/api/careers/applications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action: "unarchive" }),
+      });
+      loadApplications();
+    } finally {
+      setBusyAppId(null);
+    }
+  };
+
+  const deleteApp = async (id: string, name: string) => {
+    if (
+      !confirm(
+        `Permanently delete ${name}'s application? This cannot be undone. Consider archiving instead.`
+      )
+    )
+      return;
+    setBusyAppId(id);
+    try {
+      await fetch(`/api/careers/applications?id=${id}`, { method: "DELETE" });
+      loadApplications();
+    } finally {
+      setBusyAppId(null);
+    }
+  };
+
+  const openCv = async (a: JobApplication) => {
+    if (!a.cvStoredFilename) {
+      alert(
+        "This is a legacy demo record without a stored CV file. Only applications submitted after the file-service rollout have downloadable CVs."
+      );
+      return;
+    }
+    try {
+      const res = await fetch(`/api/careers/applications/${a.id}/cv-url`);
+      if (!res.ok) {
+        const j = (await res.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(j?.error || `Failed (${res.status})`);
+      }
+      const { url } = (await res.json()) as { url: string };
+      window.open(url, "_blank", "noopener");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Could not open CV");
+    }
   };
 
   return (
@@ -155,6 +234,36 @@ export default function AdminCareersPage() {
       )}
 
       {tab === "applications" && (
+        <>
+          {/* Sub-filter: active vs archived */}
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setAppView("active")}
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  appView === "active"
+                    ? "bg-primary-600 text-white"
+                    : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                Active
+              </button>
+              <button
+                onClick={() => setAppView("archived")}
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  appView === "archived"
+                    ? "bg-primary-600 text-white"
+                    : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                Archived
+              </button>
+            </div>
+            <p className="text-xs text-gray-400">
+              Candidates receive an email when their status is set to Reviewing / Shortlisted / Hired / Rejected.
+            </p>
+          </div>
+
         <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
           <table className="min-w-full divide-y divide-gray-100">
             <thead className="bg-gray-50">
@@ -165,6 +274,7 @@ export default function AdminCareersPage() {
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">CV</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Date</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -182,7 +292,34 @@ export default function AdminCareersPage() {
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {job?.title || <span className="italic text-gray-400">General</span>}
                     </td>
-                    <td className="px-4 py-3 text-xs text-primary-600">{a.cvFileName}</td>
+                    <td className="px-4 py-3 text-xs">
+                      {a.cvStoredFilename ? (
+                        <button
+                          onClick={() => openCv(a)}
+                          className="inline-flex items-center gap-1 text-primary-600 hover:underline"
+                          title={`Click to open ${a.cvFileName} — you can open as many times as you need`}
+                        >
+                          <svg
+                            className="h-3.5 w-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"
+                            />
+                          </svg>
+                          <span className="max-w-[180px] truncate">{a.cvFileName}</span>
+                        </button>
+                      ) : (
+                        <span className="text-gray-400" title="Legacy record, no stored file">
+                          {a.cvFileName}
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <select
                         value={a.status}
@@ -199,19 +336,55 @@ export default function AdminCareersPage() {
                     <td className="px-4 py-3 text-xs text-gray-500">
                       {new Date(a.submittedAt).toLocaleDateString()}
                     </td>
+                    <td className="px-4 py-3 text-right text-xs">
+                      <div className="flex justify-end gap-2">
+                        {appView === "active" ? (
+                          <button
+                            disabled={busyAppId === a.id}
+                            onClick={() => archiveApp(a.id)}
+                            className="rounded border border-gray-200 px-2.5 py-1 font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                            title="Hide from Active list; keep on file"
+                          >
+                            Archive
+                          </button>
+                        ) : (
+                          <button
+                            disabled={busyAppId === a.id}
+                            onClick={() => unarchiveApp(a.id)}
+                            className="rounded border border-gray-200 px-2.5 py-1 font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                            title="Restore to Active list"
+                          >
+                            Unarchive
+                          </button>
+                        )}
+                        <button
+                          disabled={busyAppId === a.id}
+                          onClick={() =>
+                            deleteApp(a.id, `${a.firstName} ${a.lastName}`)
+                          }
+                          className="rounded border border-red-200 px-2.5 py-1 font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+                          title="Permanently delete"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 );
               })}
               {applications.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-400">
-                    No applications yet.
+                  <td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-400">
+                    {appView === "archived"
+                      ? "No archived applications."
+                      : "No applications yet."}
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {(showNew || editing) && (

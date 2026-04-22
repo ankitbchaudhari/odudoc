@@ -1,32 +1,45 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { findUserByEmail, createUser } from "@/lib/users-store";
+import { sendVerificationEmail } from "@/lib/email";
+import { createVerificationToken } from "@/lib/email-verification-store";
+import { addAdminNotification } from "@/lib/admin-notifications-store";
+import { enforceRateLimit } from "@/lib/rate-limit-helpers";
+import { parseJson, z, nonEmptyString, emailSchema, phoneSchema } from "@/lib/validate";
 
-export async function POST(request: Request) {
+import { log } from "@/lib/log";
+const RegisterSchema = z.object({
+  name: nonEmptyString.max(120),
+  email: emailSchema,
+  phone: phoneSchema,
+  password: z.string().min(6).max(200),
+});
+
+export const runtime = "nodejs";
+
+function siteUrlFrom(request: Request): string {
+  // Prefer NEXTAUTH_URL in production so the link always points at the
+  // canonical www.odudoc.com domain, regardless of which Vercel preview the
+  // signup was submitted from. Fall back to the request origin for local dev.
+  const configured = process.env.NEXTAUTH_URL?.trim();
+  if (configured) return configured.replace(/\/$/, "");
   try {
-    const body = await request.json();
-    const { name, email, phone, password, role } = body;
+    return new URL(request.url).origin;
+  } catch {
+    return "https://www.odudoc.com";
+  }
+}
 
-    // Validation
-    if (!name || !email || !phone || !password || !role) {
-      return NextResponse.json(
-        { error: "All fields are required" },
-        { status: 400 }
-      );
-    }
+export async function POST(request: NextRequest) {
+  const blocked = await enforceRateLimit(request, "register", 5, "10 m");
+  if (blocked) return blocked;
+  try {
+    const parsed = await parseJson(request, RegisterSchema);
+    if (parsed instanceof NextResponse) return parsed;
+    const { name, email, phone, password } = parsed;
 
-    if (password.length < 6) {
-      return NextResponse.json(
-        { error: "Password must be at least 6 characters" },
-        { status: 400 }
-      );
-    }
-
-    if (!["patient", "doctor"].includes(role)) {
-      return NextResponse.json(
-        { error: "Role must be patient or doctor" },
-        { status: 400 }
-      );
-    }
+    // Public signup is for patients only. Doctors are onboarded by admin
+    // after applying through /for-doctors/register.
+    const role = "patient" as const;
 
     // Check if user already exists
     const existingUser = findUserByEmail(email);
@@ -37,12 +50,49 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create user
+    // Create the user in "unverified" state — they must click the link in
+    // the verification email before they can sign in.
     const user = createUser({ name, email, phone, password, role });
+
+    // Notify admin of new signup.
+    try {
+      addAdminNotification({
+        type: "user_signup",
+        title: "New user signed up",
+        body: `${user.name} (${user.email}) just created a patient account.`,
+        link: "/admin/users",
+      });
+    } catch (err) {
+      log.error("console.error", undefined, { args: ["[register] admin notification failed:", err] });
+    }
+
+    // Mint a 10-minute verification token and email the link. We `await` the
+    // send because Vercel can freeze the function the moment this response
+    // flushes — a fire-and-forget promise would get cancelled before Resend
+    // receives it. If the send itself errors, we still return success: the
+    // token exists and the user can resend via the login flow.
+    const tok = createVerificationToken(user.email, "signup");
+    const verifyUrl = `${siteUrlFrom(request)}/api/auth/verify?token=${tok.token}`;
+
+    try {
+      const result = await sendVerificationEmail({
+        to: user.email,
+        name: user.name,
+        verifyUrl,
+        reason: "signup",
+      });
+      if (!result.ok) {
+        log.error("console.error", undefined, { args: ["[register] verification email failed:", result.error] });
+      }
+    } catch (err) {
+      log.error("console.error", undefined, { args: ["[register] verification email threw:", err] });
+    }
 
     return NextResponse.json(
       {
-        message: "Account created successfully",
+        message:
+          "Account created. Check your email for a verification link — it expires in 10 minutes.",
+        verificationRequired: true,
         user: {
           id: user.id,
           name: user.name,
@@ -53,7 +103,7 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Registration error:", error);
+    log.error("Registration error:", error);
     return NextResponse.json(
       { error: "Something went wrong. Please try again." },
       { status: 500 }

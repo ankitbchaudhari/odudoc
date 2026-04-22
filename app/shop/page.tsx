@@ -1,9 +1,30 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { products, productCategories, Product } from "@/lib/data";
+import { productCategories, Product } from "@/lib/data";
 import { useCart } from "@/lib/cart-context";
+import { normalizeApiProduct, type ApiProduct } from "@/lib/product-normalize";
+
+type ShopProduct = Product & { stock?: number; vendorId?: string; vendorName?: string };
+
+const categoryIcons: Record<string, string> = {
+  Medicines: "M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18",
+  Supplements: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
+  "Personal Care": "M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z",
+  "Medical Devices": "M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z",
+  "Baby Care": "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
+  Wellness: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z",
+};
+
+function ProductIcon({ category, className = "h-12 w-12" }: { category: string; className?: string }) {
+  const path = categoryIcons[category] || categoryIcons["Medicines"];
+  return (
+    <svg className={`${className} text-white`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={path} />
+    </svg>
+  );
+}
 
 const ITEMS_PER_PAGE = 9;
 
@@ -18,6 +39,23 @@ export default function ShopPage() {
   const [page, setPage] = useState(1);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [addedId, setAddedId] = useState<string | null>(null);
+  const [products, setProducts] = useState<ShopProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/products");
+        const data = await res.json();
+        const list: ApiProduct[] = Array.isArray(data.products) ? data.products : [];
+        setProducts(list.map((p) => normalizeApiProduct(p)));
+      } catch {
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   const filteredProducts = useMemo(() => {
     let result = products.filter((p) => {
@@ -54,7 +92,7 @@ export default function ShopPage() {
     page * ITEMS_PER_PAGE
   );
 
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = (product: ShopProduct) => {
     if (!product.inStock) return;
     addToCart(product);
     setAddedId(product.id);
@@ -246,7 +284,11 @@ export default function ShopPage() {
 
           {/* Product Grid */}
           <div className="flex-1">
-            {paginatedProducts.length === 0 ? (
+            {loading ? (
+              <div className="rounded-xl border border-gray-200 bg-white py-16 text-center text-sm text-gray-400">
+                Loading products…
+              </div>
+            ) : paginatedProducts.length === 0 ? (
               <div className="rounded-xl border border-gray-200 bg-white py-16 text-center">
                 <svg className="mx-auto h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -271,20 +313,30 @@ export default function ShopPage() {
                         </div>
                       )}
 
-                      {/* Image placeholder */}
+                      {/* Product image */}
                       <Link href={`/shop/${product.id}`}>
-                        <div className={`relative h-48 bg-gradient-to-br ${product.color} flex items-center justify-center`}>
-                          <span className="text-4xl font-bold text-white/30">
-                            {product.name.charAt(0)}
-                          </span>
+                        <div className={`relative h-48 bg-gradient-to-br ${product.color} flex items-center justify-center overflow-hidden`}>
+                          {/* Decorative circles */}
+                          <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10" />
+                          <div className="absolute -bottom-4 -left-4 h-20 w-20 rounded-full bg-white/10" />
+                          {/* Icon */}
+                          <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
+                            <ProductIcon category={product.category} />
+                          </div>
                           {/* Category badge */}
-                          <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-gray-700">
+                          <span className="absolute left-3 top-3 rounded-full bg-black/20 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm">
                             {product.category}
                           </span>
+                          {/* Discount badge */}
+                          {product.originalPrice && (
+                            <span className="absolute right-3 top-3 rounded-full bg-green-500 px-2.5 py-1 text-xs font-bold text-white">
+                              {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                            </span>
+                          )}
                           {/* Prescription badge */}
-                          {product.prescriptionRequired && (
+                          {product.prescriptionRequired && !product.originalPrice && (
                             <span className="absolute right-3 top-3 rounded-full bg-red-500 px-2.5 py-1 text-xs font-medium text-white">
-                              Rx Required
+                              Rx
                             </span>
                           )}
                         </div>
@@ -297,6 +349,15 @@ export default function ShopPage() {
                             {product.name}
                           </h3>
                         </Link>
+                        {product.vendorName && (
+                          <p className="mt-0.5 text-xs text-gray-400">
+                            by {product.vendorId ? (
+                              <Link href={`/shop/vendor/${product.vendorId}`} className="text-gray-500 hover:text-primary-600 hover:underline">
+                                {product.vendorName}
+                              </Link>
+                            ) : product.vendorName}
+                          </p>
+                        )}
                         <p className="mt-1 line-clamp-1 text-sm text-gray-500">
                           {product.description}
                         </p>

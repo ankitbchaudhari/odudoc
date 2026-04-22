@@ -1,8 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Doctor } from "@/lib/data";
 import PaymentForm from "@/components/PaymentForm";
+import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase-client";
+import {
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  type ConfirmationResult,
+} from "firebase/auth";
+
+// Mirror of lib/consult-otp.ts#toE164 so Firebase gets a canonical number.
+function toE164Client(raw: string): string {
+  const digits = (raw || "").replace(/[^\d+]/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("+")) return digits;
+  if (digits.length === 10) return `+91${digits}`;
+  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
+  if (digits.length === 12 && digits.startsWith("91")) return `+${digits}`;
+  return `+${digits}`;
+}
 
 interface BookingModalProps {
   doctor: Doctor;
@@ -10,25 +27,243 @@ interface BookingModalProps {
   onClose: () => void;
 }
 
+// Parse a slot label like "9:00 AM" into a 24h (hour, minute) tuple.
+function parseSlot(slot: string): { h: number; m: number } | null {
+  const match = slot.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?$/);
+  if (!match) return null;
+  let h = parseInt(match[1], 10);
+  const m = parseInt(match[2], 10);
+  const ampm = match[3]?.toUpperCase();
+  if (ampm === "PM" && h < 12) h += 12;
+  if (ampm === "AM" && h === 12) h = 0;
+  return { h, m };
+}
+
+function formatDate(d: Date): string {
+  return d.toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
+function prettyDate(d: Date): string {
+  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+}
+
+// Build the next `days` eligible dates starting from today.
+function buildDateOptions(days: number): { value: string; label: string; date: Date }[] {
+  const out: { value: string; label: string; date: Date }[] = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  for (let i = 0; i < days; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    out.push({ value: formatDate(d), label: i === 0 ? `Today · ${prettyDate(d)}` : i === 1 ? `Tomorrow · ${prettyDate(d)}` : prettyDate(d), date: d });
+  }
+  return out;
+}
+
 export default function BookingModal({ doctor, open, onClose }: BookingModalProps) {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [step, setStep] = useState<"slot" | "form" | "payment" | "success">("slot");
-  const [name, setName] = useState("");
+  const [selectedDate, setSelectedDate] = useState<string>(() => formatDate(new Date()));
+  const [step, setStep] = useState<"slot" | "form" | "otp" | "payment" | "success">("slot");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const name = `${firstName.trim()} ${lastName.trim()}`.trim();
   const [phone, setPhone] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [otpChannel, setOtpChannel] = useState<string>("sms");
+  const [phoneHint, setPhoneHint] = useState("");
+  const [consultToken, setConsultToken] = useState<string | null>(null);
+  const [resendIn, setResendIn] = useState(0);
+
+  // Firebase Phone Auth state — invisible reCAPTCHA mount point and the
+  // ConfirmationResult returned by signInWithPhoneNumber.
+  const recaptchaContainer = useRef<HTMLDivElement>(null);
+  const recaptchaRef = useRef<RecaptchaVerifier | null>(null);
+  const confirmationRef = useRef<ConfirmationResult | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [bookingId, setBookingId] = useState<string | null>(null);
+  const [consultationId, setConsultationId] = useState<string | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [paymentsOff, setPaymentsOff] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    fetch("/api/payments-config")
+      .then((r) => r.json())
+      .then((d) => setPaymentsOff(!!d.disabled))
+      .catch(() => {});
+  }, [open]);
+
+  // Resend countdown for the OTP step. Must live above the `if (!open)`
+  // early return so the hook count is stable across renders.
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const t = setTimeout(() => setResendIn((n) => n - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendIn]);
 
   if (!open) return null;
 
+  // 15-day booking window starting today.
+  const dateOptions = buildDateOptions(15);
+  const todayStr = formatDate(new Date());
+  const isToday = selectedDate === todayStr;
+  const now = new Date();
+
+  // Filter slots: for today, hide any slot whose start time is already in the
+  // past (with a 15-minute buffer so patients don't book a slot that starts in
+  // the next few minutes). Other days show all configured slots.
+  const availableSlots = doctor.timeSlots.filter((slot) => {
+    if (!isToday) return true;
+    const parsed = parseSlot(slot);
+    if (!parsed) return true;
+    const slotTime = new Date();
+    slotTime.setHours(parsed.h, parsed.m, 0, 0);
+    const buffer = 15 * 60 * 1000;
+    return slotTime.getTime() > now.getTime() + buffer;
+  });
+
+  const validateInputs = (): string | null => {
+    if (firstName.trim().length < 1) return "Please enter your first name.";
+    if (lastName.trim().length < 1) return "Please enter your last name.";
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length < 7) return "Please enter a valid phone number (at least 7 digits).";
+    return null;
+  };
+
+  // Step 1 → 2: submit details, request an OTP via Firebase Phone Auth.
   const handlePatientSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const validationErr = validateInputs();
+    if (validationErr) {
+      setPaymentError(validationErr);
+      return;
+    }
+    if (!isFirebaseConfigured()) {
+      setPaymentError(
+        "Phone verification isn't configured. Please contact support.",
+      );
+      return;
+    }
+
+    const e164 = toE164Client(phone.trim());
     setPaymentLoading(true);
     setPaymentError(null);
-
     try {
+      const auth = getFirebaseAuth();
+
+      // Rebuild the invisible reCAPTCHA — Firebase won't reuse a consumed verifier.
+      if (recaptchaRef.current) {
+        try { recaptchaRef.current.clear(); } catch { /* ignore */ }
+        recaptchaRef.current = null;
+      }
+      if (!recaptchaContainer.current) throw new Error("reCAPTCHA container not mounted");
+      recaptchaRef.current = new RecaptchaVerifier(auth, recaptchaContainer.current, {
+        size: "invisible",
+      });
+
+      const confirmation = await signInWithPhoneNumber(auth, e164, recaptchaRef.current);
+      confirmationRef.current = confirmation;
+
+      setPhoneHint(e164.replace(/\d(?=\d{4})/g, "•"));
+      setOtpChannel("sms");
+      setOtpCode("");
+      setResendIn(30);
+      setStep("otp");
+    } catch (err) {
+      const msg = (err as { code?: string; message?: string }).code
+        || (err as Error).message
+        || "";
+      if (/auth\/invalid-phone-number/.test(msg)) {
+        setPaymentError("That phone number doesn't look right. Include the country code.");
+      } else if (/auth\/too-many-requests/.test(msg)) {
+        setPaymentError("Too many attempts from this device. Try again later.");
+      } else if (/auth\/captcha-check-failed/.test(msg)) {
+        setPaymentError("Anti-bot check failed. Please refresh and try again.");
+      } else {
+        setPaymentError("Could not send code. Please try again.");
+      }
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  // Step 2 → 3: verify OTP via Firebase, then either create a free booking or open Stripe.
+  const handleOtpVerify = async () => {
+    if (otpCode.trim().length < 4) {
+      setPaymentError("Enter the 6-digit code we sent you.");
+      return;
+    }
+    if (!confirmationRef.current) {
+      setPaymentError("Verification session expired. Please resend the code.");
+      return;
+    }
+    setPaymentLoading(true);
+    setPaymentError(null);
+    try {
+      let idToken: string;
+      try {
+        const credential = await confirmationRef.current.confirm(otpCode.trim());
+        idToken = await credential.user.getIdToken(true);
+      } catch (err) {
+        const msg = (err as { code?: string }).code || "";
+        if (/auth\/invalid-verification-code/.test(msg)) {
+          setPaymentError("That code doesn't match. Double-check and try again.");
+        } else if (/auth\/code-expired/.test(msg)) {
+          setPaymentError("That code expired. Please resend a new one.");
+        } else {
+          setPaymentError("Could not verify code. Please try again.");
+        }
+        return;
+      }
+
+      const vRes = await fetch("/api/consult/firebase/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken, firstName: firstName.trim(), lastName: lastName.trim() }),
+      });
+      const vData = await vRes.json();
+      if (!vRes.ok) {
+        setPaymentError(vData.error || "Invalid code.");
+        return;
+      }
+      const token = vData.consultToken as string;
+      setConsultToken(token);
+
+      if (paymentsOff) {
+        const res = await fetch("/api/bookings/free", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            doctorId: doctor.id,
+            doctorName: doctor.name,
+            fee: doctor.fee,
+            specialty: doctor.specialty,
+            patientName: name,
+            patientPhone: phone.trim(),
+            timeSlot: selectedSlot,
+            date: selectedDate,
+            consultToken: token,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setPaymentError(data.error || "Booking failed. Please try again.");
+          return;
+        }
+        setBookingId(data.booking.id);
+        if (data.consultation?.id) setConsultationId(data.consultation.id);
+        setStep("success");
+        if (data.consultation?.id) {
+          setTimeout(() => {
+            window.location.href = `/dashboard/consultations/${data.consultation.id}`;
+          }, 1800);
+        }
+        return;
+      }
+
+      // Paid path: open Stripe PaymentIntent.
       const res = await fetch("/api/payments/create-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -37,24 +272,59 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
           doctorName: doctor.name,
           fee: doctor.fee,
           patientName: name,
-          patientPhone: phone,
+          patientPhone: phone.trim(),
           timeSlot: selectedSlot,
+          consultToken: token,
         }),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         setPaymentError(data.error || "Failed to initiate payment");
-        setPaymentLoading(false);
         return;
       }
-
       setClientSecret(data.clientSecret);
       setPaymentIntentId(data.paymentIntentId);
       setStep("payment");
     } catch {
-      setPaymentError("An unexpected error occurred. Please try again.");
+      setPaymentError("Network error. Please try again.");
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  // Re-request a code from the OTP step — runs the Firebase sendCode flow
+  // again so a fresh SMS is dispatched and a new reCAPTCHA token is used.
+  const handleResendOtp = async () => {
+    if (resendIn > 0 || paymentLoading) return;
+    setPaymentError(null);
+    if (!isFirebaseConfigured()) {
+      setPaymentError("Phone verification isn't configured.");
+      return;
+    }
+    const e164 = toE164Client(phone.trim());
+    setPaymentLoading(true);
+    try {
+      const auth = getFirebaseAuth();
+      if (recaptchaRef.current) {
+        try { recaptchaRef.current.clear(); } catch { /* ignore */ }
+        recaptchaRef.current = null;
+      }
+      if (!recaptchaContainer.current) throw new Error("reCAPTCHA container not mounted");
+      recaptchaRef.current = new RecaptchaVerifier(auth, recaptchaContainer.current, {
+        size: "invisible",
+      });
+      const confirmation = await signInWithPhoneNumber(auth, e164, recaptchaRef.current);
+      confirmationRef.current = confirmation;
+      setResendIn(30);
+    } catch (err) {
+      const msg = (err as { code?: string; message?: string }).code
+        || (err as Error).message
+        || "";
+      if (/auth\/too-many-requests/.test(msg)) {
+        setPaymentError("Too many attempts from this device. Try again later.");
+      } else {
+        setPaymentError("Could not resend code. Please try again.");
+      }
     } finally {
       setPaymentLoading(false);
     }
@@ -72,18 +342,32 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
   const handleClose = () => {
     setStep("slot");
     setSelectedSlot(null);
-    setName("");
+    setFirstName("");
+    setLastName("");
     setPhone("");
+    setOtpCode("");
+    setConsultToken(null);
+    setPhoneHint("");
+    setResendIn(0);
     setClientSecret(null);
     setPaymentIntentId(null);
     setBookingId(null);
+    setConsultationId(null);
     setPaymentError(null);
     onClose();
   };
 
   // Step indicator
-  const steps = ["Time Slot", "Details", "Payment", "Confirmed"];
-  const stepIndex = step === "slot" ? 0 : step === "form" ? 1 : step === "payment" ? 2 : 3;
+  const steps = paymentsOff
+    ? ["Time Slot", "Details", "Verify", "Confirmed"]
+    : ["Time Slot", "Details", "Verify", "Payment", "Confirmed"];
+  const stepIndex =
+    step === "slot" ? 0
+    : step === "form" ? 1
+    : step === "otp" ? 2
+    : step === "payment" ? (paymentsOff ? 3 : 3)
+    : paymentsOff ? 3 : 4;
+  const totalIndicator = paymentsOff ? 3 : 4;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={handleClose}>
@@ -102,7 +386,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
         {/* Step Indicator */}
         {step !== "success" && (
           <div className="mb-5 flex items-center justify-center gap-1">
-            {steps.slice(0, 3).map((label, i) => (
+            {steps.slice(0, totalIndicator).map((label, i) => (
               <div key={label} className="flex items-center">
                 <div
                   className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
@@ -113,7 +397,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                 >
                   {i + 1}
                 </div>
-                {i < 2 && (
+                {i < totalIndicator - 1 && (
                   <div
                     className={`mx-1 h-0.5 w-8 ${
                       i < stepIndex ? "bg-primary-600" : "bg-gray-200"
@@ -133,22 +417,45 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
             </p>
 
             <div className="mt-5">
-              <p className="mb-3 text-sm font-medium text-gray-700">Select a time slot</p>
-              <div className="grid grid-cols-3 gap-2">
-                {doctor.timeSlots.map((slot) => (
-                  <button
-                    key={slot}
-                    onClick={() => setSelectedSlot(slot)}
-                    className={`rounded-lg border px-3 py-2 text-xs font-medium transition-all ${
-                      selectedSlot === slot
-                        ? "border-primary-500 bg-primary-50 text-primary-700"
-                        : "border-gray-200 text-gray-600 hover:border-primary-300"
-                    }`}
-                  >
-                    {slot}
-                  </button>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Select a date</label>
+              <select
+                value={selectedDate}
+                onChange={(e) => { setSelectedDate(e.target.value); setSelectedSlot(null); }}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+              >
+                {dateOptions.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
-              </div>
+              </select>
+              <p className="mt-1 text-xs text-gray-400">You can book up to 15 days in advance.</p>
+            </div>
+
+            <div className="mt-5">
+              <p className="mb-3 text-sm font-medium text-gray-700">Select a time slot</p>
+              {availableSlots.length === 0 ? (
+                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-xs text-amber-800">
+                  No more slots available {isToday ? "today" : "on this date"}. Please pick another date.
+                </p>
+              ) : (
+                <div className="grid grid-cols-3 gap-2">
+                  {availableSlots.map((slot) => (
+                    <button
+                      key={slot}
+                      onClick={() => setSelectedSlot(slot)}
+                      className={`rounded-lg border px-3 py-2 text-xs font-medium transition-all ${
+                        selectedSlot === slot
+                          ? "border-primary-500 bg-primary-50 text-primary-700"
+                          : "border-gray-200 text-gray-600 hover:border-primary-300"
+                      }`}
+                    >
+                      {slot}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {isToday && availableSlots.length < doctor.timeSlots.length && availableSlots.length > 0 && (
+                <p className="mt-2 text-xs text-gray-400">Past slots for today are hidden.</p>
+              )}
             </div>
 
             <button
@@ -165,30 +472,55 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
           <form onSubmit={handlePatientSubmit}>
             <h2 className="text-lg font-bold text-gray-900">Patient Details</h2>
             <p className="mt-1 text-sm text-gray-500">
-              {doctor.name} &middot; {selectedSlot}
+              {doctor.name} &middot; {dateOptions.find((d) => d.value === selectedDate)?.label} &middot; {selectedSlot}
             </p>
+            {paymentsOff && (
+              <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
+                🎉 Consultations are free for the next 24 hours — no card required.
+              </div>
+            )}
             <div className="mt-5 space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Full Name</label>
-                <input
-                  required
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                  placeholder="Enter your name"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">First Name *</label>
+                  <input
+                    required
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    autoComplete="given-name"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    placeholder="e.g. Priya"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Last Name *</label>
+                  <input
+                    required
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    autoComplete="family-name"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    placeholder="e.g. Sharma"
+                  />
+                </div>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Phone Number</label>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Phone Number *</label>
                 <input
                   required
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  pattern="^[\d\s\-\+\(\)]{7,}$"
+                  title="Please enter a valid phone number (at least 7 digits)"
                   className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                  placeholder="Enter phone number"
+                  placeholder="e.g. +91 98765 43210"
+                  inputMode="tel"
+                  autoComplete="tel"
                 />
+                <p className="mt-1 text-xs text-gray-400">We&apos;ll text you a 6-digit code to confirm it&apos;s you.</p>
               </div>
             </div>
 
@@ -209,10 +541,10 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Preparing Payment...
+                  Sending code…
                 </span>
               ) : (
-                `Continue to Payment · $${doctor.fee}`
+                "Send verification code"
               )}
             </button>
 
@@ -224,6 +556,70 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
               Back
             </button>
           </form>
+        )}
+
+        {step === "otp" && (
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Verify your phone</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              We sent a 6-digit code to <span className="font-semibold">{phoneHint}</span> via{" "}
+              <span className="font-semibold">
+                {otpChannel === "whatsapp" ? "WhatsApp" : otpChannel === "call" ? "voice call" : "SMS"}
+              </span>
+              .
+            </p>
+            <div className="mt-5">
+              <label className="mb-1 block text-sm font-medium text-gray-700">Verification code</label>
+              <input
+                autoFocus
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                onKeyDown={(e) => { if (e.key === "Enter") handleOtpVerify(); }}
+                className="w-full rounded-lg border border-gray-300 px-3 py-3 text-center text-xl font-semibold tracking-[0.5em] outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="••••••"
+              />
+            </div>
+
+            {paymentError && (
+              <div className="mt-4 rounded-lg bg-red-50 p-3 text-xs text-red-700">
+                {paymentError}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleOtpVerify}
+              disabled={paymentLoading || otpCode.length < 4}
+              className="btn-primary mt-6 w-full disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {paymentLoading
+                ? "Verifying…"
+                : paymentsOff
+                ? "Verify & confirm booking"
+                : `Verify & continue to payment · $${doctor.fee}`}
+            </button>
+
+            <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+              <button
+                type="button"
+                onClick={() => { setStep("form"); setPaymentError(null); }}
+                className="text-primary-600 hover:underline"
+                disabled={paymentLoading}
+              >
+                ← Change number
+              </button>
+              <button
+                type="button"
+                onClick={handleResendOtp}
+                disabled={paymentLoading || resendIn > 0}
+                className="text-primary-600 hover:underline disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline"
+              >
+                {resendIn > 0 ? `Resend in ${resendIn}s` : "Resend code"}
+              </button>
+            </div>
+          </div>
         )}
 
         {step === "payment" && clientSecret && (
@@ -283,22 +679,36 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                 Reference: <span className="font-mono">{bookingId}</span>
               </p>
             )}
-            <p className="mt-1 text-sm text-gray-400">
-              A confirmation will be sent to your phone.
-            </p>
-            <div className="mt-6 flex flex-col gap-2">
-              <button onClick={handleClose} className="btn-primary">
-                Done
-              </button>
-              <a
-                href={`/payment/success?bookingId=${bookingId || ""}&doctor=${encodeURIComponent(doctor.name)}&time=${encodeURIComponent(selectedSlot || "")}&amount=${doctor.fee}`}
-                className="text-sm text-primary-600 hover:underline"
-              >
-                View Receipt
-              </a>
-            </div>
+            {consultationId ? (
+              <>
+                <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                  <strong>Next step:</strong> Please complete your medical history so the doctor can begin the consultation. Redirecting you now…
+                </div>
+                <div className="mt-4 flex flex-col gap-2">
+                  <a href={`/dashboard/consultations/${consultationId}`} className="btn-primary">
+                    Complete medical history →
+                  </a>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="mt-1 text-sm text-gray-400">A confirmation will be sent to your phone.</p>
+                <div className="mt-6 flex flex-col gap-2">
+                  <button onClick={handleClose} className="btn-primary">Done</button>
+                  <a
+                    href={`/payment/success?bookingId=${bookingId || ""}&doctor=${encodeURIComponent(doctor.name)}&time=${encodeURIComponent(selectedSlot || "")}&amount=${doctor.fee}`}
+                    className="text-sm text-primary-600 hover:underline"
+                  >
+                    View Receipt
+                  </a>
+                </div>
+              </>
+            )}
           </div>
         )}
+
+        {/* Invisible reCAPTCHA mount point for Firebase Phone Auth. */}
+        <div ref={recaptchaContainer} />
       </div>
     </div>
   );

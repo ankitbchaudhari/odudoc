@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { COUNTRIES } from "@/lib/countries";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -205,42 +206,10 @@ export default function RegisterPage() {
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               >
                 <option value="">Select a country...</option>
-                <option>United States</option>
-                <option>United Kingdom</option>
-                <option>Canada</option>
-                <option>Australia</option>
-                <option>India</option>
-                <option>Germany</option>
-                <option>France</option>
-                <option>Brazil</option>
-                <option>Nigeria</option>
-                <option>South Africa</option>
-                <option>Mexico</option>
-                <option>Japan</option>
-                <option>China</option>
-                <option>South Korea</option>
-                <option>United Arab Emirates</option>
-                <option>Saudi Arabia</option>
-                <option>Singapore</option>
-                <option>Philippines</option>
-                <option>Pakistan</option>
-                <option>Egypt</option>
+                {COUNTRIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
               </select>
-            </div>
-
-            {/* Doctor notice */}
-            <div className="rounded-lg border border-primary-100 bg-primary-50/60 p-4">
-              <div className="flex items-start gap-3">
-                <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div className="text-xs leading-relaxed text-primary-900">
-                  <strong>Are you a doctor?</strong> Patient signups happen here. Doctors join by application only — our team reviews credentials and onboards approved doctors directly.{" "}
-                  <Link href="/for-doctors/register" className="font-semibold underline">
-                    Apply as a doctor
-                  </Link>
-                </div>
-              </div>
             </div>
 
             {/* Password */}

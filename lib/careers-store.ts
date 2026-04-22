@@ -1,4 +1,6 @@
-// Careers store (mock in-memory) — job vacancies + applications
+// Careers store — job vacancies + applications, Postgres-backed.
+
+import { bindPersistentArray } from "./persistent-array";
 
 export type EmploymentType = "Full-time" | "Part-time" | "Contract" | "Internship";
 
@@ -18,135 +20,57 @@ export interface JobVacancy {
 
 export interface JobApplication {
   id: string;
-  jobId: string | null; // null = general application
+  jobId: string | null;
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
   coverLetter?: string;
   cvFileName: string;
+  cvStoredFilename?: string;
   submittedAt: string;
   status: "new" | "reviewing" | "shortlisted" | "rejected" | "hired";
+  archivedAt?: string | null;
 }
 
-const jobs: JobVacancy[] = [
-  {
-    id: "job-001",
-    title: "Senior Cardiologist",
-    department: "Cardiology",
-    location: "New York, NY",
-    employmentType: "Full-time",
-    salary: "$250,000 - $350,000",
-    description:
-      "Join OduDoc's elite cardiology team. Provide advanced cardiac care via telehealth and in-clinic visits. Help shape our remote cardiology protocols.",
-    responsibilities: [
-      "Diagnose and treat cardiovascular conditions",
-      "Conduct video consultations with patients",
-      "Review cardiac imaging and test results",
-      "Collaborate with multidisciplinary care teams",
-    ],
-    requirements: [
-      "MD with board certification in Cardiology",
-      "Minimum 8 years clinical experience",
-      "Active medical license",
-      "Experience with telehealth platforms preferred",
-    ],
-    postedAt: "2026-04-01T10:00:00.000Z",
-    active: true,
-  },
-  {
-    id: "job-002",
-    title: "Pediatrician (Telehealth)",
-    department: "Pediatrics",
-    location: "Remote",
-    employmentType: "Full-time",
-    salary: "$180,000 - $230,000",
-    description:
-      "Fully remote pediatrician role. Provide virtual care for children and adolescents across the US.",
-    responsibilities: [
-      "Conduct video visits with pediatric patients",
-      "Write prescriptions digitally",
-      "Coordinate with in-person care when needed",
-    ],
-    requirements: [
-      "MD with board certification in Pediatrics",
-      "5+ years clinical experience",
-      "Multi-state licensure a plus",
-    ],
-    postedAt: "2026-04-05T09:00:00.000Z",
-    active: true,
-  },
-  {
-    id: "job-003",
-    title: "Full-Stack Engineer (Next.js)",
-    department: "Engineering",
-    location: "Remote / NYC",
-    employmentType: "Full-time",
-    salary: "$140,000 - $200,000",
-    description:
-      "Build and scale the OduDoc platform. Work across Next.js, TypeScript, Node, and PostgreSQL.",
-    responsibilities: [
-      "Ship patient + doctor-facing features",
-      "Own services end-to-end",
-      "Collaborate with clinical and design teams",
-    ],
-    requirements: [
-      "4+ years React/Next.js experience",
-      "Strong TypeScript skills",
-      "Experience with healthcare a plus",
-    ],
-    postedAt: "2026-04-08T14:00:00.000Z",
-    active: true,
-  },
-  {
-    id: "job-004",
-    title: "Customer Support Specialist",
-    department: "Operations",
-    location: "Austin, TX",
-    employmentType: "Full-time",
-    salary: "$45,000 - $60,000",
-    description:
-      "Help patients navigate OduDoc. Handle bookings, billing questions, and escalations.",
-    responsibilities: [
-      "Respond to patient inquiries via chat/email/phone",
-      "Triage and escalate clinical issues",
-      "Maintain CRM records",
-    ],
-    requirements: [
-      "2+ years customer support experience",
-      "Healthcare background a plus",
-      "Excellent written communication",
-    ],
-    postedAt: "2026-04-10T11:00:00.000Z",
-    active: true,
-  },
-];
+const jobs: JobVacancy[] = [];
+const { hydrate: hydrateJobs, flush: flushJobs } = bindPersistentArray<JobVacancy>(
+  "careers-jobs",
+  jobs,
+);
 
-const applications: JobApplication[] = [
-  {
-    id: "appl-001",
-    jobId: "job-001",
-    firstName: "Alex",
-    lastName: "Rivera",
-    email: "alex.rivera@example.com",
-    phone: "+1-555-0233",
-    coverLetter: "15 years of interventional cardiology experience. Looking for telehealth-first role.",
-    cvFileName: "alex_rivera_cv.pdf",
-    submittedAt: "2026-04-12T09:30:00.000Z",
-    status: "reviewing",
-  },
-  {
-    id: "appl-002",
-    jobId: "job-003",
-    firstName: "Priya",
-    lastName: "Shah",
-    email: "priya.shah@example.com",
-    phone: "+1-555-0199",
-    cvFileName: "priya_shah_resume.pdf",
-    submittedAt: "2026-04-13T14:22:00.000Z",
-    status: "new",
-  },
-];
+const applications: JobApplication[] = [];
+const { hydrate: hydrateApps, flush: flushApps } = bindPersistentArray<JobApplication>(
+  "careers-applications",
+  applications,
+  () => []
+);
+
+await Promise.all([hydrateJobs(), hydrateApps()]);
+
+// One-time cleanup: drop the demo job listings + demo applications that
+// shipped with the initial seed. IDs are specific so this is safe to
+// re-run and won't touch real data.
+(function removeLegacySeedCareers() {
+  const legacyJobIds = new Set(["job-001", "job-002", "job-003", "job-004"]);
+  const legacyApplIds = new Set(["appl-001", "appl-002"]);
+  let jobsDirty = false;
+  let applsDirty = false;
+  for (let i = jobs.length - 1; i >= 0; i--) {
+    if (legacyJobIds.has(jobs[i].id)) {
+      jobs.splice(i, 1);
+      jobsDirty = true;
+    }
+  }
+  for (let i = applications.length - 1; i >= 0; i--) {
+    if (legacyApplIds.has(applications[i].id)) {
+      applications.splice(i, 1);
+      applsDirty = true;
+    }
+  }
+  if (jobsDirty) flushJobs();
+  if (applsDirty) flushApps();
+})();
 
 export function getJobs(activeOnly = false): JobVacancy[] {
   return activeOnly ? jobs.filter((j) => j.active) : [...jobs];
@@ -165,6 +89,7 @@ export function addJob(
     postedAt: new Date().toISOString(),
   };
   jobs.unshift(job);
+  flushJobs();
   return job;
 }
 
@@ -172,6 +97,7 @@ export function updateJob(id: string, data: Partial<JobVacancy>): JobVacancy | n
   const job = jobs.find((j) => j.id === id);
   if (!job) return null;
   Object.assign(job, data);
+  flushJobs();
   return job;
 }
 
@@ -179,14 +105,51 @@ export function deleteJob(id: string): boolean {
   const idx = jobs.findIndex((j) => j.id === id);
   if (idx < 0) return false;
   jobs.splice(idx, 1);
+  flushJobs();
   return true;
 }
 
-export function getApplications(jobId?: string): JobApplication[] {
-  const list = jobId ? applications.filter((a) => a.jobId === jobId) : [...applications];
+export function getApplications(
+  jobId?: string,
+  opts: { includeArchived?: boolean; onlyArchived?: boolean } = {}
+): JobApplication[] {
+  let list = jobId ? applications.filter((a) => a.jobId === jobId) : [...applications];
+  if (opts.onlyArchived) {
+    list = list.filter((a) => !!a.archivedAt);
+  } else if (!opts.includeArchived) {
+    list = list.filter((a) => !a.archivedAt);
+  }
   return list.sort(
     (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
   );
+}
+
+export function getApplicationById(id: string): JobApplication | null {
+  return applications.find((a) => a.id === id) || null;
+}
+
+export function archiveApplication(id: string): JobApplication | null {
+  const app = applications.find((a) => a.id === id);
+  if (!app) return null;
+  app.archivedAt = new Date().toISOString();
+  flushApps();
+  return app;
+}
+
+export function unarchiveApplication(id: string): JobApplication | null {
+  const app = applications.find((a) => a.id === id);
+  if (!app) return null;
+  app.archivedAt = null;
+  flushApps();
+  return app;
+}
+
+export function deleteApplication(id: string): boolean {
+  const idx = applications.findIndex((a) => a.id === id);
+  if (idx < 0) return false;
+  applications.splice(idx, 1);
+  flushApps();
+  return true;
 }
 
 export function addApplication(
@@ -199,6 +162,7 @@ export function addApplication(
     status: "new",
   };
   applications.push(app);
+  flushApps();
   return app;
 }
 
@@ -209,5 +173,6 @@ export function updateApplicationStatus(
   const app = applications.find((a) => a.id === id);
   if (!app) return null;
   app.status = status;
+  flushApps();
   return app;
 }

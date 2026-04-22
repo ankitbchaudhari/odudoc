@@ -10,7 +10,10 @@ import { CITIES } from "@/lib/seo/cities";
 // Crawlers hit one URL and find every doctor-profile link — the cleanest way
 // to distribute link equity across the doctor catalogue.
 
-export const dynamic = "force-dynamic";
+// ISR: directory page is fully public and changes at most when admin
+// adds/removes a doctor. Revalidating every 10 min keeps it fresh enough
+// while saving a full doctors-store read on every crawl.
+export const revalidate = 600;
 
 export const metadata: Metadata = {
   title: "All Doctors A–Z — OduDoc Verified Specialists",

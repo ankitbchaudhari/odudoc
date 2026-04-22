@@ -12,8 +12,12 @@ import { blogPosts as seedBlogPosts, type BlogPost } from "@/lib/data";
 import BlogClient from "./BlogClient";
 import { ItemListLd } from "@/components/StructuredData";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// ISR: rebuild at most once every 5 minutes. Blog index is 100% public
+// content so there's no per-request data — caching it saves a full blog
+// store read on every page view. Admins publishing a post will see it
+// after the next revalidate tick (or can hit /api/admin/blog/revalidate
+// if we wire that up later).
+export const revalidate = 300;
 
 export default async function BlogIndexPage() {
   let posts: BlogPost[] = seedBlogPosts;

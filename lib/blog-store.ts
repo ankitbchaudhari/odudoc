@@ -140,6 +140,16 @@ async function ready(): Promise<void> {
   await ensureSchema(initSchema);
 }
 
+// Cheap count — used by dashboard to avoid SELECTing every row just to
+// call posts.length. Stays under the Neon free-tier data transfer cap.
+export async function countPosts(onlyPublished = false): Promise<number> {
+  await ready();
+  const rows = onlyPublished
+    ? ((await sql`SELECT COUNT(*)::int AS n FROM blog_posts WHERE status = 'Published'`) as Array<{ n: number }>)
+    : ((await sql`SELECT COUNT(*)::int AS n FROM blog_posts`) as Array<{ n: number }>);
+  return rows[0]?.n ?? 0;
+}
+
 export async function listPosts(opts: {
   status?: BlogStatus | "All";
   search?: string;

@@ -59,6 +59,48 @@ export async function loadJson<T>(key: string, fallback: T): Promise<T> {
   }
 }
 
+// Lightweight count: pulls a single integer from Postgres instead of the
+// entire JSON blob. Used by dashboard/list endpoints that only need
+// `arr.length` — hydrating a 1000-row store just to call .length burns
+// the free-tier data transfer quota fast.
+export async function countJsonArray(key: string): Promise<number> {
+  try {
+    await kvReady();
+    const rows = (await sql`
+      SELECT COALESCE(jsonb_array_length(data), 0)::int AS n
+      FROM app_kv WHERE key = ${key} LIMIT 1
+    `) as Array<{ n: number }>;
+    return rows[0]?.n ?? 0;
+  } catch (err) {
+    log.error("console.error", undefined, { args: [`[persistent-array] countJsonArray("${key}") failed`, err] });
+    return 0;
+  }
+}
+
+// Pull the last N entries of a JSON array store without transferring the
+// whole blob. Used by dashboard tiles that show "5 recent orders" etc.
+// Implemented as a JSONB path query so only the slice travels over the wire.
+export async function tailJsonArray<T>(key: string, n: number): Promise<T[]> {
+  if (n <= 0) return [];
+  try {
+    await kvReady();
+    const rows = (await sql`
+      WITH src AS (
+        SELECT data, jsonb_array_length(data) AS len
+        FROM app_kv WHERE key = ${key} LIMIT 1
+      )
+      SELECT COALESCE(jsonb_agg(elem ORDER BY ord DESC), '[]'::jsonb) AS data
+      FROM src,
+        LATERAL jsonb_array_elements(data) WITH ORDINALITY AS t(elem, ord)
+      WHERE ord > GREATEST(src.len - ${n}, 0)
+    `) as Array<{ data: T[] | null }>;
+    return (rows[0]?.data ?? []) as T[];
+  } catch (err) {
+    log.error("console.error", undefined, { args: [`[persistent-array] tailJsonArray("${key}") failed`, err] });
+    return [];
+  }
+}
+
 export async function saveJson<T>(key: string, data: T): Promise<void> {
   try {
     await kvReady();

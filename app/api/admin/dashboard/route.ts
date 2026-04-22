@@ -1,15 +1,11 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { listPosts } from "@/lib/blog-store";
-import { listUsers } from "@/lib/users-store";
-import { listProducts } from "@/lib/products-store";
-import { listDoctors } from "@/lib/doctors-store";
+import { countPosts } from "@/lib/blog-store";
 import { listOrders } from "@/lib/orders-store";
-import { getBookings } from "@/lib/bookings-store";
-import { getApplications } from "@/lib/careers-store";
 import { listSubscribers, countSubscribers } from "@/lib/subscribers-store";
 import { listComments, countComments } from "@/lib/comments-store";
+import { countJsonArray } from "@/lib/persistent-array";
 import { departments } from "@/lib/data";
 import { log } from "@/lib/log";
 
@@ -59,14 +55,32 @@ async function handler() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const [posts, users, products, doctors, orders, bookings, applications, subscribers, comments, subscriberCount, commentCount] = await Promise.all([
-    safe("posts", () => listPosts(), []),
-    safe("users", () => listUsers(), []),
-    safe("products", () => listProducts(), []),
-    safe("doctors", () => listDoctors(), []),
+  // Previously this handler hydrated 10 full persistent-array stores just
+  // to read `.length` off each — each hydrate pulls the entire JSON blob
+  // out of Neon's `app_kv` table, which chews through the free-tier data
+  // transfer quota in minutes. We now use `jsonb_array_length` counts for
+  // the stats tiles, and only hydrate the three stores whose actual rows
+  // we render (orders, subscribers, comments).
+  const [
+    postCount,
+    userCount,
+    productCount,
+    doctorCount,
+    bookingCount,
+    jobAppCount,
+    orders,
+    subscribers,
+    comments,
+    subscriberCount,
+    commentCount,
+  ] = await Promise.all([
+    safe("posts", () => countPosts(), 0),
+    safe("users", () => countJsonArray("users"), 0),
+    safe("products", () => countJsonArray("products"), 0),
+    safe("doctors", () => countJsonArray("doctors"), 0),
+    safe("bookings", () => countJsonArray("bookings"), 0),
+    safe("applications", () => countJsonArray("careers-applications"), 0),
     safe("orders", () => listOrders(), []),
-    safe("bookings", () => getBookings(), []),
-    safe("applications", () => getApplications(), []),
     safe("subscribers", () => listSubscribers({ activeOnly: true, limit: 8 }), []),
     safe("comments", () => listComments({ limit: 5 }), []),
     safe("subscriberCount", () => countSubscribers(), 0),
@@ -74,16 +88,16 @@ async function handler() {
   ]);
 
   const stats = {
-    posts: posts.length,
-    users: users.length,
-    products: products.length,
-    doctors: doctors.length,
+    posts: postCount,
+    users: userCount,
+    products: productCount,
+    doctors: doctorCount,
     departments: departments.length,
     comments: commentCount,
     subscribers: subscriberCount,
-    formResponses: applications.length + bookings.length,
+    formResponses: jobAppCount + bookingCount,
     orders: orders.length,
-    bookings: bookings.length,
+    bookings: bookingCount,
   };
 
   const revenue = orders

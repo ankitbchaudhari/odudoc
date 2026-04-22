@@ -1,0 +1,14 @@
+{
+  "name": "odudoc-files",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Upload/delete/list service for odudoc file storage on the VPS",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}

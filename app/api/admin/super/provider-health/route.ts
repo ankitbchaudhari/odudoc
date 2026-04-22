@@ -87,12 +87,12 @@ async function probeStripe(): Promise<Probe> {
 }
 
 async function probeBlob(): Promise<Probe> {
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token) return { provider: "blob", configured: false, ok: false, latencyMs: 0, detail: "no_token" };
+  const secret = process.env.FILES_UPLOAD_SECRET;
+  if (!secret) return { provider: "blob", configured: false, ok: false, latencyMs: 0, detail: "no_secret" };
   const r = await timed(async () => {
-    const { list } = await import("@vercel/blob");
-    const res = await list({ limit: 1, token });
-    return { count: res.blobs.length };
+    const { listBlobs } = await import("@/lib/blob");
+    const blobs = await listBlobs();
+    return { count: blobs.length };
   });
   if (r.error) return { provider: "blob", configured: true, ok: false, latencyMs: r.ms, detail: r.error };
   return { provider: "blob", configured: true, ok: true, latencyMs: r.ms, detail: `listed ${r.value!.count}` };

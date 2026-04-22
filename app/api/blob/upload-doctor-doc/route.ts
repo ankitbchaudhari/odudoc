@@ -1,16 +1,10 @@
 // Server-side upload for doctor application documents.
 //
-// We originally used Vercel Blob's client-upload SDK, but the browser
-// PUT to vercel.com/api/blob was returning 400 + CORS errors. Switching
-// to a server upload: the browser POSTs the file as multipart form-data
-// to this route, and we call put() from the server. No token handshake,
-// no CORS. Trade-off: request body is capped by Vercel's serverless
-// limit, so we enforce a 4 MB cap.
-//
-// Env required: BLOB_READ_WRITE_TOKEN (auto-injected when a Blob store
-// is connected to the project).
+// The browser POSTs the file as multipart form-data; we forward it to
+// the VPS file service via uploadBlob(). 4 MB cap because Vercel's
+// serverless limits the request body we can relay.
 
-import { put } from "@vercel/blob";
+import { uploadBlob } from "@/lib/blob";
 import { NextResponse } from "next/server";
 
 import { log } from "@/lib/log";
@@ -59,13 +53,19 @@ export async function POST(request: Request): Promise<NextResponse> {
     const rand = Math.random().toString(36).slice(2, 8);
     const pathname = `doctor-applications/${Date.now()}-${rand}/${safeName}`;
 
-    const blob = await put(pathname, file, {
+    const result = await uploadBlob(pathname, file, {
       access: "public",
       contentType: file.type,
       addRandomSuffix: false,
     });
 
-    return NextResponse.json({ url: blob.url, pathname: blob.pathname });
+    if (!result.ok || !result.url) {
+      return NextResponse.json(
+        { error: result.error || "Upload failed" },
+        { status: 500 }
+      );
+    }
+    return NextResponse.json({ url: result.url, pathname: result.pathname });
   } catch (error) {
     log.error("console.error", undefined, { args: ["[blob] upload error:", error] });
     const message = error instanceof Error ? error.message : "Upload failed";

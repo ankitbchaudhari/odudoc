@@ -38,18 +38,26 @@ const client = postgres(connectionString || "postgres://invalid", {
 // unchanged.
 export const sql = client;
 
-let schemaReadyPromise: Promise<void> | null = null;
+// Per-init promise cache. Previously this was a single global promise
+// which silently skipped every store's schema init after the first one
+// ran. It worked on Neon because tables already existed from prior use,
+// but on a fresh DB (e.g. self-hosted VPS) only the first init would
+// ever fire and every other store would get "relation does not exist".
+const schemaReadyMap = new Map<() => Promise<void>, Promise<void>>();
 
 /**
- * Run `init` exactly once per Lambda instance. If it throws, the next call
- * will retry. Use this to create tables + seed idempotently on first use.
+ * Run `init` exactly once per Lambda instance, keyed by the init function
+ * reference. If it throws, the next call with the same init will retry.
+ * Use this to create tables + seed idempotently on first use.
  */
 export function ensureSchema(init: () => Promise<void>): Promise<void> {
-  if (!schemaReadyPromise) {
-    schemaReadyPromise = init().catch((err) => {
-      schemaReadyPromise = null;
+  let promise = schemaReadyMap.get(init);
+  if (!promise) {
+    promise = init().catch((err) => {
+      schemaReadyMap.delete(init);
       throw err;
     });
+    schemaReadyMap.set(init, promise);
   }
-  return schemaReadyPromise;
+  return promise;
 }

@@ -32,6 +32,27 @@ async function safe<T>(label: string, fn: () => T | Promise<T>, fallback: T): Pr
 }
 
 export async function GET() {
+  try {
+    return await handler();
+  } catch (err) {
+    // Last-resort guard: make sure we always return JSON so the client
+    // fetch doesn't explode with "Unexpected end of JSON input".
+    log.error("admin_dashboard.handler_failed", err);
+    return NextResponse.json(
+      {
+        stats: { posts: 0, users: 0, products: 0, doctors: 0, departments: 0, comments: 0, subscribers: 0, formResponses: 0, orders: 0, bookings: 0 },
+        revenue: 0,
+        subscribers: [],
+        comments: [],
+        recentOrders: [],
+        error: err instanceof Error ? err.message : "Unknown error",
+      },
+      { status: 200 },
+    );
+  }
+}
+
+async function handler() {
   const session = await getServerSession(authOptions);
   const role = (session?.user as { role?: string } | undefined)?.role;
   if (!isAdmin(role)) {

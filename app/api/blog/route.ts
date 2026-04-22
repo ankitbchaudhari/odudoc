@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { listPosts, createPost, type BlogStatus } from "@/lib/blog-store";
+import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
 
@@ -13,23 +14,33 @@ function canManage(role: string | undefined): boolean {
 //   - admins: everything (optionally filtered by ?status=Draft|Published, ?search=)
 //   - everyone else: only published posts (public /blog page consumes this)
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
+  try {
+    const session = await getServerSession(authOptions);
+    const role = (session?.user as { role?: string } | undefined)?.role;
 
-  const search = req.nextUrl.searchParams.get("search") || undefined;
-  const statusParam = req.nextUrl.searchParams.get("status") as
-    | BlogStatus
-    | "All"
-    | null;
-  const view = req.nextUrl.searchParams.get("view"); // "all" forces admin view
+    const search = req.nextUrl.searchParams.get("search") || undefined;
+    const statusParam = req.nextUrl.searchParams.get("status") as
+      | BlogStatus
+      | "All"
+      | null;
+    const view = req.nextUrl.searchParams.get("view"); // "all" forces admin view
 
-  const onlyPublished = !(view === "all" && canManage(role));
-  const posts = await listPosts({
-    search,
-    status: onlyPublished ? undefined : statusParam || undefined,
-    onlyPublished,
-  });
-  return NextResponse.json({ posts });
+    const onlyPublished = !(view === "all" && canManage(role));
+    const posts = await listPosts({
+      search,
+      status: onlyPublished ? undefined : statusParam || undefined,
+      onlyPublished,
+    });
+    return NextResponse.json({ posts });
+  } catch (err) {
+    // Always return valid JSON — a bare 500 with empty body breaks the
+    // admin client which does `await res.json()` before checking res.ok.
+    log.error("blog.list_failed", err);
+    return NextResponse.json(
+      { posts: [], error: err instanceof Error ? err.message : "Failed to load posts" },
+      { status: 200 },
+    );
+  }
 }
 
 export async function POST(req: NextRequest) {

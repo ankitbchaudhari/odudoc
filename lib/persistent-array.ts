@@ -106,7 +106,7 @@ export async function saveJson<T>(key: string, data: T): Promise<void> {
     await kvReady();
     await sql`
       INSERT INTO app_kv (key, data, updated_at)
-      VALUES (${key}, ${JSON.stringify(data)}::jsonb, now())
+      VALUES (${key}, ${JSON.stringify(data)}::text::jsonb, now())
       ON CONFLICT (key) DO UPDATE
         SET data = EXCLUDED.data, updated_at = now()
     `;

@@ -183,9 +183,51 @@ export function bindPersistentArray<T>(
     await hydrating;
   }
 
+  // Merge items from DB that our stale in-memory copy is missing.
+  // Only applies when entries are objects with a stable `id` field — the
+  // overwhelming majority of stores. Without that, we fall back to a plain
+  // overwrite (the previous behaviour) because we can't tell adds from edits.
+  //
+  // The goal: stop stale warm Lambdas from erasing data that a different
+  // Lambda just inserted. A Lambda whose ref was hydrated before the insert
+  // would otherwise write its stale view back and clobber the new item.
+  async function mergingSave(): Promise<void> {
+    try {
+      const dbItems = await loadJson<T[] | null>(key, null);
+      if (Array.isArray(dbItems) && dbItems.length > 0) {
+        const first = dbItems[0] as unknown;
+        const hasId =
+          first && typeof first === "object" && "id" in (first as object);
+        if (hasId) {
+          const refIds = new Set(
+            (ref as unknown as Array<{ id: unknown }>)
+              .map((r) => r?.id)
+              .filter((id) => id !== undefined)
+          );
+          const missing = (dbItems as Array<{ id: unknown }>).filter(
+            (item) => item?.id !== undefined && !refIds.has(item.id)
+          );
+          if (missing.length > 0) {
+            suspendFlush = true;
+            try {
+              (ref as unknown as unknown[]).push(...missing);
+            } finally {
+              suspendFlush = false;
+            }
+          }
+        }
+      }
+    } catch (err) {
+      log.error("console.error", undefined, {
+        args: [`[persistent-array] merge-before-save("${key}") failed`, err],
+      });
+    }
+    await saveJson(key, ref);
+  }
+
   function flush(): void {
     if (suspendFlush) return;
-    flushPromise = flushPromise.then(() => saveJson(key, ref));
+    flushPromise = flushPromise.then(() => mergingSave());
     // Track in the global registry so awaitAllFlushes() can drain it
     // before a route handler returns. Self-remove when resolved.
     const tracked = flushPromise;

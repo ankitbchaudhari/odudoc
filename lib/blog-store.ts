@@ -206,7 +206,7 @@ async function uniqueSlug(base: string, ignoreId?: string): Promise<string> {
   while (true) {
     const rows = (await sql`
       SELECT 1 FROM blog_posts WHERE slug = ${slug} AND id <> ${ignoreId ?? ""} LIMIT 1
-    `) as unknown[];
+    `) as unknown as unknown[];
     if (rows.length === 0) return slug;
     slug = `${base}-${n++}`;
   }

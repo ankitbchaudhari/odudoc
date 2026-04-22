@@ -7,6 +7,7 @@ import {
   touchLastLogin,
   createUser,
   markEmailVerified,
+  reloadUsers,
 } from "./users-store";
 import { getMembershipsForUser } from "./memberships-store";
 import { getOrganizationById } from "./organizations-store";
@@ -63,6 +64,12 @@ const providers = [
       if (!credentials?.email || !credentials?.password) {
         throw new Error("Please enter your email and password");
       }
+
+      // Refresh the in-memory users list from app_kv. bindPersistentArray
+      // hydrates only once per Lambda cold-start, so a Lambda that's been
+      // warm since before the user signed up (on a different Lambda) would
+      // otherwise miss the new record and 401 them with "No account found".
+      await reloadUsers();
 
       const user = findUserByEmail(credentials.email);
       if (!user) {
@@ -162,6 +169,9 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       if (account?.provider !== "google") return true;
       if (!user.email) return false;
+
+      // Same staleness concern as the credentials flow — refresh before lookup.
+      await reloadUsers();
 
       const existing = findUserByEmail(user.email);
 

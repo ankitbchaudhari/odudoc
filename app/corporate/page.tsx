@@ -30,7 +30,9 @@ const modules = [
   { icon: "🛏️", title: "IPD / OPD Management", desc: "Bed map, admissions, transfers, discharge summaries." },
   { icon: "👩‍⚕️", title: "Medical Staff Management", desc: "Shifts, credentials, license expiry, payroll inputs." },
   { icon: "📋", title: "Quick Consultations", desc: "OPD queue, token numbers, consult notes in one click." },
-  { icon: "🎙️", title: "AI & Voice Consultation", desc: "Realtime speech-to-note, auto-drafted prescriptions." },
+  { icon: "🤖", title: "AI Prescription Assistant", desc: "Enter symptoms → ranked differential diagnoses → investigations and treatments." },
+  { icon: "🎙️", title: "Voice Prescription", desc: "Dictate the prescription; AI structures patient, diagnosis, meds, and advice for review." },
+  { icon: "🧠", title: "AI Symptom Triage", desc: "Patients describe concerns; platform routes them to the right specialty." },
   { icon: "🧪", title: "Lab Management", desc: "Order → sample → result → signed report PDF." },
   { icon: "💊", title: "Pharmacy", desc: "Batch & expiry tracking, prescription-linked dispensing." },
   { icon: "🧾", title: "Billing & Accounting", desc: "Invoices, insurance claims, GST, ledger, P&L." },
@@ -38,6 +40,49 @@ const modules = [
   { icon: "🔪", title: "Surgery / OT", desc: "OT calendar, surgical team, consumables log, pre/post-op." },
   { icon: "🩻", title: "Radiology & DICOM", desc: "Integrated DICOM viewer, report sign-off, PACS hooks." },
   { icon: "📹", title: "Telemedicine", desc: "Video consults, e-prescriptions, follow-up scheduling." },
+];
+
+// Clinical AI showcase — the features that actually save doctor time
+// on a busy OPD day. Each card maps to a real, shipped module in the
+// platform (/dashboard/doctor/ai-prescription, /voice-prescription,
+// etc.).
+const clinicalAi = [
+  {
+    icon: "🤖",
+    eyebrow: "AI Prescription Assistant",
+    title: "From symptoms to a drafted prescription in seconds.",
+    desc: "Doctor enters age, sex, symptoms, allergies and history. AI returns up to 5 ranked differential diagnoses with confidence, rationale, and red-flag warnings. Pick a diagnosis — AI drafts investigations, first-line medications with dose/frequency/duration, advice, and follow-up. All editable; nothing is auto-prescribed.",
+    bullets: [
+      "Evidence-based differential with confidence levels",
+      "First-line drug suggestions with dose, frequency, duration",
+      "Red-flag alerts for urgent referral",
+      "Doctor reviews and signs every line",
+    ],
+  },
+  {
+    icon: "🎙️",
+    eyebrow: "Voice Prescription",
+    title: "Speak naturally. We fill the fields.",
+    desc: "Doctor taps the mic and dictates in English, Hindi, Gujarati, Marathi, or Tamil. Browser-native transcription captures the conversation; AI extracts patient details, symptoms, diagnosis, medications (with dose/frequency/duration), tests, advice, and follow-up into an editable draft. Cuts 3-4 minutes off every OPD consult.",
+    bullets: [
+      "Multilingual: English / Hindi / Gujarati / Marathi / Tamil",
+      "Structured output matches the prescription template",
+      "Flags anything it couldn't parse for manual review",
+      "Works on any modern browser — no app install",
+    ],
+  },
+  {
+    icon: "🧠",
+    eyebrow: "AI Symptom Triage",
+    title: "Patients reach the right specialist, first time.",
+    desc: "On the patient portal, a conversational AI assistant collects complaints, ranks likely specialties, and suggests the right department before booking. Reduces mis-triaged OPD slots and front-desk rerouting — especially valuable for large multi-speciality hospitals.",
+    bullets: [
+      "Routes patients to the correct department",
+      "Supports red-flag escalation to ER",
+      "Trained to refuse diagnosis — it only suggests the right doctor",
+      "Available on web, WhatsApp, and kiosk modes",
+    ],
+  },
 ];
 
 const plans = [
@@ -58,7 +103,8 @@ const plans = [
       "Everything in Clinic",
       "IPD + OT + Inventory",
       "Lab Management",
-      "AI Voice Consultation",
+      "AI Prescription + Voice Prescription",
+      "AI Symptom Triage",
       "Priority phone support",
     ],
     cta: "Request pricing",
@@ -140,10 +186,10 @@ export default function CorporatePage() {
                 </svg>
               </Link>
               <Link
-                href="#modules"
+                href="#clinical-ai"
                 className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold backdrop-blur-sm transition-colors hover:bg-white/10"
               >
-                See all modules
+                See clinical AI
               </Link>
             </div>
             <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-4">
@@ -214,7 +260,7 @@ export default function CorporatePage() {
               The platform
             </span>
             <h2 className="mt-4 text-3xl font-extrabold text-gray-900 sm:text-4xl">
-              One system. Twelve modules.
+              One system. Every module your hospital runs on.
             </h2>
             <p className="mt-3 text-gray-500">
               Turn modules on per branch, per department — pay only for what you use.
@@ -235,6 +281,79 @@ export default function CorporatePage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Clinical AI showcase */}
+      <section id="clinical-ai" className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-teal-50 py-20">
+        <div className="pointer-events-none absolute -right-10 top-20 h-64 w-64 rounded-full bg-indigo-200/40 blur-3xl" />
+        <div className="pointer-events-none absolute -left-10 bottom-20 h-64 w-64 rounded-full bg-teal-200/40 blur-3xl" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-teal-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm">
+              Clinical AI — shipped and live
+            </span>
+            <h2 className="mt-4 text-3xl font-extrabold text-gray-900 sm:text-4xl">
+              AI that actually saves doctors time.
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-gray-500">
+              Three features, built on medical-grade LLMs, designed to fit the way
+              Indian and African OPDs actually run. Every output is advisory — the
+              doctor signs off on every line.
+            </p>
+          </div>
+
+          <div className="mt-14 space-y-6">
+            {clinicalAi.map((f, i) => (
+              <div
+                key={f.eyebrow}
+                className={`grid grid-cols-1 gap-8 rounded-3xl border border-gray-100 bg-white p-8 shadow-sm md:grid-cols-[auto_1fr_auto] md:items-center md:p-10 ${
+                  i % 2 === 1 ? "md:bg-gradient-to-br md:from-white md:to-indigo-50/40" : ""
+                }`}
+              >
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-teal-500 text-4xl shadow-lg">
+                  {f.icon}
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                    {f.eyebrow}
+                  </p>
+                  <h3 className="mt-2 text-xl font-extrabold text-gray-900 sm:text-2xl">
+                    {f.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-gray-600">
+                    {f.desc}
+                  </p>
+                </div>
+                <ul className="space-y-2 border-t border-gray-100 pt-4 md:max-w-xs md:border-l md:border-t-0 md:pl-8 md:pt-0">
+                  {f.bullets.map((b) => (
+                    <li key={b} className="flex items-start gap-2 text-sm text-gray-700">
+                      <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="#demo"
+              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg transition-transform hover:scale-[1.02] hover:bg-indigo-700"
+            >
+              See the AI demo live
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+            <p className="text-xs text-gray-500">
+              Available on Hospital and Enterprise plans. Doctors keep full
+              editorial control — AI never writes a signed prescription.
+            </p>
           </div>
         </div>
       </section>

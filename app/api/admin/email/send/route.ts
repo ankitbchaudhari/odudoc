@@ -8,7 +8,7 @@ import { sendAdminBroadcastEmail } from "@/lib/email";
 export const runtime = "nodejs";
 
 type Audience = "patients" | "doctors" | "staff" | "customers" | "all" | "custom";
-type Sender = "admin" | "no-reply" | "notifications" | "hr" | "promotion";
+type Sender = "admin" | "no-reply" | "notifications" | "hr" | "career" | "promotion";
 
 const VALID_AUDIENCES: Audience[] = [
   "patients",
@@ -23,6 +23,7 @@ const VALID_SENDERS: Sender[] = [
   "no-reply",
   "notifications",
   "hr",
+  "career",
   "promotion",
 ];
 

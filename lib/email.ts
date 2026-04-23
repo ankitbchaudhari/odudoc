@@ -23,7 +23,8 @@ export type Sender =
   | "no-reply"      // OTPs, password resets, verification
   | "notifications" // appointment confirms, reminders
   | "admin"         // system alerts, withdrawal decisions
-  | "hr"            // career application replies
+  | "hr"            // career application replies (legacy)
+  | "career"        // career application replies (current)
   | "promotion";    // marketing
 
 const FROM: Record<Sender, string> = {
@@ -31,6 +32,7 @@ const FROM: Record<Sender, string> = {
   "notifications": `${BRAND} <notifications@${DOMAIN}>`,
   "admin":         `${BRAND} Admin <admin@${DOMAIN}>`,
   "hr":            `${BRAND} Careers <hr@${DOMAIN}>`,
+  "career":        `${BRAND} Careers <career@${DOMAIN}>`,
   "promotion":     `${BRAND} <promotion@${DOMAIN}>`,
 };
 

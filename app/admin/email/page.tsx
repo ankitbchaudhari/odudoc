@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 type Audience = "patients" | "doctors" | "staff" | "customers" | "all" | "custom";
-type Sender = "admin" | "no-reply" | "notifications" | "hr" | "promotion";
+type Sender = "admin" | "no-reply" | "notifications" | "hr" | "career" | "promotion";
 
 interface AudienceSummary {
   count: number;
@@ -35,7 +35,8 @@ const SENDER_OPTIONS: { value: Sender; label: string }[] = [
   { value: "admin", label: "admin@odudoc.com — General / account" },
   { value: "notifications", label: "notifications@odudoc.com — Updates" },
   { value: "promotion", label: "promotion@odudoc.com — Marketing" },
-  { value: "hr", label: "hr@odudoc.com — Careers" },
+  { value: "hr", label: "hr@odudoc.com — Careers (legacy)" },
+  { value: "career", label: "career@odudoc.com — Careers" },
   { value: "no-reply", label: "no-reply@odudoc.com — System" },
 ];
 

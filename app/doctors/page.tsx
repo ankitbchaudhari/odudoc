@@ -2,8 +2,16 @@
 
 import { useState, useMemo, useEffect } from "react";
 import DoctorListRow from "@/components/DoctorListRow";
-import { specialties, type Doctor } from "@/lib/data";
+import { specialties as fallbackSpecialties, type Doctor } from "@/lib/data";
 import { getDoctorPresence } from "@/lib/doctor-presence";
+
+// Shape returned by /api/public/departments (matches DisplayDepartment in
+// lib/specialty-display.ts). Only the fields this page uses are declared.
+interface PublicSpecialty {
+  id: string;
+  name: string;
+  emoji: string;
+}
 
 export default function DoctorsPage() {
   // Doctors come exclusively from the admin-managed API. No static fallback —
@@ -18,6 +26,35 @@ export default function DoctorsPage() {
       })
       .catch(() => {})
       .finally(() => setDoctorsLoaded(true));
+  }, []);
+
+  // Admin-managed specialty list (falls back to the bundled static list
+  // while the request is in flight, so the grid never flashes empty).
+  const [liveSpecialties, setLiveSpecialties] = useState<PublicSpecialty[]>(
+    () => fallbackSpecialties.map((s) => ({ id: s.id, name: s.name, emoji: s.icon }))
+  );
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/public/departments", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled) return;
+        if (d && Array.isArray(d.departments) && d.departments.length > 0) {
+          setLiveSpecialties(
+            d.departments.map((x: { id: string; name: string; emoji: string }) => ({
+              id: x.id,
+              name: x.name,
+              emoji: x.emoji,
+            }))
+          );
+        }
+      })
+      .catch(() => {
+        // Leave the fallback list in place.
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
   const [search, setSearch] = useState("");
   const [specialty, setSpecialty] = useState("");
@@ -384,13 +421,13 @@ export default function DoctorsPage() {
             <div className="mt-14">
               <h2 className="mb-6 text-xl font-bold text-gray-900">Browse by Specialty</h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                {specialties.map((s) => (
+                {liveSpecialties.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => setSpecialty(s.name)}
                     className="card flex flex-col items-center py-4 text-center"
                   >
-                    <span className="text-2xl">{s.icon}</span>
+                    <span className="text-2xl">{s.emoji}</span>
                     <span className="mt-2 text-xs font-medium text-gray-700">{s.name}</span>
                   </button>
                 ))}

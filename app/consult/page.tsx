@@ -5,6 +5,8 @@ import { faqs } from "@/lib/data";
 import { getPublicDoctorsFresh } from "@/lib/public-doctors";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { listDepartments } from "@/lib/departments-store";
+import { toDisplayDepartments } from "@/lib/specialty-display";
 import type { Metadata } from "next";
 import { ServiceLd, BreadcrumbLd } from "@/components/StructuredData";
 
@@ -77,18 +79,10 @@ const concerns = [
   },
 ];
 
-// 24x7 specialist strip — mirrors Practo's "Book appointment with experts"
-// row. Price is the starting fee.
-const specialists = [
-  { name: "General Physician", icon: "🩺", price: 25, wait: "< 5 min" },
-  { name: "Dermatologist", icon: "✨", price: 35, wait: "< 10 min" },
-  { name: "Gynecologist", icon: "👩‍⚕️", price: 40, wait: "< 10 min" },
-  { name: "Pediatrician", icon: "👶", price: 30, wait: "< 15 min" },
-  { name: "Psychiatrist", icon: "🧠", price: 45, wait: "< 20 min" },
-  { name: "Cardiologist", icon: "❤️", price: 50, wait: "< 30 min" },
-  { name: "Orthopedist", icon: "🦴", price: 40, wait: "< 20 min" },
-  { name: "ENT Specialist", icon: "👂", price: 35, wait: "< 15 min" },
-];
+// 24x7 specialist strip — Practo-style "Book appointment with experts"
+// row. Populated from the admin-managed Departments store at render
+// time (see default export below) so add/remove/toggle in
+// /admin/departments shows up here immediately.
 
 const heroBullets = [
   { text: "Private consultation", icon: "🔒" },
@@ -128,6 +122,10 @@ export default async function ConsultPage() {
     getPublicDoctorsFresh(),
     getServerSession(authOptions),
   ]);
+  // Admin-managed specialty list. `.slice(0, 8)` keeps the strip a
+  // neat 4-column x 2-row grid on desktop even when the admin adds
+  // 20+ departments; the rest remain reachable from /doctors.
+  const specialists = toDisplayDepartments(listDepartments()).slice(0, 8);
   return (
     <>
       <ServiceLd
@@ -316,35 +314,41 @@ export default async function ConsultPage() {
             </div>
           </div>
 
-          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {specialists.map((s) => (
-              <div
-                key={s.name}
-                className="flex flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <div className="flex items-start justify-between">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-50 text-2xl">
-                    {s.icon}
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-green-700">
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                    {s.wait}
-                  </span>
-                </div>
-                <h3 className="mt-3 font-semibold text-gray-900">{s.name}</h3>
-                <p className="mt-1 text-xs text-gray-500">
-                  Starts at{" "}
-                  <span className="font-bold text-gray-900">${s.price}</span>
-                </p>
-                <Link
-                  href="/consult/book"
-                  className="mt-4 inline-flex items-center justify-center rounded-lg bg-primary-600 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-700"
+          {specialists.length === 0 ? (
+            <p className="mt-8 text-sm text-gray-500">
+              No specialties are active right now. Please check back soon.
+            </p>
+          ) : (
+            <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {specialists.map((s) => (
+                <div
+                  key={s.id}
+                  className="flex flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
-                  Consult Now
-                </Link>
-              </div>
-            ))}
-          </div>
+                  <div className="flex items-start justify-between">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-50 text-2xl">
+                      {s.emoji}
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-green-700">
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                      {s.waitLabel}
+                    </span>
+                  </div>
+                  <h3 className="mt-3 font-semibold text-gray-900">{s.name}</h3>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Starts at{" "}
+                    <span className="font-bold text-gray-900">${s.consultFee}</span>
+                  </p>
+                  <Link
+                    href="/consult/book"
+                    className="mt-4 inline-flex items-center justify-center rounded-lg bg-primary-600 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-700"
+                  >
+                    Consult Now
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

@@ -74,16 +74,25 @@ export async function POST(req: NextRequest) {
       log.error("[doctor-register] admin notification failed:", err);
     }
 
-    // Confirmation email to the applicant. Non-blocking — never let a
-    // mail failure fail the registration.
-    void sendDoctorApplicationReceivedEmail({
-      to: app.email,
-      fullName: app.fullName,
-      applicationId: app.id,
-      specialty: app.specialty,
-    }).catch((err) =>
-      log.error("[doctor-register] applicant email failed:", err)
-    );
+    // Confirmation email to the applicant. Awaited so the Vercel Lambda
+    // doesn't exit before Resend finishes the HTTP call (previously this was
+    // void-ed and the email was regularly lost on cold starts). Failures
+    // are logged but don't fail the registration itself.
+    try {
+      const res = await sendDoctorApplicationReceivedEmail({
+        to: app.email,
+        fullName: app.fullName,
+        applicationId: app.id,
+        specialty: app.specialty,
+      });
+      if (!res.ok) {
+        log.error("doctor_register.applicant_email_failed", undefined, {
+          error: res.error,
+        });
+      }
+    } catch (err) {
+      log.error("doctor_register.applicant_email_threw", err);
+    }
 
     return NextResponse.json({ id: app.id, status: app.status }, { status: 201 });
   } catch (err) {

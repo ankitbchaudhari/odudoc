@@ -312,21 +312,45 @@ function DocLink({ label, value }: { label: string; value?: string }) {
     );
   }
   const isUrl = value.startsWith("http");
+  // Derive a friendly filename from the URL pathname so the download
+  // lands as e.g. "medical-license.pdf" instead of a random hash.
+  let downloadName = `${label.replace(/\s+/g, "-").toLowerCase()}`;
+  if (isUrl) {
+    try {
+      const u = new URL(value);
+      const last = u.pathname.split("/").filter(Boolean).pop() || "";
+      if (last) downloadName = last;
+    } catch {
+      /* keep the label-based fallback */
+    }
+  }
   return (
-    <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-white px-3 py-2 text-xs">
+    <div className="flex items-center justify-between gap-2 rounded-lg border border-gray-100 bg-white px-3 py-2 text-xs">
       <span className="font-medium text-gray-700">{label}</span>
       {isUrl ? (
-        <a
-          href={value}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-primary-600 to-teal-600 px-2.5 py-1 font-semibold text-white hover:scale-105"
-        >
-          View
-          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-        </a>
+        <div className="flex items-center gap-1.5">
+          <a
+            href={value}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-primary-600 to-teal-600 px-2.5 py-1 font-semibold text-white hover:scale-105"
+          >
+            View
+            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+          <a
+            href={`/api/admin/download?url=${encodeURIComponent(value)}&name=${encodeURIComponent(downloadName)}`}
+            title={`Download ${downloadName}`}
+            className="inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-2.5 py-1 font-semibold text-gray-700 hover:bg-gray-50"
+          >
+            Download
+            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+          </a>
+        </div>
       ) : (
         <span className="truncate text-gray-500" title={value}>
           {value}

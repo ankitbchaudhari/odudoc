@@ -92,17 +92,25 @@ export async function PATCH(req: NextRequest) {
     }
   }
 
-  // Notify the applicant of the decision. Fire-and-forget so a mail
-  // failure never breaks the admin action.
+  // Notify the applicant of the decision. Awaited so the Lambda doesn't
+  // terminate before Resend's HTTP call finishes — fire-and-forget was
+  // dropping mails on cold starts. Failure is logged, not raised.
   if (body.status === "approved" || body.status === "rejected") {
-    void sendDoctorApplicationStatusEmail({
-      to: updated.email,
-      fullName: updated.fullName,
-      status: body.status,
-      adminNotes: body.adminNotes,
-    }).catch((err) =>
-      log.error("doctor_applications.status_email_failed", err)
-    );
+    try {
+      const res = await sendDoctorApplicationStatusEmail({
+        to: updated.email,
+        fullName: updated.fullName,
+        status: body.status,
+        adminNotes: body.adminNotes,
+      });
+      if (!res.ok) {
+        log.error("doctor_applications.status_email_failed", undefined, {
+          error: res.error,
+        });
+      }
+    } catch (err) {
+      log.error("doctor_applications.status_email_threw", err);
+    }
   }
 
   return NextResponse.json({ application: updated });

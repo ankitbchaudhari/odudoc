@@ -28,6 +28,8 @@ export default function AdminGallery() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [filterCat, setFilterCat] = useState("All");
 
   const [form, setForm] = useState({
@@ -101,6 +103,38 @@ export default function AdminGallery() {
       await load();
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleFileUpload = async (file: File) => {
+    setUploadError(null);
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Please choose an image file.");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setUploadError("Image exceeds 8MB limit.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "gallery");
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const json = (await res.json().catch(() => ({}))) as {
+        url?: string;
+        error?: string;
+      };
+      if (!res.ok || !json.url) {
+        setUploadError(json.error || `Upload failed (HTTP ${res.status})`);
+        return;
+      }
+      setForm((f) => ({ ...f, imageUrl: json.url! }));
+    } catch (e) {
+      setUploadError((e as Error).message || "Upload failed");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -182,14 +216,57 @@ export default function AdminGallery() {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Image URL (optional)</label>
-              <input
-                type="text"
-                value={form.imageUrl}
-                onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                placeholder="https://..."
-              />
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Image (upload or paste URL)
+              </label>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    {uploading ? "Uploading…" : "Upload image"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={uploading}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) handleFileUpload(f);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                  {form.imageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, imageUrl: "" })}
+                      className="rounded-lg border border-gray-300 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  value={form.imageUrl}
+                  onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  placeholder="https://... or upload above"
+                />
+                {uploadError && (
+                  <p className="text-xs text-red-600">{uploadError}</p>
+                )}
+                {form.imageUrl && !uploadError && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={form.imageUrl}
+                    alt="preview"
+                    className="mt-1 h-24 w-full rounded-lg border border-gray-200 object-cover"
+                  />
+                )}
+              </div>
             </div>
             <div className="sm:col-span-2">
               <label className="mb-1 block text-sm font-medium text-gray-700">Gradient Color</label>

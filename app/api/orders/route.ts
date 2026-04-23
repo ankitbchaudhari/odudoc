@@ -97,6 +97,39 @@ export async function POST(req: NextRequest) {
     return { ...it, vendorId: prod.vendorId, vendorName: prod.vendorName };
   });
 
+  // Geo-restriction: a country-bound vendor (e.g. India-based pharmacy)
+  // can only fulfil orders shipping to that same country. "Global" vendors
+  // (marketplace house accounts) ship anywhere. Match is loose — we look for
+  // the vendor country as a substring of the free-form shipping address —
+  // which is enough to catch the common "India" / "United States" tokens
+  // without a full address parser.
+  const shippingAddrLower = (body.shippingAddress || "").toLowerCase();
+  const blocked: Array<{ name: string; vendorCountry: string }> = [];
+  for (const it of enrichedItems) {
+    if (!it.vendorId) continue;
+    const vendor = getVendorById(it.vendorId);
+    if (!vendor) continue;
+    const vc = vendor.country?.trim();
+    if (!vc || vc.toLowerCase() === "global") continue;
+    if (!shippingAddrLower.includes(vc.toLowerCase())) {
+      blocked.push({ name: it.name, vendorCountry: vc });
+    }
+  }
+  if (blocked.length > 0) {
+    return NextResponse.json(
+      {
+        error:
+          `This order can't be shipped to the address you entered. ` +
+          blocked
+            .map((b) => `"${b.name}" only ships within ${b.vendorCountry}`)
+            .join("; ") +
+          `.`,
+        blocked,
+      },
+      { status: 409 }
+    );
+  }
+
   const order = createOrder({
     customer: body.customer,
     email: sessionEmail || body.email,

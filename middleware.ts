@@ -80,11 +80,16 @@ export default withAuth(
 
     // Staff should never see the patient dashboard — their home is the
     // e-commerce admin. Force them over even if a stale link lands them on
-    // /dashboard.
+    // /dashboard. Vendors are the opposite: pin them to /dashboard/vendor so
+    // they never wander into other dashboards or account pages they don't
+    // own.
     if (pathname.startsWith("/dashboard")) {
       const role = token?.role as string | undefined;
       if (role === "staff") {
         return NextResponse.redirect(new URL("/admin/products", req.url));
+      }
+      if (role === "vendor" && !pathname.startsWith("/dashboard/vendor")) {
+        return NextResponse.redirect(new URL("/dashboard/vendor", req.url));
       }
     }
 
@@ -118,6 +123,11 @@ export default withAuth(
           return NextResponse.next();
         }
         return NextResponse.redirect(new URL("/admin/products", req.url));
+      }
+
+      // Vendor — never allowed on /admin. Their home is /dashboard/vendor.
+      if (role === "vendor") {
+        return NextResponse.redirect(new URL("/dashboard/vendor", req.url));
       }
 
       // Anyone else (patient, unauthenticated slipping through) → login.

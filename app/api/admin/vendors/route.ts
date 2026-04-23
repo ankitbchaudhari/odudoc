@@ -12,6 +12,7 @@ import {
   setVendorStatus,
   updateVendor,
 } from "@/lib/vendors-store";
+import { inviteVendor } from "@/lib/vendor-invite";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -88,6 +89,18 @@ export async function POST(req: NextRequest) {
 
     if (autoApprove) {
       vendor = setVendorStatus(vendor.id, "approved") || vendor;
+      // Provision the vendor login + email credentials. Awaited so the
+      // Lambda doesn't exit before Resend finishes its HTTP call.
+      try {
+        await inviteVendor({
+          ownerName: vendor.ownerName,
+          ownerEmail: vendor.ownerEmail,
+          vendorName: vendor.name,
+          phone: vendor.phone,
+        });
+      } catch (err) {
+        log.error("admin_vendors.invite_failed", err);
+      }
     }
 
     return NextResponse.json({ vendor }, { status: 201 });

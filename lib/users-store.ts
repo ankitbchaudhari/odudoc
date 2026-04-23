@@ -13,7 +13,7 @@ export interface User {
   email: string;
   phone: string;
   password: string; // hashed
-  role: "patient" | "doctor" | "admin" | "staff";
+  role: "patient" | "doctor" | "admin" | "staff" | "vendor";
   createdAt: string;
 
   // Email verification + inactivity tracking.

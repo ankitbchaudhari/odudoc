@@ -859,6 +859,55 @@ export async function sendDoctorWelcomeEmail(params: {
   });
 }
 
+export async function sendVendorWelcomeEmail(params: {
+  to: string;
+  name: string; // owner or vendor name
+  vendorName?: string; // store/pharmacy name
+  tempPassword: string;
+  expiresAt: string;
+}): Promise<SendEmailResult> {
+  const expires = new Date(params.expiresAt);
+  const expiresLabel = isNaN(expires.getTime())
+    ? "7 days"
+    : expires.toLocaleString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+  const storeLine = params.vendorName
+    ? `Your store <strong>${escapeHtml(params.vendorName)}</strong> has been set up on the ${BRAND} marketplace.`
+    : `Your vendor account has been set up on the ${BRAND} marketplace.`;
+
+  const html = renderShell({
+    preheader: "Your OduDoc vendor account is ready.",
+    heading: `Welcome to ${BRAND}, ${escapeHtml(params.name)}`,
+    bodyHtml: `
+      <p>${storeLine} You can sign in right now with the credentials below:</p>
+      <p style="margin:16px 0;padding:14px 18px;background:#f3f4f6;border:1px dashed #9ca3af;border-radius:8px;font-family:monospace;font-size:14px;line-height:1.8;">
+        <strong>Username:</strong> ${escapeHtml(params.to)}<br/>
+        <strong>Temporary password:</strong> ${escapeHtml(params.tempPassword)}
+      </p>
+      <p><strong>This password must be changed within 7 days</strong> (by ${escapeHtml(expiresLabel)}) or it will expire and you'll be locked out until an admin re-issues a new one.</p>
+      <p>Once signed in you'll land on your vendor dashboard where you can list products, track orders, and manage payouts. You'll only see orders from your own store.</p>
+    `,
+    ctaLabel: "Sign in & change password",
+    ctaUrl: `${SITE_URL}/auth/login`,
+    footerNote: "If you weren't expecting this invitation, reply to this email and we'll investigate.",
+  });
+
+  return sendEmail({
+    from: "admin",
+    to: params.to,
+    subject: `Welcome to ${BRAND} — your vendor account is ready`,
+    html,
+    replyTo: `admin@${DOMAIN}`,
+  });
+}
+
 export async function sendPasswordResetByAdminEmail(params: {
   to: string;
   name: string;

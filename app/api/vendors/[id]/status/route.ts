@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getVendorById, setVendorStatus } from "@/lib/vendors-store";
 import { sendVendorStatusUpdateEmail } from "@/lib/email";
+import { inviteVendor } from "@/lib/vendor-invite";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -23,18 +24,41 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!v) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   // Notify the vendor when the status actually changes to a meaningful state.
+  // Awaited so the Lambda doesn't terminate before Resend's HTTP call
+  // finishes — fire-and-forget was dropping mails on cold starts.
   if (
     prev &&
     prev.status !== v.status &&
     (v.status === "approved" || v.status === "suspended" || v.status === "rejected")
   ) {
-    sendVendorStatusUpdateEmail({
-      to: v.ownerEmail,
-      ownerName: v.ownerName,
-      vendorName: v.name,
-      status: v.status,
-      reason: v.statusReason,
-    }).catch((err) => log.error("[vendors] status email failed:", err));
+    try {
+      await sendVendorStatusUpdateEmail({
+        to: v.ownerEmail,
+        ownerName: v.ownerName,
+        vendorName: v.name,
+        status: v.status,
+        reason: v.statusReason,
+      });
+    } catch (err) {
+      log.error("[vendors] status email failed:", err);
+    }
+  }
+
+  // On the pending→approved transition, provision the vendor login (a User
+  // record with role=vendor + 7-day temp password) and send the welcome
+  // email with credentials. Idempotent — re-approving a vendor just re-issues
+  // a fresh temp password.
+  if (prev && prev.status !== "approved" && v.status === "approved") {
+    try {
+      await inviteVendor({
+        ownerName: v.ownerName,
+        ownerEmail: v.ownerEmail,
+        vendorName: v.name,
+        phone: v.phone,
+      });
+    } catch (err) {
+      log.error("[vendors] invite failed:", err);
+    }
   }
 
   return NextResponse.json({ vendor: v });

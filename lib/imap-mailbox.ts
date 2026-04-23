@@ -44,11 +44,14 @@ interface MailboxCreds {
   secure: boolean;
 }
 
+// If every mailbox shares the same cPanel password, set IMAP_SHARED_PASS
+// once and skip the six per-mailbox IMAP_*_PASS vars. A per-mailbox
+// IMAP_<KEY>_PASS still wins if present, so you can override any single box.
 export function getMailboxCreds(def: MailboxDef): MailboxCreds | null {
   const user = process.env[def.userEnv] || def.address;
-  const pass = process.env[def.passEnv];
+  const pass = process.env[def.passEnv] || process.env.IMAP_SHARED_PASS;
   if (!pass) return null;
-  const host = process.env.IMAP_HOST || `mail.odudoc.com`;
+  const host = process.env.IMAP_HOST || `s4154.bom1.stableserver.net`;
   const port = Number(process.env.IMAP_PORT || 993);
   const secure = (process.env.IMAP_SECURE || "true").toLowerCase() !== "false";
   return { host, port, user, pass, secure };
@@ -59,11 +62,10 @@ export function mailboxStatus(def: MailboxDef): {
   userEnv: string;
   passEnv: string;
 } {
-  return {
-    configured: Boolean(process.env[def.passEnv]),
-    userEnv: def.userEnv,
-    passEnv: def.passEnv,
-  };
+  const configured = Boolean(
+    process.env[def.passEnv] || process.env.IMAP_SHARED_PASS,
+  );
+  return { configured, userEnv: def.userEnv, passEnv: def.passEnv };
 }
 
 export interface InboxSummary {

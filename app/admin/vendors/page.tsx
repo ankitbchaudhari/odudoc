@@ -20,10 +20,44 @@ interface Vendor {
 
 const STATUS_FILTERS = ["All", "pending", "approved", "suspended", "rejected"] as const;
 
+interface NewVendorForm {
+  name: string;
+  ownerName: string;
+  ownerEmail: string;
+  phone: string;
+  addressLine: string;
+  city: string;
+  country: string;
+  licenseNumber: string;
+  licenseDocUrl: string;
+  bankAccount: string;
+  commissionPercent: string;
+  autoApprove: boolean;
+}
+
+const EMPTY_NEW_VENDOR: NewVendorForm = {
+  name: "",
+  ownerName: "",
+  ownerEmail: "",
+  phone: "",
+  addressLine: "",
+  city: "",
+  country: "",
+  licenseNumber: "",
+  licenseDocUrl: "",
+  bankAccount: "",
+  commissionPercent: "10",
+  autoApprove: true,
+};
+
 export default function AdminVendorsPage() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [filter, setFilter] = useState<(typeof STATUS_FILTERS)[number]>("pending");
   const [busy, setBusy] = useState<string | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [form, setForm] = useState<NewVendorForm>(EMPTY_NEW_VENDOR);
 
   const load = async () => {
     const res = await fetch(`/api/vendors?status=${filter}`);
@@ -71,11 +105,71 @@ export default function AdminVendorsPage() {
     } finally { setBusy(null); }
   };
 
+  const submitNewVendor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddError(null);
+    setAdding(true);
+    try {
+      const commissionNum = Number(form.commissionPercent);
+      const payload = {
+        name: form.name,
+        ownerName: form.ownerName,
+        ownerEmail: form.ownerEmail,
+        phone: form.phone,
+        addressLine: form.addressLine,
+        city: form.city,
+        country: form.country,
+        licenseNumber: form.licenseNumber,
+        licenseDocUrl: form.licenseDocUrl || undefined,
+        bankAccount: form.bankAccount || undefined,
+        commissionPercent: Number.isFinite(commissionNum) ? commissionNum : undefined,
+        autoApprove: form.autoApprove,
+      };
+      const res = await fetch("/api/admin/vendors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setAddError(data.error || `Could not create vendor (HTTP ${res.status})`);
+        return;
+      }
+      setShowAdd(false);
+      setForm(EMPTY_NEW_VENDOR);
+      // If they auto-approved, flip the filter so the new row is visible.
+      if (form.autoApprove && filter !== "All" && filter !== "approved") {
+        setFilter("approved");
+      } else {
+        await load();
+      }
+    } finally {
+      setAdding(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="mx-auto max-w-6xl">
-        <h1 className="text-2xl font-bold text-gray-900">Vendor applications</h1>
-        <p className="mt-1 text-sm text-gray-500">Approve or reject pharmacy signups for the multivendor shop.</p>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Vendor applications</h1>
+            <p className="mt-1 text-sm text-gray-500">Approve or reject pharmacy signups for the multivendor shop.</p>
+          </div>
+          <button
+            onClick={() => {
+              setAddError(null);
+              setForm(EMPTY_NEW_VENDOR);
+              setShowAdd(true);
+            }}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-primary-600 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition-transform hover:scale-105"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Add vendor
+          </button>
+        </div>
 
         <div className="mt-5 mb-4 flex gap-2">
           {STATUS_FILTERS.map((s) => (
@@ -161,6 +255,118 @@ export default function AdminVendorsPage() {
           </div>
         )}
       </div>
+
+      {showAdd && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <form
+            onSubmit={submitNewVendor}
+            className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Add vendor</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Manually onboard a pharmacy. They&apos;ll get a vendor record immediately.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAdd(false)}
+                className="text-gray-400 hover:text-gray-600"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            {addError && (
+              <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+                {addError}
+              </div>
+            )}
+
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Field label="Business / pharmacy name *" value={form.name}
+                onChange={(v) => setForm({ ...form, name: v })} />
+              <Field label="Owner full name *" value={form.ownerName}
+                onChange={(v) => setForm({ ...form, ownerName: v })} />
+              <Field label="Owner email *" type="email" value={form.ownerEmail}
+                onChange={(v) => setForm({ ...form, ownerEmail: v })} />
+              <Field label="Phone *" value={form.phone}
+                onChange={(v) => setForm({ ...form, phone: v })} />
+              <Field label="Address line *" value={form.addressLine} span={2}
+                onChange={(v) => setForm({ ...form, addressLine: v })} />
+              <Field label="City *" value={form.city}
+                onChange={(v) => setForm({ ...form, city: v })} />
+              <Field label="Country *" value={form.country}
+                onChange={(v) => setForm({ ...form, country: v })} />
+              <Field label="License number *" value={form.licenseNumber}
+                onChange={(v) => setForm({ ...form, licenseNumber: v })} />
+              <Field label="Commission % (0–100)" value={form.commissionPercent}
+                onChange={(v) => setForm({ ...form, commissionPercent: v })} />
+              <Field label="License doc URL (optional)" value={form.licenseDocUrl} span={2}
+                onChange={(v) => setForm({ ...form, licenseDocUrl: v })} />
+              <Field label="Bank account (optional)" value={form.bankAccount} span={2}
+                onChange={(v) => setForm({ ...form, bankAccount: v })} />
+            </div>
+
+            <label className="mt-4 flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={form.autoApprove}
+                onChange={(e) => setForm({ ...form, autoApprove: e.target.checked })}
+                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              />
+              Approve immediately (skip the pending stage)
+            </label>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowAdd(false)}
+                className="rounded-xl border-2 border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={adding}
+                className="rounded-xl bg-gradient-to-r from-primary-600 to-teal-600 px-5 py-2 text-sm font-semibold text-white shadow-md hover:scale-105 disabled:opacity-50"
+              >
+                {adding ? "Saving…" : "Create vendor"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
+  );
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+  type = "text",
+  span = 1,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  span?: 1 | 2;
+}) {
+  return (
+    <label className={`block text-sm ${span === 2 ? "sm:col-span-2" : ""}`}>
+      <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+        {label}
+      </span>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1 w-full rounded-lg border-2 border-gray-200 px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+      />
+    </label>
   );
 }

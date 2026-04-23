@@ -24,7 +24,7 @@
 
 import { sql, ensureSchema } from "./db";
 import { blogPosts as seedPosts, type BlogPost } from "./data";
-import { pickBlogImage } from "./blog-images";
+import { pickBlogImage, pickBlogImageSync } from "./blog-images";
 
 export type BlogStatus = "Published" | "Draft";
 
@@ -108,7 +108,9 @@ async function initSchema(): Promise<void> {
     category: string;
   }>;
   for (const p of missing) {
-    const url = pickBlogImage(p.category, p.slug);
+    // Use the sync fallback here — this runs once per cold start and we
+    // don't want it blocking on network calls for every legacy row.
+    const url = pickBlogImageSync(p.category, p.slug);
     await sql`UPDATE blog_posts SET image_url = ${url} WHERE id = ${p.id}`;
   }
 
@@ -264,7 +266,12 @@ export async function createPost(input: BlogPostInput): Promise<AdminBlogPost> {
   const readTime = input.readTime?.trim() || estimateReadTime(input.content);
   const date = formatDate(new Date());
   const status: BlogStatus = input.status || "Published";
-  const imageUrl = pickBlogImage(input.category, slug);
+  const imageUrl = await pickBlogImage({
+    category: input.category,
+    title: input.title,
+    tags,
+    seed: slug,
+  });
 
   await sql`
     INSERT INTO blog_posts

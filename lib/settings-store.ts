@@ -145,6 +145,10 @@ const defaults: SiteSettings = {
     // Tazapay — cross-border checkout for APAC / Africa / GCC. On this
     // gateway, publicKey = API Key, secretKey = API Secret.
     { id: "tazapay", name: "Tazapay", enabled: false, mode: "test", publicKey: "", secretKey: "" },
+    // ConnectPay — hosted-checkout gateway (connectpay.com). On this
+    // gateway, publicKey = Merchant ID / API Key, secretKey = API Secret
+    // (used for HMAC-SHA256 request signing + webhook verification).
+    { id: "connectpay", name: "ConnectPay", enabled: false, mode: "test", publicKey: "", secretKey: "" },
   ],
   manualPayments: [
     { id: "m1", name: "Bank Transfer", instructions: "Bank: OduDoc Bank\nAccount: 1234567890\nIFSC: ODUD0001234", enabled: true },

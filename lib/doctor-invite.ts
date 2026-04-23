@@ -11,10 +11,7 @@
 
 import { createUser, findUserByEmail, issueTempPassword, markEmailVerified } from "./users-store";
 import { sendDoctorWelcomeEmail } from "./email";
-import { sendSms } from "./sms";
 import { log } from "./log";
-
-const SITE_URL = "https://www.odudoc.com";
 
 export interface InviteDoctorInput {
   name: string;
@@ -27,6 +24,8 @@ export interface InviteDoctorResult {
   tempPassword: string;
   expiresAt: string;
   emailSent: boolean;
+  // Retained for API compatibility with existing callers; always false now
+  // that we've dropped SMS delivery for the doctor welcome flow.
   smsSent: boolean;
   reused: boolean; // true when we updated an existing User instead of creating
 }
@@ -71,9 +70,11 @@ export async function inviteDoctor(
   markEmailVerified(email);
 
   // Best-effort notification. Failures are logged but never block the admin
-  // action that triggered this invite.
+  // action that triggered this invite. We intentionally deliver ONLY via
+  // email — the welcome SMS was dropped (Twilio trial prefix was exposing
+  // "Sent from your Twilio trial account" to end users and SMS for temp
+  // passwords is redundant when the same info is in the email anyway).
   let emailSent = false;
-  let smsSent = false;
 
   try {
     const res = await sendDoctorWelcomeEmail({
@@ -87,25 +88,12 @@ export async function inviteDoctor(
     log.error("doctor_invite.email_failed", err);
   }
 
-  if (phone) {
-    const body =
-      `Welcome to OduDoc, Dr. ${name}. Sign in at ${SITE_URL}/auth/login ` +
-      `with email ${email} and temporary password ${issued.tempPassword}. ` +
-      `Change it within 7 days or it will expire.`;
-    try {
-      const res = await sendSms(phone, body);
-      smsSent = Boolean(res?.ok);
-    } catch (err) {
-      log.error("doctor_invite.sms_failed", err);
-    }
-  }
-
   return {
     userId: existing.id,
     tempPassword: issued.tempPassword,
     expiresAt: issued.expiresAt,
     emailSent,
-    smsSent,
+    smsSent: false,
     reused,
   };
 }

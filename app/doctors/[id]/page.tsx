@@ -9,6 +9,7 @@ import DoctorPresenceBadge, { PresenceDot } from "@/components/DoctorPresenceBad
 import { pickDoctorPhoto } from "@/lib/doctor-photos";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ConsultGateModal from "@/components/ConsultGateModal";
+import DoctorAiAssistant from "@/components/DoctorAiAssistant";
 
 export default function DoctorProfilePage() {
   const params = useParams();
@@ -228,6 +229,8 @@ export default function DoctorProfilePage() {
                 Book Appointment
               </button>
             </div>
+
+            <DoctorAiAssistant doctorId={doctor.id} />
 
             <div className="card">
               <h2 className="mb-3 text-lg font-bold text-gray-900">Clinic Location</h2>

@@ -10,6 +10,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import ChipPicker from "@/components/ChipPicker";
+import {
+  SEX_OPTIONS,
+  DURATION_OPTIONS,
+  COMMON_SYMPTOMS,
+  COMMON_HISTORY,
+  COMMON_ALLERGIES,
+  COMMON_MEDICATIONS,
+  VITALS_TEMPLATES,
+} from "@/lib/clinical-presets";
 
 interface PatientForm {
   name: string;
@@ -201,11 +211,12 @@ export default function AiPrescriptionPage() {
                   value={patient.sex}
                   onChange={(e) => update("sex", e.target.value)}
                   className="input"
+                  size={1}
                 >
                   <option value="">Select…</option>
-                  <option>Male</option>
-                  <option>Female</option>
-                  <option>Other</option>
+                  {SEX_OPTIONS.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
                 </select>
               </Field>
               <Field label="Symptom duration">
@@ -214,6 +225,19 @@ export default function AiPrescriptionPage() {
                   onChange={(e) => update("duration", e.target.value)}
                   placeholder="e.g. 3 days"
                   className="input"
+                  list="duration-presets"
+                />
+                <datalist id="duration-presets">
+                  {DURATION_OPTIONS.map((d) => (
+                    <option key={d} value={d} />
+                  ))}
+                </datalist>
+                <ChipPicker
+                  label="Quick pick"
+                  options={DURATION_OPTIONS}
+                  value={patient.duration}
+                  onChange={(v) => update("duration", v)}
+                  maxHeight={160}
                 />
               </Field>
               <Field label="Symptoms" wide>
@@ -224,6 +248,13 @@ export default function AiPrescriptionPage() {
                   placeholder="Fever, dry cough, headache…"
                   className="input"
                 />
+                <ChipPicker
+                  label="Pick from common symptoms"
+                  options={COMMON_SYMPTOMS}
+                  value={patient.symptoms}
+                  onChange={(v) => update("symptoms", v)}
+                  maxHeight={220}
+                />
               </Field>
               <Field label="Medical history" wide>
                 <textarea
@@ -233,6 +264,13 @@ export default function AiPrescriptionPage() {
                   placeholder="Diabetes, hypertension, prior surgeries…"
                   className="input"
                 />
+                <ChipPicker
+                  label="Pick from common conditions"
+                  options={COMMON_HISTORY}
+                  value={patient.history}
+                  onChange={(v) => update("history", v)}
+                  maxHeight={220}
+                />
               </Field>
               <Field label="Allergies">
                 <input
@@ -240,6 +278,13 @@ export default function AiPrescriptionPage() {
                   onChange={(e) => update("allergies", e.target.value)}
                   placeholder="Penicillin, sulfa…"
                   className="input"
+                />
+                <ChipPicker
+                  label="Pick from common allergies"
+                  options={COMMON_ALLERGIES}
+                  value={patient.allergies}
+                  onChange={(v) => update("allergies", v)}
+                  maxHeight={200}
                 />
               </Field>
               <Field label="Current medications">
@@ -249,6 +294,13 @@ export default function AiPrescriptionPage() {
                   placeholder="Metformin 500mg BD…"
                   className="input"
                 />
+                <ChipPicker
+                  label="Pick from common meds"
+                  options={COMMON_MEDICATIONS}
+                  value={patient.medications}
+                  onChange={(v) => update("medications", v)}
+                  maxHeight={220}
+                />
               </Field>
               <Field label="Vitals (optional)" wide>
                 <input
@@ -256,6 +308,13 @@ export default function AiPrescriptionPage() {
                   onChange={(e) => update("vitals", e.target.value)}
                   placeholder="BP 130/85, HR 88, Temp 38.2°C, SpO2 97%"
                   className="input"
+                />
+                <ChipPicker
+                  label="Use a vitals template"
+                  options={VITALS_TEMPLATES}
+                  value={patient.vitals}
+                  onChange={(v) => update("vitals", v)}
+                  maxHeight={180}
                 />
               </Field>
             </div>

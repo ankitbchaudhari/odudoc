@@ -9,6 +9,7 @@ import {
   getApplications,
   getApplicationById,
   updateApplicationStatus,
+  deleteApplication,
   type ApplicationStatus,
 } from "@/lib/doctor-applications-store";
 import {
@@ -114,4 +115,22 @@ export async function PATCH(req: NextRequest) {
   }
 
   return NextResponse.json({ application: updated });
+}
+
+// DELETE ?id=<applicationId> — permanently removes the application record.
+// Does NOT touch any Doctor record that may have been created on approval;
+// admins manage those separately from /admin/doctors.
+export async function DELETE(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  const user = session?.user as { role?: string } | undefined;
+  if (user?.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  const id = req.nextUrl.searchParams.get("id");
+  if (!id) {
+    return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  }
+  const ok = deleteApplication(id);
+  if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json({ ok: true });
 }

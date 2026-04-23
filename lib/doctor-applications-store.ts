@@ -83,6 +83,14 @@ export function addApplication(
   return app;
 }
 
+export function deleteApplication(id: string): boolean {
+  const i = applications.findIndex((a) => a.id === id);
+  if (i === -1) return false;
+  applications.splice(i, 1);
+  flush();
+  return true;
+}
+
 export function updateApplicationStatus(
   id: string,
   status: ApplicationStatus,

@@ -15,12 +15,12 @@ interface TeamMember {
 }
 
 const team: TeamMember[] = [
-  { name: "Dr. Kaushik Sutariya", role: "Founder & CEO", initials: "KS", color: "bg-primary-500" },
-  { name: "Dr. Dixit Velani", role: "Chief Medical Officer", initials: "DV", color: "bg-teal-500" },
-  { name: "Dr. Ankitkumar Chaudhari", role: "CTO", initials: "AC", color: "bg-indigo-500" },
-  { name: "Dr. Prutha Chaudhary", role: "Head of Growth", initials: "PC", color: "bg-orange-500" },
-  { name: "Lawan Bala", role: "Head of Pharmacy", initials: "LB", color: "bg-emerald-500" },
-  { name: "Danlami Lawal", role: "Microbiologist", initials: "DL", color: "bg-cyan-500" },
+  { name: "Dr. Ankitkumar Chaudhari", role: "Founder & CEO", initials: "AC", color: "bg-indigo-500" },
+  { name: "Dr. Dixit Velani", role: "Chief Medical Officer & Internal Medicine Specialist", initials: "DV", color: "bg-teal-500" },
+  { name: "Dr. Prutha Chaudhary", role: "Rehabilitation Specialist & Head of Physiotherapy", initials: "PC", color: "bg-orange-500" },
+  { name: "Dr. Pankti Chaudhari", role: "Integrative Medicine Specialist", initials: "PC", color: "bg-rose-500" },
+  { name: "Lawan Bala", role: "Director of Pharmacy Services", initials: "LB", color: "bg-emerald-500" },
+  { name: "Danlami Lawal", role: "Clinical Microbiologist", initials: "DL", color: "bg-cyan-500" },
 ];
 
 const values = [

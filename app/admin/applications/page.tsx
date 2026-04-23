@@ -55,6 +55,26 @@ export default function AdminApplicationsPage() {
     }
   }
 
+  async function remove(id: string, name: string) {
+    if (!confirm(
+      `Delete ${name}'s application permanently? This cannot be undone. ` +
+      `(If they've already been approved, their Doctor record on /admin/doctors is separate and will remain.)`
+    )) return;
+    setBusyId(id);
+    try {
+      const r = await fetch(`/api/admin/doctor-applications?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      if (r.ok) await load();
+      else {
+        const d = await r.json().catch(() => ({}));
+        alert(d.error || `Delete failed (HTTP ${r.status})`);
+      }
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   const filtered = apps.filter((a) => tab === "all" || a.status === tab);
   const counts = {
     pending: apps.filter((a) => a.status === "pending").length,
@@ -122,6 +142,7 @@ export default function AdminApplicationsPage() {
                   setNotesFor(app.id);
                   setNotesText(app.adminNotes || "");
                 }}
+                onDelete={() => remove(app.id, app.fullName)}
               />
             ))
           )}
@@ -172,11 +193,13 @@ function ApplicationCard({
   busy,
   onApprove,
   onRejectClick,
+  onDelete,
 }: {
   app: DoctorApplication;
   busy: boolean;
   onApprove: () => void;
   onRejectClick: () => void;
+  onDelete: () => void;
 }) {
   const statusColors: Record<string, string> = {
     pending: "from-amber-500 to-orange-500",
@@ -261,24 +284,37 @@ function ApplicationCard({
         </div>
       </div>
 
-      {app.status === "pending" && (
-        <div className="flex justify-end gap-2 border-t border-gray-100 bg-gray-50 px-5 py-3">
-          <button
-            onClick={onRejectClick}
-            disabled={busy}
-            className="rounded-xl border-2 border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
-          >
-            Reject
-          </button>
-          <button
-            onClick={onApprove}
-            disabled={busy}
-            className="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-2 text-sm font-semibold text-white shadow-md transition-transform hover:scale-105 disabled:opacity-50"
-          >
-            {busy ? "Saving…" : "Approve"}
-          </button>
-        </div>
-      )}
+      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 bg-gray-50 px-5 py-3">
+        <button
+          onClick={onDelete}
+          disabled={busy}
+          title="Permanently delete this application"
+          className="mr-auto inline-flex items-center gap-1.5 rounded-xl border-2 border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:border-red-300 hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M10 7V4a1 1 0 011-1h2a1 1 0 011 1v3" />
+          </svg>
+          Delete
+        </button>
+        {app.status === "pending" && (
+          <>
+            <button
+              onClick={onRejectClick}
+              disabled={busy}
+              className="rounded-xl border-2 border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+            >
+              Reject
+            </button>
+            <button
+              onClick={onApprove}
+              disabled={busy}
+              className="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-2 text-sm font-semibold text-white shadow-md transition-transform hover:scale-105 disabled:opacity-50"
+            >
+              {busy ? "Saving…" : "Approve"}
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

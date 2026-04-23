@@ -323,6 +323,7 @@ export default function DoctorDashboardPage() {
                 {[
                   { label: "Consultations", href: "/dashboard/doctor/consultations", icon: "📋", bg: "from-sky-100 to-blue-100" },
                   { label: "Prescriptions", href: "/dashboard/doctor/prescriptions", icon: "💊", bg: "from-rose-100 to-orange-100" },
+                  { label: "AI Prescription", href: "/dashboard/doctor/ai-prescription", icon: "🤖", bg: "from-indigo-100 to-purple-100" },
                   { label: "Bookings", href: "/dashboard/doctor/appointments", icon: "📅", bg: "from-emerald-100 to-teal-100" },
                   { label: "Referrals", href: "/dashboard/doctor/referrals", icon: "↗️", bg: "from-violet-100 to-fuchsia-100" },
                 ].map((a) => (

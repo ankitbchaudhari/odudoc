@@ -106,8 +106,9 @@ export async function POST(req: NextRequest) {
   const shippingAddrLower = (body.shippingAddress || "").toLowerCase();
   const blocked: Array<{ name: string; vendorCountry: string }> = [];
   for (const it of enrichedItems) {
-    if (!it.vendorId) continue;
-    const vendor = getVendorById(it.vendorId);
+    const vendorId = "vendorId" in it ? it.vendorId : undefined;
+    if (!vendorId) continue;
+    const vendor = getVendorById(vendorId);
     if (!vendor) continue;
     const vc = vendor.country?.trim();
     if (!vc || vc.toLowerCase() === "global") continue;

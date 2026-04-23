@@ -139,6 +139,12 @@ const defaults: SiteSettings = {
     { id: "paypal", name: "PayPal", enabled: false, mode: "test", publicKey: "", secretKey: "" },
     { id: "razorpay", name: "Razorpay", enabled: false, mode: "test", publicKey: "", secretKey: "" },
     { id: "induspays", name: "IndusPays", enabled: false, mode: "test", publicKey: "", secretKey: "" },
+    // PayU Biz (corporate.payu.com) — India-first hosted checkout. On this
+    // gateway, publicKey = Merchant Key, secretKey = Merchant Salt.
+    { id: "payu", name: "PayU", enabled: false, mode: "test", publicKey: "", secretKey: "" },
+    // Tazapay — cross-border checkout for APAC / Africa / GCC. On this
+    // gateway, publicKey = API Key, secretKey = API Secret.
+    { id: "tazapay", name: "Tazapay", enabled: false, mode: "test", publicKey: "", secretKey: "" },
   ],
   manualPayments: [
     { id: "m1", name: "Bank Transfer", instructions: "Bank: OduDoc Bank\nAccount: 1234567890\nIFSC: ODUD0001234", enabled: true },

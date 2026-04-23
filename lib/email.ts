@@ -701,6 +701,38 @@ export async function sendAdminBroadcastEmail(params: {
   });
 }
 
+export async function sendDoctorRemovedEmail(params: {
+  to: string;
+  name: string;
+  reason?: string;
+}): Promise<SendEmailResult> {
+  const reasonBlock = params.reason
+    ? `<p style="margin-top:12px;padding:12px;background:#fef2f2;border-left:3px solid #dc2626;border-radius:6px;"><strong>Reason:</strong> ${escapeHtml(params.reason)}</p>`
+    : "";
+  const html = renderShell({
+    preheader: `Your ${BRAND} doctor account has been removed.`,
+    heading: `Your ${BRAND} doctor account has been removed`,
+    bodyHtml: `
+      <p>Hi Dr. ${escapeHtml(params.name)},</p>
+      <p>Our admin team has removed your doctor account from ${BRAND}. You can no longer sign in to see patients or accept new consultations.</p>
+      ${reasonBlock}
+      <p>Existing appointments with you have been cancelled and affected patients notified separately.</p>
+      <p>If you believe this was a mistake, or you'd like to re-apply in the future, please reply to this email and our team will review.</p>
+    `,
+    ctaLabel: "Contact support",
+    ctaUrl: `${SITE_URL}/contact`,
+    footerNote: "This decision was made by the OduDoc admin team.",
+  });
+
+  return sendEmail({
+    from: "admin",
+    to: params.to,
+    subject: `Your ${BRAND} doctor account has been removed`,
+    html,
+    replyTo: `admin@${DOMAIN}`,
+  });
+}
+
 export async function sendAccountBannedEmail(params: {
   to: string;
   name: string;

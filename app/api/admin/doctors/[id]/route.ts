@@ -7,6 +7,8 @@ import {
   deleteDoctor,
   type DoctorStatus,
 } from "@/lib/doctors-store";
+import { sendDoctorRemovedEmail } from "@/lib/email";
+import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
 
@@ -85,7 +87,28 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const { id } = await params;
+  // Capture the doctor's details before deletion so we can email them.
+  const doctor = getDoctorById(id);
   const ok = deleteDoctor(id);
   if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  // Notify the doctor that they've been removed. Awaited so the Lambda
+  // doesn't exit before Resend finishes the HTTP call.
+  if (doctor?.email) {
+    try {
+      const res = await sendDoctorRemovedEmail({
+        to: doctor.email,
+        name: doctor.name,
+      });
+      if (!res.ok) {
+        log.error("admin_doctor_delete.email_failed", undefined, {
+          error: res.error,
+        });
+      }
+    } catch (err) {
+      log.error("admin_doctor_delete.email_threw", err);
+    }
+  }
+
   return NextResponse.json({ ok: true });
 }

@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import {
   listDoctors,
   createDoctor,
+  reloadDoctors,
   DOCTOR_TIERS,
   DOCTOR_SPECIALTIES,
   type DoctorStatus,
@@ -24,6 +25,9 @@ export async function GET(req: NextRequest) {
   if (!isAdmin(role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+  // Refresh from Postgres so a warm Lambda started before the latest
+  // approval still sees the newly-created doctor.
+  await reloadDoctors();
   const { searchParams } = new URL(req.url);
   const doctors = listDoctors({
     search: searchParams.get("search") || undefined,

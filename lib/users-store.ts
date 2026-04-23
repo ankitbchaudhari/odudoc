@@ -39,9 +39,9 @@ const { hydrate, reload, flush } = bindPersistentArray<User>(
   "users",
   users,
   () => {
-    // Seed only the bootstrap admin account so the site has at least one
-    // admin that can log in on a fresh DB. All demo / test accounts have
-    // been removed.
+    // Seed the bootstrap admin + a demo vendor so the site has at least
+    // one admin and one vendor that can log in on a fresh DB. Real
+    // demo / test accounts are otherwise kept out of the seed.
     const nowIso = new Date().toISOString();
     return [
       {
@@ -54,6 +54,19 @@ const { hydrate, reload, flush } = bindPersistentArray<User>(
         createdAt: nowIso,
         emailVerified: true,
         lastLoginAt: nowIso,
+        status: "active",
+        warnings: [],
+      },
+      {
+        id: "demo-vendor-001",
+        name: "Demo Vendor",
+        email: "vendor@odudoc.com",
+        phone: "+1234567893",
+        password: bcrypt.hashSync("vendor123", 10),
+        role: "vendor",
+        createdAt: nowIso,
+        emailVerified: true,
+        lastLoginAt: null,
         status: "active",
         warnings: [],
       },
@@ -75,6 +88,30 @@ await hydrate();
     }
   }
   if (dirty) flush();
+})();
+
+// Idempotent ensure: on already-deployed DBs the seed() function won't
+// re-run, so we create the demo vendor account here if it's missing.
+// This keeps the credentials stable (vendor@odudoc.com / vendor123) on
+// every environment without wiping pre-existing users.
+(function ensureDemoVendorUser() {
+  const email = "vendor@odudoc.com";
+  if (users.some((u) => u.email.toLowerCase() === email)) return;
+  const nowIso = new Date().toISOString();
+  users.push({
+    id: "demo-vendor-001",
+    name: "Demo Vendor",
+    email,
+    phone: "+1234567893",
+    password: bcrypt.hashSync("vendor123", 10),
+    role: "vendor",
+    createdAt: nowIso,
+    emailVerified: true,
+    lastLoginAt: null,
+    status: "active",
+    warnings: [],
+  });
+  flush();
 })();
 
 // One-time migration: fill in moderation fields on any pre-existing user rows

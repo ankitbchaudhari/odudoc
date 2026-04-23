@@ -55,10 +55,54 @@ const { hydrate, flush } = bindPersistentArray<Vendor>(
         updatedAt: n,
         approvedAt: n,
       },
+      {
+        // Demo vendor — paired with the demo-vendor-001 user in
+        // users-store. Credentials: vendor@odudoc.com / vendor123.
+        id: "v-demo",
+        name: "Demo Pharmacy",
+        ownerName: "Demo Vendor",
+        ownerEmail: "vendor@odudoc.com",
+        phone: "+1234567893",
+        addressLine: "123 Demo Street",
+        city: "Demo City",
+        country: "India",
+        licenseNumber: "DEMO-0001",
+        commissionPercent: 15,
+        status: "approved",
+        createdAt: n,
+        updatedAt: n,
+        approvedAt: n,
+      },
     ];
   }
 );
 await hydrate();
+
+// Idempotent ensure: on already-deployed DBs the seed() function won't
+// re-run. Make sure the demo vendor record exists so the demo-vendor
+// user can see their dashboard on every environment.
+(function ensureDemoVendor() {
+  const email = "vendor@odudoc.com";
+  if (vendors.some((v) => v.ownerEmail.toLowerCase() === email)) return;
+  const n = new Date().toISOString();
+  vendors.push({
+    id: "v-demo",
+    name: "Demo Pharmacy",
+    ownerName: "Demo Vendor",
+    ownerEmail: email,
+    phone: "+1234567893",
+    addressLine: "123 Demo Street",
+    city: "Demo City",
+    country: "India",
+    licenseNumber: "DEMO-0001",
+    commissionPercent: 15,
+    status: "approved",
+    createdAt: n,
+    updatedAt: n,
+    approvedAt: n,
+  });
+  flush();
+})();
 
 const now = () => new Date().toISOString();
 const genId = () => `v-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`;

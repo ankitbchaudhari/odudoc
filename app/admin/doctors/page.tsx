@@ -353,82 +353,147 @@ export default function AdminDoctors() {
     }
   }
 
+  // Per-tier colour map — gradient card, gradient badge, icon background.
+  // Kept local to the component so the visuals are obvious at a glance.
+  const TIER_THEME: Record<
+    DoctorTier,
+    { card: string; badge: string; ring: string; icon: string; glow: string }
+  > = {
+    Bronze: {
+      card: "from-amber-50 via-orange-50 to-white",
+      badge: "bg-gradient-to-r from-amber-500 to-orange-500 text-white",
+      ring: "ring-amber-200/70",
+      icon: "from-amber-400 to-orange-500",
+      glow: "bg-amber-300/30",
+    },
+    Silver: {
+      card: "from-slate-50 via-gray-50 to-white",
+      badge: "bg-gradient-to-r from-slate-500 to-slate-600 text-white",
+      ring: "ring-slate-200/70",
+      icon: "from-slate-400 to-slate-600",
+      glow: "bg-slate-300/30",
+    },
+    Gold: {
+      card: "from-yellow-50 via-amber-50 to-white",
+      badge: "bg-gradient-to-r from-yellow-500 to-amber-500 text-white",
+      ring: "ring-yellow-200/70",
+      icon: "from-yellow-400 to-amber-500",
+      glow: "bg-yellow-300/30",
+    },
+    Platinum: {
+      card: "from-violet-50 via-fuchsia-50 to-white",
+      badge: "bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white",
+      ring: "ring-violet-200/70",
+      icon: "from-violet-500 to-fuchsia-500",
+      glow: "bg-violet-300/30",
+    },
+  };
+
   return (
-    <div>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Doctors Management</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            {doctors.length} doctors registered
-          </p>
+    <div className="space-y-6">
+      {/* Gradient hero header */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-primary-600 to-teal-500 p-6 text-white shadow-xl sm:p-8">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-10 h-64 w-64 rounded-full bg-fuchsia-400/20 blur-3xl" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-white/80">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+              </span>
+              Clinical team
+            </div>
+            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+              Doctors Management
+            </h2>
+            <p className="mt-2 text-sm text-white/80">
+              {doctors.length.toLocaleString()} {doctors.length === 1 ? "doctor" : "doctors"} registered across {specialties.length} specialties
+            </p>
+          </div>
+          <button
+            onClick={openNew}
+            className="inline-flex items-center gap-2 rounded-xl bg-white/95 px-5 py-3 text-sm font-semibold text-primary-700 shadow-lg ring-1 ring-white/30 transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-xl"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add New Doctor
+          </button>
         </div>
-        <button
-          onClick={openNew}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Add New Doctor
-        </button>
       </div>
 
-      {/* Tier overview */}
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Tier overview — gradient cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {tiers.map((t) => {
+          const theme = TIER_THEME[t.tier];
           const count = doctors.filter((d) => d.tier === t.tier).length;
           return (
             <div
               key={t.tier}
-              className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm"
+              className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${theme.card} p-5 shadow-sm ring-1 ${theme.ring} transition-all hover:-translate-y-0.5 hover:shadow-lg`}
             >
-              <div className="flex items-center justify-between">
-                <span
-                  className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${t.color}`}
-                >
-                  {t.tier}
-                </span>
-                <span className="text-xs text-gray-500">{count} doctors</span>
+              <div className={`pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full ${theme.glow} blur-2xl`} />
+              <div className="relative">
+                <div className="flex items-center justify-between">
+                  <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold shadow-sm ${theme.badge}`}>
+                    <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118L10 13.347l-2.799 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L3.568 7.82c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    {t.tier}
+                  </span>
+                  <div className="flex flex-col items-end">
+                    <span className="text-2xl font-extrabold leading-none text-gray-900">{count}</span>
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-gray-500">
+                      {count === 1 ? "doctor" : "doctors"}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-4 space-y-1 text-xs">
+                  <p className="text-gray-600">
+                    Unlocks at{" "}
+                    <span className="font-bold text-gray-900">{t.threshold.toLocaleString()}</span>{" "}
+                    consultations
+                  </p>
+                  <p className="text-gray-600">
+                    Platform fee:{" "}
+                    <span className="font-bold text-gray-900">{t.defaultCommission}%</span>
+                  </p>
+                </div>
+                <ul className="mt-3 space-y-1.5 text-[11px] text-gray-700">
+                  {t.benefits.slice(0, 3).map((b) => (
+                    <li key={b} className="flex items-start gap-1.5">
+                      <span className={`mt-0.5 inline-flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${theme.icon} text-[9px] font-bold text-white`}>
+                        ✓
+                      </span>
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <p className="mt-2 text-xs text-gray-500">
-                Unlocks at{" "}
-                <span className="font-semibold text-gray-700">
-                  {t.threshold.toLocaleString()}
-                </span>{" "}
-                consultations
-              </p>
-              <p className="mt-1 text-xs text-gray-500">
-                Platform fee:{" "}
-                <span className="font-semibold text-gray-700">
-                  {t.defaultCommission}%
-                </span>
-              </p>
-              <ul className="mt-3 space-y-1 text-[11px] text-gray-600">
-                {t.benefits.slice(0, 3).map((b) => (
-                  <li key={b} className="flex gap-1.5">
-                    <span className="text-primary-600">✓</span>
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
             </div>
           );
         })}
       </div>
 
-      {/* Filters */}
-      <div className="mb-6 grid gap-3 rounded-xl bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
-        <input
-          type="text"
-          placeholder="Search doctors..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-        />
+      {/* Filters — softly-tinted panel */}
+      <div className="grid gap-3 rounded-2xl border border-slate-100 bg-gradient-to-br from-white via-slate-50 to-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+        <div className="relative">
+          <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search doctors..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 py-2.5 text-sm outline-none transition-colors focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+          />
+        </div>
         <select
           value={specialtyFilter}
           onChange={(e) => setSpecialtyFilter(e.target.value)}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition-colors focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
         >
           <option value="All">All specialties</option>
           {specialties.map((s) => (
@@ -440,7 +505,7 @@ export default function AdminDoctors() {
         <select
           value={tierFilter}
           onChange={(e) => setTierFilter(e.target.value as "All" | DoctorTier)}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition-colors focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
         >
           <option value="All">All tiers</option>
           {tiers.map((t) => (
@@ -452,7 +517,7 @@ export default function AdminDoctors() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as "All" | DoctorStatus)}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition-colors focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
         >
           <option value="All">All statuses</option>
           <option value="Active">Active</option>
@@ -461,18 +526,20 @@ export default function AdminDoctors() {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+        {/* gradient top accent strip */}
+        <div className="h-1 bg-gradient-to-r from-indigo-500 via-primary-500 to-teal-400" />
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
-                <th className="px-6 py-4 font-medium">Doctor</th>
-                <th className="px-6 py-4 font-medium">Specialty</th>
-                <th className="px-6 py-4 font-medium">Tier & Progress</th>
-                <th className="px-6 py-4 font-medium">Commission</th>
-                <th className="px-6 py-4 font-medium">Rating</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium">Actions</th>
+              <tr className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white text-xs uppercase tracking-wider text-slate-600">
+                <th className="px-6 py-4 font-semibold">Doctor</th>
+                <th className="px-6 py-4 font-semibold">Specialty</th>
+                <th className="px-6 py-4 font-semibold">Tier &amp; Progress</th>
+                <th className="px-6 py-4 font-semibold">Commission</th>
+                <th className="px-6 py-4 font-semibold">Rating</th>
+                <th className="px-6 py-4 font-semibold">Status</th>
+                <th className="px-6 py-4 font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -499,16 +566,21 @@ export default function AdminDoctors() {
               )}
               {!loading &&
                 filtered.map((d) => {
-                  const tierDef = tiers.find((t) => t.tier === d.tier);
+                  const theme = TIER_THEME[d.tier];
                   const prog = progressTo(d.consultationCount, tiers);
+                  const initials = d.name
+                    .split(" ")
+                    .slice(1)
+                    .map((n) => n[0])
+                    .join("");
                   return (
                     <tr
                       key={d.id}
-                      className="border-b border-gray-50 transition-colors hover:bg-gray-50"
+                      className="border-b border-slate-50 transition-colors hover:bg-slate-50/70"
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-primary-100 text-xs font-bold text-primary-700">
+                          <div className={`relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br ${theme.icon} text-xs font-bold text-white shadow-sm ring-2 ring-white`}>
                             {d.imageUrl ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
@@ -517,37 +589,40 @@ export default function AdminDoctors() {
                                 className="h-full w-full object-cover"
                               />
                             ) : (
-                              d.name
-                                .split(" ")
-                                .slice(1)
-                                .map((n) => n[0])
-                                .join("")
+                              initials || "DR"
                             )}
                           </div>
                           <div>
-                            <div className="font-medium text-gray-900">{d.name}</div>
+                            <div className="font-semibold text-gray-900">{d.name}</div>
                             <div className="text-xs text-gray-500">{d.email}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-gray-600">{d.specialty}</td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center rounded-full bg-gradient-to-r from-indigo-50 to-primary-50 px-2.5 py-1 text-xs font-medium text-primary-700 ring-1 ring-primary-100">
+                          {d.specialty}
+                        </span>
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col gap-1.5">
                           <span
-                            className={`inline-flex w-fit items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${tierDef?.color || ""}`}
+                            className={`inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold shadow-sm ${theme.badge}`}
                           >
+                            <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118L10 13.347l-2.799 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L3.568 7.82c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
                             {d.tier}
                           </span>
                           <div className="text-[11px] text-gray-500">
                             {d.consultationCount.toLocaleString()} consultations
                           </div>
-                          <div className="h-1.5 w-32 overflow-hidden rounded-full bg-gray-100">
+                          <div className="h-1.5 w-32 overflow-hidden rounded-full bg-slate-100">
                             <div
-                              className="h-full bg-primary-500"
+                              className={`h-full bg-gradient-to-r ${theme.icon}`}
                               style={{ width: `${prog.pct}%` }}
                             />
                           </div>
-                          <div className="text-[11px] text-gray-500">
+                          <div className="text-[11px] font-medium text-slate-600">
                             {prog.nextTier
                               ? `${prog.remaining} to ${prog.nextTier}`
                               : "Max tier reached"}
@@ -555,34 +630,38 @@ export default function AdminDoctors() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <input
-                          type="number"
-                          min={0}
-                          max={100}
-                          defaultValue={d.commission}
-                          onBlur={(e) => {
-                            const v = Number(e.target.value);
-                            if (v !== d.commission)
-                              quickPatch(d.id, { commission: v });
-                          }}
-                          className="w-20 rounded-lg border border-gray-200 px-2 py-1 text-sm outline-none focus:border-primary-500"
-                        />
-                        <span className="ml-1 text-xs text-gray-500">%</span>
+                        <div className="inline-flex items-center rounded-xl border border-slate-200 bg-white focus-within:border-primary-500 focus-within:ring-2 focus-within:ring-primary-100">
+                          <input
+                            type="number"
+                            min={0}
+                            max={100}
+                            defaultValue={d.commission}
+                            onBlur={(e) => {
+                              const v = Number(e.target.value);
+                              if (v !== d.commission)
+                                quickPatch(d.id, { commission: v });
+                            }}
+                            className="w-16 rounded-l-xl bg-transparent px-2 py-1.5 text-sm outline-none"
+                          />
+                          <span className="px-2 py-1.5 text-xs font-semibold text-primary-600">%</span>
+                        </div>
                       </td>
                       <td className="px-6 py-4">
-                        <input
-                          type="number"
-                          min={0}
-                          max={5}
-                          step={0.1}
-                          defaultValue={d.rating}
-                          onBlur={(e) => {
-                            const v = Number(e.target.value);
-                            if (v !== d.rating) quickPatch(d.id, { rating: v });
-                          }}
-                          className="w-16 rounded-lg border border-gray-200 px-2 py-1 text-sm outline-none focus:border-primary-500"
-                        />
-                        <span className="ml-1 text-xs text-yellow-500">★</span>
+                        <div className="inline-flex items-center rounded-xl border border-slate-200 bg-white focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-100">
+                          <input
+                            type="number"
+                            min={0}
+                            max={5}
+                            step={0.1}
+                            defaultValue={d.rating}
+                            onBlur={(e) => {
+                              const v = Number(e.target.value);
+                              if (v !== d.rating) quickPatch(d.id, { rating: v });
+                            }}
+                            className="w-14 rounded-l-xl bg-transparent px-2 py-1.5 text-sm outline-none"
+                          />
+                          <span className="px-2 py-1.5 text-xs text-amber-500">★</span>
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <button
@@ -591,20 +670,21 @@ export default function AdminDoctors() {
                               status: d.status === "Active" ? "Inactive" : "Active",
                             })
                           }
-                          className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold shadow-sm transition-all hover:shadow-md ${
                             d.status === "Active"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-gray-100 text-gray-600"
+                              ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white"
+                              : "bg-gradient-to-r from-slate-300 to-slate-400 text-white"
                           }`}
                         >
+                          <span className={`h-1.5 w-1.5 rounded-full ${d.status === "Active" ? "bg-white" : "bg-white/70"}`} />
                           {d.status}
                         </button>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex gap-2">
+                        <div className="flex gap-1.5">
                           <button
                             onClick={() => openEdit(d)}
-                            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                            className="rounded-lg border border-blue-100 bg-blue-50 p-2 text-blue-600 transition-all hover:-translate-y-0.5 hover:bg-blue-100 hover:shadow-sm"
                             title="Edit"
                           >
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -614,7 +694,7 @@ export default function AdminDoctors() {
                           <button
                             onClick={() => removeDoctor(d.id)}
                             disabled={deletingId === d.id}
-                            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                            className="rounded-lg border border-red-100 bg-red-50 p-2 text-red-600 transition-all hover:-translate-y-0.5 hover:bg-red-100 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
                             title="Delete"
                           >
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

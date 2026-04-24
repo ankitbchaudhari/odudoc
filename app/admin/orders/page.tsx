@@ -28,18 +28,27 @@ interface Order {
   notes?: string;
 }
 
-const orderStatusColors: Record<string, string> = {
-  Pending: "bg-yellow-100 text-yellow-700",
-  Processing: "bg-blue-100 text-blue-700",
-  Shipped: "bg-purple-100 text-purple-700",
-  Delivered: "bg-green-100 text-green-700",
-  Cancelled: "bg-red-100 text-red-700",
+const orderStatusColors: Record<string, { pill: string; dot: string }> = {
+  Pending: { pill: "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200", dot: "bg-amber-500" },
+  Processing: { pill: "bg-gradient-to-r from-sky-50 to-blue-50 text-blue-700 ring-blue-200", dot: "bg-blue-500" },
+  Shipped: { pill: "bg-gradient-to-r from-violet-50 to-purple-50 text-purple-700 ring-purple-200", dot: "bg-purple-500" },
+  Delivered: { pill: "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200", dot: "bg-emerald-500" },
+  Cancelled: { pill: "bg-gradient-to-r from-rose-50 to-red-50 text-rose-700 ring-rose-200", dot: "bg-rose-500" },
 };
 
-const paymentStatusColors: Record<string, string> = {
-  Paid: "bg-green-100 text-green-700",
-  Pending: "bg-yellow-100 text-yellow-700",
-  Refunded: "bg-gray-100 text-gray-700",
+const paymentStatusColors: Record<string, { pill: string; dot: string }> = {
+  Paid: { pill: "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200", dot: "bg-emerald-500" },
+  Pending: { pill: "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200", dot: "bg-amber-500" },
+  Refunded: { pill: "bg-gradient-to-r from-slate-50 to-gray-50 text-slate-700 ring-slate-200", dot: "bg-slate-500" },
+};
+
+const tabThemes: Record<string, string> = {
+  All: "from-slate-500 to-gray-600",
+  Pending: "from-amber-500 to-orange-600",
+  Processing: "from-sky-500 to-blue-600",
+  Shipped: "from-violet-500 to-purple-600",
+  Delivered: "from-emerald-500 to-green-600",
+  Cancelled: "from-rose-500 to-red-600",
 };
 
 const statusTabs = ["All", "Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
@@ -114,21 +123,30 @@ export default function AdminOrders() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Order Management</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          {loading ? "Loading…" : `${orders.length} total orders`}
-        </p>
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-600 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-cyan-300/20 blur-3xl" />
+        <div className="relative">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-300 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400" />
+            </span>
+            {loading ? "Loading…" : `${orders.length} total orders`}
+          </div>
+          <h1 className="text-2xl font-bold">Order Management</h1>
+          <p className="mt-1 text-sm text-blue-50/90">Track, update and fulfil customer orders.</p>
+        </div>
       </div>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="mb-4 rounded-lg bg-gradient-to-r from-rose-50 to-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-rose-200">
           {error}
         </div>
       )}
 
       {/* Status Tabs */}
-      <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl bg-white p-1.5 shadow-sm">
+      <div className="mb-6 flex gap-2 overflow-x-auto rounded-xl bg-white p-2 shadow-sm ring-1 ring-gray-100">
         {statusTabs.map((tab) => {
           const count =
             tab === "All"
@@ -138,8 +156,10 @@ export default function AdminOrders() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === tab ? "bg-primary-600 text-white" : "text-gray-600 hover:bg-gray-100"
+              className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 ${
+                activeTab === tab
+                  ? `bg-gradient-to-r ${tabThemes[tab]} text-white shadow-md`
+                  : "text-gray-700 hover:bg-gray-50"
               }`}
             >
               {tab}
@@ -154,11 +174,12 @@ export default function AdminOrders() {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-500" />
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-xs uppercase text-gray-500">
+              <tr className="border-b border-gray-100 bg-gradient-to-r from-indigo-50/60 via-blue-50/40 to-cyan-50/60 text-xs uppercase text-gray-600">
                 <th className="px-4 py-3 font-medium">Order #</th>
                 <th className="px-4 py-3 font-medium">Customer</th>
                 <th className="px-4 py-3 font-medium">Items</th>
@@ -173,10 +194,12 @@ export default function AdminOrders() {
               {filtered.map((order) => (
                 <tr
                   key={order.id}
-                  className="cursor-pointer border-b border-gray-50 transition-colors hover:bg-gray-50"
+                  className="cursor-pointer border-b border-gray-50 transition-colors hover:bg-indigo-50/30"
                   onClick={() => setSelectedOrder(order)}
                 >
-                  <td className="px-4 py-3 font-medium text-primary-600">{order.orderNumber}</td>
+                  <td className="px-4 py-3">
+                    <span className="rounded-md bg-gradient-to-r from-indigo-50 to-blue-50 px-2 py-1 font-mono text-xs font-bold text-indigo-700 ring-1 ring-indigo-200">{order.orderNumber}</span>
+                  </td>
                   <td className="px-4 py-3">
                     <p className="font-medium text-gray-900">{order.customer}</p>
                     <p className="text-xs text-gray-400">{order.email}</p>
@@ -184,20 +207,22 @@ export default function AdminOrders() {
                   <td className="px-4 py-3 text-gray-600">
                     {order.items.length} item{order.items.length !== 1 ? "s" : ""}
                   </td>
-                  <td className="px-4 py-3 font-medium text-gray-900">
+                  <td className="px-4 py-3 font-semibold text-gray-900">
                     ${order.total.toFixed(2)}
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${paymentStatusColors[order.paymentStatus]}`}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${paymentStatusColors[order.paymentStatus].pill}`}
                     >
+                      <span className={`h-1.5 w-1.5 rounded-full ${paymentStatusColors[order.paymentStatus].dot}`} />
                       {order.paymentStatus}
                     </span>
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${orderStatusColors[order.orderStatus]}`}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${orderStatusColors[order.orderStatus].pill}`}
                     >
+                      <span className={`h-1.5 w-1.5 rounded-full ${orderStatusColors[order.orderStatus].dot}`} />
                       {order.orderStatus}
                     </span>
                   </td>
@@ -210,7 +235,7 @@ export default function AdminOrders() {
                         onChange={(e) =>
                           handleUpdateStatus(order.id, e.target.value as Order["orderStatus"])
                         }
-                        className="rounded border border-gray-200 px-2 py-1 text-xs outline-none focus:border-primary-500 disabled:opacity-50"
+                        className="rounded-lg border border-gray-200 px-2 py-1 text-xs outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
                       >
                         <option value="Pending">Pending</option>
                         <option value="Processing">Processing</option>
@@ -226,7 +251,7 @@ export default function AdminOrders() {
           </table>
         </div>
         {!loading && filtered.length === 0 && (
-          <div className="py-12 text-center text-sm text-gray-400">No orders found.</div>
+          <div className="py-12 text-center text-sm text-gray-400">📦 No orders found.</div>
         )}
       </div>
 

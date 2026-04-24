@@ -82,31 +82,54 @@ export default function AdminTags() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Product Tags</h1>
-        <p className="mt-1 text-sm text-gray-500">Lightweight labels that appear on product cards.</p>
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600 via-fuchsia-600 to-pink-600 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-yellow-300/20 blur-3xl" />
+        <div className="relative">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-300 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-yellow-400" />
+            </span>
+            {tags.length} tags in use
+          </div>
+          <h1 className="text-2xl font-bold">Product Tags</h1>
+          <p className="mt-1 text-sm text-fuchsia-50/90">Lightweight labels that appear on product cards.</p>
+        </div>
       </div>
 
-      {error && <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+      {error && <div className="mb-4 rounded-lg bg-gradient-to-r from-rose-50 to-red-50 p-3 text-sm text-red-700 ring-1 ring-rose-200">{error}</div>}
 
-      <div className="mb-6 rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
-        <form onSubmit={add} className="flex gap-3">
-          <input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="Add a tag (e.g. Limited Edition)"
-            className="flex-1 rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
-          />
-          <button type="submit" disabled={creating} className="btn-primary !text-sm !px-5 disabled:opacity-60">
-            {creating ? "Adding…" : "Add Tag"}
-          </button>
-        </form>
+      <div className="mb-6 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500" />
+        <div className="p-5">
+          <form onSubmit={add} className="flex gap-3">
+            <div className="relative flex-1">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg">🏷️</span>
+              <input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="Add a tag (e.g. Limited Edition)"
+                className="w-full rounded-lg border border-gray-200 bg-gradient-to-r from-purple-50/30 to-pink-50/30 px-3 py-2.5 pl-10 text-sm outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={creating}
+              className="rounded-lg bg-gradient-to-r from-fuchsia-500 to-pink-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60"
+            >
+              {creating ? "Adding…" : "+ Add Tag"}
+            </button>
+          </form>
+        </div>
       </div>
 
-      <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-500" />
+        <div className="p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500">
-            All Tags ({tags.length})
+          <h2 className="text-sm font-bold uppercase tracking-wider text-gray-600">
+            ✨ All Tags ({tags.length})
           </h2>
           <p className="text-xs text-gray-400">Click a tag color swatch to change its color</p>
         </div>
@@ -117,7 +140,7 @@ export default function AdminTags() {
             {tags.map((t) => (
               <div
                 key={t.id}
-                className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium ${t.color}`}
+                className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold shadow-sm ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow ${t.color}`}
               >
                 <button
                   onClick={() => cycleColor(t.id)}
@@ -140,6 +163,7 @@ export default function AdminTags() {
             {tags.length === 0 && <p className="text-sm text-gray-500">No tags yet — add one above.</p>}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

@@ -89,40 +89,50 @@ export default function AdminCoupons() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Coupons</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Create and manage discount codes for your shop.
-          </p>
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-rose-600 via-pink-600 to-fuchsia-700 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-yellow-300/20 blur-3xl" />
+        <div className="relative flex items-center justify-between gap-4">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-yellow-400" />
+              </span>
+              {coupons.length} coupons · {coupons.filter((c) => c.active).length} active
+            </div>
+            <h1 className="text-2xl font-bold">Coupons</h1>
+            <p className="mt-1 text-sm text-pink-50/90">Create and manage discount codes for your shop.</p>
+          </div>
+          <button
+            onClick={() => {
+              setEditing(null);
+              setShowForm(true);
+            }}
+            className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-rose-700 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
+          >
+            + New Coupon
+          </button>
         </div>
-        <button
-          onClick={() => {
-            setEditing(null);
-            setShowForm(true);
-          }}
-          className="btn-primary !text-sm"
-        >
-          + New Coupon
-        </button>
       </div>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="mb-4 rounded-lg bg-gradient-to-r from-rose-50 to-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-rose-200">
           {error}
         </div>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-rose-500 via-pink-500 to-fuchsia-500" />
         <table className="min-w-full divide-y divide-gray-100">
-          <thead className="bg-gray-50">
+          <thead className="bg-gradient-to-r from-rose-50/60 via-pink-50/40 to-fuchsia-50/60">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Code</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Discount</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Min Order</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Usage</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Expires</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Code</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Discount</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Min Order</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Usage</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Expires</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Status</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -136,9 +146,11 @@ export default function AdminCoupons() {
             )}
             {!loading &&
               coupons.map((c) => (
-                <tr key={c.id}>
-                  <td className="px-4 py-3 text-sm font-mono font-bold text-gray-900">{c.code}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                <tr key={c.id} className="transition-colors hover:bg-rose-50/30">
+                  <td className="px-4 py-3">
+                    <span className="rounded-md bg-gradient-to-r from-rose-50 to-pink-50 px-2.5 py-1 font-mono text-sm font-bold text-rose-700 ring-1 ring-rose-200">{c.code}</span>
+                  </td>
+                  <td className="px-4 py-3 text-sm font-semibold text-gray-800">
                     {c.discountType === "percentage" ? `${c.discountValue}%` : `$${c.discountValue}`}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">${c.minOrder}</td>
@@ -151,10 +163,13 @@ export default function AdminCoupons() {
                   <td className="px-4 py-3">
                     <button
                       onClick={() => toggle(c)}
-                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                        c.active ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 transition hover:-translate-y-0.5 ${
+                        c.active
+                          ? "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200"
+                          : "bg-gradient-to-r from-slate-50 to-gray-50 text-slate-600 ring-slate-200"
                       }`}
                     >
+                      <span className={`h-1.5 w-1.5 rounded-full ${c.active ? "bg-emerald-500" : "bg-slate-400"}`} />
                       {c.active ? "Active" : "Inactive"}
                     </button>
                   </td>
@@ -164,13 +179,13 @@ export default function AdminCoupons() {
                         setEditing(c);
                         setShowForm(true);
                       }}
-                      className="mr-3 font-medium text-primary-600 hover:underline"
+                      className="mr-2 rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-600 ring-1 ring-indigo-100 transition hover:-translate-y-0.5 hover:bg-indigo-100 hover:shadow"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => remove(c.id)}
-                      className="font-medium text-red-600 hover:underline"
+                      className="rounded-lg bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-600 ring-1 ring-rose-100 transition hover:-translate-y-0.5 hover:bg-rose-100 hover:shadow"
                     >
                       Delete
                     </button>
@@ -325,7 +340,7 @@ function CouponForm({
             >
               Cancel
             </button>
-            <button type="submit" className="btn-primary flex-1">
+            <button type="submit" className="flex-1 rounded-lg bg-gradient-to-r from-rose-500 to-pink-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
               Save
             </button>
           </div>

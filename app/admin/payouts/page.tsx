@@ -115,8 +115,21 @@ export default function AdminPayoutsPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="mx-auto max-w-6xl">
-        <h1 className="text-2xl font-bold text-gray-900">Vendor payouts</h1>
-        <p className="mt-1 text-sm text-gray-500">Ledger of amounts owed to vendors after platform commission.</p>
+        <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 via-orange-600 to-rose-600 p-6 text-white shadow-lg">
+          <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-yellow-300/20 blur-3xl" />
+          <div className="relative">
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-yellow-400" />
+              </span>
+              ${pendingTotal.toFixed(2)} owed across {summary.filter((s) => s.pendingNet > 0).length} vendor(s)
+            </div>
+            <h1 className="text-2xl font-bold">Vendor payouts</h1>
+            <p className="mt-1 text-sm text-orange-50/90">Ledger of amounts owed to vendors after platform commission.</p>
+          </div>
+        </div>
 
         {/* Totals */}
         <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-3">
@@ -127,8 +140,13 @@ export default function AdminPayoutsPage() {
 
         {/* Per-vendor summary */}
         {summary.length > 0 && (
-          <div className="mt-6 rounded-2xl bg-white p-5 shadow-sm">
-            <h2 className="mb-3 text-base font-semibold text-gray-900">By vendor</h2>
+          <div className="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
+            <div className="h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
+            <div className="p-5">
+            <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-gray-900">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow">💼</span>
+              By vendor
+            </h2>
             <div className="overflow-x-auto">
             <table className="w-full min-w-[520px] text-sm">
               <thead className="text-left text-xs text-gray-500">
@@ -153,20 +171,30 @@ export default function AdminPayoutsPage() {
               </tbody>
             </table>
             </div>
+            </div>
           </div>
         )}
 
         {/* Entry list */}
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <div className="flex gap-2">
-            {FILTERS.map((s) => (
-              <button key={s} onClick={() => setFilter(s)}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium ${
-                  filter === s ? "bg-primary-600 text-white" : "bg-white text-gray-700 border border-gray-200"
-                }`}>
-                {s}
-              </button>
-            ))}
+            {FILTERS.map((s) => {
+              const grads: Record<string, string> = {
+                pending: "from-amber-500 to-orange-600",
+                paid: "from-emerald-500 to-green-600",
+                all: "from-slate-500 to-gray-700",
+              };
+              return (
+                <button key={s} onClick={() => setFilter(s)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                    filter === s
+                      ? `bg-gradient-to-r ${grads[s]} text-white shadow-md`
+                      : "bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50"
+                  }`}>
+                  {s}
+                </button>
+              );
+            })}
           </div>
           {filter === "pending" && payouts.length > 0 && (
             <div className="ml-auto flex items-center gap-3">
@@ -174,24 +202,28 @@ export default function AdminPayoutsPage() {
                 {selected.size} selected · ${selectedTotal.toFixed(2)}
               </span>
               <button disabled={busy || selected.size === 0} onClick={transferViaStripe}
-                className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50">
-                Transfer via Stripe
+                className="rounded-lg bg-gradient-to-r from-indigo-500 to-violet-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50">
+                ⚡ Transfer via Stripe
               </button>
               <button disabled={busy || selected.size === 0} onClick={markPaid}
-                className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700 disabled:opacity-50">
-                Mark paid (manual)
+                className="rounded-lg bg-gradient-to-r from-emerald-500 to-green-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50">
+                ✓ Mark paid (manual)
               </button>
             </div>
           )}
         </div>
 
-        <div className="mt-3 overflow-hidden rounded-2xl bg-white shadow-sm">
+        <div className="mt-3 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
+          <div className="h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
           {payouts.length === 0 ? (
-            <div className="p-12 text-center text-sm text-gray-400">No payout entries in this view.</div>
+            <div className="p-12 text-center">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 text-2xl ring-4 ring-white">💸</div>
+              <p className="text-sm font-medium text-gray-500">No payout entries in this view.</p>
+            </div>
           ) : (
             <div className="overflow-x-auto">
             <table className="w-full min-w-[800px] text-sm">
-              <thead className="bg-gray-50 text-left text-xs text-gray-500">
+              <thead className="bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-rose-50/60 text-left text-xs text-gray-600">
                 <tr>
                   <th className="py-3 pl-4">
                     {filter === "pending" && (
@@ -211,7 +243,7 @@ export default function AdminPayoutsPage() {
               </thead>
               <tbody>
                 {payouts.map((p) => (
-                  <tr key={p.id} className="border-t border-gray-100">
+                  <tr key={p.id} className="border-t border-gray-100 transition-colors hover:bg-amber-50/30">
                     <td className="py-3 pl-4">
                       {p.status === "pending" && (
                         <input type="checkbox" checked={selected.has(p.id)} onChange={() => toggle(p.id)} />
@@ -226,11 +258,14 @@ export default function AdminPayoutsPage() {
                     </td>
                     <td className="py-3 text-right font-semibold text-gray-900">${p.netAmount.toFixed(2)}</td>
                     <td className="py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                        p.status === "paid" ? "bg-green-50 text-green-700"
-                          : p.stripeTransferId ? "bg-indigo-50 text-indigo-700"
-                          : "bg-amber-50 text-amber-700"
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${
+                        p.status === "paid" ? "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200"
+                          : p.stripeTransferId ? "bg-gradient-to-r from-indigo-50 to-violet-50 text-indigo-700 ring-indigo-200"
+                          : "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200"
                       }`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${
+                          p.status === "paid" ? "bg-emerald-500" : p.stripeTransferId ? "bg-indigo-500" : "bg-amber-500"
+                        }`} />
                         {p.status === "paid" ? "paid" : p.stripeTransferId ? "transferring" : "pending"}
                       </span>
                       {p.transferError && (
@@ -259,15 +294,18 @@ export default function AdminPayoutsPage() {
 }
 
 function Stat({ label, value, tone }: { label: string; value: string; tone: "amber" | "green" | "slate" }) {
-  const toneBg = {
-    amber: "bg-amber-50 text-amber-900",
-    green: "bg-green-50 text-green-900",
-    slate: "bg-slate-50 text-slate-900",
+  const themes = {
+    amber: { bg: "from-amber-50 to-yellow-50", ring: "ring-amber-200", text: "text-amber-900", dot: "bg-amber-500" },
+    green: { bg: "from-emerald-50 to-green-50", ring: "ring-emerald-200", text: "text-emerald-900", dot: "bg-emerald-500" },
+    slate: { bg: "from-slate-50 to-gray-50", ring: "ring-slate-200", text: "text-slate-900", dot: "bg-slate-500" },
   }[tone];
   return (
-    <div className={`rounded-xl p-5 ${toneBg}`}>
-      <p className="text-2xl font-bold">{value}</p>
-      <p className="mt-1 text-xs opacity-70">{label}</p>
+    <div className={`rounded-xl bg-gradient-to-br ${themes.bg} p-5 shadow-sm ring-1 ${themes.ring} transition hover:-translate-y-0.5 hover:shadow-md`}>
+      <div className="flex items-center gap-2">
+        <span className={`h-2 w-2 rounded-full ${themes.dot}`} />
+        <p className="text-xs font-medium text-gray-600">{label}</p>
+      </div>
+      <p className={`mt-2 text-2xl font-bold ${themes.text}`}>{value}</p>
     </div>
   );
 }

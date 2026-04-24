@@ -27,9 +27,14 @@ const categories = [
 ];
 
 const statusColor: Record<string, string> = {
-  Active: "bg-green-100 text-green-700",
-  Draft: "bg-gray-100 text-gray-700",
-  "Out of Stock": "bg-red-100 text-red-700",
+  Active: "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-1 ring-emerald-200",
+  Draft: "bg-gradient-to-r from-slate-50 to-gray-50 text-slate-700 ring-1 ring-slate-200",
+  "Out of Stock": "bg-gradient-to-r from-rose-50 to-red-50 text-rose-700 ring-1 ring-rose-200",
+};
+const statusDot: Record<string, string> = {
+  Active: "bg-emerald-500",
+  Draft: "bg-slate-400",
+  "Out of Stock": "bg-rose-500",
 };
 
 export default function AdminProducts() {
@@ -221,25 +226,36 @@ export default function AdminProducts() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Product Management</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            {loading ? "Loading…" : `${products.length} products total`}
-          </p>
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-cyan-300/20 blur-3xl" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400" />
+              </span>
+              Catalog management
+            </div>
+            <h2 className="text-2xl font-bold">Product Management</h2>
+            <p className="mt-1 text-sm text-indigo-50/90">
+              {loading ? "Loading…" : `${products.length} products total`}
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              resetForm();
+              setShowForm(!showForm);
+            }}
+            className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-indigo-700 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Product
+          </button>
         </div>
-        <button
-          onClick={() => {
-            resetForm();
-            setShowForm(!showForm);
-          }}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Add Product
-        </button>
       </div>
 
       {error && (
@@ -398,7 +414,7 @@ export default function AdminProducts() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="rounded-lg bg-primary-600 px-6 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+              className="rounded-lg bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-6 py-2 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50"
             >
               {saving ? "Saving…" : editingId ? "Update Product" : "Save Product"}
             </button>
@@ -416,7 +432,7 @@ export default function AdminProducts() {
       )}
 
       {/* Filters + Bulk */}
-      <div className="mb-6 flex flex-col gap-4 rounded-xl bg-white p-4 shadow-sm sm:flex-row sm:items-center">
+      <div className="mb-6 flex flex-col gap-4 rounded-xl bg-gradient-to-r from-blue-50/60 via-indigo-50/40 to-violet-50/60 p-4 shadow-sm ring-1 ring-indigo-100 sm:flex-row sm:items-center">
         <input
           type="text"
           placeholder="Search products..."
@@ -459,11 +475,12 @@ export default function AdminProducts() {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500" />
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-xs uppercase text-gray-500">
+              <tr className="border-b border-gray-100 bg-gradient-to-r from-blue-50/60 via-indigo-50/40 to-violet-50/60 text-xs uppercase text-gray-600">
                 <th className="px-4 py-3 font-medium">
                   <input
                     type="checkbox"
@@ -482,7 +499,7 @@ export default function AdminProducts() {
             </thead>
             <tbody>
               {filtered.map((product) => (
-                <tr key={product.id} className="border-b border-gray-50 transition-colors hover:bg-gray-50">
+                <tr key={product.id} className="border-b border-gray-50 transition-colors hover:bg-indigo-50/30">
                   <td className="px-4 py-3">
                     <input
                       type="checkbox"
@@ -527,8 +544,9 @@ export default function AdminProducts() {
                   <td className="px-4 py-3 text-gray-600">{product.stock}</td>
                   <td className="px-4 py-3">
                     <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${statusColor[product.status]}`}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${statusColor[product.status]}`}
                     >
+                      <span className={`h-1.5 w-1.5 rounded-full ${statusDot[product.status]}`} />
                       {product.status}
                     </span>
                   </td>
@@ -536,7 +554,7 @@ export default function AdminProducts() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleEdit(product)}
-                        className="rounded p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600"
+                        className="rounded-lg bg-blue-50 p-1.5 text-blue-600 ring-1 ring-blue-100 transition hover:-translate-y-0.5 hover:bg-blue-100 hover:shadow"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -544,7 +562,7 @@ export default function AdminProducts() {
                       </button>
                       <button
                         onClick={() => handleDelete(product.id)}
-                        className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                        className="rounded-lg bg-rose-50 p-1.5 text-rose-600 ring-1 ring-rose-100 transition hover:-translate-y-0.5 hover:bg-rose-100 hover:shadow"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

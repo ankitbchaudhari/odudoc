@@ -131,13 +131,28 @@ export default function AdminLettersPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
-      <h1 className="text-2xl font-bold text-gray-900">Doctor Letters</h1>
-      <p className="mt-1 text-sm text-gray-500">
-        Generate appointment or experience letters. The signed PDF is produced
-        from your browser&apos;s print dialog (Ctrl+P → &ldquo;Save as PDF&rdquo;).
-      </p>
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-fuchsia-600 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-pink-300/20 blur-3xl" />
+        <div className="relative">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-pink-300 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-pink-400" />
+            </span>
+            {letters.length} letters issued
+          </div>
+          <h1 className="text-2xl font-bold">Doctor Letters</h1>
+          <p className="mt-1 text-sm text-purple-50/90">
+            Generate appointment or experience letters. The signed PDF is produced
+            from your browser&apos;s print dialog (Ctrl+P → &ldquo;Save as PDF&rdquo;).
+          </p>
+        </div>
+      </div>
 
-      <form onSubmit={submit} className="mt-8 space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <form onSubmit={submit} className="overflow-hidden space-y-6 rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500" />
+        <div className="space-y-6 p-6">
         {/* Type switch */}
         <div className="flex gap-2">
           {(["appointment", "experience"] as const).map((t) => (
@@ -145,13 +160,13 @@ export default function AdminLettersPage() {
               key={t}
               type="button"
               onClick={() => setType(t)}
-              className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 ${
                 type === t
-                  ? "border-primary-500 bg-primary-50 text-primary-700"
-                  : "border-gray-200 text-gray-600 hover:border-primary-300"
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md"
+                  : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"
               }`}
             >
-              {t === "appointment" ? "Appointment Letter" : "Experience Letter"}
+              {t === "appointment" ? "📋 Appointment Letter" : "🎖️ Experience Letter"}
             </button>
           ))}
         </div>
@@ -275,20 +290,22 @@ export default function AdminLettersPage() {
 
         <div className="flex gap-3">
           <button type="submit" disabled={loading}
-                  className="btn-primary disabled:opacity-60">
-            {loading ? "Generating…" : `Generate ${type === "appointment" ? "Appointment" : "Experience"} Letter`}
+                  className="rounded-lg bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60">
+            {loading ? "Generating…" : `✨ Generate ${type === "appointment" ? "Appointment" : "Experience"} Letter`}
           </button>
+        </div>
         </div>
       </form>
 
       {/* History */}
-      <h2 className="mt-12 text-lg font-bold text-gray-900">Recently generated</h2>
+      <h2 className="mt-12 text-lg font-bold text-gray-900">📜 Recently generated</h2>
       {letters.length === 0 ? (
         <p className="mt-3 text-sm text-gray-500">No letters yet.</p>
       ) : (
-        <div className="mt-3 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div className="mt-3 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
+          <div className="h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500" />
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500">
+            <thead className="bg-gradient-to-r from-indigo-50/60 via-purple-50/40 to-fuchsia-50/60 text-left text-xs uppercase tracking-wider text-gray-600">
               <tr>
                 <th className="px-4 py-3">Reference</th>
                 <th className="px-4 py-3">Type</th>
@@ -300,15 +317,26 @@ export default function AdminLettersPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {letters.map((l) => (
-                <tr key={l.id}>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-700">{l.referenceNo}</td>
-                  <td className="px-4 py-3 capitalize">{l.type}</td>
-                  <td className="px-4 py-3">{l.doctorName}</td>
-                  <td className="px-4 py-3">{l.designation}</td>
+                <tr key={l.id} className="transition-colors hover:bg-indigo-50/30">
+                  <td className="px-4 py-3">
+                    <span className="rounded-md bg-gradient-to-r from-indigo-50 to-purple-50 px-2 py-1 font-mono text-xs font-bold text-indigo-700 ring-1 ring-indigo-200">{l.referenceNo}</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ring-1 ${
+                      l.type === "appointment"
+                        ? "bg-gradient-to-r from-sky-50 to-blue-50 text-blue-700 ring-blue-200"
+                        : "bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 ring-emerald-200"
+                    }`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${l.type === "appointment" ? "bg-blue-500" : "bg-emerald-500"}`} />
+                      {l.type}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 font-medium text-gray-900">{l.doctorName}</td>
+                  <td className="px-4 py-3 text-gray-600">{l.designation}</td>
                   <td className="px-4 py-3 text-gray-500">{l.issuedOn}</td>
                   <td className="px-4 py-3 text-right">
                     <a href={`/admin/letters/${l.id}`} target="_blank" rel="noopener noreferrer"
-                       className="text-primary-600 hover:underline">Open / Print</a>
+                       className="inline-flex rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-600 ring-1 ring-indigo-100 transition hover:-translate-y-0.5 hover:bg-indigo-100 hover:shadow">Open / Print</a>
                   </td>
                 </tr>
               ))}

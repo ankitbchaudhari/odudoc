@@ -21,7 +21,7 @@ export async function POST() {
     return NextResponse.json({ url: s.url });
   } catch (e) {
     if (e instanceof TenantError) return NextResponse.json({ error: e.message }, { status: e.status });
-    log.error("console.error", undefined, { args: ["[billing portal]", e] });
+    log.error("hospital.billing.portal_failed", e);
     return NextResponse.json({ error: "portal_failed" }, { status: 500 });
   }
 }

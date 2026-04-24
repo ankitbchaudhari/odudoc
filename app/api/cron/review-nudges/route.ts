@@ -62,7 +62,7 @@ export async function GET(req: Request) {
       (c as typeof c & { reviewNudgeSentAt?: string }).reviewNudgeSentAt = new Date().toISOString();
       sent++;
     } catch (err) {
-      log.error("console.error", undefined, { args: ["[cron/review-nudges] send failed", c.id, err] });
+      log.error("cron.review_nudges.send_failed", err, { id: c.id });
     }
   }
 

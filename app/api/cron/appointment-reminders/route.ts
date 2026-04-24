@@ -68,7 +68,7 @@ export async function GET(req: Request) {
       (c as typeof c & { reminder24hSentAt?: string }).reminder24hSentAt = new Date().toISOString();
       sent++;
     } catch (err) {
-      log.error("console.error", undefined, { args: ["[cron/appointment-reminders] send failed", c.id, err] });
+      log.error("cron.appointment_reminders.send_failed", err, { id: c.id });
     }
   }
 

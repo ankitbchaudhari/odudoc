@@ -43,7 +43,7 @@ export async function POST(
   try {
     await sendAccountWarningEmail({ to: u.email, name: u.name, message });
   } catch (err) {
-    log.error("console.error", undefined, { args: ["[admin/users] warning email failed:", err] });
+    log.error("admin.users.warning_email_failed", err);
   }
 
   return NextResponse.json({ ok: true });

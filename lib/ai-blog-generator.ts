@@ -467,7 +467,7 @@ export async function generateBlogArticle(opts: GenerateOptions = {}): Promise<G
       // Lenient fallback — find the outermost {...} block in the text
       const match = cleaned.match(/\{[\s\S]*\}/);
       if (!match) {
-        log.error("console.error", undefined, { args: ["[ai-blog-generator] non-JSON model output:", raw.slice(0, 500), "finishReason:", finishReason] });
+        log.error("ai_blog_generator.non_json_model_output", undefined, { preview: raw.slice(0, 500), finishReason });
         throw new Error(
           `Model output was not JSON (finishReason: ${finishReason || "unknown"}). Preview: ${raw.slice(0, 200)}`
         );
@@ -477,7 +477,7 @@ export async function generateBlogArticle(opts: GenerateOptions = {}): Promise<G
       } catch {
         const repaired2 = tryRepairTruncatedJson(match[0]);
         if (!repaired2) {
-          log.error("console.error", undefined, { args: ["[ai-blog-generator] failed to parse extracted JSON block:", match[0].slice(0, 500), "finishReason:", finishReason] });
+          log.error("ai_blog_generator.failed_to_parse_extracted_json_block", undefined, { preview: match[0].slice(0, 500), finishReason });
           throw new Error(
             `Could not parse JSON (finishReason: ${finishReason || "unknown"}). Preview: ${match[0].slice(0, 200)}`
           );

@@ -35,9 +35,12 @@ export function getNotificationLogs(): NotificationLogEntry[] {
 
 export async function sendNotification(payload: NotificationPayload): Promise<boolean> {
   // Log for now — in production, integrate with SendGrid/Twilio
-  log.info("console.log", { args: [
-    `[NOTIFICATION] ${payload.type.toUpperCase()} to ${payload.to}: ${payload.subject || ''} - ${payload.message}`
-  ] });
+  log.info("notifications.dispatch", {
+    type: payload.type,
+    to: payload.to,
+    subject: payload.subject,
+    message: payload.message,
+  });
 
   // Store in memory for admin panel visibility
   addNotificationLog(payload);

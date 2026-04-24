@@ -32,7 +32,7 @@ function basicAuth() {
 
 async function twilioPost(body: Record<string, string>): Promise<SmsResult> {
   if (!SID || !TOKEN) {
-    log.info("console.log", { args: ["[sms] Twilio not configured, skipping:", body.To, body.Body?.slice(0, 60)] });
+    log.info("sms.twilio_not_configured", { to: body.To, bodyPreview: body.Body?.slice(0, 60) });
     return { ok: true, skipped: true };
   }
   try {
@@ -66,7 +66,7 @@ export async function sendWhatsApp(to: string, body: string): Promise<SmsResult>
 
 export async function sendVoice(to: string, twiml: string): Promise<SmsResult> {
   if (!SID || !TOKEN || !VOICE_FROM) {
-    log.info("console.log", { args: ["[voice] Twilio not configured, skipping:", to] });
+    log.info("voice.twilio_not_configured", { to });
     return { ok: true, skipped: true };
   }
   try {

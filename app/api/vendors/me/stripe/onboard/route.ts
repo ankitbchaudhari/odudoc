@@ -53,7 +53,7 @@ export async function POST() {
     return NextResponse.json({ url: link.url });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Stripe onboarding failed";
-    log.error("console.error", undefined, { args: ["[vendors.stripe.onboard]", err] });
+    log.error("vendors.stripe.onboard_failed", err);
     return NextResponse.json({ error: msg }, { status: 502 });
   }
 }

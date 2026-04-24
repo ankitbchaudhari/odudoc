@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       previewUrl: preview,
     });
   } catch (err) {
-    log.error("console.error", undefined, { args: ["[prescriptions.upload]", err] });
+    log.error("prescriptions.upload_failed", err);
     return NextResponse.json({ error: "Upload failed. Please try again." }, { status: 502 });
   }
 }

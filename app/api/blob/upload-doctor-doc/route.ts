@@ -67,7 +67,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
     return NextResponse.json({ url: result.url, pathname: result.pathname });
   } catch (error) {
-    log.error("console.error", undefined, { args: ["[blob] upload error:", error] });
+    log.error("blob.upload_failed", error);
     const message = error instanceof Error ? error.message : "Upload failed";
     return NextResponse.json({ error: message }, { status: 500 });
   }

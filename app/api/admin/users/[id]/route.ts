@@ -63,7 +63,7 @@ export async function PATCH(
     try {
       await sendAccountBannedEmail({ to: u.email, name: u.name, reason });
     } catch (err) {
-      log.error("console.error", undefined, { args: ["[admin/users] ban email failed:", err] });
+      log.error("admin.users.ban_email_failed", err);
     }
     await awaitAllFlushes();
     return NextResponse.json({ ok: true });
@@ -75,7 +75,7 @@ export async function PATCH(
     try {
       await sendAccountRestoredEmail({ to: u.email, name: u.name });
     } catch (err) {
-      log.error("console.error", undefined, { args: ["[admin/users] unban email failed:", err] });
+      log.error("admin.users.unban_email_failed", err);
     }
     await awaitAllFlushes();
     return NextResponse.json({ ok: true });
@@ -158,7 +158,7 @@ export async function PATCH(
         html: `<p>Hi ${u.name},</p><p>${bodyLines}</p><p>Sign in to see your new dashboard.</p>`,
       });
     } catch (err) {
-      log.error("console.error", undefined, { args: ["[admin/users] role-change email failed:", err] });
+      log.error("admin.users.role_change_email_failed", err);
     }
 
     await awaitAllFlushes();

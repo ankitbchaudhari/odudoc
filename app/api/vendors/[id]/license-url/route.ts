@@ -27,7 +27,7 @@ export async function GET(
     if (!url) return NextResponse.json({ error: "Could not sign URL" }, { status: 502 });
     return NextResponse.json({ url });
   } catch (err) {
-    log.error("console.error", undefined, { args: ["[vendors] license sign failed:", err] });
+    log.error("vendors.license_sign_failed", err);
     return NextResponse.json({ error: "Could not sign URL" }, { status: 502 });
   }
 }

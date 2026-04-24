@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Signature verification failed";
-      log.error("console.error", undefined, { args: ["[stripe-connect] bad signature:", msg] });
+      log.error("stripe_connect.bad_signature", undefined, { message: msg });
       return NextResponse.json({ error: msg }, { status: 400 });
     }
   } else {
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json({ received: true });
   } catch (err) {
-    log.error("console.error", undefined, { args: ["[stripe-connect] handler error:", err] });
+    log.error("stripe_connect.handler_error", err);
     return NextResponse.json({ error: "Handler error" }, { status: 500 });
   }
 }

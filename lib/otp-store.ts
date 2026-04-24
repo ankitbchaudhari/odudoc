@@ -10,6 +10,7 @@
 import crypto from "crypto";
 import twilio from "twilio";
 import { sendEmail } from "./email";
+import { log } from "./log";
 
 // Lazy Twilio client — only instantiates if env vars are present.
 const twilioClient =
@@ -144,15 +145,18 @@ export function consumeVerifiedToken(token: string, email: string): boolean {
  * For now codes are logged to the server console so you can test the flow.
  */
 export async function sendOtpCodes(record: OtpRecord): Promise<void> {
-  // Always log server-side so Vercel function logs show the codes
-  // (useful while email provider is still a stub).
-  console.log("\n================ OduDoc OTP ================");
-  console.log(`Email:       ${record.email}`);
-  console.log(`Email code:  ${record.emailCode}`);
-  console.log(`Phone:       ${record.phone}`);
-  console.log(`Phone code:  ${record.phoneCode}`);
-  console.log(`Expires in:  10 minutes`);
-  console.log("============================================\n");
+  // Dev-only fallback: print codes to the console so local flows still work
+  // when neither provider is configured. Never log codes in production —
+  // Vercel log readers shouldn't see verification codes.
+  if (process.env.VERCEL_ENV !== "production") {
+    console.log("\n================ OduDoc OTP ================");
+    console.log(`Email:       ${record.email}`);
+    console.log(`Email code:  ${record.emailCode}`);
+    console.log(`Phone:       ${record.phone}`);
+    console.log(`Phone code:  ${record.phoneCode}`);
+    console.log(`Expires in:  10 minutes`);
+    console.log("============================================\n");
+  }
 
   // --- SMS via Twilio ---------------------------------------------------
   if (twilioClient && process.env.TWILIO_PHONE_NUMBER && record.phone) {
@@ -163,16 +167,14 @@ export async function sendOtpCodes(record: OtpRecord): Promise<void> {
         to,
         body: `Your OduDoc verification code is ${record.phoneCode}. Valid for 10 minutes. Do not share this code with anyone.`,
       });
-      console.log(`[Twilio] SMS sent to ${to}`);
-    } catch (err: any) {
+      log.info("otp.sms.sent", { to });
+    } catch (err: unknown) {
       // Don't throw — user can still use the email code, and during Twilio
       // trial unverified numbers will fail here but not block login.
-      console.error("[Twilio] SMS send failed:", err?.message || err);
+      log.error("otp.sms.send_failed", err);
     }
   } else {
-    console.warn(
-      "[Twilio] Skipped SMS — TWILIO_* env vars missing or phone not provided."
-    );
+    log.warn("otp.sms.skipped_unconfigured");
   }
 
   // --- Email via Resend -------------------------------------------------
@@ -188,14 +190,14 @@ export async function sendOtpCodes(record: OtpRecord): Promise<void> {
       html,
     });
     if (result.ok && !result.skipped) {
-      console.log(`[Email] OTP sent to ${record.email}`);
+      log.info("otp.email.sent", { to: record.email });
     } else if (result.skipped) {
-      console.warn("[Email] Skipped OTP send — RESEND_API_KEY not configured.");
+      log.warn("otp.email.skipped_unconfigured");
     } else {
-      console.error("[Email] OTP send failed:", result.error);
+      log.error("otp.email.send_failed", result.error);
     }
-  } catch (err: any) {
-    console.error("[Email] OTP send threw:", err?.message || err);
+  } catch (err: unknown) {
+    log.error("otp.email.send_threw", err);
   }
 }
 

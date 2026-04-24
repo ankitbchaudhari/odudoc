@@ -54,7 +54,7 @@ export async function loadJson<T>(key: string, fallback: T): Promise<T> {
     if (!rows[0]) return fallback;
     return rows[0].data as T;
   } catch (err) {
-    log.error("console.error", undefined, { args: [`[persistent-array] loadJson("${key}") failed`, err] });
+    log.error("persistent_array.load_failed", err, { key });
     return fallback;
   }
 }
@@ -72,7 +72,7 @@ export async function countJsonArray(key: string): Promise<number> {
     `) as Array<{ n: number }>;
     return rows[0]?.n ?? 0;
   } catch (err) {
-    log.error("console.error", undefined, { args: [`[persistent-array] countJsonArray("${key}") failed`, err] });
+    log.error("persistent_array.count_failed", err, { key });
     return 0;
   }
 }
@@ -96,7 +96,7 @@ export async function tailJsonArray<T>(key: string, n: number): Promise<T[]> {
     `) as Array<{ data: T[] | null }>;
     return (rows[0]?.data ?? []) as T[];
   } catch (err) {
-    log.error("console.error", undefined, { args: [`[persistent-array] tailJsonArray("${key}") failed`, err] });
+    log.error("persistent_array.tail_failed", err, { key });
     return [];
   }
 }
@@ -111,7 +111,7 @@ export async function saveJson<T>(key: string, data: T): Promise<void> {
         SET data = EXCLUDED.data, updated_at = now()
     `;
   } catch (err) {
-    log.error("console.error", undefined, { args: [`[persistent-array] saveJson("${key}") failed`, err] });
+    log.error("persistent_array.save_failed", err, { key });
   }
 }
 
@@ -184,7 +184,7 @@ export function bindPersistentArray<T>(
         if (loaded === null) await saveJson(key, ref);
         hydrated = true;
       })().catch((err) => {
-        log.error("console.error", undefined, { args: [`[persistent-array] hydrate("${key}") failed`, err] });
+        log.error("persistent_array.hydrate_failed", err, { key });
         hydrated = true;
       });
     }
@@ -229,9 +229,7 @@ export function bindPersistentArray<T>(
         }
       }
     } catch (err) {
-      log.error("console.error", undefined, {
-        args: [`[persistent-array] merge-before-save("${key}") failed`, err],
-      });
+      log.error("persistent_array.merge_before_save_failed", err, { key });
     }
     await saveJson(key, ref);
   }
@@ -264,7 +262,7 @@ export function bindPersistentArray<T>(
       }
       hydrated = true;
     } catch (err) {
-      log.error("console.error", undefined, { args: [`[persistent-array] reload("${key}") failed`, err] });
+      log.error("persistent_array.reload_failed", err, { key });
     }
   }
 

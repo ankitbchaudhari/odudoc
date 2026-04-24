@@ -44,7 +44,7 @@ export async function GET(req: Request) {
       const pruned = await pruneOldPosts(15);
       prunedCount = pruned.length;
     } catch (pruneErr) {
-      log.error("console.error", undefined, { args: ["[cron/daily-blog] prune failed", pruneErr] });
+      log.error("cron.daily_blog.prune_failed", pruneErr);
     }
 
     // 2) Generate a new article and auto-publish it.
@@ -75,7 +75,7 @@ export async function GET(req: Request) {
         link: "/admin/blog",
       });
     } catch (err) {
-      log.error("console.error", undefined, { args: ["[cron/daily-blog] admin notification failed:", err] });
+      log.error("cron.daily_blog.admin_notification_failed", err);
     }
 
     // Notify admin so they know something's waiting for review.
@@ -104,7 +104,7 @@ export async function GET(req: Request) {
       });
     } catch (mailErr) {
       // Don't fail the cron if email fails — the draft is safely saved.
-      log.error("console.error", undefined, { args: ["[cron/daily-blog] admin email failed", mailErr] });
+      log.error("cron.daily_blog.admin_email_failed", mailErr);
     }
 
     return NextResponse.json({
@@ -122,7 +122,7 @@ export async function GET(req: Request) {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Generation failed";
-    log.error("console.error", undefined, { args: ["[cron/daily-blog] failed", err] });
+    log.error("cron.daily_blog.failed", err);
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }

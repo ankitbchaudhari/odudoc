@@ -35,7 +35,7 @@ export async function POST(
       tempPassword: result.tempPassword,
     });
   } catch (err) {
-    log.error("console.error", undefined, { args: ["[admin/users] reset-password email failed:", err] });
+    log.error("admin.users.reset_password_email_failed", err);
   }
 
   // Never leak the temp password in the HTTP response.

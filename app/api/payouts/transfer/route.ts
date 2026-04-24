@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
       results.push({ id, ok: true, transferId: transfer.id });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Transfer failed";
-      log.error("console.error", undefined, { args: ["[payouts.transfer]", id, err] });
+      log.error("payouts.transfer_failed", err, { id });
       setTransferError(id, msg);
       results.push({ id, ok: false, error: msg });
     }

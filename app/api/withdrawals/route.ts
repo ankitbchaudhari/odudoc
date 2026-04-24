@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
       link: "/admin/withdrawals",
     });
   } catch (err) {
-    log.error("console.error", undefined, { args: ["[withdrawals] admin notification failed:", err] });
+    log.error("withdrawals.admin_notification_failed", err);
   }
 
   return NextResponse.json({ withdrawal: record }, { status: 201 });

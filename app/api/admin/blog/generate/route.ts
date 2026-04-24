@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Generation failed";
-    log.error("console.error", undefined, { args: ["[admin/blog/generate] failed", err] });
+    log.error("admin.blog.generate_failed", err);
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }

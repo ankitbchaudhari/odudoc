@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: session.url, id: session.id });
   } catch (e) {
     if (e instanceof TenantError) return NextResponse.json({ error: e.message }, { status: e.status });
-    log.error("console.error", undefined, { args: ["[billing checkout]", e] });
+    log.error("hospital.billing.checkout_failed", e);
     return NextResponse.json({ error: "checkout_failed" }, { status: 500 });
   }
 }

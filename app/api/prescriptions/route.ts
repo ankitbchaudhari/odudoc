@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
       });
       emailed = result.ok;
     } catch (err) {
-      log.error("console.error", undefined, { args: ["[prescriptions] notify patient failed:", err] });
+      log.error("prescriptions.notify_patient_failed", err);
     }
   }
 

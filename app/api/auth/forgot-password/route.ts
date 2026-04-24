@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     try {
       await sendPasswordResetEmail({ to: user.email, resetUrl });
     } catch (err) {
-      log.error("console.error", undefined, { args: ["[forgot-password] email failed:", err] });
+      log.error("forgot_password.email_failed", err);
     }
   }
 

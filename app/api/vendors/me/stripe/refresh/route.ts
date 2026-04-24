@@ -41,7 +41,7 @@ export async function GET() {
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Stripe refresh failed";
-    log.error("console.error", undefined, { args: ["[vendors.stripe.refresh]", err] });
+    log.error("vendors.stripe.refresh_failed", err);
     return NextResponse.json({ error: msg }, { status: 502 });
   }
 }

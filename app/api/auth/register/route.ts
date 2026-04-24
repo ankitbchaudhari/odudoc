@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
         link: "/admin/users",
       });
     } catch (err) {
-      log.error("console.error", undefined, { args: ["[register] admin notification failed:", err] });
+      log.error("register.admin_notification_failed", err);
     }
 
     // Mint a 10-minute verification token and email the link. We `await` the
@@ -90,10 +90,10 @@ export async function POST(request: NextRequest) {
         reason: "signup",
       });
       if (!result.ok) {
-        log.error("console.error", undefined, { args: ["[register] verification email failed:", result.error] });
+        log.error("register.verification_email_failed", result.error);
       }
     } catch (err) {
-      log.error("console.error", undefined, { args: ["[register] verification email threw:", err] });
+      log.error("register.verification_email_threw", err);
     }
 
     return NextResponse.json(

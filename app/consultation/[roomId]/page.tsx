@@ -19,6 +19,7 @@ interface RoomInfo {
   doctorId: string;
   doctorName: string;
   patientName: string;
+  bookingId?: string;
   specialty: string;
   fee: number;
   status: string;
@@ -152,6 +153,7 @@ export default function ConsultationRoomPage() {
         {isDoctor && (
           <DoctorNotesPanel
             roomId={roomId}
+            consultationId={roomInfo.bookingId}
             doctorName={roomInfo.doctorName}
             patientName={roomInfo.patientName}
             specialty={roomInfo.specialty}

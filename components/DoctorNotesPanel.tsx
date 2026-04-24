@@ -131,6 +131,11 @@ function suggestFromDiagnosis(dx: string): AiSuggestion | null {
 
 interface Props {
   roomId: string;
+  // The consultation/booking ID — used to persist the prescription and
+  // flip the consultation status to "completed" on the server. Optional
+  // because the room may exist without a linked booking (OTP guest flow
+  // still produces a bookingId, so in practice this is always set).
+  consultationId?: string;
   doctorName: string;
   patientName: string;
   specialty: string;
@@ -158,6 +163,7 @@ function ChipRow({ items, onPick }: { items: string[]; onPick: (v: string) => vo
 
 export default function DoctorNotesPanel({
   roomId,
+  consultationId,
   doctorName,
   patientName,
   specialty,
@@ -255,25 +261,72 @@ export default function DoctorNotesPanel({
   const removeMed = (i: number) =>
     setMedicines((prev) => (prev.length === 1 ? prev : prev.filter((_, idx) => idx !== i)));
 
-  const handleSend = () => {
+  const handleSend = async () => {
     setSending(true);
+    const cleanMeds = medicines.filter((m) => m.name.trim() !== "");
     const payload: ConsultPrescription = {
       symptoms: symptoms.trim(),
       diagnosis: diagnosis.trim(),
       treatment: treatment.trim(),
       investigations: investigations.trim(),
       notes: notes.trim(),
-      medicines: medicines.filter((m) => m.name.trim() !== ""),
+      medicines: cleanMeds,
       doctorName,
       patientName,
       specialty,
       issuedAt: new Date().toISOString(),
     };
+
+    // localStorage copy so the patient's post-call view still works
+    // instantly — the server round-trip below is the durable record.
     try {
       localStorage.setItem(`odudoc:rx:${roomId}`, JSON.stringify(payload));
     } catch {
-      // localStorage full / disabled — still end the call gracefully
+      /* storage disabled — server POST below is what matters */
     }
+
+    // Persist to the backend so the consultation flips to "completed"
+    // and the prescription lands in the doctor/patient dashboards. The
+    // prescribe endpoint internally calls attachPrescription(), which
+    // sets status="completed" on the consultation record.
+    if (consultationId) {
+      const advice = [
+        payload.treatment,
+        payload.notes,
+      ].filter(Boolean).join("\n\n");
+      try {
+        await fetch(`/api/consultations/${encodeURIComponent(consultationId)}/prescribe`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            templateId: "classic-blue",
+            data: {
+              doctorName,
+              doctorSpecialty: specialty,
+              patientName,
+              date: new Date().toISOString().slice(0, 10),
+              symptoms: payload.symptoms,
+              diagnosis: payload.diagnosis,
+              medications: cleanMeds.map((m) => ({
+                name: m.name,
+                dose: m.dose,
+                frequency: m.frequency,
+                duration: m.duration,
+                instructions: "",
+              })),
+              tests: payload.investigations
+                ? payload.investigations.split(",").map((s) => s.trim()).filter(Boolean)
+                : [],
+              advice,
+              followUp: "",
+            },
+          }),
+        });
+      } catch {
+        /* non-blocking — doctor still gets UI confirmation */
+      }
+    }
+
     setSent(true);
     // Short delay so the doctor sees the "Sent" confirmation before we leave
     setTimeout(() => {

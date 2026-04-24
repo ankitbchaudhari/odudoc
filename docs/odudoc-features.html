@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>OduDoc — Feature Overview</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1f2937;
+    font-size: 10.5pt;
+    line-height: 1.45;
+    margin: 0;
+  }
+  h1 {
+    font-size: 26pt;
+    color: #0f766e;
+    margin: 0 0 4pt;
+    letter-spacing: -0.5pt;
+  }
+  .tagline { color: #64748b; font-size: 11pt; margin-bottom: 18pt; }
+  h2 {
+    font-size: 14pt;
+    color: #0f766e;
+    border-bottom: 2px solid #0f766e;
+    padding-bottom: 4pt;
+    margin-top: 20pt;
+    margin-bottom: 10pt;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 11pt;
+    color: #0f172a;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4pt 0 10pt;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th {
+    background: #f0fdfa;
+    color: #0f766e;
+    text-align: left;
+    padding: 5pt 7pt;
+    border-bottom: 1.5pt solid #0f766e;
+    font-weight: 600;
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 0.3pt;
+  }
+  td {
+    padding: 5pt 7pt;
+    border-bottom: 0.5pt solid #e5e7eb;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #fafafa; }
+  .roles {
+    display: inline-block;
+    font-size: 8.5pt;
+    color: #475569;
+    background: #f1f5f9;
+    padding: 1pt 5pt;
+    border-radius: 3pt;
+    margin-right: 3pt;
+    white-space: nowrap;
+  }
+  .col-feat { width: 26%; font-weight: 600; }
+  .col-desc { width: 48%; }
+  .col-role { width: 26%; }
+  .cover {
+    text-align: center;
+    padding: 40pt 0 30pt;
+    border-bottom: 3pt solid #0f766e;
+    margin-bottom: 24pt;
+  }
+  .cover h1 { font-size: 42pt; }
+  .cover p { color: #475569; font-size: 12pt; }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10pt;
+    margin: 16pt 0 8pt;
+  }
+  .stat {
+    background: #f0fdfa;
+    border-left: 3pt solid #0f766e;
+    padding: 8pt 10pt;
+  }
+  .stat b { font-size: 18pt; color: #0f766e; display: block; }
+  .stat span { font-size: 8.5pt; color: #64748b; }
+  .footer {
+    margin-top: 30pt;
+    padding-top: 10pt;
+    border-top: 0.5pt solid #e5e7eb;
+    color: #94a3b8;
+    font-size: 8.5pt;
+    text-align: center;
+  }
+  .page-break { page-break-before: always; }
+  .tech {
+    background: #f8fafc;
+    border: 0.5pt solid #e2e8f0;
+    padding: 8pt 12pt;
+    border-radius: 4pt;
+    font-size: 9.5pt;
+  }
+  .tech b { color: #0f766e; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>OduDoc</h1>
+  <p class="tagline">Complete Healthcare Platform — Feature Overview</p>
+  <div class="stat-grid">
+    <div class="stat"><b>200+</b><span>User-facing features</span></div>
+    <div class="stat"><b>150+</b><span>API endpoints</span></div>
+    <div class="stat"><b>10+</b><span>Distinct user roles</span></div>
+    <div class="stat"><b>28</b><span>Feature themes</span></div>
+  </div>
+  <p style="margin-top:18pt; font-size:10pt;">
+    Telehealth consultations · Hospital operations · Pharmacy marketplace ·
+    AI-assisted clinical tools
+  </p>
+</div>
+
+<h2>1. Auth &amp; Identity</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>Login</td><td>Email/password sign-in for all account types.</td><td><span class="roles">All</span></td></tr>
+    <tr><td>Patient Registration</td><td>Self-service patient account creation with email verification.</td><td><span class="roles">Patient</span></td></tr>
+    <tr><td>Doctor Registration</td><td>Doctor onboarding with credential capture; admin verification gate.</td><td><span class="roles">Doctor</span></td></tr>
+    <tr><td>Forgot / Reset Password</td><td>Email-link password recovery flow.</td><td><span class="roles">All</span></td></tr>
+    <tr><td>Email Verification</td><td>Token-based email confirmation at signup.</td><td><span class="roles">All</span></td></tr>
+    <tr><td>OTP 2FA for Consult</td><td>One-time passcode before joining consultation.</td><td><span class="roles">Patient</span></td></tr>
+  </tbody>
+</table>
+
+<h2>2. Doctor Discovery</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>Doctor Directory</td><td>Browseable list of doctors filtered by specialty and location.</td><td><span class="roles">Public</span><span class="roles">Patient</span></td></tr>
+    <tr><td>Doctor Profile</td><td>Bio, qualifications, consultation fee, ratings, reviews.</td><td><span class="roles">Public</span></td></tr>
+    <tr><td>Specialty Browse</td><td>Curated specialty landing pages (cardiology, dermatology, etc.).</td><td><span class="roles">Public</span></td></tr>
+    <tr><td>Doctors by City</td><td>Location-based SEO pages for every supported city.</td><td><span class="roles">Public</span></td></tr>
+    <tr><td>A–Z Directory</td><td>Alphabetical doctor index.</td><td><span class="roles">Public</span></td></tr>
+    <tr><td>Online-Now Badge</td><td>Live presence indicator showing doctors available right now.</td><td><span class="roles">Patient</span></td></tr>
+    <tr><td>Pool / Instant Consult</td><td>"Any available doctor in this specialty" routing.</td><td><span class="roles">Patient</span></td></tr>
+  </tbody>
+</table>
+
+<h2>3. Booking &amp; Appointments</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>Appointment Booking</td><td>Multi-step booking: specialty → doctor → slot → pay → confirm.</td><td><span class="roles">Patient</span></td></tr>
+    <tr><td>Free Consultation Window</td><td>Promotional period where consultations are complimentary.</td><td><span class="roles">Patient</span></td></tr>
+    <tr><td>Instant Availability Toggle</td><td>Doctors flip a 15-minute "available now" switch.</td><td><span class="roles">Doctor</span></td></tr>
+    <tr><td>Timetable Management</td><td>Doctors configure weekly schedule and slot length.</td><td><span class="roles">Doctor</span><span class="roles">Admin</span></td></tr>
+    <tr><td>Appointment Reminders</td><td>Cron-based email/SMS reminders before appointments.</td><td><span class="roles">System</span></td></tr>
+    <tr><td>Reschedule / Cancel</td><td>Patient and doctor can reschedule up to cut-off time.</td><td><span class="roles">Patient</span><span class="roles">Doctor</span></td></tr>
+  </tbody>
+</table>
+
+<h2>4. Video Consultation</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>Waiting Room</td><td>Pre-join screen with camera/mic preview.</td><td><span class="roles">Patient</span><span class="roles">Doctor</span></td></tr>
+    <tr><td>Live Video Call</td><td>P2P video with Daily.co integration; demo fallback.</td><td><span class="roles">Patient</span><span class="roles">Doctor</span></td></tr>
+    <tr><td>Presence Sync</td><td>5-second heartbeat tells each side when peer joins / ends.</td><td><span class="roles">System</span></td></tr>
+    <tr><td>Synchronized Hang-up</td><td>When either side ends the call, the other side disconnects too.</td><td><span class="roles">System</span></td></tr>
+    <tr><td>Call Controls</td><td>Mute, camera toggle, screen share, chat.</td><td><span class="roles">Patient</span><span class="roles">Doctor</span></td></tr>
+    <tr><td>In-Call Chat</td><td>Text chat alongside video.</td><td><span class="roles">Patient</span><span class="roles">Doctor</span></td></tr>
+    <tr><td>Doctor Notes Panel</td><td>Side panel: symptoms, diagnosis, treatment, investigations, medicines.</td><td><span class="roles">Doctor</span></td></tr>
+    <tr><td>Post-Call Summary</td><td>Duration, rating, prescription view.</td><td><span class="roles">Patient</span></td></tr>
+  </tbody>
+</table>
+
+<h2>5. Prescriptions &amp; AI Clinical Tools</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>AI Prescription Helper</td><td>Gemini / OpenAI / Claude generate starter Rx from symptoms + diagnosis.</td><td><span class="roles">Doctor</span></td></tr>
+    <tr><td>Local Rule Library</td><td>Offline fallback suggestions for common conditions.</td><td><span class="roles">Doctor</span></td></tr>
+    <tr><td>Quick-Pick Chips</td><td>Tap-to-add common symptoms, diagnoses, investigations.</td><td><span class="roles">Doctor</span></td></tr>
+    <tr><td>Voice Prescription</td><td>Doctor dictates; speech → text parsed into medicines.</td><td><span class="roles">Doctor</span></td></tr>
+    <tr><td>Prescription Issuance</td><td>Rx attached to a consultation and surfaced to the patient.</td><td><span class="roles">Doctor</span></td></tr>
+    <tr><td>Prescription History</td><td>Patient's complete Rx archive.</td><td><span class="roles">Patient</span><span class="roles">Doctor</span></td></tr>
+    <tr><td>Print / Save as PDF</td><td>Branded printable prescription format.</td><td><span class="roles">Patient</span></td></tr>
+    <tr><td>Upload Scanned Rx</td><td>Patient uploads external prescriptions.</td><td><span class="roles">Patient</span></td></tr>
+    <tr><td>Formulary</td><td>Pharmacy drug master list.</td><td><span class="roles">Pharmacist</span><span class="roles">Admin</span></td></tr>
+    <tr><td>AI Document Analysis</td><td>Parse uploaded medical documents.</td><td><span class="roles">Doctor</span><span class="roles">Patient</span></td></tr>
+  </tbody>
+</table>
+
+<h2>6. Pharmacy &amp; Shop</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>Product Catalog</td><td>Medicines and health products by category.</td><td><span class="roles">Public</span></td></tr>
+    <tr><td>Vendor Storefronts</td><td>Each vendor has a branded subpage.</td><td><span class="roles">Public</span></td></tr>
+    <tr><td>Pre-filled Rx Cart</td><td>"Order from Rx" deep-links prescribed medicines into cart.</td><td><span class="roles">Patient</span></td></tr>
+    <tr><td>Shopping Cart</td><td>Persistent cart with quantity controls.</td><td><span class="roles">Patient</span></td></tr>
+    <tr><td>Checkout</td><td>Multi-gateway checkout: Stripe, PayU, IndusPays, ConnectPay, TazaPay.</td><td><span class="roles">Patient</span></td></tr>
+    <tr><td>Order Tracking</td><td>Status updates from placed → packed → shipped → delivered.</td><td><span class="roles">Patient</span></td></tr>
+    <tr><td>Offline Pharmacy Option</td><td>Print Rx and take to a local pharmacy.</td><td><span class="roles">Patient</span></td></tr>
+    <tr><td>Coupons &amp; Promotions</td><td>Discount codes and campaigns.</td><td><span class="roles">Admin</span><span class="roles">Vendor</span></td></tr>
+    <tr><td>Vendor Dashboard</td><td>Products, orders, inventory, payouts.</td><td><span class="roles">Vendor</span></td></tr>
+    <tr><td>Vendor Analytics</td><td>Revenue, top products, conversion.</td><td><span class="roles">Vendor</span></td></tr>
+    <tr><td>Stripe Connect Payouts</td><td>Automated vendor settlement.</td><td><span class="roles">Vendor</span><span class="roles">Admin</span></td></tr>
+  </tbody>
+</table>
+
+<h2>7. Dashboards</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>Patient Dashboard</td><td>Appointments, consultations, prescriptions, orders.</td><td><span class="roles">Patient</span></td></tr>
+    <tr><td>Doctor Dashboard</td><td>Today's schedule, earnings, reviews, referrals.</td><td><span class="roles">Doctor</span></td></tr>
+    <tr><td>Doctor Earnings</td><td>Commission breakdown and payout history.</td><td><span class="roles">Doctor</span></td></tr>
+    <tr><td>Doctor Reviews</td><td>Patient feedback with reply option.</td><td><span class="roles">Doctor</span></td></tr>
+    <tr><td>Clinic Dashboard</td><td>Multi-branch appointment / billing / inventory overview.</td><td><span class="roles">Staff</span></td></tr>
+    <tr><td>Vendor Dashboard</td><td>Sales, inventory, order fulfilment.</td><td><span class="roles">Vendor</span></td></tr>
+    <tr><td>Role-Scoped Admin Sidebar</td><td>HR/Support/Pharmacist/Vendor see only their relevant sections.</td><td><span class="roles">All staff</span></td></tr>
+  </tbody>
+</table>
+
+<h2>8. Hospital Operations</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>Admissions &amp; Discharge</td><td>Inpatient admission workflow and discharge planning.</td><td><span class="roles">Staff</span><span class="roles">Doctor</span></td></tr>
+    <tr><td>Bed Census</td><td>Real-time bed occupancy by ward.</td><td><span class="roles">Staff</span><span class="roles">Admin</span></td></tr>
+    <tr><td>Wards &amp; ICU</td><td>Ward-level patient organisation and ICU tracking.</td><td><span class="roles">Staff</span><span class="roles">Doctor</span></td></tr>
+    <tr><td>Encounters</td><td>Every patient visit logged with timestamps and notes.</td><td><span class="roles">Doctor</span><span class="roles">Staff</span></td></tr>
+    <tr><td>Vitals Monitoring</td><td>BP, HR, temperature, SpO₂ capture.</td><td><span class="roles">Staff</span><span class="roles">Doctor</span></td></tr>
+    <tr><td>Nursing Care Plans</td><td>Shift-based task list per patient.</td><td><span class="roles">Staff</span></td></tr>
+    <tr><td>Handover Reports</td><td>Structured shift handover docs.</td><td><span class="roles">Staff</span><span class="roles">Doctor</span></td></tr>
+    <tr><td>Surgeries &amp; OR Scheduling</td><td>OT bookings, surgeon &amp; anaesthetist assignment.</td><td><span class="roles">Doctor</span><span class="roles">Staff</span></td></tr>
+    <tr><td>Problem List</td><td>Active clinical problems per patient.</td><td><span class="roles">Doctor</span></td></tr>
+    <tr><td>Clinical Pathways</td><td>Standardised care protocols by condition.</td><td><span class="roles">Doctor</span><span class="roles">Admin</span></td></tr>
+  </tbody>
+</table>
+
+<h2>9. Diagnostic &amp; Specialty Modules</h2>
+<table>
+  <thead><tr><th class="col-feat">Module</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>Radiology</td><td>X-ray / CT / MRI order &amp; reporting.</td><td><span class="roles">Radiologist</span></td></tr>
+    <tr><td>Pathology</td><td>Blood / fluid lab test orders and results.</td><td><span class="roles">Pathologist</span></td></tr>
+    <tr><td>Cardiology</td><td>ECG, echo, cardiac imaging.</td><td><span class="roles">Cardiologist</span></td></tr>
+    <tr><td>Endoscopy</td><td>Scope procedure tracking.</td><td><span class="roles">Doctor</span></td></tr>
+    <tr><td>Oncology</td><td>Cancer treatment cycle management.</td><td><span class="roles">Oncologist</span></td></tr>
+    <tr><td>Ophthalmology / ENT / Dental</td><td>Specialty-specific workflows.</td><td><span class="roles">Doctor</span></td></tr>
+    <tr><td>Orthopedics</td><td>Bone &amp; joint procedures.</td><td><span class="roles">Orthopedist</span></td></tr>
+    <tr><td>Psychiatry</td><td>Mental health consultations and notes.</td><td><span class="roles">Psychiatrist</span></td></tr>
+    <tr><td>Dialysis</td><td>Renal replacement session tracking.</td><td><span class="roles">Nephrologist</span></td></tr>
+    <tr><td>Maternity</td><td>OB/GYN prenatal and postnatal care.</td><td><span class="roles">OB/GYN</span></td></tr>
+    <tr><td>Physiotherapy &amp; Rehab</td><td>Therapy plans and session logs.</td><td><span class="roles">Physio</span></td></tr>
+    <tr><td>Wound Care</td><td>Chronic wound protocols and photos.</td><td><span class="roles">Doctor</span><span class="roles">Nurse</span></td></tr>
+    <tr><td>Immunizations</td><td>Vaccine schedule and stock.</td><td><span class="roles">Doctor</span><span class="roles">Staff</span></td></tr>
+    <tr><td>Health Camps</td><td>Outreach event management.</td><td><span class="roles">Admin</span></td></tr>
+  </tbody>
+</table>
+
+<h2>10. Pharmacy &amp; Dispensing</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>Pharmacy Dashboard</td><td>In-hospital pharmacy home screen.</td><td><span class="roles">Pharmacist</span></td></tr>
+    <tr><td>Dispensing</td><td>Release medicines against inpatient orders.</td><td><span class="roles">Pharmacist</span></td></tr>
+    <tr><td>Pharmacy Inventory</td><td>Stock levels with reorder thresholds.</td><td><span class="roles">Pharmacist</span><span class="roles">Admin</span></td></tr>
+    <tr><td>Lot &amp; Expiry Tracking</td><td>Batch-level medicine tracking.</td><td><span class="roles">Pharmacist</span></td></tr>
+  </tbody>
+</table>
+
+<h2>11. Quality &amp; Compliance</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>Infection Control</td><td>Hospital-acquired infection tracking.</td><td><span class="roles">ICO</span><span class="roles">Doctor</span></td></tr>
+    <tr><td>Antimicrobial Stewardship</td><td>Antibiotic usage monitoring.</td><td><span class="roles">Doctor</span><span class="roles">Admin</span></td></tr>
+    <tr><td>Mortality Audit</td><td>Structured death review process.</td><td><span class="roles">Doctor</span><span class="roles">Admin</span></td></tr>
+    <tr><td>Consent Forms</td><td>Digital patient consent capture.</td><td><span class="roles">Doctor</span><span class="roles">Staff</span></td></tr>
+    <tr><td>Incident Tracking</td><td>Safety incident and adverse-event log.</td><td><span class="roles">Staff</span><span class="roles">Admin</span></td></tr>
+    <tr><td>Tumor Board</td><td>Multi-disciplinary cancer case conferences.</td><td><span class="roles">Doctor</span></td></tr>
+    <tr><td>Audit Log</td><td>Full activity log across the platform.</td><td><span class="roles">Admin</span></td></tr>
+  </tbody>
+</table>
+
+<h2>12. Facilities &amp; Logistics</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>Housekeeping</td><td>Room cleaning schedules and verification.</td><td><span class="roles">Housekeeping</span></td></tr>
+    <tr><td>Laundry</td><td>Linen circulation and tracking.</td><td><span class="roles">Staff</span></td></tr>
+    <tr><td>Biomedical Equipment</td><td>Preventive maintenance and calibration.</td><td><span class="roles">Biomedical</span></td></tr>
+    <tr><td>Biowaste Management</td><td>Colour-coded medical waste disposal.</td><td><span class="roles">Staff</span></td></tr>
+    <tr><td>CSSD Sterilization</td><td>Central sterile supply tracking.</td><td><span class="roles">CSSD</span></td></tr>
+    <tr><td>Medical Gas Supply</td><td>Oxygen / nitrous supply monitoring.</td><td><span class="roles">Biomedical</span></td></tr>
+    <tr><td>General Inventory</td><td>Non-medical consumables and supplies.</td><td><span class="roles">Staff</span></td></tr>
+    <tr><td>Ambulance Fleet</td><td>Emergency transport coordination.</td><td><span class="roles">Admin</span><span class="roles">Staff</span></td></tr>
+    <tr><td>Visitor Management</td><td>Guest check-in and ID capture.</td><td><span class="roles">Security</span></td></tr>
+    <tr><td>Visitor Blacklist</td><td>Restricted-person list.</td><td><span class="roles">Admin</span></td></tr>
+  </tbody>
+</table>
+
+<h2>13. Blood Bank &amp; Transfusion</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>Blood Bank Inventory</td><td>Blood component stock by group.</td><td><span class="roles">Staff</span><span class="roles">Doctor</span></td></tr>
+    <tr><td>Donor Registry</td><td>Donor database with eligibility.</td><td><span class="roles">Staff</span></td></tr>
+    <tr><td>Transfusion Requests</td><td>Cross-match and issue workflow.</td><td><span class="roles">Doctor</span><span class="roles">Staff</span></td></tr>
+  </tbody>
+</table>
+
+<h2>14. Finance &amp; Billing</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>Invoices &amp; AR</td><td>Invoice generation and collection tracking.</td><td><span class="roles">Billing</span><span class="roles">Admin</span></td></tr>
+    <tr><td>Receipts</td><td>Payment receipt reconciliation.</td><td><span class="roles">Billing</span></td></tr>
+    <tr><td>General Ledger</td><td>Chart of accounts and journal entries.</td><td><span class="roles">Accountant</span></td></tr>
+    <tr><td>Insurance Claims</td><td>Claim filing, tracking and reconciliation.</td><td><span class="roles">Billing</span></td></tr>
+    <tr><td>Corporate Empanelment</td><td>TPA and corporate client contracts.</td><td><span class="roles">Admin</span></td></tr>
+    <tr><td>Vendor Withdrawals</td><td>Payout request workflow for vendors.</td><td><span class="roles">Vendor</span><span class="roles">Admin</span></td></tr>
+  </tbody>
+</table>
+
+<h2>15. HR &amp; Workforce</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>Staff Management</td><td>Employee records, contracts and roles.</td><td><span class="roles">HR</span><span class="roles">Admin</span></td></tr>
+    <tr><td>Staff Scheduling</td><td>Roster and shift planning.</td><td><span class="roles">HR</span><span class="roles">Staff</span></td></tr>
+    <tr><td>Credentialing</td><td>Doctor licence and qualification verification.</td><td><span class="roles">Super</span><span class="roles">Admin</span></td></tr>
+    <tr><td>Employee Health</td><td>Occupational health surveillance.</td><td><span class="roles">HR</span></td></tr>
+    <tr><td>Careers Portal</td><td>Public job listings.</td><td><span class="roles">Public</span><span class="roles">HR</span></td></tr>
+    <tr><td>Job Applications</td><td>Review inbound doctor/staff applications.</td><td><span class="roles">HR</span><span class="roles">Super</span></td></tr>
+  </tbody>
+</table>
+
+<h2>16. Content &amp; Marketing</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>Blog</td><td>Health articles and condition guides.</td><td><span class="roles">Public</span></td></tr>
+    <tr><td>AI Blog Generator</td><td>Claude-assisted draft articles.</td><td><span class="roles">Admin</span></td></tr>
+    <tr><td>Testimonials</td><td>Patient success stories.</td><td><span class="roles">Public</span></td></tr>
+    <tr><td>Symptoms / Conditions / Glossary / Wiki</td><td>Medical reference library for SEO.</td><td><span class="roles">Public</span></td></tr>
+    <tr><td>FAQ &amp; Help Center</td><td>Support documentation.</td><td><span class="roles">Public</span></td></tr>
+    <tr><td>CMS Pages</td><td>Admin-editable marketing pages.</td><td><span class="roles">Super</span></td></tr>
+    <tr><td>Newsletter</td><td>Email list capture.</td><td><span class="roles">Public</span></td></tr>
+    <tr><td>Theme Customization</td><td>White-label branding per tenant.</td><td><span class="roles">Admin</span></td></tr>
+  </tbody>
+</table>
+
+<h2>17. Platform &amp; Super-Admin</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>Organizations</td><td>Tenant hospital / clinic management.</td><td><span class="roles">Super</span></td></tr>
+    <tr><td>Platform Audit</td><td>Cross-tenant audit log.</td><td><span class="roles">Super</span></td></tr>
+    <tr><td>User Impersonation</td><td>Support sign-in as another user.</td><td><span class="roles">Super</span></td></tr>
+    <tr><td>KPI Dashboard</td><td>Platform-wide metrics and analytics.</td><td><span class="roles">Super</span></td></tr>
+    <tr><td>Vendor Network</td><td>Manage all participating vendors.</td><td><span class="roles">Super</span></td></tr>
+    <tr><td>Doctor Earnings Network</td><td>Cross-tenant earnings oversight.</td><td><span class="roles">Super</span></td></tr>
+    <tr><td>Support Tickets</td><td>Customer support ticketing.</td><td><span class="roles">Support</span><span class="roles">Admin</span></td></tr>
+    <tr><td>Feedback Collection</td><td>Structured user feedback capture.</td><td><span class="roles">Admin</span></td></tr>
+    <tr><td>Notifications Broadcast</td><td>Bulk in-app and email notifications.</td><td><span class="roles">Admin</span></td></tr>
+  </tbody>
+</table>
+
+<h2>18. AI &amp; Intelligent Features</h2>
+<table>
+  <thead><tr><th class="col-feat">Feature</th><th class="col-desc">Description</th><th class="col-role">Roles</th></tr></thead>
+  <tbody>
+    <tr><td>AI Prescription Helper</td><td>Multi-provider (Gemini / OpenAI / Claude) with local rule fallback.</td><td><span class="roles">Doctor</span></td></tr>
+    <tr><td>AI Blog Generator</td><td>Drafts SEO-friendly articles.</td><td><span class="roles">Admin</span></td></tr>
+    <tr><td>AI Chatbot</td><td>Patient-facing health Q&amp;A widget.</td><td><span class="roles">Patient</span></td></tr>
+    <tr><td>AI Document Analysis</td><td>Parse uploaded clinical documents.</td><td><span class="roles">Doctor</span><span class="roles">Patient</span></td></tr>
+    <tr><td>Voice Prescription</td><td>Speech-to-text parse into structured Rx.</td><td><span class="roles">Doctor</span></td></tr>
+  </tbody>
+</table>
+
+<h2>19. Payments &amp; Gateways</h2>
+<table>
+  <thead><tr><th class="col-feat">Gateway</th><th class="col-desc">Purpose</th><th class="col-role">Coverage</th></tr></thead>
+  <tbody>
+    <tr><td>Stripe</td><td>Global card payments and Connect payouts.</td><td><span class="roles">Global</span></td></tr>
+    <tr><td>PayU</td><td>India-focused processor with UPI and local cards.</td><td><span class="roles">India</span></td></tr>
+    <tr><td>IndusPays</td><td>Alternate India gateway.</td><td><span class="roles">India</span></td></tr>
+    <tr><td>ConnectPay</td><td>B2B payment flow.</td><td><span class="roles">B2B</span></td></tr>
+    <tr><td>TazaPay</td><td>Cross-border payments.</td><td><span class="roles">Global</span></td></tr>
+    <tr><td>Free Consultation Window</td><td>Payments bypass for promotional days.</td><td><span class="roles">Platform-wide</span></td></tr>
+  </tbody>
+</table>
+
+<h2>20. Role Hierarchy</h2>
+<div class="tech">
+  <p><b>Super</b> → platform operator; master access across tenants.</p>
+  <p><b>Admin</b> → tenant (hospital) owner; full access within their organization.</p>
+  <p><b>Manager / Staff</b> → scoped administrative operations (admissions, billing, inventory, etc.).</p>
+  <p><b>HR</b> → staff, scheduling, careers, credentialing.</p>
+  <p><b>Support</b> → tickets, feedback, notifications.</p>
+  <p><b>Doctor</b> → own consultations, prescriptions, earnings, reviews.</p>
+  <p><b>Pharmacist</b> → dispensing, pharmacy inventory, formulary.</p>
+  <p><b>Vendor</b> → own products, orders, payouts.</p>
+  <p><b>Patient</b> → own appointments, prescriptions, orders, health records.</p>
+</div>
+
+<h2>21. Technical Foundation</h2>
+<div class="tech">
+  <p><b>Framework:</b> Next.js 14 (App Router) · TypeScript · React Server Components.</p>
+  <p><b>Auth:</b> NextAuth with credentials + JWT sessions; role-based middleware guards.</p>
+  <p><b>Database:</b> PostgreSQL via Drizzle ORM.</p>
+  <p><b>Storage:</b> Vercel Blob for documents and images.</p>
+  <p><b>Video:</b> Daily.co integration with demo-mode fallback.</p>
+  <p><b>Presence &amp; Signaling:</b> In-memory TTL map with 5-second polling heartbeat.</p>
+  <p><b>AI Providers:</b> Google Gemini (free tier), OpenAI, Anthropic Claude — precedence-based fallback.</p>
+  <p><b>Email / SMS:</b> Transactional messaging via configurable SMTP and SMS provider.</p>
+  <p><b>Deployment:</b> Vercel with serverless functions; environment-scoped configuration.</p>
+</div>
+
+<div class="footer">
+  OduDoc Feature Overview · Generated automatically · Confidential
+</div>
+
+</body>
+</html>

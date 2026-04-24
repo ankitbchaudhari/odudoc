@@ -25,6 +25,7 @@ export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, 
   const [connectionQuality, setConnectionQuality] = useState<"good" | "fair" | "poor">("good");
   const [remoteParticipant, setRemoteParticipant] = useState<string | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const endCallRef = useRef<(() => void) | null>(null);
   const selfViewRef = useRef<HTMLDivElement>(null);
@@ -112,6 +113,7 @@ export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, 
         video: true,
         audio: true,
       });
+      localStreamRef.current = stream;
       setLocalStream(stream);
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
@@ -121,6 +123,7 @@ export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, 
       // Try video only
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        localStreamRef.current = stream;
         setLocalStream(stream);
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
@@ -132,13 +135,26 @@ export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, 
     }
   };
 
+  // Fully release every media track we hold + detach from <video>
+  // elements so the browser's camera/mic indicator turns off immediately
+  // when the call ends. We read from a ref (not state) so the unmount
+  // cleanup sees the latest stream even though its effect has empty deps.
   const stopAllStreams = () => {
-    if (localStream) {
-      localStream.getTracks().forEach((t) => t.stop());
+    const stream = localStreamRef.current;
+    if (stream) {
+      stream.getTracks().forEach((t) => {
+        try { t.stop(); } catch { /* ignore */ }
+      });
+      localStreamRef.current = null;
     }
     if (screenStreamRef.current) {
-      screenStreamRef.current.getTracks().forEach((t) => t.stop());
+      screenStreamRef.current.getTracks().forEach((t) => {
+        try { t.stop(); } catch { /* ignore */ }
+      });
+      screenStreamRef.current = null;
     }
+    if (localVideoRef.current) localVideoRef.current.srcObject = null;
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
   };
 
   const toggleCamera = useCallback(() => {

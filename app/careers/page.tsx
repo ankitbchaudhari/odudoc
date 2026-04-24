@@ -95,7 +95,6 @@ export default function CareersPage() {
                       </svg>
                       {job.location}
                     </span>
-                    <span>{job.salary}</span>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -135,7 +134,7 @@ export default function CareersPage() {
                 </span>
                 <h2 className="mt-2 text-2xl font-bold text-gray-900">{selectedJob.title}</h2>
                 <p className="mt-1 text-sm text-gray-500">
-                  {selectedJob.location} · {selectedJob.employmentType} · {selectedJob.salary}
+                  {selectedJob.location} · {selectedJob.employmentType}
                 </p>
               </div>
               <button

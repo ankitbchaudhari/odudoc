@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { createBooking } from "@/lib/bookings-store";
-import { createConsultation, markPaid } from "@/lib/consultations-store";
+import {
+  createConsultation,
+  markPaid,
+  listConsultations,
+} from "@/lib/consultations-store";
+import { validateSlot } from "@/lib/slot-utils";
 import { paymentsDisabled } from "@/lib/payments-config";
 import { consumeConsultToken } from "@/lib/consult-otp";
 import { sendPatientBookingReceived, sendDoctorNewRequest } from "@/lib/consultation-emails";
@@ -88,6 +93,21 @@ export async function POST(req: NextRequest) {
   }
   if (scheduledDate > maxDate) {
     return NextResponse.json({ error: "Appointments can only be booked up to 15 days in advance." }, { status: 400 });
+  }
+
+  // Enforce the 15-min ladder + 30-min lead + no-double-booking rules
+  // server-side. Any slot that's not on the ladder — or that a sibling
+  // request just claimed — is rejected here even if the client still
+  // rendered it. Keeps the slot-utils helper as the sole source of
+  // truth, so inspecting the DOM + replaying the POST can't slip past.
+  const dateStr = `${scheduledDate.getFullYear()}-${String(scheduledDate.getMonth() + 1).padStart(2, "0")}-${String(scheduledDate.getDate()).padStart(2, "0")}`;
+  const slotErr = validateSlot({
+    dateStr,
+    slot: String(timeSlot),
+    consultations: listConsultations({ doctorId: String(doctorId) }),
+  });
+  if (slotErr) {
+    return NextResponse.json({ error: slotErr }, { status: 400 });
   }
 
   // 1. Legacy booking record (admin / earnings views).

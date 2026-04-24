@@ -9,6 +9,7 @@ import {
 } from "@/lib/consultations-store";
 import { sendPatientBookingReceived, sendDoctorNewRequest } from "@/lib/consultation-emails";
 import { paymentsDisabled } from "@/lib/payments-config";
+import { validateSlot } from "@/lib/slot-utils";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -82,6 +83,19 @@ export async function POST(req: NextRequest) {
   }
   if (!body.doctorId || !body.doctorName || !body.specialty || !body.scheduledFor || !body.timeSlot) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  // Enforce 15-min ladder + 30-min lead + no double booking. See
+  // lib/slot-utils.ts for the exact rules. scheduledFor can be either a
+  // full ISO or YYYY-MM-DD — slice the date part either way.
+  const dateStr = String(body.scheduledFor).slice(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const err = validateSlot({
+      dateStr,
+      slot: String(body.timeSlot),
+      consultations: listConsultations({ doctorId: String(body.doctorId) }),
+    });
+    if (err) return NextResponse.json({ error: err }, { status: 400 });
   }
 
   const mhIn = (body.medicalHistory || {}) as Partial<MedicalHistory>;

@@ -16,12 +16,33 @@ const specialtyList = [
   { name: "ENT Specialist", icon: "👂", price: 35 },
 ];
 
-const timeSlots = [
-  "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM",
-  "11:00 AM", "11:30 AM", "02:00 PM", "02:30 PM",
-  "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM",
-  "05:00 PM", "05:30 PM", "07:00 PM", "07:30 PM",
-];
+// Slots come from /api/doctors/[id]/slots now — the server applies the
+// 15-min ladder, 30-min lead rule, and filters out already-booked slots.
+// Keep this type aligned with SlotView in lib/slot-utils.ts.
+interface SlotView {
+  value: string;  // "HH:MM" (24-hour) — wire format
+  label: string;  // "hh:mm AM/PM" — display
+  booked: boolean;
+}
+
+// 7-day carousel: today + next 6. Keeps the booking window matching the
+// server's 15-day cap without overwhelming the UI.
+function buildDateOptions(): { iso: string; weekday: string; day: string }[] {
+  const out: { iso: string; weekday: string; day: string }[] = [];
+  const base = new Date();
+  base.setHours(0, 0, 0, 0);
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(base);
+    d.setDate(d.getDate() + i);
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    out.push({
+      iso,
+      weekday: d.toLocaleDateString(undefined, { weekday: "short" }),
+      day: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+    });
+  }
+  return out;
+}
 
 interface MedicalHistoryForm {
   chiefComplaint: string;
@@ -61,6 +82,10 @@ export default function BookConsultationPage() {
   const [selectedSpecialty, setSelectedSpecialty] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
+  const dateOptions = buildDateOptions();
+  const [selectedDate, setSelectedDate] = useState<string>(dateOptions[0].iso);
+  const [slots, setSlots] = useState<SlotView[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
   const [patientName, setPatientName] = useState("");
   const [patientEmail, setPatientEmail] = useState("");
   const [patientPhone, setPatientPhone] = useState("");
@@ -82,6 +107,39 @@ export default function BookConsultationPage() {
       })
       .catch(() => {});
   }, []);
+
+  // Fetch real slots whenever doctor or date changes. Also polls every
+  // 30s so a slot that crosses the 30-min lead threshold "disappears
+  // from view" per spec, without the user reloading.
+  useEffect(() => {
+    if (!selectedDoctor) { setSlots([]); return; }
+    let cancelled = false;
+    const fetchSlots = async () => {
+      setSlotsLoading(true);
+      try {
+        const r = await fetch(
+          `/api/doctors/${encodeURIComponent(selectedDoctor)}/slots?date=${selectedDate}`,
+          { cache: "no-store" },
+        );
+        const j = await r.json().catch(() => ({ slots: [] }));
+        if (cancelled) return;
+        setSlots(Array.isArray(j.slots) ? j.slots : []);
+        // If the previously selected slot just fell off (booked by
+        // someone else, or crossed the 30-min lead window), clear it so
+        // the Continue button disables instead of silently submitting an
+        // invalid slot.
+        if (selectedSlot && !j.slots?.some((s: SlotView) => s.value === selectedSlot)) {
+          setSelectedSlot("");
+        }
+      } finally {
+        if (!cancelled) setSlotsLoading(false);
+      }
+    };
+    fetchSlots();
+    const t = setInterval(fetchSlots, 30_000);
+    return () => { cancelled = true; clearInterval(t); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDoctor, selectedDate]);
 
   const filteredDoctors = selectedSpecialty
     ? doctors.filter((d) => d.specialty === selectedSpecialty)
@@ -105,8 +163,11 @@ export default function BookConsultationPage() {
     setError("");
     setLoading(true);
     try {
-      const scheduledFor = new Date().toISOString(); // demo: same day
-      const dateLabel = new Date().toDateString();
+      // Send the date the patient actually picked (not always today).
+      // scheduledFor goes as YYYY-MM-DD so the server validator gets a
+      // clean date; the consultations store accepts either ISO or date.
+      const scheduledFor = selectedDate;
+      const dateLabel = new Date(`${selectedDate}T00:00:00`).toDateString();
       const res = await fetch("/api/consultations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -304,16 +365,57 @@ export default function BookConsultationPage() {
               </div>
             </div>
 
-            <div className="mb-6">
-              <p className="mb-3 text-sm font-medium text-gray-700">Available Slots for Today</p>
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                {timeSlots.map((slot) => (
-                  <button key={slot} onClick={() => setSelectedSlot(slot)}
-                    className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-all ${
-                      selectedSlot === slot ? "border-primary-500 bg-primary-50 text-primary-700" : "border-gray-200 text-gray-600 hover:border-primary-300 hover:bg-primary-50"
-                    }`}>{slot}</button>
+            <div className="mb-4">
+              <p className="mb-3 text-sm font-medium text-gray-700">Pick a date</p>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {dateOptions.map((d) => (
+                  <button
+                    key={d.iso}
+                    onClick={() => setSelectedDate(d.iso)}
+                    className={`shrink-0 rounded-lg border px-3 py-2 text-center text-xs font-medium transition-all ${
+                      selectedDate === d.iso
+                        ? "border-primary-500 bg-primary-50 text-primary-700"
+                        : "border-gray-200 text-gray-600 hover:border-primary-300"
+                    }`}
+                  >
+                    <div className="text-[11px] uppercase tracking-wide opacity-70">{d.weekday}</div>
+                    <div className="font-semibold">{d.day}</div>
+                  </button>
                 ))}
               </div>
+            </div>
+
+            <div className="mb-6">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-sm font-medium text-gray-700">Available 15-min slots</p>
+                {slotsLoading && (
+                  <span className="text-xs text-gray-400">refreshing…</span>
+                )}
+              </div>
+              {slots.length === 0 && !slotsLoading ? (
+                <div className="rounded-lg border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
+                  No slots available on this date. Try another day.
+                  <p className="mt-1 text-xs text-gray-400">
+                    Same-day slots are hidden until they&apos;re at least 30 minutes away.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {slots.map((slot) => (
+                    <button
+                      key={slot.value}
+                      onClick={() => setSelectedSlot(slot.value)}
+                      className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-all ${
+                        selectedSlot === slot.value
+                          ? "border-primary-500 bg-primary-50 text-primary-700"
+                          : "border-gray-200 text-gray-600 hover:border-primary-300 hover:bg-primary-50"
+                      }`}
+                    >
+                      {slot.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <button onClick={() => setStep(4)}
@@ -460,7 +562,8 @@ export default function BookConsultationPage() {
             <div className="space-y-3 rounded-xl bg-gray-50 p-5">
               <Row label="Doctor" value={selectedDoctorData.name} />
               <Row label="Specialty" value={selectedSpecialty} />
-              <Row label="Time" value={selectedSlot} />
+              <Row label="Date" value={new Date(`${selectedDate}T00:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })} />
+              <Row label="Time" value={slots.find((s) => s.value === selectedSlot)?.label || selectedSlot} />
               <Row label="Patient" value={patientName} />
               <Row label="Email" value={patientEmail} />
               <Row label="Main concern" value={history.chiefComplaint} />

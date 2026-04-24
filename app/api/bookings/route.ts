@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createBooking, getBookings } from '@/lib/bookings-store';
+import { listConsultations } from '@/lib/consultations-store';
+import { validateSlot } from '@/lib/slot-utils';
 import { notifyAppointmentBooked } from '@/lib/notifications';
 import { parseJson } from '@/lib/api-validate';
 import { log } from "@/lib/log";
@@ -46,6 +48,22 @@ export async function POST(request: NextRequest) {
   const parsed = await parseJson(request, BookingSchema);
   if (!parsed.ok) return parsed.response;
   const body = parsed.data;
+
+  // Mirror the 15-min ladder / 30-min lead / no-double-book rules here
+  // too — this endpoint bypasses the free-booking path so it needs its
+  // own guard. Accepts ISO YYYY-MM-DD in body.date; falls back to today.
+  const dateStr =
+    body.date && /^\d{4}-\d{2}-\d{2}$/.test(body.date)
+      ? body.date
+      : new Date().toISOString().slice(0, 10);
+  const slotErr = validateSlot({
+    dateStr,
+    slot: body.timeSlot,
+    consultations: listConsultations({ doctorId: body.doctorId }),
+  });
+  if (slotErr) {
+    return NextResponse.json({ error: slotErr }, { status: 400 });
+  }
 
   try {
     const booking = createBooking({

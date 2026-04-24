@@ -3,10 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import {
   getConsultation,
+  listConsultations,
   recordDecision,
   attachRefund,
   type DecisionAction,
 } from "@/lib/consultations-store";
+import { validateSlot } from "@/lib/slot-utils";
 import {
   sendPatientApproved,
   sendPatientRejected,
@@ -43,6 +45,36 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const action = body.action as DecisionAction;
   if (!["approved", "rejected", "rescheduled"].includes(action)) {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+  }
+
+  // For reschedules, enforce the same slot rules the booking flow uses.
+  // A doctor or admin can't shift a patient into a past slot, a slot
+  // <30 min away, or one that collides with another of this doctor's
+  // consultations. The consultation being rescheduled is excluded from
+  // the collision check (it's allowed to "move onto itself" conceptually
+  // since its old slot is being vacated).
+  if (action === "rescheduled") {
+    const targetIso = typeof body.rescheduleTo === "string" ? body.rescheduleTo : "";
+    const targetSlot = typeof body.rescheduleSlot === "string" ? body.rescheduleSlot : "";
+    if (!targetIso || !targetSlot) {
+      return NextResponse.json(
+        { error: "Reschedule requires both rescheduleTo (date) and rescheduleSlot (time)." },
+        { status: 400 },
+      );
+    }
+    const dateStr = targetIso.slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      return NextResponse.json({ error: "Invalid rescheduleTo date." }, { status: 400 });
+    }
+    const slotErr = validateSlot({
+      dateStr,
+      slot: targetSlot,
+      consultations: listConsultations({ doctorId: c.doctorId }),
+      ignoreConsultationId: c.id,
+    });
+    if (slotErr) {
+      return NextResponse.json({ error: slotErr }, { status: 400 });
+    }
   }
 
   const oldSlot = `${c.dateLabel} ${c.timeSlot}`;

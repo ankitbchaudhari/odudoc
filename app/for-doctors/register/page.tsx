@@ -22,48 +22,139 @@ const SPECIALTIES = [
   "Urology",
 ];
 
-const LANGUAGES = [
-  "English",
-  "Spanish",
-  "Mandarin",
-  "Hindi",
-  "Arabic",
-  "French",
-  "Portuguese",
-  "Russian",
-  "Bengali",
-  "Japanese",
-  "German",
-  "Italian",
-  "Korean",
-  "Turkish",
-  "Urdu",
-  "Swahili",
-  "Hausa",
-  "Yoruba",
-  "Igbo",
-  "Amharic",
-  "Persian (Farsi)",
-  "Tagalog",
-  "Vietnamese",
-  "Thai",
-  "Indonesian",
-  "Malay",
-  "Dutch",
-  "Polish",
-  "Ukrainian",
-  "Romanian",
-  "Greek",
-  "Hebrew",
-  "Tamil",
-  "Telugu",
-  "Marathi",
-  "Gujarati",
-  "Punjabi",
-  "Kannada",
-  "Malayalam",
-  "Somali",
+// Comprehensive language list — global + all major Indian languages.
+// Keep alphabetised within each group so the picker is scannable.
+const LANGUAGE_GROUPS: { label: string; items: string[] }[] = [
+  {
+    label: "Global",
+    items: [
+      "English",
+      "Mandarin",
+      "Spanish",
+      "Arabic",
+      "French",
+      "Portuguese",
+      "Russian",
+      "German",
+      "Japanese",
+      "Korean",
+      "Italian",
+      "Dutch",
+      "Polish",
+      "Ukrainian",
+      "Romanian",
+      "Greek",
+      "Hebrew",
+      "Turkish",
+      "Persian (Farsi)",
+      "Swedish",
+      "Norwegian",
+      "Danish",
+      "Finnish",
+      "Czech",
+      "Hungarian",
+      "Serbian",
+      "Croatian",
+      "Bulgarian",
+      "Slovak",
+      "Catalan",
+      "Basque",
+      "Irish",
+      "Welsh",
+    ],
+  },
+  {
+    label: "Indian",
+    items: [
+      "Hindi",
+      "Bengali",
+      "Marathi",
+      "Telugu",
+      "Tamil",
+      "Gujarati",
+      "Urdu",
+      "Kannada",
+      "Odia",
+      "Malayalam",
+      "Punjabi",
+      "Assamese",
+      "Maithili",
+      "Santali",
+      "Kashmiri",
+      "Nepali",
+      "Konkani",
+      "Sindhi",
+      "Dogri",
+      "Manipuri",
+      "Bodo",
+      "Sanskrit",
+      "Bhojpuri",
+      "Rajasthani",
+      "Haryanvi",
+      "Tulu",
+      "Khasi",
+      "Mizo",
+    ],
+  },
+  {
+    label: "African",
+    items: [
+      "Swahili",
+      "Hausa",
+      "Yoruba",
+      "Igbo",
+      "Amharic",
+      "Zulu",
+      "Xhosa",
+      "Afrikaans",
+      "Somali",
+      "Oromo",
+      "Shona",
+      "Tigrinya",
+      "Wolof",
+      "Fula",
+      "Kinyarwanda",
+      "Luganda",
+      "Akan",
+      "Chichewa",
+    ],
+  },
+  {
+    label: "Southeast & East Asian",
+    items: [
+      "Tagalog",
+      "Vietnamese",
+      "Thai",
+      "Indonesian",
+      "Malay",
+      "Burmese",
+      "Khmer",
+      "Lao",
+      "Cantonese",
+      "Mongolian",
+      "Sinhala",
+      "Dhivehi",
+    ],
+  },
+  {
+    label: "Central & Middle-Eastern",
+    items: [
+      "Pashto",
+      "Dari",
+      "Kurdish",
+      "Azerbaijani",
+      "Armenian",
+      "Georgian",
+      "Uzbek",
+      "Kazakh",
+      "Tajik",
+      "Turkmen",
+      "Kyrgyz",
+    ],
+  },
 ];
+
+const LANGUAGES = LANGUAGE_GROUPS.flatMap((g) => g.items);
 
 interface UploadedFile {
   name: string;
@@ -674,60 +765,227 @@ function Step2({
   errors: Record<string, string>;
   toggleLanguage: (l: string) => void;
 }) {
+  const [langQuery, setLangQuery] = useState("");
+
+  const PROFESSIONAL_ICONS = {
+    license: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m-2-14H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V8l-6-6z" />
+      </svg>
+    ),
+    specialty: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      </svg>
+    ),
+    subspecialty: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    ),
+    experience: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    qualifications: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+      </svg>
+    ),
+    hospital: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6m15 6a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    chat: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h6m-7 8l4-4h8a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2h1v4z" />
+      </svg>
+    ),
+  };
+
+  const q = langQuery.trim().toLowerCase();
+  const filteredGroups = q
+    ? LANGUAGE_GROUPS.map((g) => ({
+        ...g,
+        items: g.items.filter((l) => l.toLowerCase().includes(q)),
+      })).filter((g) => g.items.length > 0)
+    : LANGUAGE_GROUPS;
+
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900">Professional Details</h2>
-      <p className="mt-1 text-sm text-gray-500">Your medical background</p>
-      <div className="mt-6 grid gap-5 sm:grid-cols-2">
-        <Field label="Medical License Number" error={errors.licenseNumber} required>
-          <input className={inputClass} value={form.licenseNumber} onChange={(e) => update("licenseNumber", e.target.value)} />
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 text-white shadow-md">
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+          </svg>
+        </span>
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">Professional Details</h2>
+          <p className="text-sm text-gray-500">Your medical background and credentials.</p>
+        </div>
+      </div>
+
+      <div className="mt-8 grid gap-6 sm:grid-cols-2">
+        <Field label="Medical License Number" error={errors.licenseNumber} required icon={PROFESSIONAL_ICONS.license}>
+          <input
+            className={inputClass}
+            value={form.licenseNumber}
+            onChange={(e) => update("licenseNumber", e.target.value)}
+            placeholder="MCI / State Council #"
+          />
         </Field>
-        <Field label="Specialty" error={errors.specialty} required>
-          <select className={inputClass} value={form.specialty} onChange={(e) => update("specialty", e.target.value)}>
+        <Field label="Specialty" error={errors.specialty} required icon={PROFESSIONAL_ICONS.specialty}>
+          <select
+            className={inputClass}
+            value={form.specialty}
+            onChange={(e) => update("specialty", e.target.value)}
+          >
             <option value="">Select a specialty...</option>
             {SPECIALTIES.map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s}>
+                {s}
+              </option>
             ))}
           </select>
         </Field>
-        <Field label="Sub-specialty">
-          <input className={inputClass} value={form.subSpecialty} onChange={(e) => update("subSpecialty", e.target.value)} placeholder="e.g., Interventional Cardiology" />
+        <Field label="Sub-specialty" icon={PROFESSIONAL_ICONS.subspecialty} hint="Optional — focus area within your specialty.">
+          <input
+            className={inputClass}
+            value={form.subSpecialty}
+            onChange={(e) => update("subSpecialty", e.target.value)}
+            placeholder="e.g., Interventional Cardiology"
+          />
         </Field>
-        <Field label="Years of Experience" error={errors.yearsExperience} required>
-          <input type="number" min="0" className={inputClass} value={form.yearsExperience} onChange={(e) => update("yearsExperience", e.target.value)} />
+        <Field label="Years of Experience" error={errors.yearsExperience} required icon={PROFESSIONAL_ICONS.experience}>
+          <input
+            type="number"
+            min="0"
+            className={inputClass}
+            value={form.yearsExperience}
+            onChange={(e) => update("yearsExperience", e.target.value)}
+            placeholder="e.g., 8"
+          />
         </Field>
+
         <div className="sm:col-span-2">
-          <Field label="Qualifications" error={errors.qualifications} required>
-            <textarea rows={3} className={inputClass} value={form.qualifications} onChange={(e) => update("qualifications", e.target.value)} placeholder="MD, MBBS, Board certifications, etc." />
+          <Field label="Qualifications" error={errors.qualifications} required icon={PROFESSIONAL_ICONS.qualifications}>
+            <textarea
+              rows={3}
+              className={inputClass}
+              value={form.qualifications}
+              onChange={(e) => update("qualifications", e.target.value)}
+              placeholder="MD, MBBS, Board certifications, fellowships…"
+            />
           </Field>
         </div>
+
         <div className="sm:col-span-2">
-          <Field label="Hospital/Clinic Affiliations">
-            <textarea rows={2} className={inputClass} value={form.affiliations} onChange={(e) => update("affiliations", e.target.value)} />
+          <Field
+            label="Hospital / Clinic Affiliations"
+            icon={PROFESSIONAL_ICONS.hospital}
+            hint="Where do you currently practise? Separate multiple with commas."
+          >
+            <textarea
+              rows={2}
+              className={inputClass}
+              value={form.affiliations}
+              onChange={(e) => update("affiliations", e.target.value)}
+              placeholder="Apollo Hospital Bangalore, Manipal Clinic…"
+            />
           </Field>
         </div>
+
+        {/* Languages */}
         <div className="sm:col-span-2">
-          <Field label="Languages Spoken" error={errors.languages} required>
-            <div className="flex flex-wrap gap-2">
-              {LANGUAGES.map((lang) => {
-                const on = form.languages.includes(lang);
-                return (
+          <div className="mb-2 flex items-center justify-between gap-4">
+            <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-800">
+              <span className="text-primary-500">{PROFESSIONAL_ICONS.chat}</span>
+              Languages Spoken <span className="text-red-500">*</span>
+            </label>
+            <span className="rounded-full bg-primary-50 px-2.5 py-0.5 text-[11px] font-bold text-primary-700">
+              {form.languages.length} selected
+            </span>
+          </div>
+
+          <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-primary-50/30 p-4 shadow-sm">
+            {/* Search */}
+            <div className="relative">
+              <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 110-16 8 8 0 010 16z" />
+              </svg>
+              <input
+                value={langQuery}
+                onChange={(e) => setLangQuery(e.target.value)}
+                placeholder={`Search ${LANGUAGES.length}+ languages…`}
+                className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm transition-all placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100"
+              />
+            </div>
+
+            {/* Selected chips on top */}
+            {form.languages.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2 border-b border-gray-100 pb-4">
+                {form.languages.map((lang) => (
                   <button
-                    type="button"
                     key={lang}
+                    type="button"
                     onClick={() => toggleLanguage(lang)}
-                    className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                      on
-                        ? "bg-primary-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary-600 to-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:shadow-md"
                   >
                     {lang}
+                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                   </button>
-                );
-              })}
+                ))}
+              </div>
+            )}
+
+            {/* Groups */}
+            <div className="mt-4 max-h-80 space-y-4 overflow-y-auto pr-1">
+              {filteredGroups.length === 0 ? (
+                <p className="py-6 text-center text-sm text-gray-400">No languages match &quot;{langQuery}&quot;.</p>
+              ) : (
+                filteredGroups.map((g) => (
+                  <div key={g.label}>
+                    <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                      {g.label}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {g.items.map((lang) => {
+                        const on = form.languages.includes(lang);
+                        return (
+                          <button
+                            type="button"
+                            key={lang}
+                            onClick={() => toggleLanguage(lang)}
+                            className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                              on
+                                ? "border-primary-500 bg-primary-500/10 text-primary-700"
+                                : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 hover:bg-primary-50/50"
+                            }`}
+                          >
+                            {on ? "✓ " : ""}
+                            {lang}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-          </Field>
+          </div>
+          {errors.languages && (
+            <p className="mt-1 flex items-center gap-1 text-xs font-medium text-red-600">
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+              {errors.languages}
+            </p>
+          )}
         </div>
       </div>
     </div>

@@ -12,6 +12,9 @@ import ConsultPrescriptionView, {
   type ConsultPrescription,
 } from "@/components/ConsultPrescriptionView";
 import IdentityVerifyNudge from "@/components/IdentityVerifyNudge";
+import ConsentGate from "@/components/ConsentGate";
+import LiveTranscript from "@/components/LiveTranscript";
+import DictationRecorder, { type DictationSuggestion } from "@/components/DictationRecorder";
 
 interface RoomInfo {
   id: string;
@@ -45,6 +48,15 @@ export default function ConsultationRoomPage() {
   const [error, setError] = useState("");
   const [demoMode, setDemoMode] = useState(false);
   const [consultRx, setConsultRx] = useState<ConsultPrescription | null>(null);
+  // Phase C: consent state gates the transcript panel. `null` means
+  // the ConsentGate hasn't resolved yet and we should block entering
+  // the call. Once the user ticks "I'm ready", consent is captured and
+  // persisted per-room in localStorage.
+  const [consent, setConsent] = useState<{ transcript: boolean } | null>(null);
+  // Phase C: doctor-only post-call dictation pre-fills the Rx form via
+  // DoctorNotesPanel. We stash the latest suggestion here; a key bump
+  // on the panel forces it to re-initialize with the new defaults.
+  const [dictationSeed, setDictationSeed] = useState<DictationSuggestion | null>(null);
 
   // When the call ends, patients pick up any prescription the doctor sent
   // (stored in localStorage by DoctorNotesPanel keyed by roomId).
@@ -140,6 +152,16 @@ export default function ConsultationRoomPage() {
   if (stage === "waiting" && roomInfo) {
     return (
       <>
+        {/* Phase C: consent must be granted before the waiting room even
+            renders. The gate remembers per-room consent so a page reload
+            doesn't re-prompt. */}
+        {!consent && (
+          <ConsentGate
+            roomId={roomId}
+            doctorName={roomInfo.doctorName}
+            onContinue={(c) => setConsent(c)}
+          />
+        )}
         {/* Soft-gate identity nudge — only shows to unverified / rejected
             users; never blocks joining the call. */}
         <IdentityVerifyNudge />
@@ -164,6 +186,14 @@ export default function ConsultationRoomPage() {
           demoMode={demoMode}
           onLeave={handleLeaveCall}
         />
+        {/* Phase C: live transcript panel sits on top of the iframe as a
+            side drawer. It renders nothing if the user declined transcript
+            consent at the gate. */}
+        <LiveTranscript
+          roomId={roomId}
+          enabled={!!consent?.transcript}
+          selfRole={isDoctor ? "doctor" : "patient"}
+        />
         {isDoctor && (
           <DoctorNotesPanel
             roomId={roomId}
@@ -172,6 +202,7 @@ export default function ConsultationRoomPage() {
             patientName={roomInfo.patientName}
             specialty={roomInfo.specialty}
             onEndCall={handleLeaveCall}
+            dictationSeed={dictationSeed}
           />
         )}
       </>
@@ -182,6 +213,31 @@ export default function ConsultationRoomPage() {
   if (stage === "post-call" && roomInfo) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
+        {/* Phase C: doctor-only post-call dictation. Records voice,
+            transcribes via Gemini, auto-fills the Rx form in the still-
+            mounted DoctorNotesPanel below. */}
+        {isDoctor && (
+          <div className="mx-auto mb-6 max-w-3xl px-4">
+            <DictationRecorder
+              context={{ patientName: roomInfo.patientName }}
+              onResult={(r) => setDictationSeed(r.suggestion)}
+            />
+          </div>
+        )}
+        {/* Keep DoctorNotesPanel mounted post-call so the dictationSeed
+            effect can land in a still-live component. It's hidden by
+            default (panel.open=false) but opens when a dictation arrives. */}
+        {isDoctor && (
+          <DoctorNotesPanel
+            roomId={roomId}
+            consultationId={roomInfo.bookingId}
+            doctorName={roomInfo.doctorName}
+            patientName={roomInfo.patientName}
+            specialty={roomInfo.specialty}
+            onEndCall={() => {}}
+            dictationSeed={dictationSeed}
+          />
+        )}
         <div className="mx-auto max-w-3xl px-4">
           {/* Summary card */}
           <div className="mb-8 rounded-2xl bg-white p-8 text-center shadow-sm">

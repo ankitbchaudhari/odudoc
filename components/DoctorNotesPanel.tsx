@@ -11,7 +11,7 @@
 // when you wire up /api/consultations/:id/prescription, swap the
 // localStorage write for a POST.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export interface MedicineRow {
   name: string;
@@ -140,6 +140,16 @@ interface Props {
   patientName: string;
   specialty: string;
   onEndCall: () => void;
+  // Phase C: when a doctor finishes a post-call dictation the parent
+  // hands the Gemini-structured suggestion down through this prop.
+  // We watch for changes and overwrite the matching form fields so the
+  // doctor sees the draft ready to review + send.
+  dictationSeed?: {
+    treatment: string;
+    investigations: string[];
+    medicines: MedicineRow[];
+    warning?: string;
+  } | null;
 }
 
 const EMPTY_MED: MedicineRow = { name: "", dose: "", frequency: "", duration: "" };
@@ -168,6 +178,7 @@ export default function DoctorNotesPanel({
   patientName,
   specialty,
   onEndCall,
+  dictationSeed,
 }: Props) {
   const [open, setOpen] = useState(true);
   const [symptoms, setSymptoms] = useState("");
@@ -177,6 +188,26 @@ export default function DoctorNotesPanel({
   const [notes, setNotes] = useState("");
   const [medicines, setMedicines] = useState<MedicineRow[]>([{ ...EMPTY_MED }]);
   const [sending, setSending] = useState(false);
+
+  // Phase C: when a dictation result lands, merge it into the form so
+  // the doctor can review + tweak before sending. We overwrite rather
+  // than append — a dictation is a fresh pass over the plan.
+  useEffect(() => {
+    if (!dictationSeed) return;
+    if (dictationSeed.treatment) setTreatment(dictationSeed.treatment);
+    if (dictationSeed.investigations?.length) {
+      setInvestigations(dictationSeed.investigations.join(", "));
+    }
+    if (dictationSeed.medicines?.length) {
+      setMedicines(dictationSeed.medicines);
+    }
+    if (dictationSeed.warning) {
+      // Append warning to notes so the doctor sees it inline with their
+      // other advice; they can delete it before sending.
+      setNotes((n) => (n ? `${n}\n\n⚠ ${dictationSeed.warning}` : `⚠ ${dictationSeed.warning}`));
+    }
+    setOpen(true);
+  }, [dictationSeed]);
   const [sent, setSent] = useState(false);
   const [aiMsg, setAiMsg] = useState<string>("");
   const [aiBusy, setAiBusy] = useState(false);

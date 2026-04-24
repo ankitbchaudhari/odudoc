@@ -1,20 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { listUsers } from "@/lib/users-store";
+import { listUsers, type User } from "@/lib/users-store";
 import { listOrders } from "@/lib/orders-store";
 import { sendAdminBroadcastEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 
-type Audience = "patients" | "doctors" | "staff" | "customers" | "all" | "custom";
+type Audience =
+  | "patients"
+  | "doctors"
+  | "staff"
+  | "customers"
+  | "vendors"
+  | "pharmacists"
+  | "support"
+  | "hr"
+  | "all"
+  | "custom";
 type Sender = "admin" | "no-reply" | "notifications" | "hr" | "career" | "promotion";
+
+// Role-backed audiences. "customers" (orders) and "all"/"custom"
+// (aggregates) are handled specially below.
+const ROLE_AUDIENCE_MAP: Record<string, User["role"]> = {
+  patients: "patient",
+  doctors: "doctor",
+  staff: "staff",
+  vendors: "vendor",
+  pharmacists: "pharmacist",
+  support: "support",
+  hr: "hr",
+};
 
 const VALID_AUDIENCES: Audience[] = [
   "patients",
   "doctors",
   "staff",
   "customers",
+  "vendors",
+  "pharmacists",
+  "support",
+  "hr",
   "all",
   "custom",
 ];
@@ -45,14 +71,13 @@ function resolveRecipients(
     if (!map.has(key)) map.set(key, { email, name });
   };
 
-  if (audience === "patients" || audience === "all") {
-    listUsers("patient").forEach((u) => add(u.email, u.name));
-  }
-  if (audience === "doctors" || audience === "all") {
-    listUsers("doctor").forEach((u) => add(u.email, u.name));
-  }
-  if (audience === "staff" || audience === "all") {
-    listUsers("staff").forEach((u) => add(u.email, u.name));
+  // Role-backed audiences (patients/doctors/staff/vendors/pharmacists/
+  // support/hr): include when that specific audience is selected, OR when
+  // "all" is selected.
+  for (const [key, role] of Object.entries(ROLE_AUDIENCE_MAP)) {
+    if (audience === key || audience === "all") {
+      listUsers(role).forEach((u) => add(u.email, u.name));
+    }
   }
   if (audience === "customers" || audience === "all") {
     for (const o of listOrders()) add(o.email, o.customer);

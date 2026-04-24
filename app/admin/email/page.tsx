@@ -2,15 +2,40 @@
 
 import { useEffect, useState } from "react";
 
-type Audience = "patients" | "doctors" | "staff" | "customers" | "all" | "custom";
+type Audience =
+  | "patients"
+  | "doctors"
+  | "staff"
+  | "customers"
+  | "vendors"
+  | "pharmacists"
+  | "support"
+  | "hr"
+  | "all"
+  | "custom";
 type Sender = "admin" | "no-reply" | "notifications" | "hr" | "career" | "promotion";
+
+// Audiences that map to a role-or-list in the recipients API. `all` and
+// `custom` are UI-only aggregates resolved client-side.
+type ResolvableAudience = Exclude<Audience, "all" | "custom">;
+
+const RESOLVABLE_AUDIENCES: readonly ResolvableAudience[] = [
+  "patients",
+  "doctors",
+  "staff",
+  "customers",
+  "vendors",
+  "pharmacists",
+  "support",
+  "hr",
+] as const;
 
 interface AudienceSummary {
   count: number;
   users: { name: string; email: string }[];
 }
 interface RecipientsResponse {
-  audiences: Record<Exclude<Audience, "all" | "custom">, AudienceSummary>;
+  audiences: Record<ResolvableAudience, AudienceSummary>;
 }
 
 interface SendResult {
@@ -27,9 +52,29 @@ const AUDIENCE_LABELS: Record<Audience, string> = {
   doctors: "Doctors",
   staff: "Staff",
   customers: "Shop Customers",
+  vendors: "Vendors",
+  pharmacists: "Pharmacists",
+  support: "Support team",
+  hr: "HR team",
   all: "Everyone",
   custom: "Specific addresses",
 };
+
+// Order shown in the "Choose recipients" grid. Keep most-used groups
+// (patients/doctors/customers) in the top row so the common case is one
+// click. Internal teams (vendors/pharmacists/support/hr) sit below.
+const AUDIENCE_ORDER: readonly Audience[] = [
+  "patients",
+  "doctors",
+  "staff",
+  "customers",
+  "vendors",
+  "pharmacists",
+  "support",
+  "hr",
+  "all",
+  "custom",
+] as const;
 
 const SENDER_OPTIONS: { value: Sender; label: string }[] = [
   { value: "admin", label: "admin@odudoc.com — General / account" },
@@ -84,8 +129,8 @@ export default function AdminEmailBroadcast() {
     if (audience === "custom") return customEmailList.length;
     if (audience === "all") {
       const union = new Set<string>();
-      (["patients", "doctors", "staff", "customers"] as const).forEach((k) =>
-        recipients[k].users.forEach((u) => union.add(u.email.toLowerCase()))
+      RESOLVABLE_AUDIENCES.forEach((k) =>
+        recipients[k]?.users.forEach((u) => union.add(u.email.toLowerCase()))
       );
       return union.size;
     }
@@ -100,8 +145,8 @@ export default function AdminEmailBroadcast() {
     if (audience === "all") {
       const seen = new Set<string>();
       const out: { name: string; email: string }[] = [];
-      (["patients", "doctors", "staff", "customers"] as const).forEach((k) => {
-        recipients[k].users.forEach((u) => {
+      RESOLVABLE_AUDIENCES.forEach((k) => {
+        recipients[k]?.users.forEach((u) => {
           const key = u.email.toLowerCase();
           if (!seen.has(key)) {
             seen.add(key);
@@ -169,7 +214,8 @@ export default function AdminEmailBroadcast() {
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Email Broadcast</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Send a message to patients, doctors, staff, or shop customers straight from OduDoc.
+          Send a message to patients, doctors, internal teams, or shop
+          customers straight from OduDoc.
         </p>
       </div>
 
@@ -186,20 +232,27 @@ export default function AdminEmailBroadcast() {
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">
               1. Choose recipients
             </h3>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {(
-                ["patients", "doctors", "staff", "customers", "all", "custom"] as const
-              ).map((a) => {
+            <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
+              {AUDIENCE_ORDER.map((a) => {
                 const disabled = loading || (!recipients && a !== "custom");
                 const count =
                   a === "custom"
                     ? customEmailList.length
                     : a === "all"
                       ? recipients
-                        ? Object.values(recipients).reduce(
-                            (acc, v) => acc + v.count,
-                            0
-                          )
+                        ? // Dedup across every resolvable audience so
+                          // "Everyone" shows the true unique-email count,
+                          // not the naive sum (a patient who also ordered
+                          // from the shop would otherwise be double-counted).
+                          (() => {
+                            const union = new Set<string>();
+                            RESOLVABLE_AUDIENCES.forEach((k) =>
+                              recipients[k]?.users.forEach((u) =>
+                                union.add(u.email.toLowerCase())
+                              )
+                            );
+                            return union.size;
+                          })()
                         : 0
                       : recipients?.[a].count ?? 0;
                 return (

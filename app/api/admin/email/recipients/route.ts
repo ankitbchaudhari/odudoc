@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { listUsers } from "@/lib/users-store";
+import { listUsers, type User } from "@/lib/users-store";
 import { listOrders } from "@/lib/orders-store";
 
 export const runtime = "nodejs";
+
+// Role → audience key mapping used by the /admin/email page. Keep in sync
+// with the Audience union in app/admin/email/page.tsx and app/api/admin/
+// email/send/route.ts. Adding a new audience is a three-place edit:
+//   1) audience union (client page)
+//   2) this map (recipients API)
+//   3) VALID_AUDIENCES + resolveRecipients switch (send API)
+const ROLE_AUDIENCES: { key: string; role: User["role"] }[] = [
+  { key: "patients", role: "patient" },
+  { key: "doctors", role: "doctor" },
+  { key: "staff", role: "staff" },
+  { key: "vendors", role: "vendor" },
+  { key: "pharmacists", role: "pharmacist" },
+  { key: "support", role: "support" },
+  { key: "hr", role: "hr" },
+];
 
 // Admin-only directory used by the /admin/email page to populate the
 // "Send to" picker. Returns counts + preview of emails per audience so the
@@ -16,9 +32,12 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const patients = listUsers("patient");
-  const doctors = listUsers("doctor");
-  const staff = listUsers("staff");
+  const audiences: Record<string, { count: number; users: { name: string; email: string }[] }> = {};
+
+  for (const { key, role: r } of ROLE_AUDIENCES) {
+    const users = listUsers(r);
+    audiences[key] = { count: users.length, users };
+  }
 
   // Customers = anyone with an order, dedup'd by email. Includes guests who
   // don't have a user account.
@@ -29,16 +48,10 @@ export async function GET(_req: NextRequest) {
       customerEmails.set(key, { name: o.customer, email: o.email });
     }
   }
+  audiences.customers = {
+    count: customerEmails.size,
+    users: Array.from(customerEmails.values()),
+  };
 
-  return NextResponse.json({
-    audiences: {
-      patients: { count: patients.length, users: patients },
-      doctors: { count: doctors.length, users: doctors },
-      staff: { count: staff.length, users: staff },
-      customers: {
-        count: customerEmails.size,
-        users: Array.from(customerEmails.values()),
-      },
-    },
-  });
+  return NextResponse.json({ audiences });
 }

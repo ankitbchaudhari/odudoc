@@ -14,7 +14,7 @@ export interface Booking {
 }
 
 const bookings: Booking[] = [];
-const { hydrate, flush } = bindPersistentArray<Booking>(
+const { hydrate, flush, tombstone } = bindPersistentArray<Booking>(
   "bookings",
   bookings,
   () => []
@@ -23,16 +23,19 @@ await hydrate();
 
 // One-time cleanup: drop the original demo bookings (BK-1001/1002/1003)
 // that shipped with the initial seed so production doesn't carry fake
-// patients forever. IDs are unique so this is safe to re-run.
+// patients forever. Tombstoning them first stops the anti-clobber merge
+// in flush() from resurrecting the same IDs from Postgres.
 (function removeLegacySeedBookings() {
-  const legacyIds = new Set(["BK-1001", "BK-1002", "BK-1003"]);
+  const legacyIds = ["BK-1001", "BK-1002", "BK-1003"];
+  const set = new Set(legacyIds);
   let dirty = false;
   for (let i = bookings.length - 1; i >= 0; i--) {
-    if (legacyIds.has(bookings[i].id)) {
+    if (set.has(bookings[i].id)) {
       bookings.splice(i, 1);
       dirty = true;
     }
   }
+  for (const id of legacyIds) tombstone(id);
   if (dirty) flush();
 })();
 

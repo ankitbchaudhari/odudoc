@@ -38,7 +38,7 @@ export const PRODUCT_CATEGORIES = [
 const now = () => new Date().toISOString();
 
 const products: Product[] = [];
-const { hydrate, flush } = bindPersistentArray<Product>(
+const { hydrate, flush, tombstone } = bindPersistentArray<Product>(
   "products",
   products,
   () => []
@@ -171,6 +171,9 @@ export function deleteProduct(id: string): boolean {
   const idx = products.findIndex((p) => p.id === id);
   if (idx < 0) return false;
   products.splice(idx, 1);
+  // Tombstone so the anti-clobber merge in flush() doesn't pull the row
+  // back from Postgres and write it again.
+  tombstone(id);
   flush();
   return true;
 }

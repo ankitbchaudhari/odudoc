@@ -20,14 +20,15 @@ import {
 } from "firebase/auth";
 
 // Normalise whatever the user types into E.164 so Firebase can route it.
-// Mirrors lib/consult-otp.ts server-side logic.
+// Mirrors lib/consult-otp.ts server-side logic. We do NOT auto-prefix any
+// country code — OduDoc is worldwide, so guessing "+91 because 10 digits"
+// silently sent US / UK / EU numbers to the wrong country. The UI label
+// and helper text tell the user to include their country code; if they
+// don't, Firebase rejects with a clear error and they add the prefix.
 function toE164Client(raw: string): string {
   const digits = (raw || "").replace(/[^\d+]/g, "");
   if (!digits) return "";
   if (digits.startsWith("+")) return digits;
-  if (digits.length === 10) return `+91${digits}`;
-  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
-  if (digits.length === 12 && digits.startsWith("91")) return `+${digits}`;
   return `+${digits}`;
 }
 
@@ -273,7 +274,7 @@ export default function ConsultGateModal({ open, onClose, doctor, onVerified }: 
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                placeholder="+91 98765 43210"
+                placeholder="+1 555 000 1234"
                 inputMode="tel"
                 autoComplete="tel"
               />

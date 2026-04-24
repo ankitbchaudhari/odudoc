@@ -22,7 +22,7 @@ export interface Appointment {
 const now = () => new Date().toISOString();
 
 const appointments: Appointment[] = [];
-const { hydrate, flush } = bindPersistentArray<Appointment>(
+const { hydrate, flush, tombstone } = bindPersistentArray<Appointment>(
   "appointments",
   appointments,
   () => {
@@ -111,6 +111,9 @@ export function deleteAppointment(id: string): boolean {
   const idx = appointments.findIndex((a) => a.id === id);
   if (idx < 0) return false;
   appointments.splice(idx, 1);
+  // Tombstone so the anti-clobber merge in flush() doesn't resurrect
+  // the row from Postgres and write it back.
+  tombstone(id);
   flush();
   return true;
 }

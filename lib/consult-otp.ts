@@ -52,13 +52,15 @@ function cleanup(): void {
   verified.forEach((v, k) => { if (v.expiresAt < now) verified.delete(k); });
 }
 
+// OduDoc is worldwide — never silently assume a country code. If the user
+// omits the "+", we add one and let Twilio decide if the number is valid.
+// Previously a 10-digit input became +91<n>, quietly routing US / UK / EU
+// numbers to the wrong country. The client UI requires a country code,
+// this is a last-resort normaliser.
 export function toE164(raw: string): string {
   const digits = (raw || "").replace(/[^\d+]/g, "");
   if (!digits) return "";
   if (digits.startsWith("+")) return digits;
-  if (digits.length === 10) return `+91${digits}`;
-  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
-  if (digits.length === 12 && digits.startsWith("91")) return `+${digits}`;
   return `+${digits}`;
 }
 

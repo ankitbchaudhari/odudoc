@@ -1,4 +1,19 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "OduDoc Reach — Marketing tools for doctors",
+  description:
+    "Grow your practice with OduDoc Reach: verified reviews, sponsored listings, profile analytics, online appointments, and content marketing designed for clinicians.",
+  alternates: { canonical: "/reach" },
+  openGraph: {
+    title: "OduDoc Reach — Marketing tools for doctors",
+    description:
+      "Get discovered by patients searching in your specialty and city. Book more appointments with verified reviews and sponsored listings.",
+    url: "/reach",
+    type: "website",
+  },
+};
 
 const benefits = [
   { title: "Grow Your Patient Base", desc: "Get discovered by thousands of patients searching for doctors in your specialty and location.", icon: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" },

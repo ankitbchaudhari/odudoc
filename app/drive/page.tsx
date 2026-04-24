@@ -1,4 +1,19 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "OduDoc Drive — Secure cloud storage for medical records",
+  description:
+    "Encrypted storage for patient records, reports, prescriptions, and imaging. Organize, share, and audit medical files with HIPAA-grade controls.",
+  alternates: { canonical: "/drive" },
+  openGraph: {
+    title: "OduDoc Drive — Secure cloud storage for medical records",
+    description:
+      "Patient record vault, lab integrations, encrypted sharing, mobile access, and full audit trail for clinics and independent practitioners.",
+    url: "/drive",
+    type: "website",
+  },
+};
 
 const features = [
   { title: "Secure Cloud Storage", desc: "HIPAA-compliant storage for patient records, reports, prescriptions, and medical images. 256-bit AES encryption.", icon: "M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" },

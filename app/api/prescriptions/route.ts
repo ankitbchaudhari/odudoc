@@ -114,7 +114,9 @@ export async function GET() {
   }
 
   let items: PrescriptionRecord[];
-  if (user.role === "admin") {
+  if (user.role === "admin" || user.role === "pharmacist") {
+    // Pharmacists need to see every prescription to dispense. They can't
+    // write or cancel — those routes still check for doctor/admin.
     items = listPrescriptions();
   } else if (user.role === "doctor") {
     items = listPrescriptions({ doctorEmail: user.email });

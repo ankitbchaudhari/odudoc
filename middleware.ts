@@ -15,6 +15,37 @@ const STAFF_ALLOWED_PREFIXES = [
   "/admin/media",
 ];
 
+// Pharmacist — pharmacy-facing modules only. /admin/pharmacy is the
+// role-specific landing dashboard built for pharmacists.
+const PHARMACIST_ALLOWED_PREFIXES = [
+  "/admin/pharmacy",
+  "/admin/prescriptions",
+  "/admin/dispensing",
+  "/admin/pharmacy-inventory",
+  "/admin/formulary",
+  "/admin/hospital-rx",
+  "/admin/orders",
+];
+
+// Support — customer-support surfaces only.
+const SUPPORT_ALLOWED_PREFIXES = [
+  "/admin/tickets",
+  "/admin/feedback",
+  "/admin/orders",
+  "/admin/notifications",
+];
+
+// HR — hiring + people-ops.
+const HR_ALLOWED_PREFIXES = [
+  "/admin/careers",
+  "/admin/applications",
+  "/admin/staff",
+  "/admin/staff-schedule",
+  "/admin/roster",
+  "/admin/credentialing",
+  "/admin/employee-health",
+];
+
 // Admin pages that are SAAS-operator-only (marketing site CMS, platform
 // leads, commerce, etc.) — tenant admins (hospital owners) must never see
 // them even if they guess the URL. The sidebar hides these links, but
@@ -88,6 +119,15 @@ export default withAuth(
       if (role === "staff") {
         return NextResponse.redirect(new URL("/admin/products", req.url));
       }
+      if (role === "pharmacist") {
+        return NextResponse.redirect(new URL("/admin/pharmacy", req.url));
+      }
+      if (role === "support") {
+        return NextResponse.redirect(new URL("/admin/tickets", req.url));
+      }
+      if (role === "hr") {
+        return NextResponse.redirect(new URL("/admin/careers", req.url));
+      }
       if (role === "vendor" && !pathname.startsWith("/dashboard/vendor")) {
         return NextResponse.redirect(new URL("/dashboard/vendor", req.url));
       }
@@ -98,31 +138,56 @@ export default withAuth(
       const email = token?.email as string | undefined;
       const superAdmin = isSuperEmail(email);
 
-      // SaaS-operator-only surfaces: even if a tenant admin is signed in,
-      // these pages are gated. Bounce them back to /admin (their
-      // hospital dashboard). Runs before the generic "admin gets
-      // everything" rule below so the check actually applies.
-      if (!superAdmin && SUPER_ONLY_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
-        return NextResponse.redirect(new URL("/admin", req.url));
+      // Admin — full access everywhere under /admin, EXCEPT SaaS-operator-
+      // only surfaces (marketing CMS, platform leads, commerce catalog) which
+      // even tenant admins must not see. Super-admins bypass this gate.
+      // Scoped to role==="admin" so it doesn't fire for scoped roles below
+      // and bounce them into a redirect loop.
+      if (role === "admin") {
+        if (
+          !superAdmin &&
+          SUPER_ONLY_PREFIXES.some(
+            (p) => pathname === p || pathname.startsWith(p + "/"),
+          )
+        ) {
+          return NextResponse.redirect(new URL("/admin", req.url));
+        }
+        return NextResponse.next();
       }
-
-      // Admin — full access everywhere under /admin.
-      if (role === "admin") return NextResponse.next();
 
       // Doctor — historically had /admin access for some legacy dashboards.
       // Keep that until we split them into /dashboard/doctor properly.
       if (role === "doctor") return NextResponse.next();
 
-      // Staff — only the e-commerce modules. Landing on /admin itself bounces
-      // them to the products page (the one they actually use).
-      if (role === "staff") {
-        if (pathname === "/admin") {
-          return NextResponse.redirect(new URL("/admin/products", req.url));
+      // Scoped roles: each has a narrow allowlist. Landing on /admin itself
+      // bounces them to their canonical home page. Anything outside the
+      // allowlist also bounces home (never to /admin, which would loop).
+      const scopedRoute = (
+        home: string,
+        allowed: string[],
+      ): NextResponse => {
+        if (pathname === "/admin" || pathname === home) {
+          return pathname === home
+            ? NextResponse.next()
+            : NextResponse.redirect(new URL(home, req.url));
         }
-        if (STAFF_ALLOWED_PREFIXES.some((p) => pathname.startsWith(p))) {
+        if (allowed.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
           return NextResponse.next();
         }
-        return NextResponse.redirect(new URL("/admin/products", req.url));
+        return NextResponse.redirect(new URL(home, req.url));
+      };
+
+      if (role === "staff") {
+        return scopedRoute("/admin/products", STAFF_ALLOWED_PREFIXES);
+      }
+      if (role === "pharmacist") {
+        return scopedRoute("/admin/pharmacy", PHARMACIST_ALLOWED_PREFIXES);
+      }
+      if (role === "support") {
+        return scopedRoute("/admin/tickets", SUPPORT_ALLOWED_PREFIXES);
+      }
+      if (role === "hr") {
+        return scopedRoute("/admin/careers", HR_ALLOWED_PREFIXES);
       }
 
       // Vendor — never allowed on /admin. Their home is /dashboard/vendor.

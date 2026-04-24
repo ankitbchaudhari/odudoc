@@ -4,6 +4,8 @@ import { stripe } from '@/lib/stripe';
 import { parseJson } from '@/lib/api-validate';
 import { log } from "@/lib/log";
 
+export const runtime = "nodejs";
+
 const CreateIntentSchema = z.object({
   doctorId: z.string().min(1).max(64),
   doctorName: z.string().min(1).max(120),

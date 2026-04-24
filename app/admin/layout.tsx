@@ -46,7 +46,72 @@ interface AdminContext {
   isSuperAdmin: boolean;
   modules: Record<OrgModuleKey, boolean> | null;
   organizationName: string | null;
+  // Raw role from the session. Scoped roles (staff/pharmacist/support/hr)
+  // get a curated sidebar rather than the full module-gated one so they
+  // aren't distracted by surfaces they can't use anyway. Admin/doctor
+  // continue to see the full grouped nav filtered by module flags.
+  role: string | null;
 }
+
+// Narrow nav lists for scoped roles. Each href here MUST also be in the
+// matching *_ALLOWED_PREFIXES in middleware.ts — otherwise clicking the
+// link bounces the user to their home page. Keep these short and
+// task-focused; the whole point is to hide the 100+ item full sidebar.
+const SCOPED_ROLE_NAV: Record<string, NavSection[]> = {
+  pharmacist: [
+    {
+      title: "Pharmacy",
+      items: [
+        { href: "/admin/pharmacy", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
+        { href: "/admin/prescriptions", label: "Prescriptions", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
+        { href: "/admin/dispensing", label: "Dispense", icon: "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" },
+        { href: "/admin/pharmacy-inventory", label: "Inventory", icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" },
+        { href: "/admin/formulary", label: "Formulary", icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" },
+        { href: "/admin/hospital-rx", label: "Hospital Rx", icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" },
+        { href: "/admin/orders", label: "Online Orders", icon: "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" },
+      ],
+    },
+  ],
+  staff: [
+    {
+      title: "Shop",
+      items: [
+        { href: "/admin/products", label: "Products", icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" },
+        { href: "/admin/categories", label: "Categories", icon: "M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" },
+        { href: "/admin/tags", label: "Tags", icon: "M5 5a2 2 0 012-2h4l9 9-6 6-9-9V5z" },
+        { href: "/admin/coupons", label: "Coupons", icon: "M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" },
+        { href: "/admin/reviews", label: "Reviews", icon: "M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.163c.969 0 1.371 1.24.588 1.81l-3.37 2.449a1 1 0 00-.364 1.118l1.287 3.957c.3.922-.755 1.688-1.54 1.118l-3.37-2.449a1 1 0 00-1.175 0l-3.37 2.449c-.784.57-1.838-.196-1.54-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.05 9.384c-.783-.57-.38-1.81.588-1.81h4.163a1 1 0 00.95-.69l1.286-3.957z" },
+        { href: "/admin/orders", label: "Orders", icon: "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" },
+        { href: "/admin/media", label: "Media", icon: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" },
+      ],
+    },
+  ],
+  support: [
+    {
+      title: "Support",
+      items: [
+        { href: "/admin/tickets", label: "Tickets", icon: "M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-4 4z" },
+        { href: "/admin/feedback", label: "Feedback", icon: "M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.163c.969 0 1.371 1.24.588 1.81l-3.37 2.449a1 1 0 00-.364 1.118l1.287 3.957c.3.922-.755 1.688-1.54 1.118l-3.37-2.449a1 1 0 00-1.175 0l-3.37 2.449c-.784.57-1.838-.196-1.54-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.05 9.384c-.783-.57-.38-1.81.588-1.81h4.163a1 1 0 00.95-.69l1.286-3.957z" },
+        { href: "/admin/orders", label: "Orders", icon: "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" },
+        { href: "/admin/notifications", label: "Notifications", icon: "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" },
+      ],
+    },
+  ],
+  hr: [
+    {
+      title: "People",
+      items: [
+        { href: "/admin/careers", label: "Job Postings", icon: "M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" },
+        { href: "/admin/applications", label: "Applications", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
+        { href: "/admin/staff", label: "Medical Staff", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" },
+        { href: "/admin/staff-schedule", label: "Schedule", icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" },
+        { href: "/admin/roster", label: "Shift Roster", icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" },
+        { href: "/admin/credentialing", label: "Credentialing", icon: "M9 12l2 2 4-4M7 3h10a2 2 0 012 2v14l-7-3-7 3V5a2 2 0 012-2z" },
+        { href: "/admin/employee-health", label: "Employee Health", icon: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" },
+      ],
+    },
+  ],
+};
 
 // Grouped into logical sections so the sidebar scans at a glance instead of
 // being a 17-item wall of links.
@@ -789,6 +854,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           isSuperAdmin: !!data.isSuperAdmin,
           modules: data.modules ?? null,
           organizationName: data.organizationName ?? null,
+          role: data.role ?? null,
         });
       })
       .catch(() => {
@@ -800,12 +866,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     };
   }, []);
 
+  // Scoped roles (staff/pharmacist/support/hr) get a hard-coded minimal
+  // sidebar — they shouldn't see the full admin console since middleware
+  // blocks them from most of it anyway. Showing the full tree would just
+  // advertise surfaces they can't reach and make the UI feel broken.
+  const scopedNav = ctx?.role ? SCOPED_ROLE_NAV[ctx.role] : undefined;
+
   // Filter sections + items by the viewer's visibility. Super-admins see
   // everything; tenant admins only see items their org has modules enabled for.
-  const visibleSections = navSections
-    .filter((s) => isVisible(s.requires, ctx))
-    .map((s) => ({ ...s, items: s.items.filter((i) => isVisible(i.requires, ctx)) }))
-    .filter((s) => s.items.length > 0);
+  const visibleSections = scopedNav
+    ? scopedNav
+    : navSections
+        .filter((s) => isVisible(s.requires, ctx))
+        .map((s) => ({ ...s, items: s.items.filter((i) => isVisible(i.requires, ctx)) }))
+        .filter((s) => s.items.length > 0);
 
   const toggleGroup = (href: string) => {
     setExpandedGroup(expandedGroup === href ? null : href);
@@ -981,8 +1055,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         {/* "Request more modules" CTA — tenant admins only. Super-admins
-            already control every module, so the card is hidden for them. */}
-        {ctx && !ctx.isSuperAdmin && (
+            already control every module, so the card is hidden for them.
+            Scoped roles don't own module purchasing either, so hide for
+            them too. */}
+        {ctx && !ctx.isSuperAdmin && !scopedNav && (
           <div className="flex-shrink-0 border-t border-slate-800/60 pt-3">
             <RequestModulesCard collapsed={collapsed} enabledModules={ctx.modules} />
           </div>

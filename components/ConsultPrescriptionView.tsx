@@ -30,11 +30,14 @@ export interface ConsultPrescription {
 
 interface Props {
   rx: ConsultPrescription;
+  // Hide the "order from pharmacy" chooser when the doctor is viewing
+  // their own issued Rx. Patients need it; doctors do not.
+  showPharmacyOptions?: boolean;
 }
 
 const CLINIC_NAME = "OduDoc E Medical Center";
 
-export default function ConsultPrescriptionView({ rx }: Props) {
+export default function ConsultPrescriptionView({ rx, showPharmacyOptions = true }: Props) {
   const [choice, setChoice] = useState<"odudoc" | "offline" | null>(null);
 
   // Encode the medicine list into a ?rx= query param so the /shop page
@@ -189,7 +192,7 @@ export default function ConsultPrescriptionView({ rx }: Props) {
       </div>
 
       {/* Pharmacy choice */}
-      {rx.medicines.length > 0 && (
+      {showPharmacyOptions && rx.medicines.length > 0 && (
         <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm print:hidden">
           <h3 className="text-base font-semibold text-gray-900">
             How would you like to get your medicines?

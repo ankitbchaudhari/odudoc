@@ -264,7 +264,7 @@ export default function ConsultationRoomPage() {
           {showPrescription && (
             <div className="mt-8">
               {consultRx ? (
-                <ConsultPrescriptionView rx={consultRx} />
+                <ConsultPrescriptionView rx={consultRx} showPharmacyOptions={!isDoctor} />
               ) : (
                 <Prescription
                   doctorName={roomInfo.doctorName}

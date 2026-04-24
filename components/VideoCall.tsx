@@ -24,17 +24,33 @@ export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, 
   // mockup below.
   const isRealCall = !demoMode && roomUrl.startsWith("https://");
   if (isRealCall) {
-    const url = new URL(roomUrl);
-    url.searchParams.set("userName", userName);
-    if (token) url.searchParams.set("t", token);
-    // Turn on some quality-of-life prebuilt params.
-    url.searchParams.set("showLeaveButton", "true");
-    url.searchParams.set("showFullscreenButton", "true");
+    const isJitsi = roomUrl.includes("jit.si") || roomUrl.includes("jitsi");
+    let embedUrl = roomUrl;
+    if (isJitsi) {
+      // Jitsi uses a hash fragment for user info + UI config. We hide
+      // the pre-join screen so the user lands directly in the call.
+      const params = [
+        `userInfo.displayName=%22${encodeURIComponent(userName)}%22`,
+        "config.prejoinPageEnabled=false",
+        "config.startWithAudioMuted=false",
+        "config.startWithVideoMuted=false",
+        "config.disableDeepLinking=true",
+      ].join("&");
+      embedUrl = `${roomUrl}#${params}`;
+    } else {
+      // Daily prebuilt accepts query params.
+      const url = new URL(roomUrl);
+      url.searchParams.set("userName", userName);
+      if (token) url.searchParams.set("t", token);
+      url.searchParams.set("showLeaveButton", "true");
+      url.searchParams.set("showFullscreenButton", "true");
+      embedUrl = url.toString();
+    }
     return (
       <div className="relative flex h-screen w-full flex-col bg-black">
         <iframe
           key={roomUrl}
-          src={url.toString()}
+          src={embedUrl}
           allow="camera; microphone; fullscreen; speaker; display-capture; autoplay"
           className="h-full w-full border-0"
           title="OduDoc consultation"

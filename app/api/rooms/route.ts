@@ -50,10 +50,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Free fallback: Jitsi Meet — no API key, no account, no billing.
+    // Works for our two-participant telehealth calls and handles its
+    // own signaling, media, and prebuilt UI via the iframe at
+    // meet.jit.si/<roomName>. Daily is preferred when configured
+    // because it gives us per-user tokens + usage analytics, but
+    // Jitsi keeps the product working for free.
     if (!roomUrl) {
-      // Demo/fallback mode
-      roomUrl = `demo://${roomName}`;
-      demoMode = true;
+      const jitsiRoom = `odudoc-${roomName}`.replace(/[^a-zA-Z0-9-]/g, "-");
+      roomUrl = `https://meet.jit.si/${jitsiRoom}`;
     }
 
     const room = createRoom({

@@ -24,77 +24,16 @@ export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, 
   // mockup below.
   const isRealCall = !demoMode && roomUrl.startsWith("https://");
   if (isRealCall) {
-    const isJitsi = roomUrl.includes("jit.si") || roomUrl.includes("jitsi");
-    let embedUrl = roomUrl;
-    if (isJitsi) {
-      // Jitsi uses a hash fragment for user info + UI config. We hide
-      // the pre-join screen, strip watermarks/branding, and trim the
-      // default toolbar down to essentials for a cleaner OduDoc feel.
-      const toolbar = [
-        "microphone","camera","desktop","chat","raisehand",
-        "fullscreen","tileview","hangup","settings",
-      ];
-      const params = [
-        `userInfo.displayName=%22${encodeURIComponent(userName)}%22`,
-        "config.prejoinPageEnabled=false",
-        "config.startWithAudioMuted=false",
-        "config.startWithVideoMuted=false",
-        "config.disableDeepLinking=true",
-        "config.disableInviteFunctions=true",
-        "config.disableProfile=true",
-        "config.hideConferenceSubject=true",
-        "config.hideConferenceTimer=false",
-        `config.toolbarButtons=${encodeURIComponent(JSON.stringify(toolbar))}`,
-        "interfaceConfig.SHOW_JITSI_WATERMARK=false",
-        "interfaceConfig.SHOW_WATERMARK_FOR_GUESTS=false",
-        "interfaceConfig.SHOW_BRAND_WATERMARK=false",
-        "interfaceConfig.SHOW_POWERED_BY=false",
-        "interfaceConfig.SHOW_PROMOTIONAL_CLOSE_PAGE=false",
-        "interfaceConfig.DISABLE_JOIN_LEAVE_NOTIFICATIONS=false",
-        "interfaceConfig.HIDE_INVITE_MORE_HEADER=true",
-        "interfaceConfig.MOBILE_APP_PROMO=false",
-        "interfaceConfig.DEFAULT_LOGO_URL=%22%22",
-        "interfaceConfig.DEFAULT_WELCOME_PAGE_LOGO_URL=%22%22",
-        "interfaceConfig.JITSI_WATERMARK_LINK=%22%22",
-      ].join("&");
-      embedUrl = `${roomUrl}#${params}`;
-    } else {
-      // Daily prebuilt accepts query params.
-      const url = new URL(roomUrl);
-      url.searchParams.set("userName", userName);
-      if (token) url.searchParams.set("t", token);
-      url.searchParams.set("showLeaveButton", "true");
-      url.searchParams.set("showFullscreenButton", "true");
-      embedUrl = url.toString();
-    }
     return (
-      <div className="relative flex h-screen w-full flex-col bg-black">
-        <iframe
-          key={roomUrl}
-          src={embedUrl}
-          allow="camera; microphone; fullscreen; speaker; display-capture; autoplay"
-          className="h-full w-full border-0"
-          title="OduDoc consultation"
-        />
-        <button
-          onClick={onLeave}
-          className="absolute right-4 top-4 z-50 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:bg-red-700"
-        >
-          End Call
-        </button>
-        {/* OduDoc brand overlay — covers the bottom-left Jitsi watermark
-            on the free meet.jit.si deployment since we can't strip it
-            across an iframe origin boundary. */}
-        {isJitsi && (
-          <div className="pointer-events-none absolute bottom-3 left-3 z-40 flex items-center gap-2 rounded-lg bg-black/70 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
-            <span className="text-primary-400">🩺</span>
-            <span>OduDoc</span>
-          </div>
-        )}
-      </div>
+      <RealCallFrame
+        roomUrl={roomUrl}
+        roomId={roomId}
+        userName={userName}
+        token={token}
+        onLeave={onLeave}
+      />
     );
   }
-
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -496,6 +435,168 @@ export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, 
         onClose={() => setIsChatOpen(false)}
         userName={userName}
       />
+    </div>
+  );
+}
+
+// --------------------------------------------------------------------
+// RealCallFrame
+// --------------------------------------------------------------------
+// Wraps the Daily/Jitsi iframe. Split out so we can own its hooks
+// separately from the legacy demo-mode UI above. Responsibilities:
+//   1. Render the branded iframe (Jitsi gets hash-fragment config,
+//      Daily gets query params).
+//   2. Poll /presence every 5s so we notice when the peer hangs up
+//      and then call onLeave(), which unmounts the iframe — releasing
+//      camera + mic automatically.
+//   3. Send an `{ end: true }` beacon on End Call click AND on
+//      unmount/unload so the server flips the room to "ended",
+//      marks the consultation "completed", and the peer hangs up
+//      on their next poll. Once ended, neither side can rejoin —
+//      they must book + pay again.
+interface RealCallFrameProps {
+  roomUrl: string;
+  roomId?: string;
+  userName: string;
+  token?: string | null;
+  onLeave: () => void;
+}
+
+function RealCallFrame({ roomUrl, roomId, userName, token, onLeave }: RealCallFrameProps) {
+  const endedRef = useRef(false);
+  const onLeaveRef = useRef(onLeave);
+  useEffect(() => {
+    onLeaveRef.current = onLeave;
+  }, [onLeave]);
+
+  const sendEnd = useCallback(() => {
+    if (!roomId || endedRef.current) return;
+    endedRef.current = true;
+    try {
+      fetch(`/api/rooms/${encodeURIComponent(roomId)}/presence`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ end: true }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch {
+      /* ignore */
+    }
+  }, [roomId]);
+
+  useEffect(() => {
+    if (!roomId) return;
+    let cancelled = false;
+
+    const ping = async () => {
+      try {
+        const r = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/presence`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        if (!r.ok || cancelled) return;
+        const j = (await r.json()) as { ended?: boolean };
+        if (j.ended && !cancelled) {
+          cancelled = true;
+          endedRef.current = true;
+          onLeaveRef.current();
+        }
+      } catch {
+        /* transient — next tick retries */
+      }
+    };
+
+    ping();
+    const i = setInterval(ping, 5000);
+
+    const onPageHide = () => sendEnd();
+    window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("beforeunload", onPageHide);
+
+    return () => {
+      cancelled = true;
+      clearInterval(i);
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("beforeunload", onPageHide);
+      // Parent unmounts us on End Call → iframe dies → browser releases
+      // camera/mic. Beacon tells the server so the peer disconnects too.
+      sendEnd();
+    };
+  }, [roomId, sendEnd]);
+
+  const handleEndClick = () => {
+    sendEnd();
+    onLeave();
+  };
+
+  const isJitsi = roomUrl.includes("jit.si") || roomUrl.includes("jitsi");
+  let embedUrl = roomUrl;
+  if (isJitsi) {
+    const toolbar = [
+      "microphone","camera","desktop","chat","raisehand",
+      "fullscreen","tileview","hangup","settings",
+    ];
+    const params = [
+      `userInfo.displayName=%22${encodeURIComponent(userName)}%22`,
+      "config.prejoinPageEnabled=false",
+      "config.startWithAudioMuted=false",
+      "config.startWithVideoMuted=false",
+      "config.disableDeepLinking=true",
+      "config.disableInviteFunctions=true",
+      "config.disableProfile=true",
+      "config.hideConferenceSubject=true",
+      "config.disableThirdPartyRequests=true",
+      "config.disableModeratorIndicator=true",
+      `config.toolbarButtons=${encodeURIComponent(JSON.stringify(toolbar))}`,
+      "interfaceConfig.SHOW_JITSI_WATERMARK=false",
+      "interfaceConfig.SHOW_WATERMARK_FOR_GUESTS=false",
+      "interfaceConfig.SHOW_BRAND_WATERMARK=false",
+      "interfaceConfig.SHOW_POWERED_BY=false",
+      "interfaceConfig.SHOW_PROMOTIONAL_CLOSE_PAGE=false",
+      "interfaceConfig.HIDE_INVITE_MORE_HEADER=true",
+      "interfaceConfig.MOBILE_APP_PROMO=false",
+      "interfaceConfig.SHOW_CHROME_EXTENSION_BANNER=false",
+      "interfaceConfig.DISABLE_PRESENCE_STATUS=true",
+      "interfaceConfig.DISABLE_RINGING=true",
+      "interfaceConfig.DEFAULT_LOGO_URL=%22%22",
+      "interfaceConfig.DEFAULT_WELCOME_PAGE_LOGO_URL=%22%22",
+      "interfaceConfig.JITSI_WATERMARK_LINK=%22%22",
+      "interfaceConfig.PROVIDER_NAME=%22OduDoc%22",
+      "interfaceConfig.NATIVE_APP_NAME=%22OduDoc%22",
+      "interfaceConfig.APP_NAME=%22OduDoc%22",
+    ].join("&");
+    embedUrl = `${roomUrl}#${params}`;
+  } else {
+    const url = new URL(roomUrl);
+    url.searchParams.set("userName", userName);
+    if (token) url.searchParams.set("t", token);
+    url.searchParams.set("showLeaveButton", "true");
+    url.searchParams.set("showFullscreenButton", "true");
+    embedUrl = url.toString();
+  }
+
+  return (
+    <div className="relative flex h-screen w-full flex-col bg-black">
+      <iframe
+        key={roomUrl}
+        src={embedUrl}
+        allow="camera; microphone; fullscreen; speaker; display-capture; autoplay"
+        className="h-full w-full border-0"
+        title="OduDoc consultation"
+      />
+      <button
+        onClick={handleEndClick}
+        className="absolute right-4 top-4 z-50 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:bg-red-700"
+      >
+        End Call
+      </button>
+      {isJitsi && (
+        <div className="pointer-events-none absolute bottom-3 left-3 z-40 flex items-center gap-2 rounded-lg bg-black/70 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+          <span className="text-primary-400">🩺</span>
+          <span>OduDoc</span>
+        </div>
+      )}
     </div>
   );
 }

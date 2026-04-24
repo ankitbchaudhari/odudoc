@@ -16,6 +16,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { updateRoomStatus, getRoom } from "@/lib/rooms-store";
+import { getConsultationByRoomId, setStatus as setConsultationStatus } from "@/lib/consultations-store";
 
 export const runtime = "nodejs";
 
@@ -75,6 +77,22 @@ export async function POST(
     ENDED.set(roomId, { endedAt: Date.now(), endedBy: selfRole });
     // Drop presence entries so timers don't keep running.
     PRESENCE.delete(roomId);
+    // Persist the "ended" state: mark the room ended so a new fetch of
+    // /api/rooms?roomId=... sees it, and flip any linked consultation
+    // to "completed" so neither side can rejoin — they'd have to book
+    // and pay for a fresh appointment.
+    try {
+      const room = getRoom(roomId);
+      if (room && room.status !== "ended") {
+        updateRoomStatus(roomId, "ended");
+      }
+      const consultation = getConsultationByRoomId(roomId);
+      if (consultation && consultation.status !== "completed") {
+        setConsultationStatus(consultation.id, "completed");
+      }
+    } catch {
+      /* best-effort — the in-memory ENDED map above is the source of truth for live calls */
+    }
     return NextResponse.json({ ok: true, ended: true, endedBy: selfRole });
   }
 

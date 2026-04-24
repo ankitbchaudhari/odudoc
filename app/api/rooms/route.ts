@@ -112,8 +112,13 @@ export async function GET(req: NextRequest) {
     if (!room) {
       return NextResponse.json({ error: "Room not found" }, { status: 404 });
     }
+    // Once a call has ended, neither side can rejoin. The UI uses `ended`
+    // to short-circuit straight to a "consultation closed" screen that
+    // prompts the patient to book + pay for a new appointment.
+    const ended = room.status === "ended";
     return NextResponse.json({
       ...room,
+      ended,
       roomUrl: migrateLegacyUrl(room.roomUrl, room.roomName),
     });
   }

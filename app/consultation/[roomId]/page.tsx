@@ -88,6 +88,14 @@ export default function ConsultationRoomPage() {
       }
       setRoomInfo(data);
       setDemoMode(data.roomUrl?.startsWith("demo://") || false);
+      // Once a consultation has ended, it cannot be rejoined. The
+      // patient must book (and pay for) a fresh appointment. We jump
+      // straight to the post-call screen so the user sees the prescription
+      // (if any) and the "Book Follow-up" CTA, but never a rejoin button.
+      if (data.ended || data.status === "ended") {
+        setStage("post-call");
+        return;
+      }
       setStage("waiting");
     } catch {
       setError("Failed to load consultation room.");

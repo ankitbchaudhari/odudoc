@@ -10,6 +10,7 @@ import {
 import { sendPatientBookingReceived, sendDoctorNewRequest } from "@/lib/consultation-emails";
 import { paymentsDisabled } from "@/lib/payments-config";
 import { validateSlot } from "@/lib/slot-utils";
+import { findDoctorByEmail } from "@/lib/doctors-store";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -57,8 +58,18 @@ export async function GET(req: NextRequest) {
           (c) => c.doctorName.toLowerCase() === user.name!.toLowerCase()
         )
       : [];
+
+    // Fan-out: also include unclaimed consultations whose specialty
+    // matches this doctor's. Any doctor in that specialty can accept.
+    // The dashboard shows these under "Open requests" and a click on
+    // Accept hits the claim endpoint for the atomic grab.
+    const doc = findDoctorByEmail(user.email);
+    const pool = doc?.specialty
+      ? listConsultations({ unclaimedSpecialty: doc.specialty })
+      : [];
+
     const seen = new Set<string>();
-    list = [...byEmail, ...byName].filter((c) => {
+    list = [...byEmail, ...byName, ...pool].filter((c) => {
       if (seen.has(c.id)) return false;
       seen.add(c.id);
       return true;
@@ -81,19 +92,30 @@ export async function POST(req: NextRequest) {
   if (!patientEmail || !patientName) {
     return NextResponse.json({ error: "patientEmail and patientName required" }, { status: 400 });
   }
-  if (!body.doctorId || !body.doctorName || !body.specialty || !body.scheduledFor || !body.timeSlot) {
-    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  // Fan-out ("any available doctor in this specialty") requests arrive
+  // with doctorId === "" + a specialty set. Normal requests carry a
+  // specific doctorId/doctorName. Validate both paths.
+  const isPool = !body.doctorId && typeof body.specialty === "string" && body.specialty.trim().length > 0;
+  if (!isPool) {
+    if (!body.doctorId || !body.doctorName || !body.specialty || !body.scheduledFor || !body.timeSlot) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+  } else {
+    if (!body.specialty || !body.scheduledFor || !body.timeSlot) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
   }
 
-  // Enforce 15-min ladder + 30-min lead + no double booking. See
-  // lib/slot-utils.ts for the exact rules. scheduledFor can be either a
-  // full ISO or YYYY-MM-DD — slice the date part either way.
+  // Enforce 15-min ladder + 30-min lead + no double booking. For
+  // specific-doctor bookings we also reject collisions with that
+  // doctor's existing consultations. Pool bookings skip the
+  // doctor-collision check (no doctor yet) but still get ladder + lead.
   const dateStr = String(body.scheduledFor).slice(0, 10);
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     const err = validateSlot({
       dateStr,
       slot: String(body.timeSlot),
-      consultations: listConsultations({ doctorId: String(body.doctorId) }),
+      consultations: isPool ? [] : listConsultations({ doctorId: String(body.doctorId) }),
     });
     if (err) return NextResponse.json({ error: err }, { status: 400 });
   }
@@ -112,9 +134,12 @@ export async function POST(req: NextRequest) {
     patientEmail,
     patientName,
     patientPhone: typeof body.patientPhone === "string" ? body.patientPhone : "",
-    doctorId: body.doctorId,
-    doctorName: body.doctorName,
-    doctorEmail: typeof body.doctorEmail === "string" ? body.doctorEmail : undefined,
+    // Pool bookings keep doctorId empty until a doctor clicks Accept.
+    // createConsultation() already tolerates "" (it just skips the
+    // email-lookup path when doctorId is blank).
+    doctorId: isPool ? "" : String(body.doctorId),
+    doctorName: isPool ? "" : String(body.doctorName),
+    doctorEmail: isPool ? undefined : (typeof body.doctorEmail === "string" ? body.doctorEmail : undefined),
     specialty: body.specialty,
     scheduledFor: body.scheduledFor,
     timeSlot: body.timeSlot,
@@ -132,7 +157,14 @@ export async function POST(req: NextRequest) {
   // Free period auto-confirms every booking.
   if (freePeriod || body.paymentStatus === "paid") {
     markPaid(c.id, c.paymentIntentId);
-    Promise.all([sendPatientBookingReceived(c), sendDoctorNewRequest(c)]).catch(console.error);
+    // Pool bookings have no doctor email yet — skip the doctor notice
+    // (fan-out surfaces on every matching doctor's dashboard via the
+    // GET route instead). Still email the patient a receipt.
+    if (isPool) {
+      sendPatientBookingReceived(c).catch(console.error);
+    } else {
+      Promise.all([sendPatientBookingReceived(c), sendDoctorNewRequest(c)]).catch(console.error);
+    }
   }
 
   return NextResponse.json({ consultation: c }, { status: 201 });

@@ -95,6 +95,40 @@ export interface Doctor {
   country?: string;
   services?: string[];
   timeSlots?: string[];
+  // "I'm online now" — a self-service flag the doctor flips on their
+  // dashboard so patients can surface them for instant consults. The
+  // `until` field acts as a TTL; after it passes the flag is ignored
+  // even if the boolean is still true (useful when a doctor closes
+  // their laptop without untoggling).
+  instantAvailable?: boolean;
+  instantAvailableUntil?: string; // ISO timestamp
+}
+
+export function isInstantlyAvailable(d: Doctor, at: Date = new Date()): boolean {
+  if (!d.instantAvailable) return false;
+  if (!d.instantAvailableUntil) return false;
+  return new Date(d.instantAvailableUntil).getTime() > at.getTime();
+}
+
+/** Flip the "available now" flag on a doctor record. `minutes` controls
+ *  the TTL; pass 0 to go offline immediately. Returns the updated
+ *  doctor or null if not found. */
+export function setInstantAvailable(
+  email: string,
+  minutes: number,
+): Doctor | null {
+  const d = doctors.find((x) => x.email.toLowerCase() === email.toLowerCase());
+  if (!d) return null;
+  if (minutes <= 0) {
+    d.instantAvailable = false;
+    d.instantAvailableUntil = undefined;
+  } else {
+    d.instantAvailable = true;
+    d.instantAvailableUntil = new Date(Date.now() + minutes * 60_000).toISOString();
+  }
+  d.updatedAt = now();
+  flush();
+  return d;
 }
 
 export const DOCTOR_SPECIALTIES = [

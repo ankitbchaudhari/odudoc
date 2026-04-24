@@ -21,6 +21,7 @@ export interface Doctor {
   imageColor: string;
   initials: string;
   photoUrl?: string;
+  instantAvailable?: boolean;
 }
 
 export interface Specialty {

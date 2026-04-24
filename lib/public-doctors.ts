@@ -7,6 +7,7 @@
 import {
   listDoctors as listAdminDoctors,
   reloadDoctors,
+  isInstantlyAvailable,
   type Doctor as AdminDoctor,
 } from "@/lib/doctors-store";
 import type { Doctor as PublicDoctor } from "@/lib/data";
@@ -45,6 +46,7 @@ function toPublic(admin: AdminDoctor): PublicDoctor {
     imageColor: "bg-primary-500",
     initials: initials || "DR",
     photoUrl: admin.imageUrl,
+    instantAvailable: isInstantlyAvailable(admin),
   };
 }
 

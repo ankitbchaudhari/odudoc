@@ -81,6 +81,10 @@ export default function BookConsultationPage() {
   const [step, setStep] = useState(1);
   const [selectedSpecialty, setSelectedSpecialty] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState("");
+  // "pool mode" — patient asked for any available doctor in the specialty.
+  // No specific doctor gets selected; the consultation is posted with
+  // doctorId="" and fanned out to every matching doctor's dashboard.
+  const [poolMode, setPoolMode] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState("");
   const dateOptions = buildDateOptions();
   const [selectedDate, setSelectedDate] = useState<string>(dateOptions[0].iso);
@@ -112,11 +116,50 @@ export default function BookConsultationPage() {
   // 30s so a slot that crosses the 30-min lead threshold "disappears
   // from view" per spec, without the user reloading.
   useEffect(() => {
-    if (!selectedDoctor) { setSlots([]); return; }
+    if (!selectedDoctor && !poolMode) { setSlots([]); return; }
     let cancelled = false;
+
+    // Build the standard 15-min ladder client-side for pool mode. No
+    // doctor to check bookings against yet, so every slot ≥ now+30min
+    // is offered. The server validator re-checks on POST.
+    const buildPoolSlots = (): SlotView[] => {
+      const out: SlotView[] = [];
+      const [y, m, d] = selectedDate.split("-").map(Number);
+      const target = new Date(y, m - 1, d);
+      const todayMidnight = new Date(); todayMidnight.setHours(0,0,0,0);
+      const isToday = target.getTime() === todayMidnight.getTime();
+      const leadMs = Date.now() + 30 * 60 * 1000;
+      const fmt = (h: number, mm: number) => {
+        const hh = String(h).padStart(2, "0");
+        const pp = String(mm).padStart(2, "0");
+        const per = h >= 12 ? "PM" : "AM";
+        const h12 = ((h + 11) % 12) + 1;
+        return { value: `${hh}:${pp}`, label: `${h12}:${pp} ${per}`, booked: false };
+      };
+      for (let h = 9; h < 19; h++) {
+        if (h === 13) continue;
+        for (let mm = 0; mm < 60; mm += 15) {
+          if (isToday) {
+            const slotTime = new Date(y, m - 1, d, h, mm).getTime();
+            if (slotTime < leadMs) continue;
+          }
+          out.push(fmt(h, mm));
+        }
+      }
+      return out;
+    };
+
     const fetchSlots = async () => {
       setSlotsLoading(true);
       try {
+        if (poolMode) {
+          const s = buildPoolSlots();
+          if (!cancelled) {
+            setSlots(s);
+            if (selectedSlot && !s.some((x) => x.value === selectedSlot)) setSelectedSlot("");
+          }
+          return;
+        }
         const r = await fetch(
           `/api/doctors/${encodeURIComponent(selectedDoctor)}/slots?date=${selectedDate}`,
           { cache: "no-store" },
@@ -139,7 +182,7 @@ export default function BookConsultationPage() {
     const t = setInterval(fetchSlots, 30_000);
     return () => { cancelled = true; clearInterval(t); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDoctor, selectedDate]);
+  }, [selectedDoctor, selectedDate, poolMode, selectedSpecialty]);
 
   const filteredDoctors = selectedSpecialty
     ? doctors.filter((d) => d.specialty === selectedSpecialty)
@@ -159,7 +202,7 @@ export default function BookConsultationPage() {
     history.severity !== "";
 
   const handleBookAndPay = async () => {
-    if (!selectedDoctorData) return;
+    if (!poolMode && !selectedDoctorData) return;
     setError("");
     setLoading(true);
     try {
@@ -175,8 +218,8 @@ export default function BookConsultationPage() {
           patientEmail,
           patientName,
           patientPhone,
-          doctorId: selectedDoctorData.id,
-          doctorName: selectedDoctorData.name,
+          doctorId: poolMode ? "" : selectedDoctorData!.id,
+          doctorName: poolMode ? "" : selectedDoctorData!.name,
           specialty: selectedSpecialty,
           scheduledFor,
           dateLabel,
@@ -294,10 +337,40 @@ export default function BookConsultationPage() {
               </div>
             ) : (
               <div className="space-y-4">
+                {/* Fan-out option — first matching doctor to accept wins.
+                    Usually the fastest path for the patient when they
+                    don't care which doctor in the specialty they see. */}
+                <button
+                  onClick={() => { setPoolMode(true); setSelectedDoctor(""); setStep(3); }}
+                  className="flex w-full items-center gap-4 rounded-xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-4 text-left transition-all hover:border-emerald-400 hover:shadow-md"
+                >
+                  <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-xl text-white shadow">
+                    ⚡
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">Any available {selectedSpecialty}</p>
+                    <p className="text-sm text-gray-500">Fastest path — the first doctor to accept will handle your consult.</p>
+                    <div className="mt-1 flex items-center gap-2 text-xs">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-medium text-emerald-700">
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                        {filteredDoctors.filter((d) => d.instantAvailable).length} online now
+                      </span>
+                      <span className="text-gray-400">· {filteredDoctors.length} doctor{filteredDoctors.length === 1 ? "" : "s"} in pool</span>
+                    </div>
+                  </div>
+                  <span className="text-sm font-semibold text-emerald-700">Pick for me →</span>
+                </button>
+
+                <div className="flex items-center gap-3 py-2">
+                  <div className="h-px flex-1 bg-gray-100" />
+                  <span className="text-xs font-medium uppercase tracking-wide text-gray-400">or pick a specific doctor</span>
+                  <div className="h-px flex-1 bg-gray-100" />
+                </div>
+
                 {filteredDoctors.map((doc) => (
                   <button
                     key={doc.id}
-                    onClick={() => { setSelectedDoctor(doc.id); setStep(3); }}
+                    onClick={() => { setPoolMode(false); setSelectedDoctor(doc.id); setStep(3); }}
                     className={`flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-all hover:shadow-md ${
                       selectedDoctor === doc.id ? "border-primary-500 bg-primary-50" : "border-gray-100 hover:border-primary-200"
                     }`}
@@ -316,7 +389,14 @@ export default function BookConsultationPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold text-primary-600">${doc.fee}</p>
-                      <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Available</span>
+                      {doc.instantAvailable ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                          Online now
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Available</span>
+                      )}
                     </div>
                   </button>
                 ))}
@@ -326,22 +406,36 @@ export default function BookConsultationPage() {
         )}
 
         {/* Step 3 */}
-        {step === 3 && selectedDoctorData && (
+        {step === 3 && (selectedDoctorData || poolMode) && (
           <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">Choose a Time</h2>
-              <button onClick={() => setStep(2)} className="text-sm text-primary-600 hover:underline">Change Doctor</button>
+              <button onClick={() => setStep(2)} className="text-sm text-primary-600 hover:underline">
+                {poolMode ? "Change" : "Change Doctor"}
+              </button>
             </div>
 
-            <div className="mb-6 flex items-center gap-4 rounded-xl bg-gray-50 p-4">
-              <div className={`flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold text-white ${selectedDoctorData.imageColor}`}>
-                {selectedDoctorData.initials}
+            {poolMode ? (
+              <div className="mb-6 flex items-center gap-4 rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-lg text-white shadow">
+                  ⚡
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">Any available {selectedSpecialty}</p>
+                  <p className="text-sm text-gray-500">First matching doctor to accept will be assigned.</p>
+                </div>
               </div>
-              <div>
-                <p className="font-semibold text-gray-900">{selectedDoctorData.name}</p>
-                <p className="text-sm text-gray-500">{selectedDoctorData.specialty}</p>
+            ) : selectedDoctorData && (
+              <div className="mb-6 flex items-center gap-4 rounded-xl bg-gray-50 p-4">
+                <div className={`flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold text-white ${selectedDoctorData.imageColor}`}>
+                  {selectedDoctorData.initials}
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">{selectedDoctorData.name}</p>
+                  <p className="text-sm text-gray-500">{selectedDoctorData.specialty}</p>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="mb-6 grid gap-4 sm:grid-cols-2">
               <div>
@@ -552,7 +646,7 @@ export default function BookConsultationPage() {
         )}
 
         {/* Step 5: Pay & Confirm */}
-        {step === 5 && selectedDoctorData && (
+        {step === 5 && (selectedDoctorData || poolMode) && (
           <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">{paymentsOff ? "Review & Confirm" : "Review & Pay"}</h2>
@@ -560,7 +654,7 @@ export default function BookConsultationPage() {
             </div>
 
             <div className="space-y-3 rounded-xl bg-gray-50 p-5">
-              <Row label="Doctor" value={selectedDoctorData.name} />
+              <Row label="Doctor" value={poolMode ? `Any available ${selectedSpecialty}` : selectedDoctorData!.name} />
               <Row label="Specialty" value={selectedSpecialty} />
               <Row label="Date" value={new Date(`${selectedDate}T00:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })} />
               <Row label="Time" value={slots.find((s) => s.value === selectedSlot)?.label || selectedSlot} />

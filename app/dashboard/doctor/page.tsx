@@ -17,6 +17,8 @@ export default function DoctorDashboardPage() {
   const { data: session, status } = useSession();
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [prescriptions, setPrescriptions] = useState<PrescriptionRecord[]>([]);
+  const [instant, setInstant] = useState<{ available: boolean; until: string | null }>({ available: false, until: null });
+  const [instantBusy, setInstantBusy] = useState(false);
 
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -28,7 +30,27 @@ export default function DoctorDashboardPage() {
       .then((r) => r.json())
       .then((d) => setPrescriptions(d.prescriptions || []))
       .catch(() => {});
+    fetch("/api/doctor/instant")
+      .then((r) => r.json())
+      .then((d) => setInstant({ available: !!d.available, until: d.until || null }))
+      .catch(() => {});
   }, [status]);
+
+  const toggleInstant = async () => {
+    setInstantBusy(true);
+    try {
+      const next = !instant.available;
+      const r = await fetch("/api/doctor/instant", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ minutes: next ? 15 : 0 }),
+      });
+      const j = await r.json();
+      if (r.ok) setInstant({ available: !!j.available, until: j.until || null });
+    } finally {
+      setInstantBusy(false);
+    }
+  };
 
   if (status === "loading") {
     return (
@@ -115,6 +137,19 @@ export default function DoctorDashboardPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
+              <button
+                onClick={toggleInstant}
+                disabled={instantBusy}
+                className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold shadow-md transition-transform hover:-translate-y-0.5 disabled:opacity-60 ${
+                  instant.available
+                    ? "bg-emerald-400 text-emerald-950"
+                    : "bg-white/15 text-white backdrop-blur-sm hover:bg-white/25"
+                }`}
+                title={instant.until ? `Active until ${new Date(instant.until).toLocaleTimeString()}` : undefined}
+              >
+                <span className={`h-2 w-2 rounded-full ${instant.available ? "bg-emerald-900 animate-pulse" : "bg-white/60"}`} />
+                {instant.available ? "Available now" : "Go available now"}
+              </button>
               <Link
                 href="/dashboard/doctor/prescriptions"
                 className="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-primary-700 shadow-md transition-transform hover:-translate-y-0.5 hover:shadow-lg"

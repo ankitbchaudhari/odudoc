@@ -106,6 +106,12 @@ export interface Consultation {
   roomId?: string;
   bookingId?: string;
   prescriptionId?: string;
+  // Set when a fan-out (specialty-pool) request is claimed by a doctor.
+  // For normal bookings this stays undefined; the doctorId/doctorEmail
+  // are populated at creation. For pool bookings, doctorId === "" until
+  // the first doctor clicks Accept — at which point claimedAt is stamped
+  // and the record becomes a normal approved consultation.
+  claimedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -191,13 +197,50 @@ export function listConsultations(filter: {
   doctorId?: string;
   doctorEmail?: string;
   status?: ConsultationStatus | "All";
+  /** Specialty-pool filter: only records that are still unclaimed
+   *  (doctorId === "") and match this specialty. Used to populate the
+   *  doctor dashboard's "Open requests" section — any doctor in that
+   *  specialty can claim these. */
+  unclaimedSpecialty?: string;
 } = {}): Consultation[] {
   let list = [...consultations];
   if (filter.patientEmail) list = list.filter((c) => c.patientEmail === filter.patientEmail!.toLowerCase());
   if (filter.doctorId) list = list.filter((c) => c.doctorId === filter.doctorId);
   if (filter.doctorEmail) list = list.filter((c) => c.doctorEmail === filter.doctorEmail!.toLowerCase());
   if (filter.status && filter.status !== "All") list = list.filter((c) => c.status === filter.status);
+  if (filter.unclaimedSpecialty) {
+    const q = filter.unclaimedSpecialty.toLowerCase();
+    list = list.filter((c) => !c.doctorId && c.specialty.toLowerCase() === q);
+  }
   return list.sort((a, b) => (a.scheduledFor < b.scheduledFor ? 1 : -1));
+}
+
+/** Atomic claim for fan-out consultations. Returns:
+ *   - the updated Consultation on success
+ *   - "taken" if another doctor got there first
+ *   - "not_found" if the id is unknown
+ *
+ * Because the array is in-memory and Node is single-threaded within a
+ * single Lambda invocation, the check-then-set below is race-safe per
+ * instance. Across instances the last-writer-wins on flush — acceptable
+ * because a second doctor claiming an already-claimed record is rare
+ * and the second would just see it already approved on reload. */
+export function claimConsultation(
+  id: string,
+  doctor: { id: string; name: string; email: string },
+): Consultation | "taken" | "not_found" {
+  const c = consultations.find((x) => x.id === id);
+  if (!c) return "not_found";
+  if (c.doctorId) return "taken";
+  c.doctorId = doctor.id;
+  c.doctorName = doctor.name;
+  c.doctorEmail = doctor.email.toLowerCase();
+  c.claimedAt = now();
+  // A claim equals acceptance, so skip the extra "awaiting_doctor →
+  // approved" hop. The patient sees it confirmed immediately.
+  c.status = "approved";
+  touch(c);
+  return c;
 }
 
 export function getConsultation(id: string): Consultation | null {

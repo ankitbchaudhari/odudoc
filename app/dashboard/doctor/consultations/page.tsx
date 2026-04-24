@@ -21,22 +21,50 @@ export default function DoctorConsultationsPage() {
   const [list, setList] = useState<Consultation[]>([]);
   const [filter, setFilter] = useState<ConsultationStatus | "all">("all");
   const [loading, setLoading] = useState(true);
+  const [claiming, setClaiming] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
-    const res = await fetch("/api/consultations");
+    const res = await fetch("/api/consultations", { cache: "no-store" });
     const data = await res.json();
     setList(data.consultations || []);
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    // Poll every 30s so the specialty pool updates without reloading —
+    // a new patient booking any-available should light up the queue on
+    // every matching doctor's dashboard in well under a minute.
+    const t = setInterval(load, 30_000);
+    return () => clearInterval(t);
+  }, []);
 
-  const filtered = filter === "all" ? list : list.filter((c) => c.status === filter);
-  const counts = list.reduce<Record<string, number>>((acc, c) => {
+  // "Unclaimed" = fan-out record where no doctor has accepted yet.
+  // Surfaced separately from the main list so doctors see "Open
+  // requests" as a distinct call-to-action, not buried in status tabs.
+  const pool = list.filter((c) => !c.doctorId);
+  const owned = list.filter((c) => c.doctorId);
+
+  const filtered = filter === "all" ? owned : owned.filter((c) => c.status === filter);
+  const counts = owned.reduce<Record<string, number>>((acc, c) => {
     acc[c.status] = (acc[c.status] || 0) + 1;
     return acc;
   }, {});
+
+  const claim = async (id: string) => {
+    setClaiming(id);
+    try {
+      const r = await fetch(`/api/consultations/${id}/claim`, { method: "POST" });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        alert(j.error || "Could not accept. It may have been taken by another doctor.");
+      }
+      await load();
+    } finally {
+      setClaiming(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -50,6 +78,52 @@ export default function DoctorConsultationsPage() {
             Refresh
           </button>
         </div>
+
+        {/* Specialty pool — patients who asked for any available doctor
+            in this specialty. First doctor to click Accept gets it. */}
+        {pool.length > 0 && (
+          <div className="mb-6 rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-4 shadow-sm">
+            <div className="mb-3 flex items-center gap-2">
+              <span className="flex h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+              <h2 className="text-sm font-semibold text-emerald-900">
+                Open requests in your specialty ({pool.length})
+              </h2>
+              <span className="text-xs text-emerald-700/70">
+                Any available — first to accept wins
+              </span>
+            </div>
+            <div className="space-y-2">
+              {pool.map((c) => (
+                <div
+                  key={c.id}
+                  className="flex flex-wrap items-center gap-3 rounded-xl bg-white p-3 ring-1 ring-emerald-100"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700">
+                    {c.patientName.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-gray-900">
+                      {c.patientName}
+                    </p>
+                    <p className="truncate text-xs text-gray-500">
+                      {c.medicalHistory.chiefComplaint || c.specialty}
+                    </p>
+                    <p className="text-[11px] text-gray-400">
+                      {c.dateLabel} · {c.timeSlot}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => claim(c.id)}
+                    disabled={claiming === c.id}
+                    className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-60"
+                  >
+                    {claiming === c.id ? "Accepting…" : "Accept"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mb-6 flex flex-wrap gap-2">
           <FilterChip label="All" active={filter === "all"} onClick={() => setFilter("all")} count={list.length} />

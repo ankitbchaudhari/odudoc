@@ -35,20 +35,20 @@ declare module "next-auth" {
       name?: string | null;
       email?: string | null;
       image?: string | null;
-      role: "patient" | "doctor" | "admin" | "staff" | "vendor";
+      role: "patient" | "doctor" | "admin" | "staff" | "vendor" | "hr" | "support" | "pharmacist";
     };
   }
 
   interface User {
     id: string;
-    role: "patient" | "doctor" | "admin" | "staff" | "vendor";
+    role: "patient" | "doctor" | "admin" | "staff" | "vendor" | "hr" | "support" | "pharmacist";
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     id: string;
-    role: "patient" | "doctor" | "admin" | "staff" | "vendor";
+    role: "patient" | "doctor" | "admin" | "staff" | "vendor" | "hr" | "support" | "pharmacist";
   }
 }
 

@@ -4,12 +4,23 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 // Mirrors AdminUserView in lib/users-store.ts (kept in sync manually — the
 // admin page only renders the fields it needs, so drift here is low-risk).
+// Mirrors User["role"] in lib/users-store.ts. Keep in sync.
+type Role =
+  | "patient"
+  | "doctor"
+  | "admin"
+  | "staff"
+  | "vendor"
+  | "hr"
+  | "support"
+  | "pharmacist";
+
 interface AdminUser {
   id: string;
   name: string;
   email: string;
   phone: string;
-  role: "patient" | "doctor" | "admin" | "staff";
+  role: Role;
   createdAt: string;
   emailVerified: boolean;
   lastLoginAt: string | null;
@@ -19,30 +30,62 @@ interface AdminUser {
   warningsCount: number;
 }
 
-type TabKey = "all" | "patient" | "doctor" | "admin" | "staff" | "banned";
+type TabKey = "all" | Role | "banned";
 
+// Order shown in the tab strip — most common roles first, banned last so
+// it sits visually apart.
 const TABS: { key: TabKey; label: string }[] = [
   { key: "all", label: "All" },
   { key: "patient", label: "Patient" },
   { key: "doctor", label: "Doctor" },
   { key: "admin", label: "Admin" },
   { key: "staff", label: "Staff" },
+  { key: "vendor", label: "Vendor" },
+  { key: "pharmacist", label: "Pharmacist" },
+  { key: "support", label: "Support" },
+  { key: "hr", label: "HR" },
   { key: "banned", label: "Banned" },
 ];
 
-const ROLE_BADGE: Record<AdminUser["role"], string> = {
+const ROLE_BADGE: Record<Role, string> = {
   admin: "bg-purple-100 text-purple-700",
   doctor: "bg-blue-100 text-blue-700",
   patient: "bg-green-100 text-green-700",
   staff: "bg-amber-100 text-amber-700",
+  vendor: "bg-pink-100 text-pink-700",
+  hr: "bg-teal-100 text-teal-700",
+  support: "bg-cyan-100 text-cyan-700",
+  pharmacist: "bg-lime-100 text-lime-700",
 };
 
-const AVATAR_COLOR: Record<AdminUser["role"], string> = {
+const AVATAR_COLOR: Record<Role, string> = {
   admin: "bg-purple-200 text-purple-700",
   doctor: "bg-blue-200 text-blue-700",
   patient: "bg-green-200 text-green-700",
   staff: "bg-amber-200 text-amber-700",
+  vendor: "bg-pink-200 text-pink-700",
+  hr: "bg-teal-200 text-teal-700",
+  support: "bg-cyan-200 text-cyan-700",
+  pharmacist: "bg-lime-200 text-lime-700",
 };
+
+// Role options for the "Change role" modal, in the same order as the tab
+// strip. Extracted so adding a role only requires editing this + the TABS
+// array + the Role union.
+const ROLE_OPTIONS: { value: Role; label: string; hint?: string }[] = [
+  { value: "patient", label: "Patient" },
+  {
+    value: "doctor",
+    label: "Doctor",
+    hint: "Auto-creates a profile in /admin/doctors.",
+  },
+  { value: "pharmacist", label: "Pharmacist — dispensing & Rx verification" },
+  { value: "vendor", label: "Vendor — pharmacy / marketplace seller" },
+  { value: "support", label: "Customer Support" },
+  { value: "hr", label: "HR — careers & applicants" },
+  { value: "staff", label: "Staff — generic back-office" },
+  { value: "admin", label: "Admin — platform super-admin" },
+];
 
 function initialsOf(name: string): string {
   return name
@@ -79,7 +122,7 @@ export default function AdminUsersPage() {
   const [banFor, setBanFor] = useState<AdminUser | null>(null);
   const [banReason, setBanReason] = useState("");
   const [roleFor, setRoleFor] = useState<AdminUser | null>(null);
-  const [newRole, setNewRole] = useState<AdminUser["role"]>("patient");
+  const [newRole, setNewRole] = useState<Role>("patient");
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -123,11 +166,20 @@ export default function AdminUsersPage() {
   }, [users, activeTab, search]);
 
   const stats = useMemo(() => {
+    const byRole: Record<Role, number> = {
+      patient: 0,
+      doctor: 0,
+      admin: 0,
+      staff: 0,
+      vendor: 0,
+      hr: 0,
+      support: 0,
+      pharmacist: 0,
+    };
+    for (const u of users) byRole[u.role] = (byRole[u.role] ?? 0) + 1;
     return {
       total: users.length,
-      patients: users.filter((u) => u.role === "patient").length,
-      doctors: users.filter((u) => u.role === "doctor").length,
-      admins: users.filter((u) => u.role === "admin").length,
+      byRole,
       banned: users.filter((u) => u.status === "banned").length,
     };
   }, [users]);
@@ -291,16 +343,25 @@ export default function AdminUsersPage() {
         </div>
       )}
 
-      {/* Stats */}
+      {/* Stats — show the five most actionable cards; the full per-role
+          breakdown lives in the tab strip below. */}
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-5">
         <StatCard label="Total" value={stats.total} tint="text-gray-900" />
         <StatCard
           label="Patients"
-          value={stats.patients}
+          value={stats.byRole.patient}
           tint="text-green-600"
         />
-        <StatCard label="Doctors" value={stats.doctors} tint="text-blue-600" />
-        <StatCard label="Admins" value={stats.admins} tint="text-purple-600" />
+        <StatCard
+          label="Doctors"
+          value={stats.byRole.doctor}
+          tint="text-blue-600"
+        />
+        <StatCard
+          label="Admins"
+          value={stats.byRole.admin}
+          tint="text-purple-600"
+        />
         <StatCard label="Banned" value={stats.banned} tint="text-red-600" />
       </div>
 
@@ -313,7 +374,7 @@ export default function AdminUsersPage() {
                 ? users.length
                 : tab.key === "banned"
                 ? stats.banned
-                : users.filter((u) => u.role === tab.key).length;
+                : stats.byRole[tab.key as Role] ?? 0;
             const active = activeTab === tab.key;
             return (
               <button
@@ -554,13 +615,14 @@ export default function AdminUsersPage() {
           </label>
           <select
             value={newRole}
-            onChange={(e) => setNewRole(e.target.value as AdminUser["role"])}
+            onChange={(e) => setNewRole(e.target.value as Role)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
           >
-            <option value="patient">Patient</option>
-            <option value="doctor">Doctor</option>
-            <option value="staff">Staff</option>
-            <option value="admin">Admin</option>
+            {ROLE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
           </select>
           {newRole === "doctor" && roleFor.role !== "doctor" && (
             <p className="mt-3 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-700">

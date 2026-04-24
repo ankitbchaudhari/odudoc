@@ -13,7 +13,24 @@ export interface User {
   email: string;
   phone: string;
   password: string; // hashed
-  role: "patient" | "doctor" | "admin" | "staff" | "vendor";
+  // Role hierarchy (OduDoc org):
+  //   patient    — public end user
+  //   doctor     — clinical staff with consult access
+  //   pharmacist — pharmacy operations (dispensing, Rx verification)
+  //   vendor     — pharmacy / marketplace seller (multivendor shop)
+  //   support    — customer support agent (tickets, refunds intake)
+  //   hr         — HR ops (careers, applicants, internal user mgmt)
+  //   staff      — generic back-office staff
+  //   admin      — platform admin (super-admin UI access)
+  role:
+    | "patient"
+    | "doctor"
+    | "admin"
+    | "staff"
+    | "vendor"
+    | "hr"
+    | "support"
+    | "pharmacist";
   createdAt: string;
 
   // Email verification + inactivity tracking.

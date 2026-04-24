@@ -80,10 +80,19 @@ export async function PATCH(
 
   if (body.action === "change-role") {
     const newRole = body.role;
-    const allowed: User["role"][] = ["patient", "doctor", "admin", "staff"];
+    const allowed: User["role"][] = [
+      "patient",
+      "doctor",
+      "admin",
+      "staff",
+      "vendor",
+      "hr",
+      "support",
+      "pharmacist",
+    ];
     if (!newRole || !allowed.includes(newRole)) {
       return NextResponse.json(
-        { error: "role must be one of patient, doctor, admin, staff" },
+        { error: `role must be one of ${allowed.join(", ")}` },
         { status: 400 }
       );
     }

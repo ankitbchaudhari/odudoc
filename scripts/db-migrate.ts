@@ -1,32 +1,96 @@
-// Apply all pending Drizzle migrations against DATABASE_URL.
+// Apply all pending Drizzle migrations.
 //
-// Run locally:       npm run db:migrate
-// Run on Vercel:     wire this into a deploy hook, NOT into the runtime.
-//                    Migrations must never run inside a request handler.
+// Designed to run FROM the Hostinger VPS itself (SSH, then `npm run
+// db:migrate`). Never from Vercel, never from a developer laptop over
+// the internet — our runtime DATABASE_URL points at PgBouncer (port
+// 6432, transaction pooling) which breaks the migrator's advisory lock.
 //
-// This uses a dedicated postgres.js client (NOT the Lambda-tuned `max: 1`
-// client from lib/db.ts) because migrations acquire locks and run
-// longer-than-request work.
+// Connection preference (first match wins):
+//   1. DATABASE_URL_DIRECT  — explicit direct-port URL, e.g.
+//                              postgres://...@localhost:5432/odudoc
+//   2. DATABASE_URL         — only used if port is NOT 6432 (PgBouncer
+//                              check). We refuse to run against a
+//                              transaction pooler because drizzle's
+//                              migrator calls pg_advisory_lock().
+//
+// Idempotency: drizzle-kit's migrator tracks applied migrations in
+// `drizzle.__drizzle_migrations` by hash. Re-running after a successful
+// apply is a no-op. If a migration fails mid-way, the whole transaction
+// rolls back — fix the SQL and re-run.
 
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 
-async function main(): Promise<void> {
-  const connectionString =
-    process.env.DATABASE_URL || process.env.POSTGRES_URL;
+function pickConnectionString(): string {
+  const direct = process.env.DATABASE_URL_DIRECT;
+  if (direct && direct.trim().length > 0) return direct;
 
-  if (!connectionString) {
+  const runtime = process.env.DATABASE_URL || process.env.POSTGRES_URL || "";
+  if (!runtime) {
     console.error(
-      "[db:migrate] DATABASE_URL / POSTGRES_URL not set — refusing to run",
+      "[db:migrate] Neither DATABASE_URL_DIRECT nor DATABASE_URL is set. " +
+        "Export a direct (non-pooled) connection string on the VPS and re-run.",
     );
     process.exit(1);
   }
 
+  // Refuse to run migrations through PgBouncer in transaction mode. The
+  // migrator takes pg_advisory_lock which needs a session-scoped
+  // connection.
+  try {
+    const u = new URL(runtime);
+    if (u.port === "6432") {
+      console.error(
+        "[db:migrate] DATABASE_URL points at port 6432 (PgBouncer). " +
+          "Set DATABASE_URL_DIRECT to a direct Postgres URL (port 5432 / local " +
+          "socket) and re-run. Migrations through a transaction pooler will " +
+          "stall on pg_advisory_lock.",
+      );
+      process.exit(1);
+    }
+  } catch {
+    // not a parseable URL — let postgres.js complain with a better error
+  }
+
+  return runtime;
+}
+
+async function main(): Promise<void> {
+  const connectionString = pickConnectionString();
+
+  // Short-circuit guard: if we somehow got through the URL check but the
+  // host looks like a public IP and the user did NOT explicitly set
+  // DATABASE_URL_DIRECT, bail with a warning. Migrations should be run
+  // from the VPS against localhost.
+  if (!process.env.DATABASE_URL_DIRECT) {
+    try {
+      const host = new URL(connectionString).hostname;
+      const isLocal =
+        host === "localhost" ||
+        host === "127.0.0.1" ||
+        host === "::1" ||
+        host.endsWith(".local");
+      if (!isLocal) {
+        console.warn(
+          `[db:migrate] WARNING: running against non-local host "${host}". ` +
+            "This script is meant to run from the VPS. Continuing in 5s " +
+            "— Ctrl-C to abort.",
+        );
+        await new Promise((r) => setTimeout(r, 5000));
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
   const client = postgres(connectionString, {
-    ssl: { rejectUnauthorized: false },
+    ssl: connectionString.includes("sslmode=disable")
+      ? false
+      : { rejectUnauthorized: false },
     max: 1,
     prepare: false,
+    connect_timeout: 10,
   });
 
   const db = drizzle(client);

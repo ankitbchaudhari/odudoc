@@ -14,6 +14,41 @@ interface VideoCallProps {
 }
 
 export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, onLeave }: VideoCallProps) {
+  // Real Daily.co call mode: when we have an https:// URL from the Daily
+  // API we hand the entire video surface over to the Daily prebuilt
+  // iframe. Daily handles media capture, signaling, peer negotiation,
+  // mute/camera toggles, screen share, and chat — so doctor and patient
+  // actually see and hear each other. Without this block the component
+  // only renders a local preview + a placeholder and the two sides are
+  // never connected. Demo mode (no DAILY_API_KEY) still uses the legacy
+  // mockup below.
+  const isRealCall = !demoMode && roomUrl.startsWith("https://");
+  if (isRealCall) {
+    const url = new URL(roomUrl);
+    url.searchParams.set("userName", userName);
+    if (token) url.searchParams.set("t", token);
+    // Turn on some quality-of-life prebuilt params.
+    url.searchParams.set("showLeaveButton", "true");
+    url.searchParams.set("showFullscreenButton", "true");
+    return (
+      <div className="relative flex h-screen w-full flex-col bg-black">
+        <iframe
+          key={roomUrl}
+          src={url.toString()}
+          allow="camera; microphone; fullscreen; speaker; display-capture; autoplay"
+          className="h-full w-full border-0"
+          title="OduDoc consultation"
+        />
+        <button
+          onClick={onLeave}
+          className="absolute right-4 top-4 z-50 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:bg-red-700"
+        >
+          End Call
+        </button>
+      </div>
+    );
+  }
+
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);

@@ -214,6 +214,55 @@ export async function fetchMessage(
   });
 }
 
+/**
+ * Fetch the binary content of the Nth attachment on a given message.
+ * Order matches `fetchMessage(...).attachments` (zero-based). Returns null
+ * if the message / attachment doesn't exist.
+ *
+ * We deliberately re-fetch + re-parse instead of caching, because:
+ *  - IMAP connections are short-lived per request (via withClient).
+ *  - Caching parsed MIME in-memory across Lambda instances isn't safe
+ *    without a real KV, and attachments can be multi-MB.
+ *  - Re-fetch cost is bounded by the message size on the wire, which is
+ *    already the floor cost once an admin clicked the download.
+ */
+export async function fetchAttachment(
+  creds: MailboxCreds,
+  uid: number,
+  index: number,
+): Promise<{
+  filename: string;
+  contentType: string;
+  content: Buffer;
+} | null> {
+  if (!Number.isInteger(index) || index < 0) return null;
+  return withClient(creds, async (client) => {
+    const lock = await client.getMailboxLock("INBOX");
+    try {
+      const msg = await client.fetchOne(
+        String(uid),
+        { source: true, uid: true },
+        { uid: true },
+      );
+      if (!msg || !msg.source) return null;
+      const parsed = await simpleParser(msg.source);
+      const att = (parsed.attachments || [])[index];
+      if (!att || !att.content) return null;
+      // mailparser yields Buffer for .content; narrow for TS.
+      const content = Buffer.isBuffer(att.content)
+        ? att.content
+        : Buffer.from(att.content as unknown as ArrayBuffer);
+      return {
+        filename: att.filename || `attachment-${index}`,
+        contentType: att.contentType || "application/octet-stream",
+        content,
+      };
+    } finally {
+      lock.release();
+    }
+  });
+}
+
 // Intentionally unused export to silence "unused import" for future snippet
 // helper. Keeping the function shape so adding body snippets later is cheap.
 export { snippetFromBodyStructure };

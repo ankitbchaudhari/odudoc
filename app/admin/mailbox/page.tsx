@@ -304,10 +304,24 @@ export default function MailboxPage() {
                 {message.attachments.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {message.attachments.map((a, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-[11px] text-gray-700">
+                      // Anchor (not fetch+blob) so the browser uses its
+                      // native download UI and the server's
+                      // Content-Disposition: attachment header forces a
+                      // save rather than in-page render. `download`
+                      // preserves the original filename.
+                      <a
+                        key={i}
+                        href={`/api/admin/mailbox/${encodeURIComponent(
+                          activeKey,
+                        )}/${message.uid}/attachment/${i}`}
+                        download={a.filename}
+                        className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[11px] font-medium text-indigo-700 transition-colors hover:bg-indigo-100"
+                        title={`Download ${a.filename}`}
+                      >
                         📎 {a.filename}
-                        <span className="text-gray-400">· {formatBytes(a.size)}</span>
-                      </span>
+                        <span className="text-indigo-400">· {formatBytes(a.size)}</span>
+                        <span aria-hidden className="ml-0.5">↓</span>
+                      </a>
                     ))}
                   </div>
                 )}

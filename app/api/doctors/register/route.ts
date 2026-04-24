@@ -37,6 +37,42 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Enforce 18+ minimum age. Client-side validation can be bypassed, so
+    // recompute the age here from the submitted DOB.
+    {
+      const dob = new Date(body.dateOfBirth);
+      if (Number.isNaN(dob.getTime())) {
+        return NextResponse.json(
+          { error: "Invalid date of birth" },
+          { status: 400 }
+        );
+      }
+      const today = new Date();
+      if (dob > today) {
+        return NextResponse.json(
+          { error: "Date of birth can't be in the future" },
+          { status: 400 }
+        );
+      }
+      let age = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+      if (age < 18) {
+        return NextResponse.json(
+          { error: "You must be at least 18 years old to register" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Gender is restricted to male/female on the signup form.
+    if (body.gender !== "male" && body.gender !== "female") {
+      return NextResponse.json(
+        { error: "Gender must be male or female" },
+        { status: 400 }
+      );
+    }
+
     const app = addApplication({
       fullName: body.fullName,
       email: body.email,

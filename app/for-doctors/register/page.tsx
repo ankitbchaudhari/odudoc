@@ -270,7 +270,22 @@ function DoctorRegisterForm() {
       if (!form.phone.trim()) e.phone = "Phone is required";
       else if (!/^[+]?[\d\s()-]{7,}$/.test(form.phone))
         e.phone = "Invalid phone format";
-      if (!form.dateOfBirth) e.dateOfBirth = "Date of birth is required";
+      if (!form.dateOfBirth) {
+        e.dateOfBirth = "Date of birth is required";
+      } else {
+        // Must be at least 18 years old on today's date.
+        const dob = new Date(form.dateOfBirth);
+        if (Number.isNaN(dob.getTime())) {
+          e.dateOfBirth = "Invalid date";
+        } else {
+          const today = new Date();
+          let age = today.getFullYear() - dob.getFullYear();
+          const m = today.getMonth() - dob.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+          if (dob > today) e.dateOfBirth = "Date of birth can't be in the future";
+          else if (age < 18) e.dateOfBirth = "You must be at least 18 years old to register";
+        }
+      }
       if (!form.gender) e.gender = "Gender is required";
       if (!form.address.trim()) e.address = "Address is required";
       if (!form.country) e.country = "Country is required";
@@ -613,6 +628,14 @@ const ICONS = {
   ),
 };
 
+// Upper bound for the DOB picker: today's date minus 18 years, formatted
+// as YYYY-MM-DD so <input type="date" max={…}/> honours it.
+const MAX_DOB = (() => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 18);
+  return d.toISOString().slice(0, 10);
+})();
+
 function Step1({
   form,
   update,
@@ -662,11 +685,18 @@ function Step1({
             placeholder="+1 555 0100"
           />
         </Field>
-        <Field label="Date of Birth" error={errors.dateOfBirth} required icon={ICONS.calendar}>
+        <Field
+          label="Date of Birth"
+          error={errors.dateOfBirth}
+          required
+          icon={ICONS.calendar}
+          hint="You must be at least 18 years old to register."
+        >
           <input
             type="date"
             className={inputClass}
             value={form.dateOfBirth}
+            max={MAX_DOB}
             onChange={(e) => update("dateOfBirth", e.target.value)}
           />
         </Field>

@@ -18,6 +18,8 @@ export interface MedicineRow {
 export interface ConsultPrescription {
   symptoms: string;
   diagnosis: string;
+  treatment?: string;
+  investigations?: string;
   notes: string;
   medicines: MedicineRow[];
   doctorName: string;
@@ -91,6 +93,32 @@ export default function ConsultPrescriptionView({ rx }: Props) {
                 </p>
                 <p className="mt-1 whitespace-pre-wrap text-gray-700">
                   {rx.diagnosis}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Treatment / Investigations */}
+        {(rx.treatment || rx.investigations) && (
+          <div className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+            {rx.treatment && (
+              <div>
+                <p className="text-xs font-semibold uppercase text-gray-400">
+                  Treatment
+                </p>
+                <p className="mt-1 whitespace-pre-wrap text-gray-700">
+                  {rx.treatment}
+                </p>
+              </div>
+            )}
+            {rx.investigations && (
+              <div>
+                <p className="text-xs font-semibold uppercase text-gray-400">
+                  Investigations
+                </p>
+                <p className="mt-1 whitespace-pre-wrap text-gray-700">
+                  {rx.investigations}
                 </p>
               </div>
             )}

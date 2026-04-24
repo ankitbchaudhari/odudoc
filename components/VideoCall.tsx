@@ -6,13 +6,14 @@ import ChatPanel from "./ChatPanel";
 
 interface VideoCallProps {
   roomUrl: string;
+  roomId?: string;
   userName: string;
   token?: string | null;
   demoMode: boolean;
   onLeave: () => void;
 }
 
-export default function VideoCall({ roomUrl, userName, token, demoMode, onLeave }: VideoCallProps) {
+export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, onLeave }: VideoCallProps) {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -59,14 +60,39 @@ export default function VideoCall({ roomUrl, userName, token, demoMode, onLeave 
     return () => clearInterval(interval);
   }, [demoMode]);
 
-  // Demo mode: simulate remote participant after a few seconds
+  // Real presence — both sides ping the room every 5s. As soon as the
+  // peer shows up we flip the "Waiting for other participant…" state
+  // to a connected view. In demo mode (no roomId wired) we fall back
+  // to the original 3s timeout so the old demo UX still works.
   useEffect(() => {
-    if (!demoMode) return;
-    const timeout = setTimeout(() => {
-      setRemoteParticipant("Demo Participant");
-    }, 3000);
-    return () => clearTimeout(timeout);
-  }, [demoMode]);
+    if (!roomId) {
+      if (demoMode) {
+        const t = setTimeout(() => setRemoteParticipant("Demo Participant"), 3000);
+        return () => clearTimeout(t);
+      }
+      return;
+    }
+    let cancelled = false;
+    const ping = async () => {
+      try {
+        const r = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/presence`, {
+          method: "POST",
+        });
+        if (!r.ok || cancelled) return;
+        const j = (await r.json()) as { peer: { role: string; name: string } | null };
+        if (cancelled) return;
+        setRemoteParticipant(j.peer ? j.peer.name : null);
+      } catch {
+        /* transient network — next tick will retry */
+      }
+    };
+    ping();
+    const i = setInterval(ping, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(i);
+    };
+  }, [roomId, demoMode]);
 
   const startLocalStream = async () => {
     try {

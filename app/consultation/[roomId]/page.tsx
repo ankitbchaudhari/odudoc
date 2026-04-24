@@ -143,6 +143,7 @@ export default function ConsultationRoomPage() {
       <>
         <VideoCall
           roomUrl={roomInfo.roomUrl}
+          roomId={roomId}
           userName={isDoctor ? roomInfo.doctorName : roomInfo.patientName}
           token={null}
           demoMode={demoMode}

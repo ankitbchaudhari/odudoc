@@ -23,12 +23,110 @@ export interface MedicineRow {
 export interface ConsultPrescription {
   symptoms: string;
   diagnosis: string;
+  treatment: string;
+  investigations: string;
   notes: string;
   medicines: MedicineRow[];
   doctorName: string;
   patientName: string;
   specialty: string;
   issuedAt: string;
+}
+
+// Quick-pick library — common presets per specialty so the doctor can
+// click a chip instead of typing. The "AI suggest" button takes the
+// selected symptoms + diagnosis and fills treatment/investigations/
+// medicines from this library. For a real deployment this maps to an
+// LLM call behind /api/ai/prescription; the local library is a zero-
+// latency fallback that already covers most primary-care consults.
+const QUICK_SYMPTOMS = [
+  "Fever", "Cough", "Sore throat", "Runny nose", "Headache",
+  "Body ache", "Fatigue", "Nausea", "Vomiting", "Diarrhea",
+  "Abdominal pain", "Chest pain", "Shortness of breath", "Dizziness",
+  "Rash", "Itching", "Joint pain", "Back pain",
+];
+
+const QUICK_DIAGNOSES = [
+  "Acute viral pharyngitis", "Upper respiratory tract infection",
+  "Acute gastroenteritis", "Migraine", "Tension headache",
+  "Allergic rhinitis", "Acid reflux / GERD", "Urinary tract infection",
+  "Contact dermatitis", "Musculoskeletal strain",
+];
+
+const QUICK_INVESTIGATIONS = [
+  "CBC", "CRP", "Throat swab", "Urine routine", "Blood sugar (fasting)",
+  "LFT", "KFT", "Lipid profile", "ECG", "Chest X-ray", "Ultrasound abdomen",
+];
+
+interface AiSuggestion {
+  treatment: string;
+  investigations: string[];
+  medicines: MedicineRow[];
+}
+
+// Rule-based "AI" — matches diagnosis keywords to a canned plan. Good
+// enough for demo + offline use; wire to an LLM later for real depth.
+function suggestFromDiagnosis(dx: string): AiSuggestion | null {
+  const d = dx.toLowerCase();
+  if (/pharyngitis|sore throat|urti|upper respiratory/.test(d)) {
+    return {
+      treatment: "Warm saline gargles 3× daily. Adequate hydration and rest. Avoid cold drinks.",
+      investigations: ["CBC", "Throat swab (if persistent >5 days)"],
+      medicines: [
+        { name: "Paracetamol", dose: "500 mg", frequency: "1-0-1", duration: "5 days" },
+        { name: "Lozenges (Strepsils)", dose: "1 lozenge", frequency: "Every 4 hours", duration: "3 days" },
+      ],
+    };
+  }
+  if (/gastroenteritis|diarrhea|loose/.test(d)) {
+    return {
+      treatment: "ORS after every loose stool. Bland diet (BRAT). Avoid dairy and fried food for 48h.",
+      investigations: ["Stool routine", "CBC"],
+      medicines: [
+        { name: "ORS sachet", dose: "1 sachet in 1 L water", frequency: "After each loose stool", duration: "3 days" },
+        { name: "Racecadotril", dose: "100 mg", frequency: "1-1-1", duration: "3 days" },
+      ],
+    };
+  }
+  if (/migraine|headache/.test(d)) {
+    return {
+      treatment: "Rest in a dark quiet room. Identify + avoid triggers (caffeine, screens, missed meals).",
+      investigations: [],
+      medicines: [
+        { name: "Paracetamol", dose: "500 mg", frequency: "SOS", duration: "PRN" },
+        { name: "Domperidone", dose: "10 mg", frequency: "SOS", duration: "PRN" },
+      ],
+    };
+  }
+  if (/rhinitis|allerg/.test(d)) {
+    return {
+      treatment: "Avoid known allergens. Steam inhalation twice daily.",
+      investigations: [],
+      medicines: [
+        { name: "Cetirizine", dose: "10 mg", frequency: "0-0-1", duration: "7 days" },
+        { name: "Montelukast", dose: "10 mg", frequency: "0-0-1", duration: "7 days" },
+      ],
+    };
+  }
+  if (/uti|urinary/.test(d)) {
+    return {
+      treatment: "Increase fluid intake (3 L/day). Complete the full antibiotic course.",
+      investigations: ["Urine routine", "Urine culture + sensitivity"],
+      medicines: [
+        { name: "Nitrofurantoin", dose: "100 mg", frequency: "1-0-1", duration: "5 days" },
+      ],
+    };
+  }
+  if (/reflux|gerd|acid/.test(d)) {
+    return {
+      treatment: "Small frequent meals. Avoid lying down 2h after eating. Elevate head of bed.",
+      investigations: [],
+      medicines: [
+        { name: "Pantoprazole", dose: "40 mg", frequency: "1-0-0 (before breakfast)", duration: "14 days" },
+      ],
+    };
+  }
+  return null;
 }
 
 interface Props {
@@ -41,6 +139,23 @@ interface Props {
 
 const EMPTY_MED: MedicineRow = { name: "", dose: "", frequency: "", duration: "" };
 
+function ChipRow({ items, onPick }: { items: string[]; onPick: (v: string) => void }) {
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5">
+      {items.map((item) => (
+        <button
+          key={item}
+          type="button"
+          onClick={() => onPick(item)}
+          className="rounded-full border border-gray-200 bg-white px-2.5 py-0.5 text-[11px] font-medium text-gray-700 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+        >
+          + {item}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function DoctorNotesPanel({
   roomId,
   doctorName,
@@ -51,10 +166,45 @@ export default function DoctorNotesPanel({
   const [open, setOpen] = useState(true);
   const [symptoms, setSymptoms] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
+  const [treatment, setTreatment] = useState("");
+  const [investigations, setInvestigations] = useState("");
   const [notes, setNotes] = useState("");
   const [medicines, setMedicines] = useState<MedicineRow[]>([{ ...EMPTY_MED }]);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [aiMsg, setAiMsg] = useState<string>("");
+
+  // Helper: append a chip value to a comma-separated field without
+  // duplicating if it's already there.
+  const appendChip = (current: string, value: string): string => {
+    const parts = current.split(",").map((p) => p.trim()).filter(Boolean);
+    if (parts.some((p) => p.toLowerCase() === value.toLowerCase())) return current;
+    return parts.length ? `${parts.join(", ")}, ${value}` : value;
+  };
+
+  const runAiSuggest = () => {
+    setAiMsg("");
+    const src = diagnosis.trim() || symptoms.trim();
+    if (!src) {
+      setAiMsg("Add a symptom or diagnosis first.");
+      return;
+    }
+    const s = suggestFromDiagnosis(src);
+    if (!s) {
+      setAiMsg("No preset match — fill manually or pick from the chips above.");
+      return;
+    }
+    setTreatment((prev) => prev.trim() ? prev : s.treatment);
+    setInvestigations((prev) => {
+      const joined = s.investigations.join(", ");
+      return prev.trim() ? prev : joined;
+    });
+    setMedicines((prev) => {
+      const hasContent = prev.some((m) => m.name.trim());
+      return hasContent ? prev : s.medicines.length ? s.medicines : prev;
+    });
+    setAiMsg("Suggestions applied — review before sending.");
+  };
 
   const updateMed = (i: number, patch: Partial<MedicineRow>) => {
     setMedicines((prev) => prev.map((m, idx) => (idx === i ? { ...m, ...patch } : m)));
@@ -68,6 +218,8 @@ export default function DoctorNotesPanel({
     const payload: ConsultPrescription = {
       symptoms: symptoms.trim(),
       diagnosis: diagnosis.trim(),
+      treatment: treatment.trim(),
+      investigations: investigations.trim(),
       notes: notes.trim(),
       medicines: medicines.filter((m) => m.name.trim() !== ""),
       doctorName,
@@ -133,6 +285,10 @@ export default function DoctorNotesPanel({
             placeholder="e.g. Sore throat for 3 days, mild fever, dry cough"
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
           />
+          <ChipRow
+            items={QUICK_SYMPTOMS}
+            onPick={(v) => setSymptoms((prev) => appendChip(prev, v))}
+          />
         </div>
 
         <div>
@@ -145,6 +301,64 @@ export default function DoctorNotesPanel({
             rows={2}
             placeholder="e.g. Acute viral pharyngitis"
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+          />
+          <ChipRow
+            items={QUICK_DIAGNOSES}
+            onPick={(v) => setDiagnosis((prev) => appendChip(prev, v))}
+          />
+        </div>
+
+        {/* AI suggest — one click fills treatment, investigations,
+            and starter medicines based on the diagnosis/symptoms. */}
+        <div className="rounded-lg border border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50 p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🤖</span>
+              <div>
+                <p className="text-sm font-semibold text-indigo-900">AI Prescription Helper</p>
+                <p className="text-[11px] text-indigo-700/80">Auto-fill treatment + meds from the diagnosis.</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={runAiSuggest}
+              className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700"
+            >
+              Suggest
+            </button>
+          </div>
+          {aiMsg && (
+            <p className="mt-2 text-[11px] text-indigo-700">{aiMsg}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Treatment
+          </label>
+          <textarea
+            value={treatment}
+            onChange={(e) => setTreatment(e.target.value)}
+            rows={2}
+            placeholder="Non-pharmacologic plan, lifestyle advice, care instructions"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Investigations
+          </label>
+          <textarea
+            value={investigations}
+            onChange={(e) => setInvestigations(e.target.value)}
+            rows={2}
+            placeholder="e.g. CBC, CRP, Throat swab"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+          />
+          <ChipRow
+            items={QUICK_INVESTIGATIONS}
+            onPick={(v) => setInvestigations((prev) => appendChip(prev, v))}
           />
         </div>
 

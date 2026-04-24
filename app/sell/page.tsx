@@ -152,7 +152,7 @@ export default function SellPage() {
             <span>💼</span> Grow your pharmacy
           </span>
           <h1 className="mt-5 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">
-            Sell on{" "}
+            Your Pharmacy on{" "}
             <span className="bg-gradient-to-r from-amber-600 via-orange-500 to-rose-500 bg-clip-text text-transparent">
               OduDoc
             </span>

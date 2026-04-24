@@ -34,17 +34,35 @@ export interface JobApplication {
 }
 
 const jobs: JobVacancy[] = [];
-const { hydrate: hydrateJobs, flush: flushJobs } = bindPersistentArray<JobVacancy>(
-  "careers-jobs",
-  jobs,
-);
+const {
+  hydrate: hydrateJobs,
+  flush: flushJobs,
+  reload: reloadJobsInternal,
+} = bindPersistentArray<JobVacancy>("careers-jobs", jobs);
 
 const applications: JobApplication[] = [];
-const { hydrate: hydrateApps, flush: flushApps } = bindPersistentArray<JobApplication>(
+const {
+  hydrate: hydrateApps,
+  flush: flushApps,
+  reload: reloadAppsInternal,
+} = bindPersistentArray<JobApplication>(
   "careers-applications",
   applications,
   () => []
 );
+
+/**
+ * Force a fresh read from Postgres before listing. Warm Lambdas keep an
+ * in-memory copy of the array, so a DELETE on one Lambda isn't visible to
+ * a GET on another until one of them reloads. Public read paths should
+ * `await reloadJobs()` / `await reloadApplications()` before returning.
+ */
+export async function reloadJobs(): Promise<void> {
+  await reloadJobsInternal();
+}
+export async function reloadApplications(): Promise<void> {
+  await reloadAppsInternal();
+}
 
 // Persistent blocklist of seed vacancy ids that admins have deleted.
 // Without this, the seedDepartmentVacancies IIFE re-inserts them on

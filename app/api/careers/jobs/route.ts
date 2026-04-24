@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getJobs, addJob, updateJob, deleteJob } from "@/lib/careers-store";
+import {
+  getJobs,
+  addJob,
+  updateJob,
+  deleteJob,
+  reloadJobs,
+} from "@/lib/careers-store";
 
 export async function GET(req: NextRequest) {
+  // Re-read from Postgres so a warm Lambda sees DELETEs/edits made by
+  // sibling Lambdas. Without this, an admin deletes a vacancy on one
+  // Lambda and the next list GET on a different warm Lambda returns
+  // the stale cached array — i.e. "Delete didn't work".
+  await reloadJobs();
   const all = req.nextUrl.searchParams.get("all") === "1";
   const jobs = getJobs(!all); // default: active only
   return NextResponse.json({ jobs });
@@ -47,6 +58,10 @@ export async function PATCH(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+  // Reload first so we delete against the freshest state — otherwise a
+  // warm Lambda whose array is a few mutations stale will 404 on a row
+  // that already got re-created elsewhere.
+  await reloadJobs();
   const ok = deleteJob(id);
   if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ success: true });

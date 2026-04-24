@@ -8,6 +8,7 @@ import {
   archiveApplication,
   unarchiveApplication,
   deleteApplication,
+  reloadApplications,
 } from "@/lib/careers-store";
 import { uploadFile } from "@/lib/files-service";
 import {
@@ -23,6 +24,10 @@ import { log } from "@/lib/log";
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
+  // Re-read from Postgres so a warm Lambda picks up DELETEs / status
+  // changes made by siblings. Fixes the "I deleted it but it still
+  // shows up" class of bugs for Careers > Applications.
+  await reloadApplications();
   const jobId = req.nextUrl.searchParams.get("jobId") || undefined;
   const view = req.nextUrl.searchParams.get("view"); // "archived" | "all" | default
   const applications = getApplications(jobId, {
@@ -248,6 +253,9 @@ export async function DELETE(req: NextRequest) {
     if (!id) {
       return NextResponse.json({ error: "id required" }, { status: 400 });
     }
+    // Reload first so a warm Lambda with a stale in-memory array doesn't
+    // 404 on a row that actually exists in Postgres (or vice versa).
+    await reloadApplications();
     const ok = deleteApplication(id);
     if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json({ ok: true });

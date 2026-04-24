@@ -32,6 +32,10 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
   const [success, setSuccess] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
+  const [promoDiscount, setPromoDiscount] = useState(0);
+  const [promoAppliedCode, setPromoAppliedCode] = useState("");
+  const [promoError, setPromoError] = useState("");
+  const [promoBusy, setPromoBusy] = useState(false);
 
   const [billingName, setBillingName] = useState("");
   const [billingEmail, setBillingEmail] = useState("");
@@ -40,11 +44,31 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
   const [billingState, setBillingState] = useState("");
   const [billingZip, setBillingZip] = useState("");
 
-  const finalPrice = promoApplied ? item.price * 0.9 : item.price;
+  const finalPrice = Math.max(0, item.price - (promoApplied ? promoDiscount : 0));
 
-  const handlePromo = () => {
-    if (promoCode.toUpperCase() === "HEALTH10") {
-      setPromoApplied(true);
+  const handlePromo = async () => {
+    const code = promoCode.trim();
+    if (!code) return;
+    setPromoBusy(true);
+    setPromoError("");
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, subtotal: item.price }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setPromoApplied(true);
+        setPromoDiscount(Number(data.discount) || 0);
+        setPromoAppliedCode(data.coupon?.code || code.toUpperCase());
+      } else {
+        setPromoError(data.error || "Invalid code");
+      }
+    } catch {
+      setPromoError("Could not validate code");
+    } finally {
+      setPromoBusy(false);
     }
   };
 
@@ -319,16 +343,19 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
                 <button
                   type="button"
                   onClick={handlePromo}
-                  disabled={promoApplied || !promoCode}
+                  disabled={promoApplied || !promoCode || promoBusy}
                   className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {promoApplied ? "Applied" : "Apply"}
+                  {promoApplied ? "Applied" : promoBusy ? "…" : "Apply"}
                 </button>
               </div>
               {promoApplied && (
                 <p className="mt-1 text-xs text-green-600">
-                  HEALTH10 applied - 10% discount!
+                  {promoAppliedCode} applied — you saved ${promoDiscount.toFixed(2)}.
                 </p>
+              )}
+              {promoError && (
+                <p className="mt-1 text-xs text-red-600">{promoError}</p>
               )}
             </div>
 
@@ -340,9 +367,9 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
               </div>
               {promoApplied && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-green-600">Promo discount</span>
+                  <span className="text-green-600">Promo ({promoAppliedCode})</span>
                   <span className="text-green-600">
-                    -${(item.price * 0.1).toFixed(2)}
+                    -${promoDiscount.toFixed(2)}
                   </span>
                 </div>
               )}

@@ -41,6 +41,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Require a real patient email so we don't pollute the DB with fake
+    // @placeholder.com rows that later break receipts, reminders, etc.
+    const rawEmail = typeof body.patientEmail === 'string' ? body.patientEmail.trim().toLowerCase() : '';
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail) && !rawEmail.endsWith('@placeholder.com');
+    if (!emailOk) {
+      return NextResponse.json(
+        { error: 'A valid patient email is required to book an appointment.' },
+        { status: 400 }
+      );
+    }
+    const patientEmail = rawEmail;
+
     const booking = createBooking({
       doctorId,
       doctorName,
@@ -53,7 +65,6 @@ export async function POST(request: NextRequest) {
     });
 
     // Send booking confirmation notifications
-    const patientEmail = body.patientEmail || `${patientName.toLowerCase().replace(/\s+/g, '.')}@placeholder.com`;
     const doctorEmail = body.doctorEmail || `${doctorName.toLowerCase().replace(/\s+/g, '.')}@odudoc.com`;
     const appointmentType = body.appointmentType || 'in-person';
     const appointmentDate = body.date || new Date().toLocaleDateString();

@@ -68,25 +68,23 @@ export default function ConsultationRoomPage() {
   const fetchRoomInfo = async () => {
     try {
       const res = await fetch(`/api/rooms?roomId=${roomId}`);
+      if (res.status === 401 || res.status === 403) {
+        setError("You are not authorized to join this consultation.");
+        return;
+      }
+      if (res.status === 404) {
+        setError("This consultation room does not exist or has expired.");
+        return;
+      }
       if (!res.ok) {
-        // Room not found - use fallback demo data
-        setRoomInfo({
-          id: roomId,
-          roomName: `demo-room-${roomId}`,
-          roomUrl: `demo://demo-room-${roomId}`,
-          doctorId: "demo-doctor",
-          doctorName: "Dr. Demo Physician",
-          patientName: "Patient",
-          specialty: "General Physician",
-          fee: 25,
-          status: "waiting",
-          createdAt: new Date().toISOString(),
-        });
-        setDemoMode(true);
-        setStage("waiting");
+        setError("Failed to load consultation room. Please try again.");
         return;
       }
       const data = await res.json();
+      if (!data || !data.id || !data.doctorId) {
+        setError("Consultation room data is incomplete. Please contact support.");
+        return;
+      }
       setRoomInfo(data);
       setDemoMode(data.roomUrl?.startsWith("demo://") || false);
       setStage("waiting");

@@ -9,6 +9,7 @@
 
 import crypto from "crypto";
 import twilio from "twilio";
+import { sendEmail } from "./email";
 
 // Lazy Twilio client — only instantiates if env vars are present.
 const twilioClient =
@@ -174,6 +175,49 @@ export async function sendOtpCodes(record: OtpRecord): Promise<void> {
     );
   }
 
-  // TODO integrate real email provider (Resend / SendGrid / SES):
-  //   await sendEmail({ to: record.email, subject: "OduDoc code", body: `Your code: ${record.emailCode}` });
+  // --- Email via Resend -------------------------------------------------
+  // Always attempt email — it's the fallback when Twilio is on a trial
+  // account or the user's phone is unverified. sendEmail() no-ops safely
+  // (without throwing) when RESEND_API_KEY isn't set.
+  try {
+    const html = renderOtpEmailHtml(record.emailCode);
+    const result = await sendEmail({
+      from: "no-reply",
+      to: record.email,
+      subject: `Your OduDoc verification code: ${record.emailCode}`,
+      html,
+    });
+    if (result.ok && !result.skipped) {
+      console.log(`[Email] OTP sent to ${record.email}`);
+    } else if (result.skipped) {
+      console.warn("[Email] Skipped OTP send — RESEND_API_KEY not configured.");
+    } else {
+      console.error("[Email] OTP send failed:", result.error);
+    }
+  } catch (err: any) {
+    console.error("[Email] OTP send threw:", err?.message || err);
+  }
+}
+
+function renderOtpEmailHtml(code: string): string {
+  // Keep the styling inline + minimal — email clients strip <style> blocks.
+  return `
+  <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f6f7fb;padding:32px 16px;">
+    <div style="max-width:480px;margin:0 auto;background:#ffffff;border-radius:12px;padding:32px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+      <h1 style="margin:0 0 8px;font-size:20px;color:#0f172a;">Your OduDoc verification code</h1>
+      <p style="margin:0 0 24px;color:#475569;font-size:14px;line-height:1.5;">
+        Use the code below to finish signing in. It expires in 10 minutes.
+      </p>
+      <div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:32px;font-weight:700;letter-spacing:6px;background:#f1f5f9;color:#0f172a;text-align:center;padding:16px;border-radius:8px;">
+        ${code}
+      </div>
+      <p style="margin:24px 0 0;color:#94a3b8;font-size:12px;line-height:1.5;">
+        If you didn't try to sign in, you can safely ignore this email — no one
+        can access your account without this code.
+      </p>
+    </div>
+    <p style="text-align:center;color:#cbd5e1;font-size:11px;margin-top:16px;">
+      OduDoc · do not reply to this email
+    </p>
+  </div>`;
 }

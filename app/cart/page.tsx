@@ -15,6 +15,10 @@ export default function CartPage() {
   const { items, removeFromCart, updateQuantity, subtotal, totalItems, clearCart } = useCart();
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
+  const [promoError, setPromoError] = useState("");
+  const [promoDiscount, setPromoDiscount] = useState(0);
+  const [promoAppliedCode, setPromoAppliedCode] = useState("");
+  const [promoBusy, setPromoBusy] = useState(false);
   const [rxUploads, setRxUploads] = useState<Record<string, UploadedRx>>({});
 
   const setRx = (productId: string, rx: UploadedRx | null) => {
@@ -32,13 +36,45 @@ export default function CartPage() {
 
   const shipping = subtotal > 50 ? 0 : 5.99;
   const tax = subtotal * 0.08;
-  const discount = promoApplied ? subtotal * 0.1 : 0;
-  const total = subtotal + shipping + tax - discount;
+  const discount = promoApplied ? promoDiscount : 0;
+  const total = Math.max(0, subtotal + shipping + tax - discount);
 
-  const handleApplyPromo = () => {
-    if (promoCode.toLowerCase() === "health10") {
-      setPromoApplied(true);
+  const handleApplyPromo = async () => {
+    const code = promoCode.trim();
+    if (!code) return;
+    setPromoBusy(true);
+    setPromoError("");
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, subtotal }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setPromoApplied(true);
+        setPromoDiscount(Number(data.discount) || 0);
+        setPromoAppliedCode(data.coupon?.code || code.toUpperCase());
+        setPromoError("");
+      } else {
+        setPromoApplied(false);
+        setPromoDiscount(0);
+        setPromoAppliedCode("");
+        setPromoError(data.error || "Invalid code");
+      }
+    } catch {
+      setPromoError("Could not validate code. Please try again.");
+    } finally {
+      setPromoBusy(false);
     }
+  };
+
+  const handleRemovePromo = () => {
+    setPromoApplied(false);
+    setPromoDiscount(0);
+    setPromoAppliedCode("");
+    setPromoCode("");
+    setPromoError("");
   };
 
   if (items.length === 0) {
@@ -198,7 +234,7 @@ export default function CartPage() {
                 </div>
                 {promoApplied && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-green-600">Promo Discount (10%)</span>
+                    <span className="text-green-600">Promo ({promoAppliedCode})</span>
                     <span className="font-medium text-green-600">-${discount.toFixed(2)}</span>
                   </div>
                 )}
@@ -211,21 +247,37 @@ export default function CartPage() {
                     type="text"
                     placeholder="Promo code"
                     value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
-                    className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                    onChange={(e) => {
+                      setPromoCode(e.target.value);
+                      if (promoError) setPromoError("");
+                    }}
+                    disabled={promoApplied}
+                    className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:bg-gray-50"
                   />
-                  <button
-                    onClick={handleApplyPromo}
-                    className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
-                  >
-                    Apply
-                  </button>
+                  {promoApplied ? (
+                    <button
+                      onClick={handleRemovePromo}
+                      className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
+                    >
+                      Remove
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleApplyPromo}
+                      disabled={promoBusy || !promoCode.trim()}
+                      className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 disabled:opacity-50"
+                    >
+                      {promoBusy ? "…" : "Apply"}
+                    </button>
+                  )}
                 </div>
                 {promoApplied && (
-                  <p className="mt-2 text-xs text-green-600">Promo code HEALTH10 applied successfully!</p>
+                  <p className="mt-2 text-xs text-green-600">
+                    Promo code {promoAppliedCode} applied — you saved ${discount.toFixed(2)}.
+                  </p>
                 )}
-                {!promoApplied && promoCode && promoCode.toLowerCase() !== "health10" && (
-                  <p className="mt-2 text-xs text-gray-400">Try: HEALTH10</p>
+                {promoError && (
+                  <p className="mt-2 text-xs text-red-600">{promoError}</p>
                 )}
               </div>
 

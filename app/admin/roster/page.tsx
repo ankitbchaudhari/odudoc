@@ -253,7 +253,18 @@ export default function RosterPage() {
       </div>
 
       {err && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{err}</div>
+        err === "no_active_org" ? (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <p className="font-medium">No organization selected.</p>
+            <p className="mt-1 text-amber-700">
+              Shift Roster is scoped to a hospital or clinic. Pick one from the
+              <span className="mx-1 font-semibold">“No org selected”</span>
+              dropdown at the top of the page, then come back to this screen.
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{err}</div>
+        )
       )}
 
       {showForm && (

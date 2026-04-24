@@ -108,27 +108,86 @@ await hydrate();
 })();
 
 // Idempotent ensure: on already-deployed DBs the seed() function won't
-// re-run, so we create the demo vendor account here if it's missing.
-// This keeps the credentials stable (vendor@odudoc.com / vendor123) on
-// every environment without wiping pre-existing users.
-(function ensureDemoVendorUser() {
-  const email = "vendor@odudoc.com";
-  if (users.some((u) => u.email.toLowerCase() === email)) return;
-  const nowIso = new Date().toISOString();
-  users.push({
+// re-run, so we create the demo role accounts here if they're missing.
+// This keeps credentials stable on every environment without wiping
+// pre-existing users. Any admin can rotate the passwords from
+// /admin/users → "Reset pw".
+//
+// NOTE: these passwords are demo-only defaults, meant to be visible in
+// source and changed immediately in production via the admin panel.
+// They are NOT secrets.
+const DEMO_ACCOUNTS: {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  role: User["role"];
+}[] = [
+  {
     id: "demo-vendor-001",
     name: "Demo Vendor",
-    email,
+    email: "vendor@odudoc.com",
     phone: "+1234567893",
-    password: bcrypt.hashSync("vendor123", 10),
+    password: "vendor123",
     role: "vendor",
-    createdAt: nowIso,
-    emailVerified: true,
-    lastLoginAt: null,
-    status: "active",
-    warnings: [],
-  });
-  flush();
+  },
+  {
+    id: "demo-staff-001",
+    name: "Demo Staff",
+    email: "staff@odudoc.com",
+    phone: "+1234567894",
+    password: "staff123",
+    role: "staff",
+  },
+  {
+    id: "demo-pharmacist-001",
+    name: "Demo Pharmacist",
+    email: "pharmacist@odudoc.com",
+    phone: "+1234567895",
+    password: "pharmacist123",
+    role: "pharmacist",
+  },
+  {
+    id: "demo-support-001",
+    name: "Demo Support",
+    email: "support@odudoc.com",
+    phone: "+1234567896",
+    password: "support123",
+    role: "support",
+  },
+  {
+    id: "demo-hr-001",
+    name: "Demo HR",
+    email: "hr@odudoc.com",
+    phone: "+1234567897",
+    password: "hr123",
+    role: "hr",
+  },
+];
+
+(function ensureDemoRoleAccounts() {
+  const nowIso = new Date().toISOString();
+  let dirty = false;
+  for (const seed of DEMO_ACCOUNTS) {
+    const normalised = seed.email.toLowerCase();
+    if (users.some((u) => u.email.toLowerCase() === normalised)) continue;
+    users.push({
+      id: seed.id,
+      name: seed.name,
+      email: seed.email,
+      phone: seed.phone,
+      password: bcrypt.hashSync(seed.password, 10),
+      role: seed.role,
+      createdAt: nowIso,
+      emailVerified: true,
+      lastLoginAt: null,
+      status: "active",
+      warnings: [],
+    });
+    dirty = true;
+  }
+  if (dirty) flush();
 })();
 
 // One-time migration: fill in moderation fields on any pre-existing user rows

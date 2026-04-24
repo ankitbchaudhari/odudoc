@@ -43,7 +43,7 @@ export async function signMobileToken(
     .setExpirationTime(exp)
     .setIssuer("odudoc-mobile")
     .setAudience("odudoc-mobile")
-    .setSubject(claims.sub)
+    .setSubject(claims.sub as string)
     .sign(getSecret());
   return { token, expiresAt: exp * 1000 };
 }

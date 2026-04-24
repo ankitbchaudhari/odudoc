@@ -139,6 +139,10 @@ export interface PersistentArrayHandle {
   reload: () => Promise<void>;
   flush: () => void;
   isHydrated: () => boolean;
+  // Record that an id was deliberately deleted so the anti-clobber merge
+  // in mergingSave() doesn't resurrect it from Postgres. Stores that mutate
+  // by id MUST call this when deleting, or the row will be re-merged back.
+  tombstone: (id: string | number) => void;
   // Thenable — `await handle` triggers hydrate(). Resolves to void so TS
   // doesn't recurse on PersistentArrayHandle referencing itself.
   then: <TResult1 = void, TResult2 = never>(
@@ -156,6 +160,10 @@ export function bindPersistentArray<T>(
   let hydrating: Promise<void> | null = null;
   let flushPromise: Promise<void> = Promise.resolve();
   let suspendFlush = false; // when hydrate/reload replaces ref contents we don't want to write-through
+  // IDs explicitly deleted by this Lambda. mergingSave() reads from Postgres
+  // before writing to avoid clobbering sibling inserts, but without tracking
+  // deliberate deletes it would re-merge our just-deleted rows back in.
+  const tombstones = new Set<string | number>();
 
   async function hydrate(): Promise<void> {
     if (hydrated) return;
@@ -205,7 +213,10 @@ export function bindPersistentArray<T>(
               .filter((id) => id !== undefined)
           );
           const missing = (dbItems as Array<{ id: unknown }>).filter(
-            (item) => item?.id !== undefined && !refIds.has(item.id)
+            (item) =>
+              item?.id !== undefined &&
+              !refIds.has(item.id) &&
+              !tombstones.has(item.id as string | number)
           );
           if (missing.length > 0) {
             suspendFlush = true;
@@ -273,11 +284,16 @@ export function bindPersistentArray<T>(
     }
   }
 
+  function tombstone(id: string | number): void {
+    tombstones.add(id);
+  }
+
   const handle: PersistentArrayHandle = {
     hydrate,
     reload,
     flush,
     isHydrated,
+    tombstone,
     then(onFulfilled, onRejected) {
       return hydrate().then(onFulfilled, onRejected);
     },

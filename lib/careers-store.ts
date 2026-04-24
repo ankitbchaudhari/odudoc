@@ -38,6 +38,7 @@ const {
   hydrate: hydrateJobs,
   flush: flushJobs,
   reload: reloadJobsInternal,
+  tombstone: tombstoneJob,
 } = bindPersistentArray<JobVacancy>("careers-jobs", jobs);
 
 const applications: JobApplication[] = [];
@@ -45,6 +46,7 @@ const {
   hydrate: hydrateApps,
   flush: flushApps,
   reload: reloadAppsInternal,
+  tombstone: tombstoneApp,
 } = bindPersistentArray<JobApplication>(
   "careers-applications",
   applications,
@@ -794,6 +796,9 @@ export function deleteJob(id: string): boolean {
   const idx = jobs.findIndex((j) => j.id === id);
   if (idx < 0) return false;
   jobs.splice(idx, 1);
+  // Tombstone so the merge-before-save inside flushJobs() doesn't
+  // resurrect the row from Postgres and write it back.
+  tombstoneJob(id);
   flushJobs();
   // If this is a seeded vacancy, remember the deletion so the seed
   // IIFE doesn't resurrect it on the next cold-start.
@@ -843,6 +848,7 @@ export function deleteApplication(id: string): boolean {
   const idx = applications.findIndex((a) => a.id === id);
   if (idx < 0) return false;
   applications.splice(idx, 1);
+  tombstoneApp(id);
   flushApps();
   return true;
 }

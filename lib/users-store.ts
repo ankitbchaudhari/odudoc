@@ -85,7 +85,7 @@ export interface UserIdentity {
 }
 
 const users: User[] = [];
-const { hydrate, reload, flush } = bindPersistentArray<User>(
+const { hydrate, reload, flush, tombstone } = bindPersistentArray<User>(
   "users",
   users,
   () => {
@@ -564,6 +564,10 @@ export function deleteUser(id: string): User | null {
   const idx = users.findIndex((u) => u.id === id);
   if (idx < 0) return null;
   const [removed] = users.splice(idx, 1);
+  // Tombstone first — otherwise the anti-clobber merge inside flush()
+  // reads the still-present row from Postgres and re-adds it locally,
+  // then writes that zombie back, undoing the delete.
+  tombstone(id);
   flush();
   return removed;
 }

@@ -201,7 +201,7 @@ function seedRow(partial: {
 
 const doctors: Doctor[] = [];
 // No seed — the store starts empty. All doctors come from admin panel.
-const { hydrate, reload, flush } = bindPersistentArray<Doctor>(
+const { hydrate, reload, flush, tombstone } = bindPersistentArray<Doctor>(
   "doctors",
   doctors,
   () => []
@@ -378,6 +378,9 @@ export function deleteDoctor(id: string): boolean {
   const idx = doctors.findIndex((d) => d.id === id);
   if (idx < 0) return false;
   doctors.splice(idx, 1);
+  // Tombstone so the merge-before-save in flush() doesn't resurrect the
+  // row from Postgres and write it back, undoing the delete.
+  tombstone(id);
   flush();
   return true;
 }

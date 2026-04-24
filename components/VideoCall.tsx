@@ -28,13 +28,34 @@ export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, 
     let embedUrl = roomUrl;
     if (isJitsi) {
       // Jitsi uses a hash fragment for user info + UI config. We hide
-      // the pre-join screen so the user lands directly in the call.
+      // the pre-join screen, strip watermarks/branding, and trim the
+      // default toolbar down to essentials for a cleaner OduDoc feel.
+      const toolbar = [
+        "microphone","camera","desktop","chat","raisehand",
+        "fullscreen","tileview","hangup","settings",
+      ];
       const params = [
         `userInfo.displayName=%22${encodeURIComponent(userName)}%22`,
         "config.prejoinPageEnabled=false",
         "config.startWithAudioMuted=false",
         "config.startWithVideoMuted=false",
         "config.disableDeepLinking=true",
+        "config.disableInviteFunctions=true",
+        "config.disableProfile=true",
+        "config.hideConferenceSubject=true",
+        "config.hideConferenceTimer=false",
+        `config.toolbarButtons=${encodeURIComponent(JSON.stringify(toolbar))}`,
+        "interfaceConfig.SHOW_JITSI_WATERMARK=false",
+        "interfaceConfig.SHOW_WATERMARK_FOR_GUESTS=false",
+        "interfaceConfig.SHOW_BRAND_WATERMARK=false",
+        "interfaceConfig.SHOW_POWERED_BY=false",
+        "interfaceConfig.SHOW_PROMOTIONAL_CLOSE_PAGE=false",
+        "interfaceConfig.DISABLE_JOIN_LEAVE_NOTIFICATIONS=false",
+        "interfaceConfig.HIDE_INVITE_MORE_HEADER=true",
+        "interfaceConfig.MOBILE_APP_PROMO=false",
+        "interfaceConfig.DEFAULT_LOGO_URL=%22%22",
+        "interfaceConfig.DEFAULT_WELCOME_PAGE_LOGO_URL=%22%22",
+        "interfaceConfig.JITSI_WATERMARK_LINK=%22%22",
       ].join("&");
       embedUrl = `${roomUrl}#${params}`;
     } else {
@@ -61,6 +82,15 @@ export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, 
         >
           End Call
         </button>
+        {/* OduDoc brand overlay — covers the bottom-left Jitsi watermark
+            on the free meet.jit.si deployment since we can't strip it
+            across an iframe origin boundary. */}
+        {isJitsi && (
+          <div className="pointer-events-none absolute bottom-3 left-3 z-40 flex items-center gap-2 rounded-lg bg-black/70 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+            <span className="text-primary-400">🩺</span>
+            <span>OduDoc</span>
+          </div>
+        )}
       </div>
     );
   }

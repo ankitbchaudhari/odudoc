@@ -90,6 +90,19 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// Rewrite legacy Daily URLs that were created before we switched to
+// Jitsi. Those Daily rooms require a billed account to actually join,
+// so without rewriting, old consultation links would be dead. Jitsi
+// rooms don't need to exist ahead of time — meet.jit.si creates them
+// on first visit — so we can just redirect the name and it works.
+function migrateLegacyUrl(url: string, roomName: string): string {
+  if (url.includes("daily.co")) {
+    const jitsiRoom = `odudoc-${roomName}`.replace(/[^a-zA-Z0-9-]/g, "-");
+    return `https://meet.jit.si/${jitsiRoom}`;
+  }
+  return url;
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const roomId = searchParams.get("roomId");
@@ -99,9 +112,15 @@ export async function GET(req: NextRequest) {
     if (!room) {
       return NextResponse.json({ error: "Room not found" }, { status: 404 });
     }
-    return NextResponse.json(room);
+    return NextResponse.json({
+      ...room,
+      roomUrl: migrateLegacyUrl(room.roomUrl, room.roomName),
+    });
   }
 
-  const rooms = getAllRooms();
+  const rooms = getAllRooms().map((r) => ({
+    ...r,
+    roomUrl: migrateLegacyUrl(r.roomUrl, r.roomName),
+  }));
   return NextResponse.json(rooms);
 }

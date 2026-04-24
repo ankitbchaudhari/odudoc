@@ -474,13 +474,34 @@ export default function VendorDashboard() {
         </div>
 
         {/* Quick actions */}
-        <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
           <QuickAction
             href="/dashboard/vendor/products/new"
             label="Add product"
             desc="List a new item for sale"
             emoji="🧪"
             tone="from-indigo-500 to-violet-500"
+          />
+          <QuickAction
+            href="/dashboard/vendor/stores"
+            label="Stores & stock"
+            desc="Locations, pickup, inventory"
+            emoji="🏪"
+            tone="from-rose-500 to-pink-500"
+          />
+          <QuickAction
+            href="/dashboard/vendor/rx-orders"
+            label="Rx orders"
+            desc="Prescription fulfillment queue"
+            emoji="💊"
+            tone="from-fuchsia-500 to-purple-500"
+          />
+          <QuickAction
+            href="/dashboard/vendor/team"
+            label="Team access"
+            desc="Invite pharmacists & cashiers"
+            emoji="👥"
+            tone="from-lime-500 to-green-500"
           />
           <QuickAction
             href="/dashboard/vendor/orders"

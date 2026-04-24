@@ -7,6 +7,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import PharmacyPicker from "./PharmacyPicker";
+import PharmacyOrderConfirm, { type PharmacyOrderDraft } from "./PharmacyOrderConfirm";
 
 export interface MedicineRow {
   name: string;
@@ -39,6 +41,7 @@ const CLINIC_NAME = "OduDoc E Medical Center";
 
 export default function ConsultPrescriptionView({ rx, showPharmacyOptions = true }: Props) {
   const [choice, setChoice] = useState<"odudoc" | "offline" | null>(null);
+  const [draft, setDraft] = useState<PharmacyOrderDraft | null>(null);
 
   // Encode the medicine list into a ?rx= query param so the /shop page
   // can show a pre-filled "buy these" list when we wire it up later.
@@ -245,17 +248,39 @@ export default function ConsultPrescriptionView({ rx, showPharmacyOptions = true
 
           {/* Follow-up action */}
           {choice === "odudoc" && (
-            <div className="mt-5 rounded-lg border border-primary-100 bg-primary-50 p-4">
-              <p className="text-sm text-primary-900">
-                We&apos;ll pre-fill your cart with the prescribed medicines. You can
-                review substitutions and delivery options before checking out.
-              </p>
-              <Link
-                href={shopHref}
-                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700"
-              >
-                Continue to OduDoc Pharmacy →
-              </Link>
+            <div className="mt-5 space-y-4">
+              <div className="rounded-lg border border-primary-100 bg-primary-50 p-4">
+                <p className="text-sm text-primary-900">
+                  Compare pharmacies near you below, or browse the full
+                  OduDoc catalog to review substitutions manually.
+                </p>
+                <Link
+                  href={shopHref}
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg border border-primary-600 bg-white px-4 py-2 text-sm font-semibold text-primary-700 shadow-sm hover:bg-primary-50"
+                >
+                  Browse catalog →
+                </Link>
+              </div>
+              {!draft && (
+                <PharmacyPicker
+                  medicines={rx.medicines}
+                  onPick={(c) =>
+                    setDraft({
+                      store: c.store,
+                      fulfillment: c.fulfillment,
+                      lines: c.lines,
+                      totalInr: c.totalInr,
+                      doctorName: rx.doctorName,
+                    })
+                  }
+                />
+              )}
+              {draft && (
+                <PharmacyOrderConfirm
+                  draft={draft}
+                  onCancel={() => setDraft(null)}
+                />
+              )}
             </div>
           )}
 

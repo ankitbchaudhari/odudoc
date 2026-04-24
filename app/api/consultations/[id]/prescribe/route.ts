@@ -31,14 +31,37 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const c = getConsultation(id);
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  // Owner-doctor match: a doctor can prescribe on a consultation that's
+  // theirs by email, name, OR that has no doctor yet (unclaimed fan-out
+  // record — sometimes the claim hasn't flushed across Lambdas by the
+  // time the call ends). Admins can always prescribe.
+  const uEmail = user.email.toLowerCase();
+  const uName = (user.name || "").toLowerCase().replace(/^dr\.?\s+/, "").trim();
+  const cName = (c.doctorName || "").toLowerCase().replace(/^dr\.?\s+/, "").trim();
   const isOwnerDoctor =
     user.role === "doctor" &&
     (
-      (!!c.doctorEmail && c.doctorEmail === user.email.toLowerCase()) ||
-      (!!user.name && c.doctorName.toLowerCase() === user.name.toLowerCase())
+      !c.doctorEmail ||
+      c.doctorEmail === uEmail ||
+      (!!uName && !!cName && cName === uName)
     );
   const isAdmin = user.role === "admin";
-  if (!isOwnerDoctor && !isAdmin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!isOwnerDoctor && !isAdmin) {
+    log.error("prescribe.forbidden", undefined, {
+      args: [
+        "[prescribe] rejected:",
+        {
+          consultationId: id,
+          sessionEmail: uEmail,
+          sessionName: user.name,
+          sessionRole: user.role,
+          consultDoctorEmail: c.doctorEmail,
+          consultDoctorName: c.doctorName,
+        },
+      ],
+    });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const body = await req.json().catch(() => ({}));
   const data = body.data as Partial<PrescriptionData> | undefined;

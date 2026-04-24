@@ -209,6 +209,7 @@ export default function DoctorNotesPanel({
     setOpen(true);
   }, [dictationSeed]);
   const [sent, setSent] = useState(false);
+  const [sendErr, setSendErr] = useState<string | null>(null);
   const [aiMsg, setAiMsg] = useState<string>("");
   const [aiBusy, setAiBusy] = useState(false);
   const [aiWarning, setAiWarning] = useState<string>("");
@@ -326,7 +327,7 @@ export default function DoctorNotesPanel({
         payload.notes,
       ].filter(Boolean).join("\n\n");
       try {
-        await fetch(`/api/consultations/${encodeURIComponent(consultationId)}/prescribe`, {
+        const res = await fetch(`/api/consultations/${encodeURIComponent(consultationId)}/prescribe`, {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
@@ -353,8 +354,24 @@ export default function DoctorNotesPanel({
             },
           }),
         });
-      } catch {
-        /* non-blocking — doctor still gets UI confirmation */
+        if (!res.ok) {
+          const j = await res.json().catch(() => ({}));
+          setSendErr(
+            `Prescription was NOT saved on the server (${res.status}${j?.error ? ` — ${j.error}` : ""}). ` +
+              `Your copy is kept locally for this call, but it won't appear in dashboards. ` +
+              `Please flag this to support.`,
+          );
+          setSending(false);
+          return; // don't pretend we sent it
+        }
+      } catch (err) {
+        setSendErr(
+          `Couldn't reach the server to save this prescription: ${
+            err instanceof Error ? err.message : "network error"
+          }. Try again or flag to support.`,
+        );
+        setSending(false);
+        return;
       }
     }
 
@@ -571,6 +588,11 @@ export default function DoctorNotesPanel({
 
       {/* Footer */}
       <div className="border-t border-gray-200 bg-gray-50 px-4 py-3">
+        {sendErr && (
+          <div className="mb-2 rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700">
+            {sendErr}
+          </div>
+        )}
         {sent ? (
           <div className="flex items-center justify-center gap-2 text-sm font-medium text-green-700">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

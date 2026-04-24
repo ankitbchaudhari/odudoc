@@ -26,6 +26,7 @@ export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, 
   const [remoteParticipant, setRemoteParticipant] = useState<string | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const endCallRef = useRef<(() => void) | null>(null);
   const selfViewRef = useRef<HTMLDivElement>(null);
   const [selfViewPos, setSelfViewPos] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -77,10 +78,21 @@ export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, 
       try {
         const r = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/presence`, {
           method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({}),
         });
         if (!r.ok || cancelled) return;
-        const j = (await r.json()) as { peer: { role: string; name: string } | null };
+        const j = (await r.json()) as {
+          peer: { role: string; name: string } | null;
+          ended?: boolean;
+        };
         if (cancelled) return;
+        // Peer (or self) ended the call — hang up on this side too.
+        if (j.ended) {
+          cancelled = true;
+          endCallRef.current?.();
+          return;
+        }
         setRemoteParticipant(j.peer ? j.peer.name : null);
       } catch {
         /* transient network — next tick will retry */
@@ -184,11 +196,32 @@ export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, 
   }, [isScreenSharing, localStream]);
 
   const endCall = useCallback(() => {
+    // Fire-and-forget end beacon so the peer's next poll sees the room
+    // as ended and hangs up too. keepalive lets it survive page unload.
+    if (roomId) {
+      try {
+        fetch(`/api/rooms/${encodeURIComponent(roomId)}/presence`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ end: true }),
+          keepalive: true,
+        }).catch(() => {});
+      } catch {
+        /* ignore */
+      }
+    }
     stopAllStreams();
     if (timerRef.current) clearInterval(timerRef.current);
     onLeave();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onLeave]);
+  }, [onLeave, roomId]);
+
+  // Keep a ref so the polling loop (which captures endCall from its own
+  // closure) always calls the latest version without re-running the
+  // effect on every render.
+  useEffect(() => {
+    endCallRef.current = endCall;
+  }, [endCall]);
 
   const formatDuration = (seconds: number) => {
     const h = Math.floor(seconds / 3600);

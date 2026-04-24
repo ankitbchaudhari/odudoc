@@ -39,7 +39,7 @@ export default function Footer() {
       title: t("footer.forDoctors"),
       links: [
         { label: "OduDoc Profile", href: "/for-doctors" },
-        { label: "For Clinics", href: "/for-clinics" },
+        { label: "For Corporates", href: "/corporate" },
         { label: "Your Pharmacy on OduDoc", href: "/sell" },
         { label: "OduDoc AI", href: "/ray" },
       ],

@@ -72,6 +72,649 @@ await Promise.all([hydrateJobs(), hydrateApps()]);
   if (applsDirty) flushApps();
 })();
 
+// Department vacancy seed. Idempotent — each posting has a stable
+// `seed-<slug>` id, so re-runs don't duplicate rows. Admins can edit
+// titles/salary/status from the Careers console; only rows that are
+// still missing get written.
+(function seedDepartmentVacancies() {
+  const TEMPLATE: Array<
+    Omit<JobVacancy, "id" | "postedAt"> & { seedId: string }
+  > = [
+    // Core clinical
+    {
+      seedId: "seed-general-medicine",
+      title: "Consultant — General Medicine",
+      department: "General Medicine",
+      location: "Bangalore, IN",
+      employmentType: "Full-time",
+      salary: "₹18-28 L / year",
+      description:
+        "Lead OPD and inpatient care for adult medical patients. Work alongside specialists across cardiology, nephrology, and endocrinology.",
+      responsibilities: [
+        "Run daily OPD clinics and ward rounds",
+        "Admit, stabilise, and discharge medical patients",
+        "Document encounters in the OduDoc EMR",
+      ],
+      requirements: ["MD (General Medicine) or equivalent", "3+ years post-MD experience", "Valid medical council registration"],
+      active: true,
+    },
+    {
+      seedId: "seed-cardiology",
+      title: "Interventional Cardiologist",
+      department: "Cardiology",
+      location: "Mumbai, IN",
+      employmentType: "Full-time",
+      salary: "₹40-65 L / year",
+      description:
+        "Perform diagnostic and interventional cath-lab procedures at a 200-bed tertiary unit with 24×7 primary PCI capability.",
+      responsibilities: [
+        "PCI, IVUS, and structural heart procedures",
+        "Run cardiology OPD twice weekly",
+        "Teach DM cardiology fellows",
+      ],
+      requirements: ["DM Cardiology", "Independent cath-lab operator for 2+ years", "Comfortable with call rota"],
+      active: true,
+    },
+    {
+      seedId: "seed-oncology",
+      title: "Medical Oncologist",
+      department: "Oncology & Chemo",
+      location: "Chennai, IN",
+      employmentType: "Full-time",
+      salary: "₹35-55 L / year",
+      description:
+        "Join our tumour board and deliver chemo / immunotherapy protocols for solid and hematologic malignancies.",
+      responsibilities: [
+        "Treatment planning for oncology patients",
+        "Tumour-board participation",
+        "Supervise day-care chemo administration",
+      ],
+      requirements: ["DM Medical Oncology", "ECMO / port-care familiarity", "Good communication for palliative discussions"],
+      active: true,
+    },
+    {
+      seedId: "seed-icu",
+      title: "Intensivist — ICU / Critical Care",
+      department: "ICU / Critical Care",
+      location: "Delhi NCR, IN",
+      employmentType: "Full-time",
+      salary: "₹30-48 L / year",
+      description:
+        "Run our 24-bed mixed medical-surgical ICU with full ventilator, CRRT and ECMO capability.",
+      responsibilities: [
+        "Lead daily multidisciplinary ICU rounds",
+        "Manage ventilation, sepsis, and organ support",
+        "Train ICU nursing + junior residents",
+      ],
+      requirements: ["DM / IDCCM / EDIC", "ACLS + FCCS certified", "Comfortable leading code blue"],
+      active: true,
+    },
+    {
+      seedId: "seed-labor-delivery",
+      title: "Consultant Obstetrician — Labor & Delivery",
+      department: "Labor & Delivery",
+      location: "Pune, IN",
+      employmentType: "Full-time",
+      salary: "₹22-38 L / year",
+      description:
+        "Cover high-risk obstetrics and 24×7 labour-ward call with a team of 3 consultants.",
+      responsibilities: [
+        "Conduct normal and assisted deliveries",
+        "LSCS and emergency obstetric surgery",
+        "Run antenatal clinic thrice weekly",
+      ],
+      requirements: ["MS / DNB Obs & Gyn", "2+ years post-MS experience", "FOGSI membership preferred"],
+      active: true,
+    },
+    {
+      seedId: "seed-surgery-ot",
+      title: "General Surgeon",
+      department: "Surgery / OT",
+      location: "Hyderabad, IN",
+      employmentType: "Full-time",
+      salary: "₹25-42 L / year",
+      description:
+        "Operate laparoscopic and open general-surgery cases; share emergency rota with 4 colleagues.",
+      responsibilities: [
+        "Perform elective and emergency general-surgery procedures",
+        "OPD and inpatient follow-up",
+        "Lead OT audit once monthly",
+      ],
+      requirements: ["MS / DNB General Surgery", "FIAGES or hands-on laparoscopy training", "Valid indemnity cover"],
+      active: true,
+    },
+    {
+      seedId: "seed-anesthesia",
+      title: "Consultant Anesthesiologist — Pre-Anesthesia",
+      department: "Pre-Anesthesia",
+      location: "Ahmedabad, IN",
+      employmentType: "Full-time",
+      salary: "₹22-36 L / year",
+      description:
+        "Run the pre-anaesthesia clinic, deliver OT anaesthesia, and cover obstetric epidural service.",
+      responsibilities: [
+        "PAC evaluations and optimisation",
+        "General / regional anaesthesia for elective lists",
+        "Labour analgesia cover",
+      ],
+      requirements: ["MD / DNB Anaesthesia", "Regional anaesthesia proficiency", "BLS + ACLS current"],
+      active: true,
+    },
+    {
+      seedId: "seed-dialysis",
+      title: "Nephrologist — Dialysis Unit",
+      department: "Dialysis",
+      location: "Kolkata, IN",
+      employmentType: "Full-time",
+      salary: "₹28-45 L / year",
+      description:
+        "Lead a 12-station dialysis unit covering HD, CRRT and peritoneal dialysis patients.",
+      responsibilities: [
+        "Run dialysis rounds and nephrology OPD",
+        "Vascular access planning and review",
+        "Transplant workup coordination",
+      ],
+      requirements: ["DM Nephrology", "Fluent with AV-fistula management", "ISN membership preferred"],
+      active: true,
+    },
+    {
+      seedId: "seed-physiotherapy",
+      title: "Senior Physiotherapist",
+      department: "Physiotherapy",
+      location: "Bangalore, IN",
+      employmentType: "Full-time",
+      salary: "₹6-9 L / year",
+      description:
+        "Deliver inpatient and outpatient physiotherapy across ortho, neuro and cardiac-rehab referrals.",
+      responsibilities: [
+        "Assess and treat inpatients post-op and post-stroke",
+        "Run cardiac-rehab group sessions twice weekly",
+        "Document progress in the EMR",
+      ],
+      requirements: ["BPT / MPT", "3+ years hospital physio experience", "IAP registration"],
+      active: true,
+    },
+    {
+      seedId: "seed-wound-care",
+      title: "Wound Care Nurse Specialist",
+      department: "Wound Care",
+      location: "Chennai, IN",
+      employmentType: "Full-time",
+      salary: "₹5-8 L / year",
+      description:
+        "Dedicated wound-care nurse for diabetic-foot, pressure-injury, and post-op wound review.",
+      responsibilities: [
+        "Daily dressing rounds across IPD wards",
+        "Maintain wound-photography log",
+        "Train floor nurses on NPWT devices",
+      ],
+      requirements: ["B.Sc Nursing + 2 yrs ward exp", "Wound-care certification a plus", "INC-registered"],
+      active: true,
+    },
+    {
+      seedId: "seed-endoscopy",
+      title: "Endoscopy Technician",
+      department: "Endoscopy",
+      location: "Mumbai, IN",
+      employmentType: "Full-time",
+      salary: "₹4-6 L / year",
+      description:
+        "Assist gastroenterologists in a busy endoscopy suite doing 20+ procedures per day.",
+      responsibilities: [
+        "Scope reprocessing and sterilisation",
+        "Patient positioning and sedation monitoring",
+        "Inventory of biopsy forceps and snares",
+      ],
+      requirements: ["Diploma in OT tech or equivalent", "Endoscopy unit experience", "Knowledge of HLD / AER workflow"],
+      active: true,
+    },
+    {
+      seedId: "seed-pain-management",
+      title: "Pain Management Specialist",
+      department: "Pain Management",
+      location: "Delhi NCR, IN",
+      employmentType: "Full-time",
+      salary: "₹24-38 L / year",
+      description:
+        "Run fluoroscopy-guided interventional-pain clinic plus inpatient palliative-pain consults.",
+      responsibilities: [
+        "Nerve blocks, RFA, and epidural steroid injections",
+        "Pain OPD three days a week",
+        "Collaborate with palliative-care team",
+      ],
+      requirements: ["MD Anaesthesia + pain fellowship", "Comfortable under C-arm", "Strong communication skills"],
+      active: true,
+    },
+    // Diagnostics
+    {
+      seedId: "seed-radiology",
+      title: "Consultant Radiologist (CT / MRI)",
+      department: "Radiology",
+      location: "Bangalore, IN",
+      employmentType: "Full-time",
+      salary: "₹30-50 L / year",
+      description:
+        "Cross-sectional imaging reporting for a 1.5T MRI and 128-slice CT. Option for hybrid on-site + tele-reporting shifts.",
+      responsibilities: [
+        "Report CT, MRI, USG and plain films",
+        "Perform USG-guided biopsies / drainages",
+        "Participate in tumour-board reviews",
+      ],
+      requirements: ["MD Radiodiagnosis", "Cross-sectional fellowship preferred", "PACS / DICOM familiarity"],
+      active: true,
+    },
+    {
+      seedId: "seed-pathology",
+      title: "Consultant Pathologist — Histopathology",
+      department: "Pathology",
+      location: "Pune, IN",
+      employmentType: "Full-time",
+      salary: "₹22-36 L / year",
+      description:
+        "Sign out surgical-pathology cases with immunohistochemistry and frozen-section support.",
+      responsibilities: [
+        "Grossing and microscopic reporting",
+        "IHC interpretation",
+        "Frozen-section intraoperative consults",
+      ],
+      requirements: ["MD Pathology", "Histopath fellowship desirable", "Digital pathology familiarity"],
+      active: true,
+    },
+    {
+      seedId: "seed-lab-orders",
+      title: "Lab Technologist — Biochemistry",
+      department: "Lab Orders",
+      location: "Hyderabad, IN",
+      employmentType: "Full-time",
+      salary: "₹3-5 L / year",
+      description:
+        "Run biochemistry and immunoassay analysers for a 500-sample/day core lab.",
+      responsibilities: [
+        "Sample accessioning and run QC",
+        "Analyser maintenance + reagent stock",
+        "Release results through LIS",
+      ],
+      requirements: ["DMLT / BMLT", "1+ yr analyser experience", "Comfortable with night rota"],
+      active: true,
+    },
+    {
+      seedId: "seed-blood-bank",
+      title: "Blood Bank Officer",
+      department: "Blood Bank",
+      location: "Chennai, IN",
+      employmentType: "Full-time",
+      salary: "₹10-16 L / year",
+      description:
+        "Oversee a licensed blood bank with 800 units/month throughput including component separation and apheresis.",
+      responsibilities: [
+        "Donor screening and counselling",
+        "Cross-match + component issue",
+        "Regulatory compliance (NBTC + drug licensing)",
+      ],
+      requirements: ["MD Transfusion Medicine or equivalent", "Licensed in-charge experience", "Familiar with NABH-BB"],
+      active: true,
+    },
+    // Pharmacy & inventory
+    {
+      seedId: "seed-pharmacy-dispense",
+      title: "Hospital Pharmacist",
+      department: "Pharmacy Dispense",
+      location: "Delhi NCR, IN",
+      employmentType: "Full-time",
+      salary: "₹4-7 L / year",
+      description:
+        "Dispense inpatient and outpatient pharmacy orders; support ward-round medication review.",
+      responsibilities: [
+        "Verify and dispense Rx through the OduDoc pharmacy module",
+        "Reconcile discharge medication lists",
+        "Counsel patients on dosage and interactions",
+      ],
+      requirements: ["B.Pharm / D.Pharm + state registration", "Hospital pharmacy exp preferred", "Computer-literate for LIS / HIS"],
+      active: true,
+    },
+    {
+      seedId: "seed-pharmacy-inventory",
+      title: "Pharmacy Inventory Controller",
+      department: "Pharmacy Inventory",
+      location: "Mumbai, IN",
+      employmentType: "Full-time",
+      salary: "₹6-9 L / year",
+      description:
+        "Own multi-store pharmacy inventory: reorder points, expiry rotation, vendor negotiation.",
+      responsibilities: [
+        "Monthly stock audits across 4 satellite pharmacies",
+        "Manage purchase orders and GRNs",
+        "Drive near-expiry-rotation policy",
+      ],
+      requirements: ["B.Pharm + 3 yrs inventory exp", "Familiar with ERP inventory modules", "Strong vendor management skills"],
+      active: true,
+    },
+    // Workforce
+    {
+      seedId: "seed-medical-staff",
+      title: "HR Manager — Medical Staffing",
+      department: "Medical Staff",
+      location: "Bangalore, IN",
+      employmentType: "Full-time",
+      salary: "₹12-18 L / year",
+      description:
+        "Lead clinical recruitment, credentialing and retention programs across a 3-hospital group.",
+      responsibilities: [
+        "Run doctor / nurse recruitment funnel",
+        "Manage credentialing and privileging files",
+        "Drive retention + engagement initiatives",
+      ],
+      requirements: ["MBA HR + 6 yrs healthcare HR", "Strong network in Indian medical colleges", "Comfortable with NABH HR chapter"],
+      active: true,
+    },
+    {
+      seedId: "seed-shift-roster",
+      title: "Staff Scheduling Coordinator",
+      department: "Shift Roster",
+      location: "Chennai, IN",
+      employmentType: "Full-time",
+      salary: "₹4-6 L / year",
+      description:
+        "Own the master shift roster for nursing and allied health across wards and critical-care units.",
+      responsibilities: [
+        "Publish weekly rosters by Thursday",
+        "Manage leave, swap, and overtime requests",
+        "Track fatigue-management rules",
+      ],
+      requirements: ["Graduate, any stream", "2+ yrs rostering / scheduling exp", "Advanced Excel"],
+      active: true,
+    },
+    {
+      seedId: "seed-nursing-ward",
+      title: "Staff Nurse — Wards & Beds",
+      department: "Wards & Beds",
+      location: "Pune, IN",
+      employmentType: "Full-time",
+      salary: "₹3.5-5 L / year",
+      description:
+        "Bedside nursing care across medical and surgical wards on rotating shifts.",
+      responsibilities: [
+        "Vitals, medication, and IV care",
+        "EMR charting on OduDoc",
+        "Handover and incident reporting",
+      ],
+      requirements: ["B.Sc / GNM Nursing", "INC registered", "BLS certified"],
+      active: true,
+    },
+    // Facilities
+    {
+      seedId: "seed-dietary-orders",
+      title: "Clinical Dietitian",
+      department: "Dietary Orders",
+      location: "Hyderabad, IN",
+      employmentType: "Full-time",
+      salary: "₹5-8 L / year",
+      description:
+        "Run therapeutic diet orders for IPD and counsel outpatient diabetes / renal / oncology clinics.",
+      responsibilities: [
+        "Assess and plan IPD therapeutic diets",
+        "OPD counselling for lifestyle disease",
+        "Coordinate with kitchen for special trays",
+      ],
+      requirements: ["M.Sc Nutrition / RD", "2+ yrs hospital experience", "Familiar with renal / diabetic diet planning"],
+      active: true,
+    },
+    {
+      seedId: "seed-cssd",
+      title: "CSSD Supervisor",
+      department: "CSSD Sterilization",
+      location: "Ahmedabad, IN",
+      employmentType: "Full-time",
+      salary: "₹5-8 L / year",
+      description:
+        "Lead the Central Sterile Supply Department serving 6 OTs and all ward sets.",
+      responsibilities: [
+        "Drive autoclave QC and validation cycles",
+        "Maintain instrument trays and tracking",
+        "Train staff on decontamination protocols",
+      ],
+      requirements: ["Diploma in OT / CSSD", "5+ yrs CSSD experience", "Familiar with NABH / ISO 13485"],
+      active: true,
+    },
+    {
+      seedId: "seed-biomedical",
+      title: "Biomedical Engineer",
+      department: "Biomedical",
+      location: "Mumbai, IN",
+      employmentType: "Full-time",
+      salary: "₹6-10 L / year",
+      description:
+        "Maintain and calibrate clinical equipment fleet — ventilators, monitors, imaging and lab devices.",
+      responsibilities: [
+        "Preventive maintenance schedule",
+        "Breakdown response and vendor co-ordination",
+        "Asset register and AMC tracking",
+      ],
+      requirements: ["B.E. Biomedical / Electronics", "2+ yrs hospital BME exp", "Familiar with medical-device regulatory basics"],
+      active: true,
+    },
+    {
+      seedId: "seed-biomedical-waste",
+      title: "Biomedical Waste Officer",
+      department: "Biomedical Waste",
+      location: "Delhi NCR, IN",
+      employmentType: "Full-time",
+      salary: "₹4-6 L / year",
+      description:
+        "Run segregation, colour-coded collection and CBWTF hand-off per BMW Rules 2016.",
+      responsibilities: [
+        "Daily waste audit across wards and OTs",
+        "Coordinate vendor pickups and manifests",
+        "Train housekeeping on segregation",
+      ],
+      requirements: ["B.Sc Environmental / Public Health", "BMW Rules familiarity", "2+ yrs waste-management exp"],
+      active: true,
+    },
+    {
+      seedId: "seed-housekeeping",
+      title: "Housekeeping Supervisor",
+      department: "Housekeeping",
+      location: "Chennai, IN",
+      employmentType: "Full-time",
+      salary: "₹3.5-5 L / year",
+      description:
+        "Lead housekeeping team across wards, OT, and common areas with hospital-grade cleanliness SLAs.",
+      responsibilities: [
+        "Daily rounds and spot-check cleanliness",
+        "Manage vendor-supplied staff rota",
+        "Track consumable inventory",
+      ],
+      requirements: ["Graduate + 3 yrs hospital housekeeping", "Familiar with infection-control protocols", "Hindi + English fluent"],
+      active: true,
+    },
+    {
+      seedId: "seed-linen-laundry",
+      title: "Linen & Laundry In-charge",
+      department: "Linen & Laundry",
+      location: "Pune, IN",
+      employmentType: "Full-time",
+      salary: "₹3-5 L / year",
+      description:
+        "Operate in-house laundry or manage outsourced laundry vendor SLA, track linen rotation.",
+      responsibilities: [
+        "Receive and issue linen across wards",
+        "Track condemnation and par levels",
+        "QC vendor returns",
+      ],
+      requirements: ["Graduate, any stream", "Hospital linen experience preferred", "Basic inventory tooling"],
+      active: true,
+    },
+    {
+      seedId: "seed-infection-control",
+      title: "Infection Control Nurse",
+      department: "Infection Control",
+      location: "Bangalore, IN",
+      employmentType: "Full-time",
+      salary: "₹7-10 L / year",
+      description:
+        "Drive hospital-wide infection surveillance, hand-hygiene audits and CAUTI / CLABSI bundles.",
+      responsibilities: [
+        "Daily ICU bundle audits",
+        "Surveillance reporting to IC committee",
+        "Train staff on donning / doffing",
+      ],
+      requirements: ["B.Sc Nursing + IC course", "3+ yrs IC exp", "NABH / JCI familiarity"],
+      active: true,
+    },
+    // Operations
+    {
+      seedId: "seed-ambulance-dispatch",
+      title: "Ambulance Dispatch Coordinator",
+      department: "Ambulance Dispatch",
+      location: "Hyderabad, IN",
+      employmentType: "Full-time",
+      salary: "₹4-6 L / year",
+      description:
+        "Run 24×7 ambulance dispatch desk, coordinate calls, crew assignment and ETA to ED.",
+      responsibilities: [
+        "Triage inbound calls",
+        "Dispatch BLS / ALS units",
+        "Liaise with ED for pre-arrival notification",
+      ],
+      requirements: ["Graduate + EMT training preferred", "Shift-work ready", "Calm under pressure"],
+      active: true,
+    },
+    {
+      seedId: "seed-mortuary",
+      title: "Mortuary Attendant",
+      department: "Mortuary",
+      location: "Delhi NCR, IN",
+      employmentType: "Full-time",
+      salary: "₹3-4 L / year",
+      description:
+        "Maintain mortuary cold-chain, handle body release paperwork and relative counselling.",
+      responsibilities: [
+        "Body receiving and tagging",
+        "Release handover with death certificate",
+        "Equipment maintenance",
+      ],
+      requirements: ["10+2 + mortuary training", "Respectful communication with bereaved families", "Shift rota flexible"],
+      active: true,
+    },
+    {
+      seedId: "seed-opd-queue",
+      title: "OPD Queue Coordinator",
+      department: "OPD Queue",
+      location: "Chennai, IN",
+      employmentType: "Full-time",
+      salary: "₹3-4.5 L / year",
+      description:
+        "Run front-desk OPD queue and real-time token management for 30+ consulting rooms.",
+      responsibilities: [
+        "Token issue and triage by consultant",
+        "Handle no-show and priority overrides",
+        "Patient-flow reporting daily",
+      ],
+      requirements: ["Graduate + 1 yr front-desk exp", "Typing 30+ wpm", "Good spoken English + regional language"],
+      active: true,
+    },
+    {
+      seedId: "seed-telemedicine",
+      title: "Telemedicine Coordinator",
+      department: "Telemedicine",
+      location: "Remote (IN)",
+      employmentType: "Full-time",
+      salary: "₹5-7 L / year",
+      description:
+        "Operate the OduDoc telemedicine console — schedule, troubleshoot and escalate.",
+      responsibilities: [
+        "Match patients to consulting doctors",
+        "Provide tech support during video calls",
+        "Follow up on Rx delivery and payments",
+      ],
+      requirements: ["Graduate + 2 yrs coordinator exp", "Great written communication", "Comfortable with SaaS tools"],
+      active: true,
+    },
+    // Revenue
+    {
+      seedId: "seed-invoices",
+      title: "Billing Executive",
+      department: "Invoices",
+      location: "Pune, IN",
+      employmentType: "Full-time",
+      salary: "₹3-5 L / year",
+      description:
+        "Handle IPD discharge billing, OPD receipts and TPA coordination.",
+      responsibilities: [
+        "Compile final bills with package / non-package items",
+        "Coordinate TPA approvals and query replies",
+        "Patient billing counselling",
+      ],
+      requirements: ["B.Com + 1 yr hospital billing", "Familiar with CGHS / ECHS / TPA tariffs", "Tally or HIS billing module exp"],
+      active: true,
+    },
+    {
+      seedId: "seed-insurance-tpa",
+      title: "Insurance / TPA Officer",
+      department: "Insurance / TPA",
+      location: "Mumbai, IN",
+      employmentType: "Full-time",
+      salary: "₹4.5-7 L / year",
+      description:
+        "Own cashless-claim lifecycle: pre-auth, enhancements, queries and final settlement.",
+      responsibilities: [
+        "Raise and track pre-auths in portals",
+        "Coordinate with treating consultants on queries",
+        "Reconcile TPA receivables monthly",
+      ],
+      requirements: ["Graduate + 2 yrs TPA desk exp", "IRDAI familiarity", "Strong spreadsheet skills"],
+      active: true,
+    },
+    {
+      seedId: "seed-emergency-codes",
+      title: "Emergency Response Nurse (Code Blue)",
+      department: "Emergency Codes",
+      location: "Bangalore, IN",
+      employmentType: "Full-time",
+      salary: "₹5-8 L / year",
+      description:
+        "Float nurse assigned to hospital code-blue, code-red (fire) and code-pink (infant abduction) response.",
+      responsibilities: [
+        "Respond to code activations within 3 minutes",
+        "Maintain crash-cart inventory",
+        "Run monthly mock-code drills",
+      ],
+      requirements: ["B.Sc Nursing + ACLS / PALS", "3+ yrs ICU or ED exp", "Strong team-leadership attitude"],
+      active: true,
+    },
+    {
+      seedId: "seed-medical-records",
+      title: "Medical Records Officer",
+      department: "Medical Records",
+      location: "Kolkata, IN",
+      employmentType: "Full-time",
+      salary: "₹3-5 L / year",
+      description:
+        "Own file completion, ICD-10 coding, medico-legal case handling and retention policy.",
+      responsibilities: [
+        "Audit discharge summaries for completeness",
+        "ICD-10 and procedure coding",
+        "Respond to medico-legal and subpoena requests",
+      ],
+      requirements: ["Graduate + MRD diploma", "ICD-10 coding familiarity", "3+ yrs MRD exp"],
+      active: true,
+    },
+  ];
+
+  let dirty = false;
+  for (const t of TEMPLATE) {
+    if (jobs.some((j) => j.id === t.seedId)) continue;
+    const { seedId, ...rest } = t;
+    jobs.unshift({
+      ...rest,
+      id: seedId,
+      postedAt: new Date().toISOString(),
+    });
+    dirty = true;
+  }
+  if (dirty) flushJobs();
+})();
+
 export function getJobs(activeOnly = false): JobVacancy[] {
   return activeOnly ? jobs.filter((j) => j.active) : [...jobs];
 }

@@ -291,51 +291,74 @@ function DoctorRegisterForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Doctor Registration</h1>
-          <p className="mt-2 text-gray-600">Complete all steps to submit your application</p>
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50/40 py-12">
+      {/* Decorative background blobs */}
+      <div className="pointer-events-none absolute -left-24 top-12 h-72 w-72 rounded-full bg-primary-400/20 blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 top-48 h-80 w-80 rounded-full bg-indigo-400/20 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-emerald-300/10 blur-3xl" />
+
+      <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-10 text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-700 shadow-sm backdrop-blur-sm">
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            Verified doctor program
+          </span>
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+            Join OduDoc as a <span className="bg-gradient-to-r from-primary-600 to-indigo-600 bg-clip-text text-transparent">trusted physician</span>
+          </h1>
+          <p className="mx-auto mt-3 max-w-xl text-sm text-gray-500 sm:text-base">
+            Complete five quick steps to submit your application. Verification usually takes 24–48 hours.
+          </p>
         </div>
 
         {/* Stepper */}
-        <div className="mb-10">
+        <div className="mb-10 rounded-2xl border border-gray-100 bg-white/70 p-5 shadow-sm backdrop-blur">
           <div className="flex items-center justify-between">
             {STEPS.map((s, idx) => (
               <div key={s.num} className="flex flex-1 items-center">
                 <div className="flex flex-col items-center">
                   <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition-colors ${
+                    className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold shadow-sm transition-all duration-300 ${
                       step > s.num
-                        ? "bg-primary-600 text-white"
+                        ? "bg-gradient-to-br from-primary-500 to-primary-700 text-white"
                         : step === s.num
-                          ? "bg-primary-600 text-white ring-4 ring-primary-100"
-                          : "bg-gray-200 text-gray-500"
+                          ? "bg-gradient-to-br from-primary-500 to-indigo-600 text-white ring-4 ring-primary-100"
+                          : "bg-gray-100 text-gray-400"
                     }`}
                   >
                     {step > s.num ? (
                       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     ) : (
                       s.num
                     )}
                   </div>
-                  <span className="mt-2 hidden text-xs font-medium text-gray-600 sm:block">{s.label}</span>
+                  <span
+                    className={`mt-2 hidden text-xs font-semibold sm:block ${
+                      step >= s.num ? "text-primary-700" : "text-gray-400"
+                    }`}
+                  >
+                    {s.label}
+                  </span>
                 </div>
                 {idx < STEPS.length - 1 && (
-                  <div
-                    className={`mx-2 h-0.5 flex-1 transition-colors ${
-                      step > s.num ? "bg-primary-600" : "bg-gray-200"
-                    }`}
-                  />
+                  <div className="mx-2 h-1 flex-1 overflow-hidden rounded-full bg-gray-100">
+                    <div
+                      className={`h-full rounded-full bg-gradient-to-r from-primary-500 to-indigo-500 transition-all duration-500 ${
+                        step > s.num ? "w-full" : "w-0"
+                      }`}
+                    />
+                  </div>
                 )}
               </div>
             ))}
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white p-6 shadow-sm md:p-10">
+        <div className="rounded-3xl border border-gray-100 bg-white/90 p-6 shadow-xl ring-1 ring-black/5 backdrop-blur md:p-10">
           {step === 1 && (
             <Step1 form={form} update={update} errors={errors} />
           )}
@@ -353,28 +376,52 @@ function DoctorRegisterForm() {
           {step === 4 && <Step4 form={form} update={update} errors={errors} />}
           {step === 5 && <Step5 form={form} update={update} errors={errors} />}
 
-          <div className="mt-10 flex items-center justify-between border-t border-gray-200 pt-6">
+          <div className="mt-10 flex items-center justify-between border-t border-gray-100 pt-6">
             <button
               onClick={prev}
               disabled={step === 1}
-              className="rounded-lg border border-gray-300 px-6 py-2.5 text-sm font-medium text-gray-700 disabled:opacity-40 hover:bg-gray-50"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:bg-gray-50 disabled:opacity-40"
             >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
               Back
             </button>
+            <p className="hidden text-xs text-gray-400 sm:block">
+              Step <span className="font-bold text-gray-700">{step}</span> of {STEPS.length}
+            </p>
             {step < 5 ? (
               <button
                 onClick={next}
-                className="rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-700"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary-500/25 transition-all hover:shadow-xl hover:shadow-primary-500/40"
               >
                 Continue
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </button>
             ) : (
               <button
                 onClick={submit}
                 disabled={submitting}
-                className="rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary-500/25 transition-all hover:shadow-xl hover:shadow-primary-500/40 disabled:opacity-60"
               >
-                {submitting ? "Submitting..." : "Submit Application"}
+                {submitting ? (
+                  <>
+                    <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4} />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
+                    Submitting…
+                  </>
+                ) : (
+                  <>
+                    Submit Application
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -397,25 +444,83 @@ function Field({
   error,
   children,
   required,
+  icon,
+  hint,
 }: {
   label: string;
   error?: string;
   required?: boolean;
+  icon?: React.ReactNode;
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-medium text-gray-700">
-        {label} {required && <span className="text-red-500">*</span>}
+      <label className="mb-1.5 flex items-center gap-1.5 text-sm font-semibold text-gray-800">
+        {icon && <span className="text-primary-500">{icon}</span>}
+        <span>{label}</span>
+        {required && <span className="text-red-500">*</span>}
       </label>
       {children}
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {hint && !error && <p className="mt-1 text-xs text-gray-400">{hint}</p>}
+      {error && (
+        <p className="mt-1 flex items-center gap-1 text-xs font-medium text-red-600">
+          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          </svg>
+          {error}
+        </p>
+      )}
     </div>
   );
 }
 
 const inputClass =
-  "w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
+  "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100";
+
+const ICONS = {
+  user: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+  ),
+  email: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+  ),
+  phone: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h2.28a1 1 0 01.95.68l1.5 4.5a1 1 0 01-.5 1.21l-2.26 1.13a11 11 0 005.52 5.52l1.13-2.26a1 1 0 011.21-.5l4.5 1.5a1 1 0 01.68.95V19a2 2 0 01-2 2h-1C9.72 21 3 14.28 3 6V5z" />
+    </svg>
+  ),
+  calendar: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+  ),
+  location: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  ),
+  globe: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zM3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 010 18M12 3a14 14 0 000 18" />
+    </svg>
+  ),
+  building: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2m-2 0h-3m-6 0H5m0 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5" />
+    </svg>
+  ),
+  gender: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 14a4 4 0 100-8 4 4 0 000 8zm0 0v7m-3-3h6" />
+    </svg>
+  ),
+};
 
 function Step1({
   form,
@@ -428,44 +533,129 @@ function Step1({
 }) {
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900">Personal Information</h2>
-      <p className="mt-1 text-sm text-gray-500">Tell us about yourself</p>
-      <div className="mt-6 grid gap-5 sm:grid-cols-2">
-        <Field label="Full Name" error={errors.fullName} required>
-          <input className={inputClass} value={form.fullName} onChange={(e) => update("fullName", e.target.value)} placeholder="Dr. Jane Smith" />
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 text-white shadow-md">
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </span>
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">Personal Information</h2>
+          <p className="text-sm text-gray-500">Tell us about yourself — we keep this private.</p>
+        </div>
+      </div>
+
+      <div className="mt-8 grid gap-6 sm:grid-cols-2">
+        <Field label="Full Name" error={errors.fullName} required icon={ICONS.user}>
+          <input
+            className={inputClass}
+            value={form.fullName}
+            onChange={(e) => update("fullName", e.target.value)}
+            placeholder="Dr. Jane Smith"
+          />
         </Field>
-        <Field label="Email" error={errors.email} required>
-          <input type="email" className={inputClass} value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="doctor@example.com" />
+        <Field label="Email" error={errors.email} required icon={ICONS.email}>
+          <input
+            type="email"
+            className={inputClass}
+            value={form.email}
+            onChange={(e) => update("email", e.target.value)}
+            placeholder="doctor@example.com"
+          />
         </Field>
-        <Field label="Phone" error={errors.phone} required>
-          <input className={inputClass} value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder="+1 555 0100" />
+        <Field label="Phone" error={errors.phone} required icon={ICONS.phone}>
+          <input
+            className={inputClass}
+            value={form.phone}
+            onChange={(e) => update("phone", e.target.value)}
+            placeholder="+1 555 0100"
+          />
         </Field>
-        <Field label="Date of Birth" error={errors.dateOfBirth} required>
-          <input type="date" className={inputClass} value={form.dateOfBirth} onChange={(e) => update("dateOfBirth", e.target.value)} />
+        <Field label="Date of Birth" error={errors.dateOfBirth} required icon={ICONS.calendar}>
+          <input
+            type="date"
+            className={inputClass}
+            value={form.dateOfBirth}
+            onChange={(e) => update("dateOfBirth", e.target.value)}
+          />
         </Field>
-        <Field label="Gender" error={errors.gender} required>
-          <select className={inputClass} value={form.gender} onChange={(e) => update("gender", e.target.value)}>
-            <option value="">Select...</option>
-            <option>Male</option>
-            <option>Female</option>
-            <option>Other</option>
-            <option>Prefer not to say</option>
-          </select>
+
+        {/* Gender — pill toggle, Male / Female only */}
+        <Field label="Gender" error={errors.gender} required icon={ICONS.gender}>
+          <div className="grid grid-cols-2 gap-3">
+            {(
+              [
+                {
+                  v: "Male",
+                  svg: (
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <circle cx="10" cy="14" r="5" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14 10l6-6m0 0h-4m4 0v4" />
+                    </svg>
+                  ),
+                },
+                {
+                  v: "Female",
+                  svg: (
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <circle cx="12" cy="10" r="5" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v6m-3-3h6" />
+                    </svg>
+                  ),
+                },
+              ] as const
+            ).map(({ v, svg }) => {
+              const on = form.gender === v;
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => update("gender", v)}
+                  className={`flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-all ${
+                    on
+                      ? "border-primary-500 bg-gradient-to-br from-primary-50 to-indigo-50 text-primary-700 shadow-sm"
+                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  {svg}
+                  {v}
+                </button>
+              );
+            })}
+          </div>
         </Field>
-        <Field label="Address" error={errors.address} required>
-          <input className={inputClass} value={form.address} onChange={(e) => update("address", e.target.value)} placeholder="City, State" />
+
+        <Field label="Address" error={errors.address} required icon={ICONS.location}>
+          <input
+            className={inputClass}
+            value={form.address}
+            onChange={(e) => update("address", e.target.value)}
+            placeholder="City, State"
+          />
         </Field>
-        <Field label="Country" error={errors.country} required>
-          <select className={inputClass} value={form.country} onChange={(e) => update("country", e.target.value)}>
+        <Field label="Country" error={errors.country} required icon={ICONS.globe}>
+          <select
+            className={inputClass}
+            value={form.country}
+            onChange={(e) => update("country", e.target.value)}
+          >
             <option value="">Select a country...</option>
             {COUNTRIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c} value={c}>
+                {c}
+              </option>
             ))}
           </select>
         </Field>
         <div className="sm:col-span-2">
-          <Field label="Clinic/Hospital Address">
-            <textarea rows={2} className={inputClass} value={form.clinicAddress} onChange={(e) => update("clinicAddress", e.target.value)} placeholder="Full address of your clinic or hospital" />
+          <Field label="Clinic / Hospital Address" icon={ICONS.building} hint="Optional — helps patients find your practice.">
+            <textarea
+              rows={3}
+              className={inputClass}
+              value={form.clinicAddress}
+              onChange={(e) => update("clinicAddress", e.target.value)}
+              placeholder="Full address of your clinic or hospital"
+            />
           </Field>
         </div>
       </div>

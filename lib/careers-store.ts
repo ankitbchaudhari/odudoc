@@ -46,7 +46,20 @@ const { hydrate: hydrateApps, flush: flushApps } = bindPersistentArray<JobApplic
   () => []
 );
 
-await Promise.all([hydrateJobs(), hydrateApps()]);
+// Persistent blocklist of seed vacancy ids that admins have deleted.
+// Without this, the seedDepartmentVacancies IIFE re-inserts them on
+// every Vercel cold-start, making the Delete button appear broken.
+const deletedSeedIds: { id: string }[] = [];
+const {
+  hydrate: hydrateDeletedSeeds,
+  flush: flushDeletedSeeds,
+} = bindPersistentArray<{ id: string }>(
+  "careers-deleted-seed-ids",
+  deletedSeedIds,
+  () => []
+);
+
+await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
 
 // One-time cleanup: drop the demo job listings + demo applications that
 // shipped with the initial seed. IDs are specific so this is safe to
@@ -701,9 +714,11 @@ await Promise.all([hydrateJobs(), hydrateApps()]);
     },
   ];
 
+  const blocked = new Set(deletedSeedIds.map((r) => r.id));
   let dirty = false;
   for (const t of TEMPLATE) {
     if (jobs.some((j) => j.id === t.seedId)) continue;
+    if (blocked.has(t.seedId)) continue; // admin deleted this seed — respect it
     const { seedId, ...rest } = t;
     jobs.unshift({
       ...rest,
@@ -749,6 +764,12 @@ export function deleteJob(id: string): boolean {
   if (idx < 0) return false;
   jobs.splice(idx, 1);
   flushJobs();
+  // If this is a seeded vacancy, remember the deletion so the seed
+  // IIFE doesn't resurrect it on the next cold-start.
+  if (id.startsWith("seed-") && !deletedSeedIds.some((r) => r.id === id)) {
+    deletedSeedIds.push({ id });
+    flushDeletedSeeds();
+  }
   return true;
 }
 

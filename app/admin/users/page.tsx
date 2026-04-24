@@ -48,25 +48,25 @@ const TABS: { key: TabKey; label: string }[] = [
 ];
 
 const ROLE_BADGE: Record<Role, string> = {
-  admin: "bg-purple-100 text-purple-700",
-  doctor: "bg-blue-100 text-blue-700",
-  patient: "bg-green-100 text-green-700",
-  staff: "bg-amber-100 text-amber-700",
-  vendor: "bg-pink-100 text-pink-700",
-  hr: "bg-teal-100 text-teal-700",
-  support: "bg-cyan-100 text-cyan-700",
-  pharmacist: "bg-lime-100 text-lime-700",
+  admin: "bg-gradient-to-r from-purple-50 to-fuchsia-50 text-purple-700 ring-1 ring-purple-200",
+  doctor: "bg-gradient-to-r from-blue-50 to-sky-50 text-blue-700 ring-1 ring-blue-200",
+  patient: "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-1 ring-emerald-200",
+  staff: "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-1 ring-amber-200",
+  vendor: "bg-gradient-to-r from-pink-50 to-rose-50 text-pink-700 ring-1 ring-pink-200",
+  hr: "bg-gradient-to-r from-teal-50 to-cyan-50 text-teal-700 ring-1 ring-teal-200",
+  support: "bg-gradient-to-r from-cyan-50 to-sky-50 text-cyan-700 ring-1 ring-cyan-200",
+  pharmacist: "bg-gradient-to-r from-lime-50 to-emerald-50 text-lime-700 ring-1 ring-lime-200",
 };
 
 const AVATAR_COLOR: Record<Role, string> = {
-  admin: "bg-purple-200 text-purple-700",
-  doctor: "bg-blue-200 text-blue-700",
-  patient: "bg-green-200 text-green-700",
-  staff: "bg-amber-200 text-amber-700",
-  vendor: "bg-pink-200 text-pink-700",
-  hr: "bg-teal-200 text-teal-700",
-  support: "bg-cyan-200 text-cyan-700",
-  pharmacist: "bg-lime-200 text-lime-700",
+  admin: "bg-gradient-to-br from-purple-400 to-fuchsia-500 text-white ring-2 ring-purple-100",
+  doctor: "bg-gradient-to-br from-blue-400 to-sky-500 text-white ring-2 ring-blue-100",
+  patient: "bg-gradient-to-br from-emerald-400 to-green-500 text-white ring-2 ring-emerald-100",
+  staff: "bg-gradient-to-br from-amber-400 to-orange-500 text-white ring-2 ring-amber-100",
+  vendor: "bg-gradient-to-br from-pink-400 to-rose-500 text-white ring-2 ring-pink-100",
+  hr: "bg-gradient-to-br from-teal-400 to-cyan-500 text-white ring-2 ring-teal-100",
+  support: "bg-gradient-to-br from-cyan-400 to-sky-500 text-white ring-2 ring-cyan-100",
+  pharmacist: "bg-gradient-to-br from-lime-400 to-emerald-500 text-white ring-2 ring-lime-100",
 };
 
 // Role options for the "Change role" modal, in the same order as the tab
@@ -330,11 +330,23 @@ export default function AdminUsersPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Users & Roles</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          {loading ? "Loading…" : `${users.length} total users`}
-        </p>
+      {/* gradient hero */}
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-fuchsia-300/20 blur-3xl" />
+        <div className="relative">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fuchsia-300 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-fuchsia-400" />
+            </span>
+            Access control
+          </div>
+          <h2 className="text-2xl font-bold">Users &amp; Roles</h2>
+          <p className="mt-1 text-sm text-purple-50/90">
+            {loading ? "Loading…" : `${users.length} total users · ${stats.banned} banned`}
+          </p>
+        </div>
       </div>
 
       {error && (
@@ -346,23 +358,11 @@ export default function AdminUsersPage() {
       {/* Stats — show the five most actionable cards; the full per-role
           breakdown lives in the tab strip below. */}
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-5">
-        <StatCard label="Total" value={stats.total} tint="text-gray-900" />
-        <StatCard
-          label="Patients"
-          value={stats.byRole.patient}
-          tint="text-green-600"
-        />
-        <StatCard
-          label="Doctors"
-          value={stats.byRole.doctor}
-          tint="text-blue-600"
-        />
-        <StatCard
-          label="Admins"
-          value={stats.byRole.admin}
-          tint="text-purple-600"
-        />
-        <StatCard label="Banned" value={stats.banned} tint="text-red-600" />
+        <StatCard label="Total" value={stats.total} tone="slate" />
+        <StatCard label="Patients" value={stats.byRole.patient} tone="green" />
+        <StatCard label="Doctors" value={stats.byRole.doctor} tone="blue" />
+        <StatCard label="Admins" value={stats.byRole.admin} tone="purple" />
+        <StatCard label="Banned" value={stats.banned} tone="red" />
       </div>
 
       {/* Filters */}
@@ -380,9 +380,9 @@ export default function AdminUsersPage() {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
                   active
-                    ? "bg-primary-600 text-white"
+                    ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-md"
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
@@ -410,11 +410,12 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500" />
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-xs uppercase text-gray-500">
+              <tr className="border-b border-gray-100 bg-gradient-to-r from-violet-50/60 via-purple-50/40 to-indigo-50/60 text-xs uppercase text-gray-600">
                 <th className="px-4 py-3 font-medium">User</th>
                 <th className="px-4 py-3 font-medium">Email</th>
                 <th className="px-4 py-3 font-medium">Role</th>
@@ -460,11 +461,13 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-4 py-3">
                     {u.status === "banned" ? (
-                      <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-rose-50 to-red-50 px-3 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-200">
+                        <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
                         Banned
                       </span>
                     ) : (
-                      <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-50 to-green-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                         Active
                       </span>
                     )}
@@ -481,7 +484,7 @@ export default function AdminUsersPage() {
                         <button
                           onClick={() => setBanFor(u)}
                           disabled={busyId === u.id}
-                          className="rounded px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+                          className="rounded-lg bg-red-50 px-2 py-1 text-xs font-semibold text-red-600 ring-1 ring-red-100 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow disabled:opacity-50"
                           title="Ban user"
                         >
                           Ban
@@ -490,7 +493,7 @@ export default function AdminUsersPage() {
                         <button
                           onClick={() => doUnban(u)}
                           disabled={busyId === u.id}
-                          className="rounded px-2 py-1 text-xs font-medium text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
+                          className="rounded-lg bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-600 ring-1 ring-emerald-100 transition hover:-translate-y-0.5 hover:bg-emerald-100 hover:shadow disabled:opacity-50"
                           title="Unban user"
                         >
                           Unban
@@ -499,7 +502,7 @@ export default function AdminUsersPage() {
                       <button
                         onClick={() => setWarningFor(u)}
                         disabled={busyId === u.id}
-                        className="rounded px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-50 disabled:opacity-50"
+                        className="rounded-lg bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-100 transition hover:-translate-y-0.5 hover:bg-amber-100 hover:shadow disabled:opacity-50"
                         title="Send warning"
                       >
                         Warn
@@ -510,7 +513,7 @@ export default function AdminUsersPage() {
                           setRoleFor(u);
                         }}
                         disabled={busyId === u.id}
-                        className="rounded px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 disabled:opacity-50"
+                        className="rounded-lg bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-600 ring-1 ring-indigo-100 transition hover:-translate-y-0.5 hover:bg-indigo-100 hover:shadow disabled:opacity-50"
                         title="Change role"
                       >
                         Role
@@ -518,7 +521,7 @@ export default function AdminUsersPage() {
                       <button
                         onClick={() => doResetPassword(u)}
                         disabled={busyId === u.id}
-                        className="rounded px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                        className="rounded-lg bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600 ring-1 ring-blue-100 transition hover:-translate-y-0.5 hover:bg-blue-100 hover:shadow disabled:opacity-50"
                         title="Reset password"
                       >
                         Reset pw
@@ -526,7 +529,7 @@ export default function AdminUsersPage() {
                       <button
                         onClick={() => doDelete(u)}
                         disabled={busyId === u.id}
-                        className="rounded px-2 py-1 text-xs font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+                        className="rounded-lg bg-rose-50 px-2 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-100 transition hover:-translate-y-0.5 hover:bg-rose-100 hover:shadow disabled:opacity-50"
                         title="Delete user"
                       >
                         Delete
@@ -699,16 +702,57 @@ export default function AdminUsersPage() {
 function StatCard({
   label,
   value,
-  tint,
+  tone,
 }: {
   label: string;
   value: number;
-  tint: string;
+  tone: "slate" | "green" | "blue" | "purple" | "red";
 }) {
+  const themes: Record<
+    typeof tone,
+    { bg: string; ring: string; text: string; dot: string }
+  > = {
+    slate: {
+      bg: "from-slate-50 to-white",
+      ring: "ring-slate-100",
+      text: "text-slate-900",
+      dot: "bg-slate-500",
+    },
+    green: {
+      bg: "from-emerald-50 to-white",
+      ring: "ring-emerald-100",
+      text: "text-emerald-700",
+      dot: "bg-emerald-500",
+    },
+    blue: {
+      bg: "from-blue-50 to-white",
+      ring: "ring-blue-100",
+      text: "text-blue-700",
+      dot: "bg-blue-500",
+    },
+    purple: {
+      bg: "from-purple-50 to-white",
+      ring: "ring-purple-100",
+      text: "text-purple-700",
+      dot: "bg-purple-500",
+    },
+    red: {
+      bg: "from-rose-50 to-white",
+      ring: "ring-rose-100",
+      text: "text-rose-700",
+      dot: "bg-rose-500",
+    },
+  };
+  const t = themes[tone];
   return (
-    <div className="rounded-xl bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-gray-500">{label}</p>
-      <p className={`mt-1 text-2xl font-bold ${tint}`}>{value}</p>
+    <div
+      className={`rounded-xl bg-gradient-to-br ${t.bg} p-5 shadow-sm ring-1 ${t.ring} transition hover:-translate-y-0.5 hover:shadow-md`}
+    >
+      <div className="flex items-center gap-2">
+        <span className={`h-2 w-2 rounded-full ${t.dot}`} />
+        <p className="text-sm font-medium text-gray-600">{label}</p>
+      </div>
+      <p className={`mt-2 text-2xl font-bold ${t.text}`}>{value}</p>
     </div>
   );
 }

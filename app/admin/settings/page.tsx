@@ -17,17 +17,17 @@ import type {
 } from "@/lib/settings-store";
 
 const SECTIONS = [
-  { id: "common", label: "Common Settings" },
-  { id: "captcha", label: "Google Captcha Setting" },
-  { id: "payment", label: "Payment Gateways" },
-  { id: "manual-payment", label: "Manual Payment Gateways" },
-  { id: "smtp", label: "SMTP Settings" },
-  { id: "page", label: "Page Settings" },
-  { id: "currency", label: "Currency Settings" },
-  { id: "languages", label: "Languages" },
-  { id: "translation", label: "Translation" },
-  { id: "invoice", label: "Invoice Settings" },
-  { id: "social-login", label: "Social Media Login" },
+  { id: "common", label: "Common Settings", icon: "⚙️", grad: "from-slate-500 to-gray-700" },
+  { id: "captcha", label: "Google Captcha Setting", icon: "🛡️", grad: "from-red-500 to-rose-600" },
+  { id: "payment", label: "Payment Gateways", icon: "💳", grad: "from-emerald-500 to-green-600" },
+  { id: "manual-payment", label: "Manual Payment Gateways", icon: "🏦", grad: "from-teal-500 to-cyan-600" },
+  { id: "smtp", label: "SMTP Settings", icon: "✉️", grad: "from-sky-500 to-blue-600" },
+  { id: "page", label: "Page Settings", icon: "📄", grad: "from-indigo-500 to-violet-600" },
+  { id: "currency", label: "Currency Settings", icon: "💰", grad: "from-amber-500 to-yellow-600" },
+  { id: "languages", label: "Languages", icon: "🌐", grad: "from-fuchsia-500 to-pink-600" },
+  { id: "translation", label: "Translation", icon: "🔤", grad: "from-purple-500 to-fuchsia-600" },
+  { id: "invoice", label: "Invoice Settings", icon: "🧾", grad: "from-orange-500 to-red-600" },
+  { id: "social-login", label: "Social Media Login", icon: "🔑", grad: "from-cyan-500 to-sky-600" },
 ] as const;
 
 type SectionId = (typeof SECTIONS)[number]["id"];
@@ -88,35 +88,48 @@ export default function AdminSettings() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Configure site-wide options, payment, email, currency and more.
-        </p>
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-slate-700 via-gray-800 to-zinc-900 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-cyan-300/20 blur-3xl" />
+        <div className="relative">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-300 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400" />
+            </span>
+            System configuration
+          </div>
+          <h1 className="text-2xl font-bold">Settings</h1>
+          <p className="mt-1 text-sm text-slate-200/90">
+            Configure site-wide options, payment, email, currency and more.
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-col gap-6 lg:flex-row">
         <aside className="lg:w-64 lg:flex-shrink-0">
-          <ul className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+          <ul className="overflow-hidden rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-gray-100">
             {SECTIONS.map((s) => (
               <li key={s.id}>
                 <button
                   onClick={() => setActive(s.id)}
-                  className={`flex w-full items-center gap-3 border-l-2 px-4 py-3 text-left text-sm transition-colors ${
+                  className={`mb-0.5 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-all ${
                     active === s.id
-                      ? "border-primary-600 bg-primary-50 font-semibold text-primary-700"
-                      : "border-transparent text-gray-600 hover:bg-gray-50"
+                      ? `bg-gradient-to-r ${s.grad} font-semibold text-white shadow-md`
+                      : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
-                  <span className={`h-2 w-2 rounded-full ${active === s.id ? "bg-primary-600" : "bg-gray-300"}`} />
-                  {s.label}
+                  <span className="text-base">{s.icon}</span>
+                  <span className="truncate">{s.label}</span>
                 </button>
               </li>
             ))}
           </ul>
         </aside>
 
-        <div className="min-w-0 flex-1 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+        <div className="min-w-0 flex-1 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+          <div className={`h-1 bg-gradient-to-r ${SECTIONS.find((s) => s.id === active)?.grad || "from-slate-500 to-gray-700"}`} />
+          <div className="p-6">
           {loading || !settings ? (
             <div className="py-20 text-center text-sm text-gray-500">Loading settings…</div>
           ) : (
@@ -144,12 +157,13 @@ export default function AdminSettings() {
           {toast && (
             <div
               className={`fixed bottom-6 right-6 z-50 rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-lg ${
-                toast.err ? "bg-red-600" : "bg-green-600"
+                toast.err ? "bg-gradient-to-r from-rose-500 to-red-600" : "bg-gradient-to-r from-emerald-500 to-green-600"
               }`}
             >
               {toast.text}
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>
@@ -170,7 +184,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="mb-6 border-b border-gray-100 pb-4">
-      <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+      <h2 className="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-lg font-bold text-transparent">{title}</h2>
       {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
     </div>
   );
@@ -181,9 +195,9 @@ function SaveButton({ saving }: { saving?: boolean }) {
     <button
       type="submit"
       disabled={saving}
-      className="rounded-lg bg-green-600 px-6 py-2.5 text-sm font-semibold text-white shadow transition-colors hover:bg-green-700 disabled:opacity-50"
+      className="rounded-lg bg-gradient-to-r from-emerald-500 to-green-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50"
     >
-      {saving ? "Saving…" : "Update"}
+      {saving ? "Saving…" : "✓ Update"}
     </button>
   );
 }

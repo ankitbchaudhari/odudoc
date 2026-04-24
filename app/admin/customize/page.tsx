@@ -88,15 +88,15 @@ interface Theme {
 // ---------- Tabs ----------
 
 const TABS = [
-  { id: "brand", label: "Brand" },
-  { id: "colors", label: "Colors" },
-  { id: "typography", label: "Typography" },
-  { id: "layout", label: "Layout" },
-  { id: "announcement", label: "Announcement Bar" },
-  { id: "features", label: "Features" },
-  { id: "social", label: "Social Links" },
-  { id: "seo", label: "SEO & Analytics" },
-  { id: "advanced", label: "Advanced" },
+  { id: "brand", label: "Brand", icon: "🎨", grad: "from-pink-500 to-rose-600" },
+  { id: "colors", label: "Colors", icon: "🌈", grad: "from-fuchsia-500 to-purple-600" },
+  { id: "typography", label: "Typography", icon: "🔤", grad: "from-violet-500 to-indigo-600" },
+  { id: "layout", label: "Layout", icon: "📐", grad: "from-sky-500 to-blue-600" },
+  { id: "announcement", label: "Announcement Bar", icon: "📣", grad: "from-amber-500 to-orange-600" },
+  { id: "features", label: "Features", icon: "✨", grad: "from-emerald-500 to-teal-600" },
+  { id: "social", label: "Social Links", icon: "🔗", grad: "from-cyan-500 to-blue-600" },
+  { id: "seo", label: "SEO & Analytics", icon: "📊", grad: "from-lime-500 to-green-600" },
+  { id: "advanced", label: "Advanced", icon: "⚙️", grad: "from-slate-500 to-gray-700" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -164,39 +164,55 @@ export default function AdminCustomize() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Customize Theme</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Brand, colors, typography, layout, SEO and integrations — all in one place.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={reset} className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Reset</button>
-          <button onClick={save} disabled={saving} className="btn-primary !text-sm disabled:opacity-60">
-            {saving ? "Saving…" : saved ? "✓ Saved" : "Save Changes"}
-          </button>
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-fuchsia-600 via-purple-600 to-indigo-700 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-pink-300/20 blur-3xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-pink-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-pink-400" />
+              </span>
+              Theme studio
+            </div>
+            <h1 className="text-2xl font-bold">Customize Theme</h1>
+            <p className="mt-1 text-sm text-purple-50/90">
+              Brand, colors, typography, layout, SEO and integrations — all in one place.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={reset} className="rounded-lg bg-white/15 px-3 py-2 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/25">Reset</button>
+            <button onClick={save} disabled={saving} className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-purple-700 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60">
+              {saving ? "Saving…" : saved ? "✓ Saved" : "Save Changes"}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-sm">
-        <div className="flex gap-1 p-1">
+      <div className="mb-6 overflow-x-auto rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="flex gap-1 p-1.5">
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                tab === t.id ? "bg-primary-600 text-white" : "text-gray-600 hover:bg-gray-100"
+              className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition-all ${
+                tab === t.id
+                  ? `bg-gradient-to-r ${t.grad} text-white shadow-md`
+                  : "text-gray-600 hover:bg-gray-50"
               }`}
             >
+              <span>{t.icon}</span>
               {t.label}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500" />
+        <div className="p-6">
         {tab === "brand" && <BrandTab theme={theme} set={set} />}
         {tab === "colors" && <ColorsTab theme={theme} set={set} />}
         {tab === "typography" && <TypographyTab theme={theme} set={set} />}
@@ -206,11 +222,19 @@ export default function AdminCustomize() {
         {tab === "social" && <SocialTab theme={theme} setTheme={setTheme} />}
         {tab === "seo" && <SeoTab theme={theme} setTheme={setTheme} />}
         {tab === "advanced" && <AdvancedTab theme={theme} set={set} />}
+        </div>
       </div>
 
       {/* Live preview */}
-      <div className="mt-6 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-base font-bold text-gray-900">Live Preview</h2>
+      <div className="mt-6 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500" />
+        <div className="p-6">
+        <div className="mb-4 flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow">
+            👁
+          </span>
+          <h2 className="text-base font-bold text-gray-900">Live Preview</h2>
+        </div>
         {theme.announcement.enabled && (
           <div className="mb-2 rounded-lg px-4 py-2 text-center text-xs font-medium" style={{ background: theme.announcement.background, color: theme.announcement.textColor }}>
             {theme.announcement.text}
@@ -238,6 +262,7 @@ export default function AdminCustomize() {
           >
             Primary Button
           </button>
+        </div>
         </div>
       </div>
     </div>

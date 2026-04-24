@@ -131,96 +131,144 @@ export default function AdminCareersPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Careers</h1>
-          <p className="mt-1 text-sm text-gray-500">Manage vacancies and review applications.</p>
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-fuchsia-600 via-pink-600 to-rose-600 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-yellow-300/20 blur-3xl" />
+        <div className="relative flex items-center justify-between gap-4">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-yellow-400" />
+              </span>
+              {jobs.filter((j) => j.active).length} open roles · {applications.length} applications
+            </div>
+            <h1 className="text-2xl font-bold">Careers</h1>
+            <p className="mt-1 text-sm text-pink-50/90">Manage vacancies and review applications.</p>
+          </div>
+          {tab === "jobs" && (
+            <button
+              onClick={() => setShowNew(true)}
+              className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-pink-700 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
+            >
+              + New Vacancy
+            </button>
+          )}
         </div>
-        {tab === "jobs" && (
-          <button onClick={() => setShowNew(true)} className="btn-primary !text-sm">
-            + New Vacancy
-          </button>
-        )}
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 flex gap-1 rounded-lg bg-gray-100 p-1">
+      <div className="mb-6 flex gap-1 rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-gray-100">
         <button
           onClick={() => setTab("jobs")}
-          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-            tab === "jobs" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600"
+          className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+            tab === "jobs"
+              ? "bg-gradient-to-r from-fuchsia-500 to-pink-600 text-white shadow-md"
+              : "text-gray-600 hover:bg-gray-50"
           }`}
         >
-          Vacancies ({jobs.length})
+          💼 Vacancies ({jobs.length})
         </button>
         <button
           onClick={() => setTab("applications")}
-          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-            tab === "applications" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600"
+          className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+            tab === "applications"
+              ? "bg-gradient-to-r from-fuchsia-500 to-pink-600 text-white shadow-md"
+              : "text-gray-600 hover:bg-gray-50"
           }`}
         >
-          Applications ({applications.length})
+          📄 Applications ({applications.length})
         </button>
       </div>
 
       {tab === "jobs" && (
-        <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+          <div className="h-1 bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500" />
           <table className="min-w-full divide-y divide-gray-100">
-            <thead className="bg-gray-50">
+            <thead className="bg-gradient-to-r from-fuchsia-50/60 via-pink-50/40 to-rose-50/60">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
                   Title
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
                   Department
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
                   Location
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
                   Type
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
                   Status
                 </th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {jobs.map((job) => (
-                <tr key={job.id}>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{job.title}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{job.department}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{job.location}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{job.employmentType}</td>
-                  <td className="px-4 py-3">
-                    <button
-                      onClick={() => toggleActive(job)}
-                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                        job.active
-                          ? "bg-green-50 text-green-700"
-                          : "bg-gray-100 text-gray-500"
-                      }`}
-                    >
-                      {job.active ? "Active" : "Inactive"}
-                    </button>
-                  </td>
-                  <td className="px-4 py-3 text-right text-sm">
-                    <button
-                      onClick={() => setEditing(job)}
-                      className="mr-3 font-medium text-primary-600 hover:underline"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => deleteJob(job.id)}
-                      className="font-medium text-red-600 hover:underline"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {jobs.map((job, i) => {
+                const palettes = [
+                  { grad: "from-fuchsia-400 to-pink-500", dept: "from-fuchsia-50 to-pink-50 text-fuchsia-700 ring-fuchsia-200" },
+                  { grad: "from-violet-400 to-purple-500", dept: "from-violet-50 to-purple-50 text-violet-700 ring-violet-200" },
+                  { grad: "from-sky-400 to-blue-500", dept: "from-sky-50 to-blue-50 text-sky-700 ring-sky-200" },
+                  { grad: "from-emerald-400 to-teal-500", dept: "from-emerald-50 to-teal-50 text-emerald-700 ring-emerald-200" },
+                  { grad: "from-amber-400 to-orange-500", dept: "from-amber-50 to-orange-50 text-amber-700 ring-amber-200" },
+                  { grad: "from-rose-400 to-red-500", dept: "from-rose-50 to-red-50 text-rose-700 ring-rose-200" },
+                ];
+                const p = palettes[i % palettes.length];
+                return (
+                  <tr key={job.id} className="transition-colors hover:bg-pink-50/40">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br ${p.grad} text-white shadow ring-2 ring-white`}>
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <div className="text-sm font-semibold text-gray-900">{job.title}</div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex rounded-full bg-gradient-to-r ${p.dept} px-2.5 py-1 text-xs font-semibold ring-1`}>
+                        {job.department}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">📍 {job.location}</td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex rounded-full bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+                        {job.employmentType}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => toggleActive(job)}
+                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 transition hover:-translate-y-0.5 hover:shadow ${
+                          job.active
+                            ? "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200"
+                            : "bg-gradient-to-r from-gray-50 to-slate-50 text-gray-500 ring-gray-200"
+                        }`}
+                      >
+                        <span className={`h-1.5 w-1.5 rounded-full ${job.active ? "bg-emerald-500" : "bg-gray-400"}`} />
+                        {job.active ? "Active" : "Inactive"}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3 text-right text-sm">
+                      <button
+                        onClick={() => setEditing(job)}
+                        className="mr-2 rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-600 ring-1 ring-indigo-100 transition hover:-translate-y-0.5 hover:bg-indigo-100 hover:shadow"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteJob(job.id)}
+                        className="rounded-lg bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-600 ring-1 ring-rose-100 transition hover:-translate-y-0.5 hover:bg-rose-100 hover:shadow"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
               {jobs.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-400">
@@ -240,20 +288,20 @@ export default function AdminCareersPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setAppView("active")}
-                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all ${
                   appView === "active"
-                    ? "bg-primary-600 text-white"
-                    : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                    ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md"
+                    : "bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50"
                 }`}
               >
                 Active
               </button>
               <button
                 onClick={() => setAppView("archived")}
-                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all ${
                   appView === "archived"
-                    ? "bg-primary-600 text-white"
-                    : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                    ? "bg-gradient-to-r from-slate-500 to-gray-600 text-white shadow-md"
+                    : "bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50"
                 }`}
               >
                 Archived
@@ -264,26 +312,51 @@ export default function AdminCareersPage() {
             </p>
           </div>
 
-        <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+          <div className="h-1 bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500" />
           <table className="min-w-full divide-y divide-gray-100">
-            <thead className="bg-gray-50">
+            <thead className="bg-gradient-to-r from-fuchsia-50/60 via-pink-50/40 to-rose-50/60">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Applicant</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Contact</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Position</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">CV</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Date</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Applicant</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Contact</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Position</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">CV</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Date</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-600">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {applications.map((a) => {
+              {applications.map((a, i) => {
                 const job = jobs.find((j) => j.id === a.jobId);
+                const grads = [
+                  "from-fuchsia-400 to-pink-500",
+                  "from-violet-400 to-purple-500",
+                  "from-sky-400 to-blue-500",
+                  "from-emerald-400 to-teal-500",
+                  "from-amber-400 to-orange-500",
+                  "from-rose-400 to-red-500",
+                ];
+                const g = grads[i % grads.length];
+                const initials = `${(a.firstName[0] || "").toUpperCase()}${(a.lastName[0] || "").toUpperCase()}`;
+                const statusStyle: Record<string, string> = {
+                  new: "from-sky-50 to-blue-50 text-sky-700 ring-sky-200",
+                  reviewing: "from-amber-50 to-yellow-50 text-amber-700 ring-amber-200",
+                  shortlisted: "from-violet-50 to-purple-50 text-violet-700 ring-violet-200",
+                  hired: "from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200",
+                  rejected: "from-rose-50 to-red-50 text-rose-700 ring-rose-200",
+                };
                 return (
-                  <tr key={a.id}>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                      {a.firstName} {a.lastName}
+                  <tr key={a.id} className="transition-colors hover:bg-pink-50/40">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br ${g} text-xs font-bold text-white shadow ring-2 ring-white`}>
+                          {initials}
+                        </div>
+                        <div className="text-sm font-semibold text-gray-900">
+                          {a.firstName} {a.lastName}
+                        </div>
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-xs text-gray-600">
                       <div>{a.email}</div>
@@ -324,7 +397,7 @@ export default function AdminCareersPage() {
                       <select
                         value={a.status}
                         onChange={(e) => updateAppStatus(a.id, e.target.value as JobApplication["status"])}
-                        className="rounded border border-gray-200 px-2 py-1 text-xs"
+                        className={`rounded-full bg-gradient-to-r ${statusStyle[a.status] ?? statusStyle.new} px-3 py-1 text-xs font-semibold ring-1 outline-none`}
                       >
                         <option value="new">New</option>
                         <option value="reviewing">Reviewing</option>
@@ -342,7 +415,7 @@ export default function AdminCareersPage() {
                           <button
                             disabled={busyAppId === a.id}
                             onClick={() => archiveApp(a.id)}
-                            className="rounded border border-gray-200 px-2.5 py-1 font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                            className="rounded-lg bg-slate-50 px-2.5 py-1 font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:bg-slate-100 hover:shadow disabled:opacity-50"
                             title="Hide from Active list; keep on file"
                           >
                             Archive
@@ -351,7 +424,7 @@ export default function AdminCareersPage() {
                           <button
                             disabled={busyAppId === a.id}
                             onClick={() => unarchiveApp(a.id)}
-                            className="rounded border border-gray-200 px-2.5 py-1 font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                            className="rounded-lg bg-emerald-50 px-2.5 py-1 font-semibold text-emerald-700 ring-1 ring-emerald-200 transition hover:-translate-y-0.5 hover:bg-emerald-100 hover:shadow disabled:opacity-50"
                             title="Restore to Active list"
                           >
                             Unarchive
@@ -362,7 +435,7 @@ export default function AdminCareersPage() {
                           onClick={() =>
                             deleteApp(a.id, `${a.firstName} ${a.lastName}`)
                           }
-                          className="rounded border border-red-200 px-2.5 py-1 font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+                          className="rounded-lg bg-rose-50 px-2.5 py-1 font-semibold text-rose-700 ring-1 ring-rose-200 transition hover:-translate-y-0.5 hover:bg-rose-100 hover:shadow disabled:opacity-50"
                           title="Permanently delete"
                         >
                           Delete

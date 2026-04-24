@@ -85,6 +85,19 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
   if (applsDirty) flushApps();
 })();
 
+// All roles are fully remote — rewrite any previously-seeded city
+// locations on already-persisted rows so the careers page reflects it.
+(function normaliseLocationsToRemote() {
+  let dirty = false;
+  for (const j of jobs) {
+    if (j.location !== "Remote") {
+      j.location = "Remote";
+      dirty = true;
+    }
+  }
+  if (dirty) flushJobs();
+})();
+
 // Department vacancy seed. Idempotent — each posting has a stable
 // `seed-<slug>` id, so re-runs don't duplicate rows. Admins can edit
 // titles/salary/status from the Careers console; only rows that are
@@ -98,7 +111,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-general-medicine",
       title: "Consultant — General Medicine",
       department: "General Medicine",
-      location: "Bangalore, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹18-28 L / year",
       description:
@@ -115,7 +128,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-cardiology",
       title: "Interventional Cardiologist",
       department: "Cardiology",
-      location: "Mumbai, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹40-65 L / year",
       description:
@@ -132,7 +145,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-oncology",
       title: "Medical Oncologist",
       department: "Oncology & Chemo",
-      location: "Chennai, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹35-55 L / year",
       description:
@@ -149,7 +162,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-icu",
       title: "Intensivist — ICU / Critical Care",
       department: "ICU / Critical Care",
-      location: "Delhi NCR, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹30-48 L / year",
       description:
@@ -166,7 +179,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-labor-delivery",
       title: "Consultant Obstetrician — Labor & Delivery",
       department: "Labor & Delivery",
-      location: "Pune, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹22-38 L / year",
       description:
@@ -183,7 +196,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-surgery-ot",
       title: "General Surgeon",
       department: "Surgery / OT",
-      location: "Hyderabad, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹25-42 L / year",
       description:
@@ -200,7 +213,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-anesthesia",
       title: "Consultant Anesthesiologist — Pre-Anesthesia",
       department: "Pre-Anesthesia",
-      location: "Ahmedabad, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹22-36 L / year",
       description:
@@ -217,7 +230,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-dialysis",
       title: "Nephrologist — Dialysis Unit",
       department: "Dialysis",
-      location: "Kolkata, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹28-45 L / year",
       description:
@@ -234,7 +247,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-physiotherapy",
       title: "Senior Physiotherapist",
       department: "Physiotherapy",
-      location: "Bangalore, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹6-9 L / year",
       description:
@@ -251,7 +264,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-wound-care",
       title: "Wound Care Nurse Specialist",
       department: "Wound Care",
-      location: "Chennai, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹5-8 L / year",
       description:
@@ -268,7 +281,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-endoscopy",
       title: "Endoscopy Technician",
       department: "Endoscopy",
-      location: "Mumbai, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹4-6 L / year",
       description:
@@ -285,7 +298,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-pain-management",
       title: "Pain Management Specialist",
       department: "Pain Management",
-      location: "Delhi NCR, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹24-38 L / year",
       description:
@@ -303,7 +316,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-radiology",
       title: "Consultant Radiologist (CT / MRI)",
       department: "Radiology",
-      location: "Bangalore, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹30-50 L / year",
       description:
@@ -320,7 +333,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-pathology",
       title: "Consultant Pathologist — Histopathology",
       department: "Pathology",
-      location: "Pune, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹22-36 L / year",
       description:
@@ -337,7 +350,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-lab-orders",
       title: "Lab Technologist — Biochemistry",
       department: "Lab Orders",
-      location: "Hyderabad, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹3-5 L / year",
       description:
@@ -354,7 +367,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-blood-bank",
       title: "Blood Bank Officer",
       department: "Blood Bank",
-      location: "Chennai, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹10-16 L / year",
       description:
@@ -372,7 +385,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-pharmacy-dispense",
       title: "Hospital Pharmacist",
       department: "Pharmacy Dispense",
-      location: "Delhi NCR, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹4-7 L / year",
       description:
@@ -389,7 +402,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-pharmacy-inventory",
       title: "Pharmacy Inventory Controller",
       department: "Pharmacy Inventory",
-      location: "Mumbai, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹6-9 L / year",
       description:
@@ -407,7 +420,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-medical-staff",
       title: "HR Manager — Medical Staffing",
       department: "Medical Staff",
-      location: "Bangalore, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹12-18 L / year",
       description:
@@ -424,7 +437,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-shift-roster",
       title: "Staff Scheduling Coordinator",
       department: "Shift Roster",
-      location: "Chennai, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹4-6 L / year",
       description:
@@ -441,7 +454,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-nursing-ward",
       title: "Staff Nurse — Wards & Beds",
       department: "Wards & Beds",
-      location: "Pune, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹3.5-5 L / year",
       description:
@@ -459,7 +472,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-dietary-orders",
       title: "Clinical Dietitian",
       department: "Dietary Orders",
-      location: "Hyderabad, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹5-8 L / year",
       description:
@@ -476,7 +489,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-cssd",
       title: "CSSD Supervisor",
       department: "CSSD Sterilization",
-      location: "Ahmedabad, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹5-8 L / year",
       description:
@@ -493,7 +506,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-biomedical",
       title: "Biomedical Engineer",
       department: "Biomedical",
-      location: "Mumbai, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹6-10 L / year",
       description:
@@ -510,7 +523,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-biomedical-waste",
       title: "Biomedical Waste Officer",
       department: "Biomedical Waste",
-      location: "Delhi NCR, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹4-6 L / year",
       description:
@@ -527,7 +540,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-housekeeping",
       title: "Housekeeping Supervisor",
       department: "Housekeeping",
-      location: "Chennai, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹3.5-5 L / year",
       description:
@@ -544,7 +557,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-linen-laundry",
       title: "Linen & Laundry In-charge",
       department: "Linen & Laundry",
-      location: "Pune, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹3-5 L / year",
       description:
@@ -561,7 +574,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-infection-control",
       title: "Infection Control Nurse",
       department: "Infection Control",
-      location: "Bangalore, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹7-10 L / year",
       description:
@@ -579,7 +592,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-ambulance-dispatch",
       title: "Ambulance Dispatch Coordinator",
       department: "Ambulance Dispatch",
-      location: "Hyderabad, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹4-6 L / year",
       description:
@@ -596,7 +609,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-mortuary",
       title: "Mortuary Attendant",
       department: "Mortuary",
-      location: "Delhi NCR, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹3-4 L / year",
       description:
@@ -613,7 +626,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-opd-queue",
       title: "OPD Queue Coordinator",
       department: "OPD Queue",
-      location: "Chennai, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹3-4.5 L / year",
       description:
@@ -630,7 +643,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-telemedicine",
       title: "Telemedicine Coordinator",
       department: "Telemedicine",
-      location: "Remote (IN)",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹5-7 L / year",
       description:
@@ -648,7 +661,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-invoices",
       title: "Billing Executive",
       department: "Invoices",
-      location: "Pune, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹3-5 L / year",
       description:
@@ -665,7 +678,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-insurance-tpa",
       title: "Insurance / TPA Officer",
       department: "Insurance / TPA",
-      location: "Mumbai, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹4.5-7 L / year",
       description:
@@ -682,7 +695,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-emergency-codes",
       title: "Emergency Response Nurse (Code Blue)",
       department: "Emergency Codes",
-      location: "Bangalore, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹5-8 L / year",
       description:
@@ -699,7 +712,7 @@ await Promise.all([hydrateJobs(), hydrateApps(), hydrateDeletedSeeds()]);
       seedId: "seed-medical-records",
       title: "Medical Records Officer",
       department: "Medical Records",
-      location: "Kolkata, IN",
+      location: "Remote",
       employmentType: "Full-time",
       salary: "₹3-5 L / year",
       description:

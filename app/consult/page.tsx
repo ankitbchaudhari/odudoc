@@ -111,12 +111,6 @@ const stats = [
   { value: "93%", label: "Recommend us" },
 ];
 
-const upcomingConsultations = [
-  { id: "1", doctor: "Dr. Sarah Johnson", specialty: "General Physician", time: "Today, 3:00 PM", status: "upcoming" as const },
-  { id: "2", doctor: "Dr. Michael Chen", specialty: "Dermatologist", time: "Tomorrow, 10:00 AM", status: "scheduled" as const },
-  { id: "3", doctor: "Dr. Amara Obi", specialty: "Pediatrician", time: "Apr 16, 2:30 PM", status: "scheduled" as const },
-];
-
 export default async function ConsultPage() {
   const [doctors, session] = await Promise.all([
     getPublicDoctorsFresh(),
@@ -225,36 +219,6 @@ export default async function ConsultPage() {
                 Instant prescription
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Upcoming Consultations (if any) ── */}
-      <section className="border-b bg-white py-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-xl font-bold text-gray-900">Your Upcoming Video Consultations</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {upcomingConsultations.map((c) => (
-              <div key={c.id} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 p-4">
-                <div>
-                  <p className="font-semibold text-gray-900">{c.doctor}</p>
-                  <p className="text-sm text-gray-500">{c.specialty}</p>
-                  <p className="mt-1 text-xs text-primary-600">{c.time}</p>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    c.status === "upcoming" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
-                  }`}>
-                    {c.status === "upcoming" ? "Ready to Join" : "Scheduled"}
-                  </span>
-                  {c.status === "upcoming" && (
-                    <Link href="/consult/book" className="text-xs font-medium text-primary-600 hover:underline">
-                      Join Now
-                    </Link>
-                  )}
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>

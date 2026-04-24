@@ -21,10 +21,47 @@ const conditions = [
   "Acid Reflux", "Eczema", "Sinusitis", "Anemia", "Kidney Stones",
 ];
 
-const hospitals = [
-  "Apollo Hospital", "Fortis Healthcare", "Max Super Specialty", "AIIMS Delhi",
-  "Medanta Medicity", "Narayana Health", "Manipal Hospital", "Columbia Asia",
-  "Lilavati Hospital", "Sir Ganga Ram Hospital", "Kokilaben Hospital", "Breach Candy Hospital",
+// A globally-recognised mix: US / UK / EU / Asia / Middle East / Africa
+// flagships plus India's top chains. Each row carries a location so the
+// card renderer below can show the country instead of a blanket label.
+const hospitals: { name: string; location: string }[] = [
+  // North America
+  { name: "Mayo Clinic", location: "Rochester, USA" },
+  { name: "Cleveland Clinic", location: "Cleveland, USA" },
+  { name: "Johns Hopkins Hospital", location: "Baltimore, USA" },
+  { name: "Massachusetts General Hospital", location: "Boston, USA" },
+  { name: "NewYork-Presbyterian", location: "New York, USA" },
+  { name: "UCLA Medical Center", location: "Los Angeles, USA" },
+  { name: "Toronto General Hospital", location: "Toronto, Canada" },
+  // United Kingdom & Europe
+  { name: "Great Ormond Street Hospital", location: "London, UK" },
+  { name: "The Royal Marsden", location: "London, UK" },
+  { name: "Guy's and St Thomas'", location: "London, UK" },
+  { name: "Charité Berlin", location: "Berlin, Germany" },
+  { name: "Karolinska University Hospital", location: "Stockholm, Sweden" },
+  { name: "Pitié-Salpêtrière", location: "Paris, France" },
+  // Middle East
+  { name: "Cleveland Clinic Abu Dhabi", location: "Abu Dhabi, UAE" },
+  { name: "Sheikh Khalifa Medical City", location: "Abu Dhabi, UAE" },
+  { name: "American Hospital Dubai", location: "Dubai, UAE" },
+  // Asia-Pacific
+  { name: "Singapore General Hospital", location: "Singapore" },
+  { name: "Mount Elizabeth Hospital", location: "Singapore" },
+  { name: "Samsung Medical Center", location: "Seoul, South Korea" },
+  { name: "Bumrungrad International", location: "Bangkok, Thailand" },
+  { name: "The University of Tokyo Hospital", location: "Tokyo, Japan" },
+  // Africa
+  { name: "Groote Schuur Hospital", location: "Cape Town, South Africa" },
+  { name: "Aga Khan University Hospital", location: "Nairobi, Kenya" },
+  // India
+  { name: "Apollo Hospital", location: "Chennai, India" },
+  { name: "Fortis Healthcare", location: "Gurugram, India" },
+  { name: "Max Super Specialty", location: "New Delhi, India" },
+  { name: "AIIMS Delhi", location: "New Delhi, India" },
+  { name: "Medanta Medicity", location: "Gurugram, India" },
+  { name: "Narayana Health", location: "Bengaluru, India" },
+  { name: "Manipal Hospital", location: "Bengaluru, India" },
+  { name: "Kokilaben Hospital", location: "Mumbai, India" },
 ];
 
 export default function HealthcareDirectoryPage() {
@@ -104,13 +141,13 @@ export default function HealthcareDirectoryPage() {
           <h2 className="mb-6 text-xl font-bold text-gray-900">Top Hospitals</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {hospitals.map((h) => (
-              <div key={h} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md">
+              <div key={h.name} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50 text-sm font-bold text-primary-600">
-                  {h[0]}
+                  {h.name[0]}
                 </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-900">{h}</h3>
-                  <p className="text-xs text-gray-500">Multi-Specialty Hospital</p>
+                <div className="min-w-0">
+                  <h3 className="truncate text-sm font-semibold text-gray-900">{h.name}</h3>
+                  <p className="truncate text-xs text-gray-500">{h.location}</p>
                 </div>
               </div>
             ))}

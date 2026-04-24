@@ -237,22 +237,36 @@ export default function AdminBlog() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Blog Management</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            {loading ? "Loading…" : `${posts.length} posts total`}
-          </p>
+      {/* gradient hero */}
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-fuchsia-300/20 blur-3xl" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-pink-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-pink-400" />
+              </span>
+              Editorial desk
+            </div>
+            <h2 className="text-2xl font-bold">Blog Management</h2>
+            <p className="mt-1 text-sm text-purple-50/90">
+              {loading
+                ? "Loading…"
+                : `${posts.length} posts · ${posts.filter((p) => p.status === "Published").length} live · ${posts.filter((p) => p.featured).length} featured`}
+            </p>
+          </div>
+          <button
+            onClick={openNew}
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-purple-700 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            New Post
+          </button>
         </div>
-        <button
-          onClick={openNew}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          New Post
-        </button>
       </div>
 
       {/* AI generator panel */}
@@ -481,45 +495,69 @@ export default function AdminBlog() {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
-                <th className="px-6 py-4 font-medium">Title</th>
-                <th className="px-6 py-4 font-medium">Author</th>
-                <th className="px-6 py-4 font-medium">Category</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium">Date</th>
-                <th className="px-6 py-4 font-medium">Actions</th>
+              <tr className="border-b border-gray-100 bg-gradient-to-r from-slate-50 to-white text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <th className="px-6 py-4">Title</th>
+                <th className="px-6 py-4">Author</th>
+                <th className="px-6 py-4">Category</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Date</th>
+                <th className="px-6 py-4">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((p) => (
-                <tr key={p.id} className="border-b border-gray-50 transition-colors hover:bg-gray-50">
+              {filtered.map((p, i) => {
+                const palettes = [
+                  "from-indigo-400 to-purple-500",
+                  "from-rose-400 to-pink-500",
+                  "from-emerald-400 to-teal-500",
+                  "from-amber-400 to-orange-500",
+                  "from-sky-400 to-blue-500",
+                  "from-violet-400 to-fuchsia-500",
+                ];
+                const grad = palettes[i % palettes.length];
+                return (
+                <tr key={p.id} className="border-b border-gray-50 transition-colors hover:bg-slate-50/60">
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900">{p.title}</span>
-                      {p.featured && (
-                        <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-[10px] font-semibold text-yellow-700">
-                          ⭐ Featured
-                        </span>
-                      )}
+                    <div className="flex items-start gap-3">
+                      <div className={`mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${grad} text-white shadow-sm ring-2 ring-white`}>
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-900">{p.title}</span>
+                          {p.featured && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-100 to-yellow-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-200">
+                              <svg className="h-2.5 w-2.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.287 3.957c.3.922-.755 1.688-1.54 1.118l-3.37-2.447a1 1 0 00-1.175 0l-3.37 2.447c-.784.57-1.838-.196-1.539-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.05 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z" /></svg>
+                              Featured
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-0.5 font-mono text-xs text-gray-400">/blog/{p.slug}</p>
+                      </div>
                     </div>
-                    <p className="mt-0.5 text-xs text-gray-400">/blog/{p.slug}</p>
                   </td>
                   <td className="px-6 py-4 text-gray-600">{p.author}</td>
-                  <td className="px-6 py-4 text-gray-600">{p.category}</td>
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center rounded-full bg-gradient-to-r from-slate-50 to-gray-50 px-2.5 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200">
+                      {p.category}
+                    </span>
+                  </td>
                   <td className="px-6 py-4">
                     <button
                       onClick={() => togglePublish(p)}
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors ${
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 transition hover:-translate-y-0.5 ${
                         p.status === "Published"
-                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                          : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+                          ? "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200"
+                          : "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200"
                       }`}
                       title="Click to toggle"
                     >
+                      <span className={`h-1.5 w-1.5 rounded-full ${p.status === "Published" ? "bg-emerald-500" : "bg-amber-500"}`} />
                       {p.status}
                     </button>
                   </td>
@@ -530,7 +568,7 @@ export default function AdminBlog() {
                         href={`/blog/${p.slug}${p.status === "Draft" ? "?preview=1" : ""}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-700"
+                        className="rounded-lg bg-slate-50 p-1.5 text-slate-600 ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:bg-slate-100"
                         title={p.status === "Draft" ? "Preview draft" : "View on site"}
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -539,7 +577,7 @@ export default function AdminBlog() {
                       </a>
                       <button
                         onClick={() => handleShareLinkedIn(p)}
-                        className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-[#0A66C2]/10 hover:text-[#0A66C2]"
+                        className="rounded-lg bg-[#0A66C2]/10 p-1.5 text-[#0A66C2] ring-1 ring-[#0A66C2]/20 transition hover:-translate-y-0.5 hover:bg-[#0A66C2]/20"
                         title="Share on LinkedIn"
                       >
                         <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -548,7 +586,7 @@ export default function AdminBlog() {
                       </button>
                       <button
                         onClick={() => openEdit(p)}
-                        className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                        className="rounded-lg bg-blue-50 p-1.5 text-blue-600 ring-1 ring-blue-100 transition hover:-translate-y-0.5 hover:bg-blue-100"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -556,7 +594,7 @@ export default function AdminBlog() {
                       </button>
                       <button
                         onClick={() => handleDelete(p.id)}
-                        className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                        className="rounded-lg bg-red-50 p-1.5 text-red-600 ring-1 ring-red-100 transition hover:-translate-y-0.5 hover:bg-red-100"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -565,7 +603,7 @@ export default function AdminBlog() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              );})}
             </tbody>
           </table>
         </div>

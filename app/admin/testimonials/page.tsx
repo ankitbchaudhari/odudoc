@@ -162,26 +162,38 @@ export default function AdminTestimonials() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Testimonials</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            {testimonials.length} total
-            {pendingCount > 0 && `, ${pendingCount} pending review`}
-          </p>
+      {/* gradient hero */}
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-yellow-500 via-amber-500 to-orange-600 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-yellow-200/30 blur-3xl" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-200 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-yellow-300" />
+              </span>
+              Patient stories
+            </div>
+            <h2 className="text-2xl font-bold">Testimonials</h2>
+            <p className="mt-1 text-sm text-amber-50/90">
+              {testimonials.length} total · {testimonials.filter((t) => t.status === "Published").length} published
+              {pendingCount > 0 && ` · ${pendingCount} pending review`}
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              resetForm();
+              setShowForm(!showForm);
+            }}
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-amber-700 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Testimonial
+          </button>
         </div>
-        <button
-          onClick={() => {
-            resetForm();
-            setShowForm(!showForm);
-          }}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Add Testimonial
-        </button>
       </div>
 
       {showForm && (
@@ -256,26 +268,45 @@ export default function AdminTestimonials() {
         </div>
       )}
 
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="h-1 bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500" />
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-xs uppercase text-gray-500">
-                <th className="px-4 py-3 font-medium">Patient</th>
-                <th className="px-4 py-3 font-medium">Rating</th>
-                <th className="px-4 py-3 font-medium">Review</th>
-                <th className="px-4 py-3 font-medium">Doctor</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Date</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
+              <tr className="border-b border-gray-100 bg-gradient-to-r from-slate-50 to-white text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3">Patient</th>
+                <th className="px-4 py-3">Rating</th>
+                <th className="px-4 py-3">Review</th>
+                <th className="px-4 py-3">Doctor</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Date</th>
+                <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {testimonials.map((t) => (
-                <tr key={t.id} className="border-b border-gray-50 transition-colors hover:bg-gray-50">
+              {testimonials.map((t, i) => {
+                const palettes = [
+                  "from-amber-400 to-orange-500",
+                  "from-rose-400 to-pink-500",
+                  "from-emerald-400 to-teal-500",
+                  "from-sky-400 to-blue-500",
+                  "from-violet-400 to-fuchsia-500",
+                  "from-indigo-400 to-violet-500",
+                ];
+                const grad = palettes[i % palettes.length];
+                const initials = (t.name || "?").split(" ").map((s) => s[0]).join("").slice(0, 2).toUpperCase();
+                return (
+                <tr key={t.id} className="border-b border-gray-50 transition-colors hover:bg-slate-50/60">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{t.name}</p>
-                    <p className="text-xs text-gray-400">{t.location}</p>
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${grad} text-xs font-bold text-white shadow-sm ring-2 ring-white`}>
+                        {initials}
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">{t.name}</p>
+                        <p className="text-xs text-gray-400">{t.location}</p>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-3">{renderStars(t.rating)}</td>
                   <td className="max-w-xs px-4 py-3 text-gray-600">
@@ -284,10 +315,13 @@ export default function AdminTestimonials() {
                   <td className="px-4 py-3 text-gray-600">{t.doctor || "—"}</td>
                   <td className="px-4 py-3">
                     <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        t.status === "Published" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${
+                        t.status === "Published"
+                          ? "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200"
+                          : "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200"
                       }`}
                     >
+                      <span className={`h-1.5 w-1.5 rounded-full ${t.status === "Published" ? "bg-emerald-500" : "bg-amber-500"}`} />
                       {t.status}
                     </span>
                   </td>
@@ -297,7 +331,7 @@ export default function AdminTestimonials() {
                       {t.status === "Pending" ? (
                         <button
                           onClick={() => handleApprove(t.id)}
-                          className="rounded p-1.5 text-gray-400 hover:bg-green-50 hover:text-green-600"
+                          className="rounded-lg bg-emerald-50 p-1.5 text-emerald-600 ring-1 ring-emerald-100 transition hover:-translate-y-0.5 hover:bg-emerald-100"
                           title="Publish"
                         >
                           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -307,7 +341,7 @@ export default function AdminTestimonials() {
                       ) : (
                         <button
                           onClick={() => handleReject(t.id)}
-                          className="rounded p-1.5 text-gray-400 hover:bg-yellow-50 hover:text-yellow-600"
+                          className="rounded-lg bg-amber-50 p-1.5 text-amber-600 ring-1 ring-amber-100 transition hover:-translate-y-0.5 hover:bg-amber-100"
                           title="Unpublish"
                         >
                           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -317,7 +351,7 @@ export default function AdminTestimonials() {
                       )}
                       <button
                         onClick={() => handleEdit(t)}
-                        className="rounded p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600"
+                        className="rounded-lg bg-blue-50 p-1.5 text-blue-600 ring-1 ring-blue-100 transition hover:-translate-y-0.5 hover:bg-blue-100"
                         title="Edit"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -326,7 +360,7 @@ export default function AdminTestimonials() {
                       </button>
                       <button
                         onClick={() => handleDelete(t.id)}
-                        className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                        className="rounded-lg bg-red-50 p-1.5 text-red-600 ring-1 ring-red-100 transition hover:-translate-y-0.5 hover:bg-red-100"
                         title="Delete"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -336,7 +370,7 @@ export default function AdminTestimonials() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              );})}
             </tbody>
           </table>
         </div>

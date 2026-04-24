@@ -173,33 +173,50 @@ export default function AdminPages() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Pages</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Manage CMS pages. Edit content, change status, or create new pages.
-          </p>
+      {/* gradient hero */}
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-500 via-sky-600 to-blue-700 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-teal-300/20 blur-3xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-200 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-300" />
+              </span>
+              CMS content
+            </div>
+            <h1 className="text-2xl font-bold">Pages</h1>
+            <p className="mt-1 text-sm text-sky-50/90">
+              {pages.length} total · {pages.filter((p) => p.status === "Published").length} published · {pages.filter((p) => p.status === "Draft").length} draft
+            </p>
+          </div>
+          <button
+            onClick={openNew}
+            className="rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-sky-700 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
+          >
+            + New Page
+          </button>
         </div>
-        <button
-          onClick={openNew}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          + New Page
-        </button>
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-3">
-        <input
-          type="search"
-          placeholder="Search pages..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-sm rounded-lg border border-gray-200 px-4 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
-        />
+      <div className="mb-4 flex flex-wrap gap-3 rounded-2xl bg-gradient-to-r from-slate-50 to-white p-3 ring-1 ring-slate-100">
+        <div className="relative flex-1 min-w-[240px] max-w-sm">
+          <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="search"
+            placeholder="Search pages..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-xl border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm shadow-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+          />
+        </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as "All" | PageStatus)}
-          className="rounded-lg border border-gray-200 px-4 py-2 text-sm outline-none focus:border-primary-500"
+          className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm shadow-sm outline-none focus:border-sky-500"
         >
           <option value="All">All statuses</option>
           <option value="Published">Published</option>
@@ -207,9 +224,10 @@ export default function AdminPages() {
         </select>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="h-1 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-500" />
         <table className="min-w-full divide-y divide-gray-100">
-          <thead className="bg-gray-50">
+          <thead className="bg-gradient-to-r from-slate-50 to-white">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Title</th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">URL</th>
@@ -242,19 +260,38 @@ export default function AdminPages() {
               </tr>
             )}
             {!loading &&
-              filtered.map((p) => (
-                <tr key={p.id}>
+              filtered.map((p, i) => {
+                const palettes = [
+                  "from-cyan-400 to-sky-500",
+                  "from-violet-400 to-fuchsia-500",
+                  "from-emerald-400 to-teal-500",
+                  "from-amber-400 to-orange-500",
+                  "from-rose-400 to-pink-500",
+                  "from-indigo-400 to-violet-500",
+                  "from-sky-400 to-blue-500",
+                  "from-yellow-400 to-amber-500",
+                ];
+                const grad = palettes[i % palettes.length];
+                return (
+                <tr key={p.id} className="transition hover:bg-slate-50/60">
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                    <div className="flex items-center gap-2">
-                      {p.title}
-                      {p.isCustom && (
-                        <span className="rounded bg-primary-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-primary-700">
-                          Custom
-                        </span>
-                      )}
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${grad} text-white shadow-sm ring-2 ring-white`}>
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          {p.title}
+                          {p.isCustom && (
+                            <span className="rounded bg-gradient-to-r from-primary-50 to-teal-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-primary-700 ring-1 ring-primary-100">
+                              Custom
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-primary-600">
+                  <td className="px-4 py-3 font-mono text-xs text-sky-600">
                     {p.slug}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">{p.author}</td>
@@ -262,12 +299,13 @@ export default function AdminPages() {
                   <td className="px-4 py-3">
                     <button
                       onClick={() => togglePublish(p)}
-                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 transition hover:-translate-y-0.5 ${
                         p.status === "Published"
-                          ? "bg-green-50 text-green-700"
-                          : "bg-amber-50 text-amber-700"
+                          ? "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200"
+                          : "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200"
                       }`}
                     >
+                      <span className={`h-1.5 w-1.5 rounded-full ${p.status === "Published" ? "bg-emerald-500" : "bg-amber-500"}`} />
                       {p.status}
                     </button>
                   </td>
@@ -276,26 +314,26 @@ export default function AdminPages() {
                       href={viewHref(p)}
                       target="_blank"
                       rel="noreferrer"
-                      className="mr-3 font-medium text-gray-500 hover:text-gray-700 hover:underline"
+                      className="mr-2 inline-block rounded-lg bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:bg-slate-100"
                     >
                       View
                     </a>
                     <button
                       onClick={() => openEdit(p)}
-                      className="mr-3 font-medium text-primary-600 hover:underline"
+                      className="mr-2 inline-block rounded-lg bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-100 transition hover:-translate-y-0.5 hover:bg-blue-100"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => removePage(p.id)}
                       disabled={deletingId === p.id}
-                      className="font-medium text-red-600 hover:underline disabled:opacity-50"
+                      className="inline-block rounded-lg bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 ring-1 ring-red-100 transition hover:-translate-y-0.5 hover:bg-red-100 disabled:opacity-50"
                     >
                       Delete
                     </button>
                   </td>
                 </tr>
-              ))}
+              );})}
           </tbody>
         </table>
       </div>

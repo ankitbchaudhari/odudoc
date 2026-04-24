@@ -174,16 +174,32 @@ export default function AdminMedia() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Media Library</h2>
-          <p className="mt-1 text-sm text-gray-500">{loading ? "Loading…" : `${media.length} files`}</p>
+      {/* gradient hero */}
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-teal-500 via-cyan-600 to-blue-700 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-cyan-300/20 blur-3xl" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-200 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-300" />
+              </span>
+              Asset storage
+            </div>
+            <h2 className="text-2xl font-bold">Media Library</h2>
+            <p className="mt-1 text-sm text-teal-50/90">
+              {loading
+                ? "Loading…"
+                : `${media.length} files · ${media.filter((m) => m.type === "image").length} images · ${media.filter((m) => m.type === "document").length} documents`}
+            </p>
+          </div>
+          {selectedIds.length > 0 && (
+            <button onClick={handleBulkDelete} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-red-600 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
+              Delete Selected ({selectedIds.length})
+            </button>
+          )}
         </div>
-        {selectedIds.length > 0 && (
-          <button onClick={handleBulkDelete} className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700">
-            Delete Selected ({selectedIds.length})
-          </button>
-        )}
       </div>
 
       {error && <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>}
@@ -192,7 +208,7 @@ export default function AdminMedia() {
       <div
         onDragOver={(e) => e.preventDefault()}
         onDrop={onDrop}
-        className="mb-6 rounded-xl border-2 border-dashed border-gray-300 bg-white p-8 text-center transition-colors hover:border-primary-400"
+        className="mb-6 rounded-2xl border-2 border-dashed border-cyan-300 bg-gradient-to-br from-cyan-50 via-white to-blue-50 p-8 text-center transition-all hover:border-cyan-500 hover:shadow-md"
       >
         <input
           ref={fileRef}
@@ -201,29 +217,33 @@ export default function AdminMedia() {
           className="hidden"
           onChange={(e) => e.target.files && uploadFiles(e.target.files)}
         />
-        <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-        </svg>
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-md ring-4 ring-white">
+          <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+        </div>
         <p className="mt-3 text-sm font-medium text-gray-700">Drag and drop files here, or click to browse</p>
         <p className="mt-1 text-xs text-gray-400">PNG, JPG, PDF, SVG up to 10MB</p>
         <button
           onClick={() => fileRef.current?.click()}
           disabled={uploading}
-          className="mt-4 rounded-lg bg-primary-600 px-6 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-60"
+          className="mt-4 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60"
         >
           {uploading && uploadProgress ? `Uploading ${uploadProgress.done}/${uploadProgress.total}…` : "Browse Files"}
         </button>
       </div>
 
       {/* Filters + View Toggle */}
-      <div className="mb-6 flex items-center justify-between rounded-xl bg-white p-4 shadow-sm">
+      <div className="mb-6 flex items-center justify-between rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
         <div className="flex gap-2">
           {(["all", "image", "document"] as const).map((type) => (
             <button
               key={type}
               onClick={() => setTypeFilter(type)}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                typeFilter === type ? "bg-primary-600 text-white" : "text-gray-600 hover:bg-gray-100"
+              className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+                typeFilter === type
+                  ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md"
+                  : "text-gray-600 hover:bg-gray-100"
               }`}
             >
               {type === "all" ? "All" : type === "image" ? "Images" : "Documents"}

@@ -10,6 +10,7 @@ import {
   deleteUser,
   type User,
 } from "@/lib/users-store";
+import { awaitAllFlushes } from "@/lib/persistent-array";
 import {
   sendAccountBannedEmail,
   sendAccountRestoredEmail,
@@ -64,6 +65,7 @@ export async function PATCH(
     } catch (err) {
       log.error("console.error", undefined, { args: ["[admin/users] ban email failed:", err] });
     }
+    await awaitAllFlushes();
     return NextResponse.json({ ok: true });
   }
 
@@ -75,6 +77,7 @@ export async function PATCH(
     } catch (err) {
       log.error("console.error", undefined, { args: ["[admin/users] unban email failed:", err] });
     }
+    await awaitAllFlushes();
     return NextResponse.json({ ok: true });
   }
 
@@ -158,6 +161,7 @@ export async function PATCH(
       log.error("console.error", undefined, { args: ["[admin/users] role-change email failed:", err] });
     }
 
+    await awaitAllFlushes();
     return NextResponse.json({ ok: true, createdDoctorId });
   }
 
@@ -223,6 +227,13 @@ export async function DELETE(
     body: `${removed.name} (${removed.email}) was removed by an admin.`,
     link: "/admin/users",
   });
+
+  // CRITICAL: wait for the delete to actually hit Postgres before we
+  // return. Vercel freezes Lambdas the moment the response flushes, so a
+  // fire-and-forget flush() loses the DB write and the row resurrects
+  // on the next GET (a sibling Lambda re-hydrates from Postgres and
+  // sees the "deleted" user again).
+  await awaitAllFlushes();
 
   return NextResponse.json({ ok: true });
 }

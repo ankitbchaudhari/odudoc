@@ -33,25 +33,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: unknown) {
     log.error('Payment intent creation failed:', error);
-    const err = error as {
-      message?: string;
-      type?: string;
-      code?: string;
-      statusCode?: number;
-      raw?: { message?: string; code?: string };
-    };
-    const keyLen = (process.env.STRIPE_SECRET_KEY || '').length;
-    const keyPrefix = (process.env.STRIPE_SECRET_KEY || '').slice(0, 7);
     return NextResponse.json(
-      {
-        error: err.message || 'Failed to create payment intent',
-        stripeType: err.type,
-        stripeCode: err.code,
-        stripeStatus: err.statusCode,
-        stripeRawCode: err.raw?.code,
-        keyLen,
-        keyPrefix,
-      },
+      { error: 'Failed to create payment intent' },
       { status: 500 },
     );
   }

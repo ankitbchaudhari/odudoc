@@ -59,10 +59,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Only doctors can use the AI helper." }, { status: 403 });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
+  // Provider precedence: GEMINI_API_KEY (free tier via AI Studio) →
+  // OPENAI_API_KEY → ANTHROPIC_API_KEY. Falls through to 503 so the
+  // client can use its local rule library.
+  const geminiKey = process.env.GEMINI_API_KEY;
+  const openaiKey = process.env.OPENAI_API_KEY;
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  if (!geminiKey && !openaiKey && !anthropicKey) {
     return NextResponse.json(
-      { error: "AI helper not configured. Set ANTHROPIC_API_KEY to enable." },
+      { error: "AI helper not configured. Set GEMINI_API_KEY, OPENAI_API_KEY, or ANTHROPIC_API_KEY." },
       { status: 503 },
     );
   }
@@ -94,36 +99,22 @@ export async function POST(req: NextRequest) {
     .join("\n");
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-5",
-        max_tokens: 1024,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: "user", content: userPrompt }],
-      }),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text().catch(() => "");
-      log.error("anthropic api error", { status: res.status, body: errText });
-      return NextResponse.json(
-        { error: "AI service error. Falling back to local suggestions." },
-        { status: 502 },
-      );
+    let text = "";
+    let provider = "";
+    if (geminiKey) {
+      provider = "gemini";
+      text = await callGemini(geminiKey, userPrompt);
+    } else if (openaiKey) {
+      provider = "openai";
+      text = await callOpenAI(openaiKey, userPrompt);
+    } else {
+      provider = "anthropic";
+      text = await callAnthropic(anthropicKey!, userPrompt);
     }
 
-    const payload = (await res.json()) as {
-      content?: Array<{ type: string; text?: string }>;
-    };
-    const text = payload.content?.find((c) => c.type === "text")?.text ?? "";
     const parsed = extractJson(text);
     if (!parsed) {
+      log.error("ai response not json", { provider, text: text.slice(0, 300) });
       return NextResponse.json(
         { error: "AI response was not valid JSON." },
         { status: 502 },
@@ -156,6 +147,84 @@ export async function POST(req: NextRequest) {
       { status: 502 },
     );
   }
+}
+
+// Gemini free tier: 15 RPM / 1,500 RPD on gemini-2.0-flash via AI Studio.
+// JSON mode via responseMimeType keeps the output tight.
+async function callGemini(key: string, userPrompt: string): Promise<string> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+      generationConfig: { responseMimeType: "application/json", temperature: 0.2 },
+    }),
+  });
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "");
+    log.error("gemini api error", { status: res.status, body: errText });
+    throw new Error(`gemini ${res.status}`);
+  }
+  const payload = (await res.json()) as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+  };
+  return payload.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+}
+
+async function callOpenAI(key: string, userPrompt: string): Promise<string> {
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${key}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      response_format: { type: "json_object" },
+      temperature: 0.2,
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: userPrompt },
+      ],
+    }),
+  });
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "");
+    log.error("openai api error", { status: res.status, body: errText });
+    throw new Error(`openai ${res.status}`);
+  }
+  const payload = (await res.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
+  return payload.choices?.[0]?.message?.content ?? "";
+}
+
+async function callAnthropic(key: string, userPrompt: string): Promise<string> {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": key,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-5",
+      max_tokens: 1024,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: "user", content: userPrompt }],
+    }),
+  });
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "");
+    log.error("anthropic api error", { status: res.status, body: errText });
+    throw new Error(`anthropic ${res.status}`);
+  }
+  const payload = (await res.json()) as {
+    content?: Array<{ type: string; text?: string }>;
+  };
+  return payload.content?.find((c) => c.type === "text")?.text ?? "";
 }
 
 // Models sometimes wrap JSON in markdown fences even when told not to —

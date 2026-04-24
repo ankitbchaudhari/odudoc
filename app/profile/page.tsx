@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useRef, useState } from "react";
+import IdentityVerificationCard from "@/components/IdentityVerificationCard";
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
@@ -151,6 +152,11 @@ export default function ProfilePage() {
             Profile updated successfully!
           </div>
         )}
+
+        {/* Identity & Medical ID — permanent account identity + gov-ID upload */}
+        <div className="mb-6">
+          <IdentityVerificationCard />
+        </div>
 
         {/* Profile Header */}
         <div className="mb-6 rounded-xl bg-white p-6 shadow-sm">

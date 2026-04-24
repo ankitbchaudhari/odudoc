@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { bindPersistentArray } from "./persistent-array";
+import { generateUniqueMedicalId } from "./medical-id";
 
 export interface UserWarning {
   id: string;
@@ -49,6 +50,38 @@ export interface User {
   // `tempPasswordExpiresAt` or login is blocked until an admin reissues it.
   mustChangePassword?: boolean;
   tempPasswordExpiresAt?: string;
+
+  // ------------------------------------------------------------------
+  // OduDoc identity (Phase A)
+  //
+  // Every user gets a 16-digit Medical ID on creation. Patients (and
+  // doctors who choose to) can additionally upload a government-issued
+  // photo ID which an admin reviews; once approved the account gets a
+  // "verified" badge. This is a *soft* gate — unverified users can
+  // still browse, book, and pay, but the consult-start flow nudges
+  // them to verify, and certain B2B surfaces (corporate plans, clinic
+  // onboarding) may hard-gate later.
+  medicalId?: string;
+  identity?: UserIdentity;
+}
+
+export interface UserIdentity {
+  status: "unverified" | "pending" | "verified" | "rejected";
+  // Type of government document the user uploaded. Free-form because
+  // this varies by country — "Aadhaar", "Passport", "Driver's License",
+  // "PAN", "National ID", etc. UI offers common picks + "Other".
+  docType?: string;
+  // Remote URL from our blob service; stored as-uploaded.
+  docUrl?: string;
+  // Filename the user uploaded, for admin-review UI only.
+  docFilename?: string;
+  submittedAt?: string;
+  reviewedAt?: string;
+  // Admin user id that approved / rejected.
+  reviewedBy?: string;
+  // Free-form note from the reviewer. Surfaced to the user when rejected
+  // so they know what to fix before re-uploading.
+  reviewNote?: string;
 }
 
 const users: User[] = [];
@@ -207,6 +240,28 @@ const DEMO_ACCOUNTS: {
   if (dirty) flush();
 })();
 
+// Backfill Medical IDs + identity state for every pre-existing user row.
+// This runs once per cold boot; the `medicalId ?` check makes it a no-op
+// for rows that already have one, so it's safe to run repeatedly. The
+// collision check uses the in-memory array which is cheap at our scale.
+(function backfillMedicalIds() {
+  let dirty = false;
+  const taken = new Set(users.map((u) => u.medicalId).filter(Boolean) as string[]);
+  for (const u of users) {
+    if (!u.medicalId) {
+      const id = generateUniqueMedicalId((cand) => taken.has(cand));
+      taken.add(id);
+      u.medicalId = id;
+      dirty = true;
+    }
+    if (!u.identity) {
+      u.identity = { status: "unverified" };
+      dirty = true;
+    }
+  }
+  if (dirty) flush();
+})();
+
 export async function reloadUsers(): Promise<void> {
   await reload();
 }
@@ -287,6 +342,7 @@ export function createUser(
   }
 ): User {
   const hashedPassword = bcrypt.hashSync(data.password, 10);
+  const taken = new Set(users.map((u) => u.medicalId).filter(Boolean) as string[]);
   const newUser: User = {
     id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     name: data.name,
@@ -299,10 +355,130 @@ export function createUser(
     lastLoginAt: null,
     status: "active",
     warnings: [],
+    medicalId: generateUniqueMedicalId((c) => taken.has(c)),
+    identity: { status: "unverified" },
   };
   users.push(newUser);
   flush();
   return newUser;
+}
+
+// ---------- Identity verification helpers ----------
+
+export interface IdentityPublicView {
+  medicalId: string;
+  status: UserIdentity["status"];
+  docType?: string;
+  docFilename?: string;
+  submittedAt?: string;
+  reviewedAt?: string;
+  reviewNote?: string;
+}
+
+export function getIdentity(userId: string): IdentityPublicView | null {
+  const u = findUserById(userId);
+  if (!u) return null;
+  return {
+    medicalId: u.medicalId || "",
+    status: u.identity?.status || "unverified",
+    docType: u.identity?.docType,
+    docFilename: u.identity?.docFilename,
+    submittedAt: u.identity?.submittedAt,
+    reviewedAt: u.identity?.reviewedAt,
+    reviewNote: u.identity?.reviewNote,
+  };
+}
+
+/**
+ * Patient/doctor submits a gov-ID document. Flips status to "pending"
+ * so an admin's review queue picks it up. Re-submission after a
+ * "rejected" verdict is allowed — we overwrite the prior doc and clear
+ * the review note so the queue shows it as a fresh submission.
+ */
+export function submitIdentityDocument(
+  userId: string,
+  doc: { docType: string; docUrl: string; docFilename: string },
+): User | null {
+  const u = findUserById(userId);
+  if (!u) return null;
+  u.identity = {
+    status: "pending",
+    docType: doc.docType,
+    docUrl: doc.docUrl,
+    docFilename: doc.docFilename,
+    submittedAt: new Date().toISOString(),
+  };
+  flush();
+  return u;
+}
+
+export function approveIdentity(
+  userId: string,
+  reviewerId: string,
+): User | null {
+  const u = findUserById(userId);
+  if (!u || !u.identity) return null;
+  u.identity = {
+    ...u.identity,
+    status: "verified",
+    reviewedAt: new Date().toISOString(),
+    reviewedBy: reviewerId,
+    reviewNote: undefined,
+  };
+  flush();
+  return u;
+}
+
+export function rejectIdentity(
+  userId: string,
+  reviewerId: string,
+  reviewNote: string,
+): User | null {
+  const u = findUserById(userId);
+  if (!u || !u.identity) return null;
+  u.identity = {
+    ...u.identity,
+    status: "rejected",
+    reviewedAt: new Date().toISOString(),
+    reviewedBy: reviewerId,
+    reviewNote,
+  };
+  flush();
+  return u;
+}
+
+export interface PendingVerification {
+  userId: string;
+  name: string;
+  email: string;
+  role: User["role"];
+  medicalId: string;
+  docType: string;
+  docUrl: string;
+  docFilename: string;
+  submittedAt: string;
+}
+
+export function listPendingVerifications(): PendingVerification[] {
+  return users
+    .filter(
+      (u) =>
+        u.identity?.status === "pending" &&
+        u.identity.docUrl &&
+        u.identity.docType,
+    )
+    .map((u) => ({
+      userId: u.id,
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      medicalId: u.medicalId || "",
+      docType: u.identity!.docType!,
+      docUrl: u.identity!.docUrl!,
+      docFilename: u.identity!.docFilename || "document",
+      submittedAt: u.identity!.submittedAt || u.createdAt,
+    }))
+    .sort((a, b) => a.submittedAt.localeCompare(b.submittedAt));
 }
 
 export function validatePassword(

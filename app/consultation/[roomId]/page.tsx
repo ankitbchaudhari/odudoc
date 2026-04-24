@@ -11,6 +11,7 @@ import DoctorNotesPanel from "@/components/DoctorNotesPanel";
 import ConsultPrescriptionView, {
   type ConsultPrescription,
 } from "@/components/ConsultPrescriptionView";
+import IdentityVerifyNudge from "@/components/IdentityVerifyNudge";
 
 interface RoomInfo {
   id: string;
@@ -138,12 +139,17 @@ export default function ConsultationRoomPage() {
 
   if (stage === "waiting" && roomInfo) {
     return (
-      <WaitingRoom
-        patientName={roomInfo.patientName}
-        doctorName={roomInfo.doctorName}
-        specialty={roomInfo.specialty}
-        onJoin={handleJoinCall}
-      />
+      <>
+        {/* Soft-gate identity nudge — only shows to unverified / rejected
+            users; never blocks joining the call. */}
+        <IdentityVerifyNudge />
+        <WaitingRoom
+          patientName={roomInfo.patientName}
+          doctorName={roomInfo.doctorName}
+          specialty={roomInfo.specialty}
+          onJoin={handleJoinCall}
+        />
+      </>
     );
   }
 

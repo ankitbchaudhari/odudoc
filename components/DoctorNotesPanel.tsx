@@ -173,6 +173,8 @@ export default function DoctorNotesPanel({
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [aiMsg, setAiMsg] = useState<string>("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiWarning, setAiWarning] = useState<string>("");
 
   // Helper: append a chip value to a comma-separated field without
   // duplicating if it's already there.
@@ -182,28 +184,68 @@ export default function DoctorNotesPanel({
     return parts.length ? `${parts.join(", ")}, ${value}` : value;
   };
 
-  const runAiSuggest = () => {
-    setAiMsg("");
-    const src = diagnosis.trim() || symptoms.trim();
-    if (!src) {
-      setAiMsg("Add a symptom or diagnosis first.");
-      return;
-    }
-    const s = suggestFromDiagnosis(src);
-    if (!s) {
-      setAiMsg("No preset match — fill manually or pick from the chips above.");
-      return;
-    }
-    setTreatment((prev) => prev.trim() ? prev : s.treatment);
+  // Apply a suggestion (from Claude or the local library) to the form.
+  // Never overwrites a field the doctor already filled.
+  const applySuggestion = (s: AiSuggestion, source: "Claude" | "local preset") => {
+    setTreatment((prev) => (prev.trim() ? prev : s.treatment));
     setInvestigations((prev) => {
-      const joined = s.investigations.join(", ");
+      const joined = Array.isArray(s.investigations) ? s.investigations.join(", ") : "";
       return prev.trim() ? prev : joined;
     });
     setMedicines((prev) => {
       const hasContent = prev.some((m) => m.name.trim());
       return hasContent ? prev : s.medicines.length ? s.medicines : prev;
     });
-    setAiMsg("Suggestions applied — review before sending.");
+    setAiMsg(`Suggestions applied via ${source} — review before sending.`);
+  };
+
+  const runAiSuggest = async () => {
+    setAiMsg("");
+    setAiWarning("");
+    const src = diagnosis.trim() || symptoms.trim();
+    if (!src) {
+      setAiMsg("Add a symptom or diagnosis first.");
+      return;
+    }
+
+    setAiBusy(true);
+    try {
+      // Try Claude first. If the server doesn't have ANTHROPIC_API_KEY
+      // (503) or Anthropic is down (502), silently fall back to the
+      // local rule library so the doctor still gets a starter plan.
+      const r = await fetch("/api/ai/prescription", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ symptoms: symptoms.trim(), diagnosis: diagnosis.trim() }),
+      });
+      if (r.ok) {
+        const { suggestion } = (await r.json()) as { suggestion: AiSuggestion & { warning?: string } };
+        applySuggestion(suggestion, "Claude");
+        if (suggestion.warning) setAiWarning(suggestion.warning);
+        return;
+      }
+      // 4xx other than 503 — surface the server message; otherwise fallback.
+      if (r.status === 403) {
+        const j = await r.json().catch(() => ({}));
+        setAiMsg(j.error || "Not authorized.");
+        return;
+      }
+      const local = suggestFromDiagnosis(src);
+      if (local) {
+        applySuggestion(local, "local preset");
+      } else {
+        setAiMsg("AI unavailable and no local preset matched. Fill manually or use the chips above.");
+      }
+    } catch {
+      const local = suggestFromDiagnosis(src);
+      if (local) {
+        applySuggestion(local, "local preset");
+      } else {
+        setAiMsg("Network error and no local preset matched.");
+      }
+    } finally {
+      setAiBusy(false);
+    }
   };
 
   const updateMed = (i: number, patch: Partial<MedicineRow>) => {
@@ -322,13 +364,19 @@ export default function DoctorNotesPanel({
             <button
               type="button"
               onClick={runAiSuggest}
-              className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700"
+              disabled={aiBusy}
+              className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-60"
             >
-              Suggest
+              {aiBusy ? "Thinking…" : "Suggest"}
             </button>
           </div>
           {aiMsg && (
             <p className="mt-2 text-[11px] text-indigo-700">{aiMsg}</p>
+          )}
+          {aiWarning && (
+            <p className="mt-2 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] text-amber-800">
+              ⚠ {aiWarning}
+            </p>
           )}
         </div>
 

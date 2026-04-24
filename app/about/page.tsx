@@ -125,6 +125,8 @@ export default function AboutPage() {
               { year: "2022", text: "Expanded to 100+ cities; introduced home lab test collection" },
               { year: "2023", text: "Reached 1M+ patient consultations; launched surgery services" },
               { year: "2024", text: "AI-powered health insights; partnerships with 500+ hospitals" },
+              { year: "2025", text: "Went worldwide — live in 40+ countries across North America, Europe, Middle East, Asia-Pacific and Africa" },
+              { year: "2026", text: "Crossed 5M+ consultations; launched multivendor pharmacy marketplace and the OduDoc Hospital Management Suite for enterprise partners" },
             ].map((item) => (
               <div key={item.year} className="flex gap-4">
                 <div className="flex flex-col items-center">

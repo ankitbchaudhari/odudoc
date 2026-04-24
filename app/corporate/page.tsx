@@ -411,7 +411,7 @@ export default function CorporatePage() {
             </h2>
             <p className="mx-auto mt-3 max-w-2xl text-gray-500">
               Three features, built on medical-grade LLMs, designed to fit the way
-              Indian and African OPDs actually run. Every output is advisory — the
+              OPDs actually run — anywhere in the world. Every output is advisory — the
               doctor signs off on every line.
             </p>
           </div>

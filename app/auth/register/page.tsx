@@ -446,7 +446,7 @@ export default function RegisterPage() {
                   ))}
                 </div>
                 <div className="text-xs text-white/85">
-                  <p className="font-semibold text-white">Loved by patients across India</p>
+                  <p className="font-semibold text-white">Loved by patients worldwide</p>
                   <p>★★★★★ 4.9 average rating from 12,000+ reviews</p>
                 </div>
               </div>

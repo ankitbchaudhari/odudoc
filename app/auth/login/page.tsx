@@ -103,7 +103,7 @@ function LoginForm() {
             {[
               { t: "Verified doctors", d: "Licence-checked specialists only." },
               { t: "End-to-end encrypted", d: "Your records stay private." },
-              { t: "24/7 video consults", d: "From anywhere in India." },
+              { t: "24/7 video consults", d: "From anywhere in the world." },
             ].map((f) => (
               <li key={f.t} className="flex items-start gap-3">
                 <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 ring-1 ring-white/30">

@@ -278,7 +278,7 @@ export default function ConsultGateModal({ open, onClose, doctor, onVerified }: 
                 autoComplete="tel"
               />
               <p className="mt-1 text-xs text-gray-400">
-                Indian numbers work without the +91 prefix. Code arrives via SMS and WhatsApp.
+                Include your country code (e.g. +1, +44, +91). Code arrives via SMS and WhatsApp.
               </p>
             </div>
             {error && (

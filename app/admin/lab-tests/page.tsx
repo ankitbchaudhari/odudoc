@@ -125,25 +125,37 @@ export default function AdminLabTests() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Lab Tests</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            {tests.length} total, {tests.filter((t) => t.active).length} active
-          </p>
+      {/* gradient hero */}
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-violet-500 via-purple-600 to-fuchsia-600 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-pink-300/20 blur-3xl" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-pink-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-pink-400" />
+              </span>
+              Diagnostic catalogue
+            </div>
+            <h2 className="text-2xl font-bold">Lab Tests</h2>
+            <p className="mt-1 text-sm text-violet-50/90">
+              {tests.length} total · {tests.filter((t) => t.active).length} active · {tests.filter((t) => t.popular).length} popular
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              resetForm();
+              setShowForm(!showForm);
+            }}
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-violet-700 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Test
+          </button>
         </div>
-        <button
-          onClick={() => {
-            resetForm();
-            setShowForm(!showForm);
-          }}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Add Test
-        </button>
       </div>
 
       {showForm && (
@@ -254,49 +266,85 @@ export default function AdminLabTests() {
         </div>
       )}
 
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500" />
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-xs uppercase text-gray-500">
-                <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Parameters</th>
-                <th className="px-4 py-3 font-medium">Turnaround</th>
-                <th className="px-4 py-3 font-medium">Price</th>
-                <th className="px-4 py-3 font-medium">Popular</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
+              <tr className="border-b border-gray-100 bg-gradient-to-r from-slate-50 to-white text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3">Name</th>
+                <th className="px-4 py-3">Parameters</th>
+                <th className="px-4 py-3">Turnaround</th>
+                <th className="px-4 py-3">Price</th>
+                <th className="px-4 py-3">Popular</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {tests.map((t) => (
-                <tr key={t.id} className="border-b border-gray-50 hover:bg-gray-50">
+              {tests.map((t, i) => {
+                const palettes = [
+                  "from-violet-400 to-fuchsia-500",
+                  "from-sky-400 to-blue-500",
+                  "from-emerald-400 to-teal-500",
+                  "from-amber-400 to-orange-500",
+                  "from-rose-400 to-pink-500",
+                  "from-indigo-400 to-violet-500",
+                  "from-cyan-400 to-sky-500",
+                  "from-yellow-400 to-amber-500",
+                ];
+                const grad = palettes[i % palettes.length];
+                return (
+                <tr key={t.id} className="border-b border-gray-50 transition hover:bg-slate-50/60">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{t.name}</p>
-                    <p className="line-clamp-1 text-xs text-gray-400">{t.description}</p>
+                    <div className="flex items-start gap-3">
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${grad} text-white shadow-sm ring-2 ring-white`}>
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-900">{t.name}</p>
+                        <p className="line-clamp-1 text-xs text-gray-400">{t.description}</p>
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{t.parameters}</td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex items-center rounded-full bg-gradient-to-r from-blue-50 to-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-100">
+                      {t.parameters}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 text-gray-600">{t.turnaround}</td>
                   <td className="px-4 py-3 text-gray-900">
-                    <span className="font-semibold">${t.price.toFixed(2)}</span>{" "}
+                    <span className="font-semibold text-emerald-700">${t.price.toFixed(2)}</span>{" "}
                     <span className="text-xs text-gray-400 line-through">${t.originalPrice.toFixed(2)}</span>
                   </td>
-                  <td className="px-4 py-3">{t.popular ? "⭐" : ""}</td>
+                  <td className="px-4 py-3">
+                    {t.popular ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-100 to-yellow-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">
+                        <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.287 3.957c.3.922-.755 1.688-1.54 1.118l-3.37-2.447a1 1 0 00-1.175 0l-3.37 2.447c-.784.57-1.838-.196-1.539-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.05 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z" /></svg>
+                        Popular
+                      </span>
+                    ) : (
+                      <span className="text-xs text-slate-300">—</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <button
                       onClick={() => toggleActive(t)}
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        t.active ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 transition hover:-translate-y-0.5 ${
+                        t.active
+                          ? "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200"
+                          : "bg-gradient-to-r from-slate-50 to-gray-50 text-slate-600 ring-slate-200"
                       }`}
                     >
+                      <span className={`h-1.5 w-1.5 rounded-full ${t.active ? "bg-emerald-500" : "bg-slate-400"}`} />
                       {t.active ? "Active" : "Inactive"}
                     </button>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => handleEdit(t)}
-                        className="rounded p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600"
+                        className="rounded-lg bg-blue-50 p-1.5 text-blue-600 ring-1 ring-blue-100 transition hover:-translate-y-0.5 hover:bg-blue-100 hover:shadow"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -304,7 +352,7 @@ export default function AdminLabTests() {
                       </button>
                       <button
                         onClick={() => handleDelete(t.id)}
-                        className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                        className="rounded-lg bg-red-50 p-1.5 text-red-600 ring-1 ring-red-100 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -313,7 +361,7 @@ export default function AdminLabTests() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              );})}
             </tbody>
           </table>
         </div>

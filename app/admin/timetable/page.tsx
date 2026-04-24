@@ -128,23 +128,37 @@ export default function AdminTimetable() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Doctor Timetable</h2>
-          <p className="mt-1 text-sm text-gray-500">{entries.length} entries scheduled</p>
+      {/* gradient hero */}
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 via-rose-500 to-pink-600 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-amber-300/20 blur-3xl" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-400" />
+              </span>
+              Weekly clinic schedule
+            </div>
+            <h2 className="text-2xl font-bold">Doctor Timetable</h2>
+            <p className="mt-1 text-sm text-orange-50/90">
+              {entries.length} shift{entries.length === 1 ? "" : "s"} across {new Set(entries.map((e) => e.doctorName)).size} doctor{new Set(entries.map((e) => e.doctorName)).size === 1 ? "" : "s"}
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              resetForm();
+              setShowForm(!showForm);
+            }}
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-rose-700 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Entry
+          </button>
         </div>
-        <button
-          onClick={() => {
-            resetForm();
-            setShowForm(!showForm);
-          }}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Add Entry
-        </button>
       </div>
 
       {showForm && (
@@ -242,36 +256,55 @@ export default function AdminTimetable() {
         </div>
       )}
 
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="h-1 bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500" />
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-xs uppercase text-gray-500">
-                <th className="px-4 py-3 font-medium">Doctor</th>
-                <th className="px-4 py-3 font-medium">Department</th>
-                <th className="px-4 py-3 font-medium">Day</th>
-                <th className="px-4 py-3 font-medium">Slot</th>
-                <th className="px-4 py-3 font-medium">Time</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
+              <tr className="border-b border-gray-100 bg-gradient-to-r from-slate-50 to-white text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <th className="px-4 py-3">Doctor</th>
+                <th className="px-4 py-3">Department</th>
+                <th className="px-4 py-3">Day</th>
+                <th className="px-4 py-3">Slot</th>
+                <th className="px-4 py-3">Time</th>
+                <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {entries.map((e) => (
-                <tr key={e.id} className="border-b border-gray-50 hover:bg-gray-50">
+              {entries.map((e) => {
+                const slotBadge =
+                  e.timeSlot === "morning"
+                    ? "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200"
+                    : e.timeSlot === "afternoon"
+                    ? "bg-gradient-to-r from-sky-50 to-blue-50 text-sky-700 ring-sky-200"
+                    : "bg-gradient-to-r from-indigo-50 to-violet-50 text-indigo-700 ring-indigo-200";
+                const slotIcon =
+                  e.timeSlot === "morning" ? "☀️" : e.timeSlot === "afternoon" ? "🌤️" : "🌙";
+                return (
+                <tr key={e.id} className="border-b border-gray-50 transition hover:bg-slate-50/60">
                   <td className="px-4 py-3">
-                    <span className={`inline-block rounded-lg border px-2 py-1 text-xs font-medium ${e.color}`}>
+                    <span className={`inline-block rounded-lg border px-2.5 py-1 text-xs font-semibold shadow-sm ${e.color}`}>
                       {e.doctorName}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{e.department}</td>
-                  <td className="px-4 py-3 text-gray-600">{e.day}</td>
-                  <td className="px-4 py-3 capitalize text-gray-600">{e.timeSlot}</td>
-                  <td className="px-4 py-3 text-gray-600">{e.time}</td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
+                    <span className="inline-flex items-center rounded-full bg-gradient-to-r from-slate-50 to-gray-50 px-2.5 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200">
+                      {e.department}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 font-medium text-gray-700">{e.day}</td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ring-1 ${slotBadge}`}>
+                      <span>{slotIcon}</span>
+                      {e.timeSlot}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 font-mono text-xs text-gray-600">{e.time}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => handleEdit(e)}
-                        className="rounded p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600"
+                        className="rounded-lg bg-blue-50 p-1.5 text-blue-600 ring-1 ring-blue-100 transition hover:-translate-y-0.5 hover:bg-blue-100 hover:shadow"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -279,7 +312,7 @@ export default function AdminTimetable() {
                       </button>
                       <button
                         onClick={() => handleDelete(e.id)}
-                        className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                        className="rounded-lg bg-red-50 p-1.5 text-red-600 ring-1 ring-red-100 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -288,7 +321,7 @@ export default function AdminTimetable() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              );})}
             </tbody>
           </table>
         </div>

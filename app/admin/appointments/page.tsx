@@ -282,27 +282,39 @@ export default function AppointmentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Appointments</h1>
-          <p className="text-sm text-slate-500">
-            OPD scheduling with provider conflict detection.
-          </p>
+      {/* gradient hero */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-600 p-6 text-white shadow-lg">
+        <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-16 -left-10 h-56 w-56 rounded-full bg-cyan-300/20 blur-3xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+              </span>
+              OPD scheduling
+            </div>
+            <h1 className="text-2xl font-bold">Appointments</h1>
+            <p className="mt-1 text-sm text-blue-50/90">
+              Live clinic schedule with provider conflict detection · {stats.total} booked today
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              resetForm();
+              setShowForm(!showForm);
+            }}
+            className="rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-blue-700 shadow-md transition hover:shadow-lg hover:-translate-y-0.5"
+          >
+            {showForm ? "Close" : "+ New Appointment"}
+          </button>
         </div>
-        <button
-          onClick={() => {
-            resetForm();
-            setShowForm(!showForm);
-          }}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
-        >
-          {showForm ? "Close" : "+ New Appointment"}
-        </button>
       </div>
 
       {/* stats */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        <StatCard label="Today total" value={stats.total} />
+        <StatCard label="Today total" value={stats.total} accent="slate" />
         <StatCard label="Scheduled" value={stats.scheduled} accent="blue" />
         <StatCard label="Checked-in" value={stats.checkedIn} accent="amber" />
         <StatCard label="Completed" value={stats.completed} accent="emerald" />
@@ -508,9 +520,11 @@ export default function AppointmentsPage() {
       )}
 
       {/* list */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 px-4 py-3 text-sm font-semibold text-slate-700">
-          Schedule — {date}
+      <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="h-1 bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500" />
+        <div className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-4 py-3">
+          <div className="text-sm font-semibold text-slate-700">Schedule — {date}</div>
+          <div className="text-xs text-slate-500">{filtered.length} appointment{filtered.length === 1 ? "" : "s"}</div>
         </div>
         {loading ? (
           <div className="p-8 text-center text-sm text-slate-500">Loading...</div>
@@ -631,22 +645,23 @@ function StatCard({
 }: {
   label: string;
   value: number | string;
-  accent?: "blue" | "amber" | "emerald" | "rose";
+  accent?: "blue" | "amber" | "emerald" | "rose" | "slate";
 }) {
-  const color =
-    accent === "blue"
-      ? "text-blue-700"
-      : accent === "amber"
-      ? "text-amber-700"
-      : accent === "emerald"
-      ? "text-emerald-700"
-      : accent === "rose"
-      ? "text-rose-700"
-      : "text-slate-900";
+  const themes: Record<string, { bg: string; ring: string; text: string; dot: string }> = {
+    blue:    { bg: "from-blue-50 to-white",       ring: "ring-blue-100",    text: "text-blue-700",    dot: "bg-blue-500" },
+    amber:   { bg: "from-amber-50 to-white",      ring: "ring-amber-100",   text: "text-amber-700",   dot: "bg-amber-500" },
+    emerald: { bg: "from-emerald-50 to-white",    ring: "ring-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500" },
+    rose:    { bg: "from-rose-50 to-white",       ring: "ring-rose-100",    text: "text-rose-700",    dot: "bg-rose-500" },
+    slate:   { bg: "from-slate-50 to-white",      ring: "ring-slate-100",   text: "text-slate-900",   dot: "bg-slate-500" },
+  };
+  const t = themes[accent || "slate"];
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="text-xs font-medium text-slate-500">{label}</div>
-      <div className={`mt-1 text-2xl font-bold ${color}`}>{value}</div>
+    <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${t.bg} p-4 shadow-sm ring-1 ${t.ring}`}>
+      <div className="flex items-center gap-2">
+        <span className={`h-2 w-2 rounded-full ${t.dot}`} />
+        <div className="text-xs font-medium text-slate-500">{label}</div>
+      </div>
+      <div className={`mt-2 text-2xl font-bold ${t.text}`}>{value}</div>
     </div>
   );
 }

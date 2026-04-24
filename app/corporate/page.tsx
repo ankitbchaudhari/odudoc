@@ -1,7 +1,102 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import DemoRequestForm from "./DemoRequestForm";
+import EnterpriseCustomiser from "./EnterpriseCustomiser";
 import { ServiceLd, BreadcrumbLd } from "@/components/StructuredData";
+
+// Clinical/operational module catalog — mirrors the admin sidebar.
+// Hospital tier ships all of these; Enterprise tier lets buyers
+// cherry-pick which ones they want.
+const CLINICAL_MODULE_GROUPS = [
+  {
+    label: "Core clinical",
+    items: [
+      { id: "patients", name: "Patients" },
+      { id: "appointments", name: "Appointments" },
+      { id: "encounters", name: "Encounters" },
+      { id: "hospital-rx", name: "Hospital Rx" },
+      { id: "medical-records", name: "Medical Records" },
+      { id: "referrals", name: "Referrals" },
+      { id: "consent-forms", name: "Consent Forms" },
+      { id: "discharge-summaries", name: "Discharge Summaries" },
+      { id: "allergies-problems", name: "Allergies & Problems" },
+      { id: "immunizations", name: "Immunizations" },
+      { id: "vitals-ews", name: "Vitals & EWS" },
+    ],
+  },
+  {
+    label: "Inpatient & surgical",
+    items: [
+      { id: "wards-beds", name: "Wards & Beds" },
+      { id: "admissions-ipd", name: "Admissions (IPD)" },
+      { id: "surgery-ot", name: "Surgery / OT" },
+      { id: "pre-anesthesia", name: "Pre-Anesthesia" },
+      { id: "icu", name: "ICU / Critical Care" },
+      { id: "labor-delivery", name: "Labor & Delivery" },
+      { id: "dialysis", name: "Dialysis" },
+      { id: "wound-care", name: "Wound Care" },
+      { id: "pain-management", name: "Pain Management" },
+      { id: "physiotherapy", name: "Physiotherapy" },
+      { id: "oncology", name: "Oncology & Chemo" },
+      { id: "cardiology", name: "Cardiology" },
+      { id: "endoscopy", name: "Endoscopy" },
+    ],
+  },
+  {
+    label: "Diagnostics & pharmacy",
+    items: [
+      { id: "lab-orders", name: "Lab Orders" },
+      { id: "pathology", name: "Pathology" },
+      { id: "radiology", name: "Radiology" },
+      { id: "pharmacy-dispense", name: "Pharmacy Dispense" },
+      { id: "pharmacy-inventory", name: "Pharmacy Inventory" },
+      { id: "inventory", name: "Inventory" },
+      { id: "blood-bank", name: "Blood Bank" },
+    ],
+  },
+  {
+    label: "Revenue & admin",
+    items: [
+      { id: "invoices", name: "Invoices" },
+      { id: "insurance-tpa", name: "Insurance / TPA" },
+      { id: "telemedicine", name: "Telemedicine" },
+      { id: "opd-queue", name: "OPD Queue" },
+      { id: "patient-feedback", name: "Patient Feedback" },
+      { id: "visitors", name: "Visitors" },
+      { id: "ai-voice", name: "AI Voice" },
+    ],
+  },
+  {
+    label: "Workforce",
+    items: [
+      { id: "medical-staff", name: "Medical Staff" },
+      { id: "shift-roster", name: "Shift Roster" },
+      { id: "staff-scheduling", name: "Staff Scheduling" },
+      { id: "duty-handover", name: "Duty Handover" },
+    ],
+  },
+  {
+    label: "Facilities & compliance",
+    items: [
+      { id: "dietary-orders", name: "Dietary Orders" },
+      { id: "cssd", name: "CSSD Sterilization" },
+      { id: "biomedical", name: "Biomedical" },
+      { id: "biomedical-waste", name: "Biomedical Waste" },
+      { id: "housekeeping", name: "Housekeeping" },
+      { id: "linen-laundry", name: "Linen & Laundry" },
+      { id: "infection-control", name: "Infection Control" },
+      { id: "incident-reports", name: "Incident Reports" },
+      { id: "emergency-codes", name: "Emergency Codes" },
+      { id: "ambulance-dispatch", name: "Ambulance Dispatch" },
+      { id: "mortuary", name: "Mortuary" },
+    ],
+  },
+];
+
+const TOTAL_MODULES = CLINICAL_MODULE_GROUPS.reduce(
+  (n, g) => n + g.items.length,
+  0,
+);
 
 export const metadata: Metadata = {
   title: "OduDoc for Hospitals — ERP + EMR + Telemedicine + AI",
@@ -91,8 +186,18 @@ const plans = [
     price: "$149",
     unit: "/ month",
     blurb: "Single-location clinic, up to 10 staff.",
-    features: ["OPD + Patient EMR", "Pharmacy + Billing", "Telemedicine", "Email support"],
+    features: [
+      "Patients + EMR",
+      "Appointments + OPD Queue",
+      "Hospital Rx + e-Prescriptions",
+      "Invoices + Billing",
+      "Inventory + Pharmacy Dispense",
+      "Telemedicine",
+      "Patient Feedback",
+      "Email support",
+    ],
     cta: "Start free 14-day trial",
+    ctaHref: "#demo",
   },
   {
     name: "Hospital",
@@ -101,13 +206,17 @@ const plans = [
     blurb: "Multi-department hospital up to 100 beds.",
     features: [
       "Everything in Clinic",
-      "IPD + OT + Inventory",
-      "Lab Management",
-      "AI Prescription + Voice Prescription",
-      "AI Symptom Triage",
+      `All ${TOTAL_MODULES} clinical modules`,
+      "IPD · OT · ICU · Labor & Delivery",
+      "Lab · Pathology · Radiology · Blood Bank",
+      "Pharmacy, CSSD, Biomedical & Waste",
+      "Ambulance, Infection Control, Mortuary",
+      "Medical Staff, Shift Roster, Duty Handover",
+      "AI Voice + AI Symptom Triage",
       "Priority phone support",
     ],
     cta: "Request pricing",
+    ctaHref: "#demo",
     highlight: true,
   },
   {
@@ -116,13 +225,16 @@ const plans = [
     unit: "",
     blurb: "100+ beds, multi-branch, or diagnostic chain.",
     features: [
-      "Everything in Hospital",
-      "Radiology + DICOM Viewer",
-      "HL7/FHIR integrations",
-      "Dedicated infra + SLA",
-      "On-site training",
+      "Pick any modules you need",
+      "Everything in Hospital, plus:",
+      "HL7 / FHIR integrations",
+      "DICOM viewer + PACS bridge",
+      "Dedicated infra + 99.99% SLA",
+      "Single-tenant deployment option",
+      "On-site training + implementation",
     ],
-    cta: "Talk to sales",
+    cta: "Customise & request quote",
+    ctaHref: "#customise",
   },
 ];
 
@@ -397,7 +509,7 @@ export default function CorporatePage() {
                   ))}
                 </ul>
                 <Link
-                  href="#demo"
+                  href={p.ctaHref}
                   className={`mt-8 block w-full rounded-xl px-4 py-3 text-center text-sm font-bold transition-colors ${
                     p.highlight
                       ? "bg-indigo-600 text-white hover:bg-indigo-700"
@@ -408,6 +520,28 @@ export default function CorporatePage() {
                 </Link>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Enterprise module customiser */}
+      <section id="customise" className="bg-gradient-to-b from-gray-50 to-white py-20">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <span className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-indigo-700">
+              Enterprise plan
+            </span>
+            <h2 className="mt-4 text-3xl font-extrabold text-gray-900 sm:text-4xl">
+              Build your own module stack
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-gray-500">
+              The Hospital tier ships all {TOTAL_MODULES} clinical modules by default. Enterprise
+              buyers instead pick exactly what they want — we price against your selection and
+              add any custom integrations you need.
+            </p>
+          </div>
+          <div className="mt-10">
+            <EnterpriseCustomiser groups={CLINICAL_MODULE_GROUPS} />
           </div>
         </div>
       </section>

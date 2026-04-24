@@ -7,39 +7,29 @@
 // server-side so the Merchant Salt never hits the browser.
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createCheckoutFields } from "@/lib/payu";
+import { parseJson } from "@/lib/api-validate";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
 
+const PayuCreateSchema = z.object({
+  txnid: z.string().trim().min(1).max(64),
+  amount: z.number().positive().max(10000000),
+  productinfo: z.string().trim().min(1).max(200),
+  firstname: z.string().trim().min(1).max(120),
+  email: z.string().trim().email().max(200),
+  phone: z.string().trim().max(32).optional(),
+  metadata: z.record(z.string(), z.string()).optional(),
+});
+
 export async function POST(req: NextRequest) {
-  let body: {
-    txnid?: string;
-    amount?: number;
-    productinfo?: string;
-    firstname?: string;
-    email?: string;
-    phone?: string;
-    metadata?: Record<string, string>;
-  };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
+  const parsed = await parseJson(req, PayuCreateSchema);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.data;
 
-  const txnid = (body.txnid || "").trim();
-  const amount = Number(body.amount);
-  const productinfo = (body.productinfo || "").trim();
-  const firstname = (body.firstname || "").trim();
-  const email = (body.email || "").trim();
-  if (!txnid || !Number.isFinite(amount) || amount <= 0 || !productinfo || !firstname || !email) {
-    return NextResponse.json(
-      { error: "txnid, amount, productinfo, firstname and email are required" },
-      { status: 400 }
-    );
-  }
-
+  const { txnid, amount, productinfo, firstname, email } = body;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.odudoc.com";
   const meta = body.metadata || {};
 

@@ -1,7 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createCheckoutSession, calculateCommission } from "@/lib/induspays";
-
+import { parseJson } from "@/lib/api-validate";
 import { log } from "@/lib/log";
+
+const IndusCreateSchema = z.object({
+  type: z.enum(["consultation", "clinic_subscription"]),
+  amount: z.number().positive().max(10000000),
+  orderId: z.string().trim().min(1).max(64),
+  customerName: z.string().trim().min(1).max(120),
+  customerEmail: z.string().trim().email().max(200),
+  customerPhone: z.string().trim().max(32).optional(),
+  description: z.string().trim().min(1).max(500),
+  doctorId: z.string().trim().max(64).optional(),
+  clinicId: z.string().trim().max(64).optional(),
+});
 /**
  * POST /api/payments/induspays/create
  *
@@ -24,41 +37,21 @@ import { log } from "@/lib/log";
  *   }
  */
 export async function POST(request: NextRequest) {
+  const parsed = await parseJson(request, IndusCreateSchema);
+  if (!parsed.ok) return parsed.response;
+  const {
+    type,
+    amount,
+    orderId,
+    customerName,
+    customerEmail,
+    customerPhone,
+    description,
+    doctorId,
+    clinicId,
+  } = parsed.data;
+
   try {
-    const body = await request.json();
-    const {
-      type,
-      amount,
-      orderId,
-      customerName,
-      customerEmail,
-      customerPhone,
-      description,
-      doctorId,
-      clinicId,
-    } = body;
-
-    if (!type || !amount || !orderId || !customerName || !customerEmail) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    if (typeof amount !== "number" || amount <= 0) {
-      return NextResponse.json(
-        { error: "Invalid amount" },
-        { status: 400 }
-      );
-    }
-
-    if (type !== "consultation" && type !== "clinic_subscription") {
-      return NextResponse.json(
-        { error: "Invalid payment type" },
-        { status: 400 }
-      );
-    }
-
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.odudoc.com";
 
     const metadata: Record<string, string> = {

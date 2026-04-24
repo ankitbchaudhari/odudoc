@@ -9,42 +9,30 @@
 // /api/payments/tazapay/webhook.
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createCheckoutSession } from "@/lib/tazapay";
+import { parseJson } from "@/lib/api-validate";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
 
+const TazapayCreateSchema = z.object({
+  referenceId: z.string().trim().min(1).max(64),
+  amount: z.number().positive().max(10000000),
+  currency: z.string().trim().length(3).default("USD"),
+  customerName: z.string().trim().min(1).max(120),
+  customerEmail: z.string().trim().email().max(200),
+  customerPhone: z.string().trim().max(32).optional(),
+  description: z.string().trim().min(1).max(500),
+  metadata: z.record(z.string(), z.string()).optional(),
+});
+
 export async function POST(req: NextRequest) {
-  let body: {
-    referenceId?: string;
-    amount?: number;
-    currency?: string;
-    customerName?: string;
-    customerEmail?: string;
-    customerPhone?: string;
-    description?: string;
-    metadata?: Record<string, string>;
-  };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
-
-  const referenceId = (body.referenceId || "").trim();
-  const amount = Number(body.amount);
-  const currency = (body.currency || "USD").trim().toUpperCase();
-  const customerName = (body.customerName || "").trim();
-  const customerEmail = (body.customerEmail || "").trim();
-  const description = (body.description || "").trim();
-
-  if (!referenceId || !Number.isFinite(amount) || amount <= 0 || !customerName || !customerEmail || !description) {
-    return NextResponse.json(
-      { error: "referenceId, amount, customerName, customerEmail and description are required" },
-      { status: 400 }
-    );
-  }
-
+  const parsed = await parseJson(req, TazapayCreateSchema);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.data;
+  const { referenceId, amount, customerName, customerEmail, description } = body;
+  const currency = body.currency.toUpperCase();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.odudoc.com";
 
   try {

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getPageBySlug } from "@/lib/pages-store";
+import { sanitizeUserHtml } from "@/lib/sanitize-html";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,7 @@ export default async function CmsPageRoute({
         </div>
         <article
           className="prose prose-gray mt-10 max-w-none"
-          dangerouslySetInnerHTML={{ __html: page.content || "" }}
+          dangerouslySetInnerHTML={{ __html: sanitizeUserHtml(page.content || "") }}
         />
       </div>
     </main>

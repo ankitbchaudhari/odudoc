@@ -161,7 +161,16 @@ export default function AdminBlog() {
     }
   };
 
-  const handleGenerate = async (strategy?: "broad" | "specialty" | "seasonal") => {
+  const handleGenerate = async (
+    strategy?:
+      | "wellness"
+      | "nutrition"
+      | "mental_health"
+      | "fitness"
+      | "specialty"
+      | "news"
+      | "seasonal",
+  ) => {
     setGenerating(true);
     setGenMsg(null);
     setError(null);
@@ -310,25 +319,53 @@ export default function AdminBlog() {
               )}
             </button>
             <button
-              onClick={() => handleGenerate("broad")}
+              onClick={() => handleGenerate("wellness")}
               disabled={generating}
               className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
             >
-              General wellness
+              💚 Wellness
+            </button>
+            <button
+              onClick={() => handleGenerate("nutrition")}
+              disabled={generating}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+            >
+              🥗 Nutrition
+            </button>
+            <button
+              onClick={() => handleGenerate("mental_health")}
+              disabled={generating}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+            >
+              🧠 Mental Health
+            </button>
+            <button
+              onClick={() => handleGenerate("fitness")}
+              disabled={generating}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+            >
+              💪 Fitness
             </button>
             <button
               onClick={() => handleGenerate("specialty")}
               disabled={generating}
               className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
             >
-              Specialty-linked
+              🩺 Specialty-linked
+            </button>
+            <button
+              onClick={() => handleGenerate("news")}
+              disabled={generating}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+            >
+              📰 News
             </button>
             <button
               onClick={() => handleGenerate("seasonal")}
               disabled={generating}
               className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
             >
-              Seasonal / local
+              🌦️ Seasonal
             </button>
           </div>
         </div>

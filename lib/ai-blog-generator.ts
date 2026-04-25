@@ -1,11 +1,16 @@
 // AI blog-post generator.
 //
 // Uses Google Gemini (free tier, ~1500 req/day) via fetch. No SDK needed.
-// Rotates across three topic strategies so content stays varied:
-//   - A) Broad general-health evergreen topics
-//   - B) Specialty-aligned (pulls from our actual doctor specialties so every
-//        article can naturally link to booking that specialist)
-//   - C) Local/seasonal/regional — India-focused, month-aware
+// Rotates across six categories so the blog index stays balanced and every
+// section ("Wellness", "Nutrition", "Mental Health", "Fitness", "Medical
+// Tips", "News") fills up over time. The day-of-week rotation guarantees
+// every category gets at least one fresh post per week.
+//
+// Audience is global — the prompt explicitly avoids India-specific framing
+// so articles work for hospitals, clinics and patients in any country we
+// serve. Local/seasonal angles still appear via a month-aware seasonal
+// pool, but the seasons themselves are climate-neutral (cold-season vs
+// hot-season vs rainy-season vs allergy-season) rather than India-bound.
 //
 // Strict safety guardrails are baked into the prompt:
 //   - No dosages, no specific treatment recommendations, no diagnosis
@@ -37,7 +42,7 @@ const SPECIALTIES = [
   "Cardiologist",
 ];
 
-const BROAD_TOPICS = [
+const WELLNESS_TOPICS = [
   "understanding blood pressure numbers and what's healthy",
   "signs of vitamin D deficiency and why it matters",
   "how much water you actually need per day (myths vs science)",
@@ -46,101 +51,210 @@ const BROAD_TOPICS = [
   "what your cholesterol numbers really mean",
   "when a headache is more than just a headache",
   "how stress silently damages your health — and how to spot it",
-  "the truth about intermittent fasting for general health",
   "daily habits that protect your heart long-term",
   "why posture affects your whole body, not just your back",
   "5 early signs of diabetes most people ignore",
-  "how to read a nutrition label like a doctor",
   "the science of hydration: electrolytes vs water",
   "why morning sunlight matters for your body clock",
+  "how alcohol affects sleep, weight and recovery",
+  "preventive screenings every adult should know about",
 ];
 
-// Rotates month-aware so content feels timely. ~15 themes.
+const NUTRITION_TOPICS = [
+  "how to read a nutrition label like a doctor",
+  "the truth about intermittent fasting for general health",
+  "ultra-processed foods — what the evidence actually shows",
+  "protein needs by age — what's enough vs too much",
+  "added sugars vs natural sugars — does your body care?",
+  "the gut microbiome and what to eat to support it",
+  "iron-rich foods for vegetarians and vegans",
+  "the Mediterranean diet — why doctors keep recommending it",
+  "fiber: the underrated nutrient most adults under-eat",
+  "what 'plant-based' actually means (and how to start)",
+  "are eggs good or bad? settling the cholesterol debate",
+  "vitamin and mineral deficiencies hiding in modern diets",
+  "how meal timing affects metabolism and weight",
+  "salt in everyday foods — where it really comes from",
+  "what to eat before, during, and after exercise",
+];
+
+const MENTAL_HEALTH_TOPICS = [
+  "the difference between sadness and clinical depression",
+  "anxiety vs panic attacks — how to tell them apart",
+  "burnout at work — the warning signs and what helps",
+  "why men under-report mental health struggles",
+  "talking to a teenager about their mental health",
+  "the science of meditation — what it actually changes",
+  "sleep and mood: the bidirectional link",
+  "post-partum mental health — what new parents should know",
+  "social-media use and adolescent anxiety",
+  "grief — what's normal and when to seek support",
+  "ADHD in adults — late diagnosis and what changes",
+  "loneliness as a clinical risk factor",
+  "boundaries: a mental-health skill, not a personality trait",
+  "talk therapy vs medication — how they're chosen",
+  "trauma-informed care — what it means for patients",
+];
+
+const FITNESS_TOPICS = [
+  "how much exercise is enough — current global guidelines",
+  "strength training after 40 — why it matters more, not less",
+  "walking vs running — what each one really does",
+  "low-impact cardio for sore knees and stiff joints",
+  "the 80/20 rule for endurance training",
+  "why rest days are training, not the opposite",
+  "post-workout recovery — what actually helps",
+  "starting from scratch — a doctor's view on couch-to-fit",
+  "exercise during pregnancy — what's safe and what's not",
+  "warm-ups and cool-downs — what the research says",
+  "exercise for heart-disease prevention",
+  "is HIIT for everyone? a balanced look",
+  "stretching myths and the truth about flexibility",
+  "sitting all day — what to do besides 'stand more'",
+  "exercise after illness or surgery — pacing the return",
+];
+
+// Health-news topics rotate to feel current. The model is told to
+// frame these as evergreen explainers anchored in recent context, NOT
+// as breaking news (we can't verify breaking facts at generation time).
+const NEWS_TOPICS = [
+  "what the latest WHO guidance on physical activity means for adults",
+  "antibiotic resistance — why doctors keep raising the alarm",
+  "GLP-1 weight-loss medications — separating facts from hype",
+  "post-pandemic respiratory illness trends and what to watch",
+  "wearable health trackers — what the evidence supports",
+  "AI in clinical care — what is and isn't ready for patients",
+  "rising cases of early-onset cancers in adults under 50",
+  "global vaccination schedules — what changed this year",
+  "climate change and emerging health risks",
+  "telemedicine adoption five years on — what works",
+  "sleep apnea — why diagnosis rates are rising",
+  "long Covid — current understanding of who's affected",
+  "cardiovascular disease in younger adults — recent data",
+  "mental-health-first-aid programs spreading globally",
+  "screen-time guidelines — what pediatric bodies now say",
+];
+
+// Climate-neutral seasonal cycle. Generic enough to land in any
+// hemisphere — readers in Sydney in July see "cold-season tips" the
+// same way readers in London do in January.
 function seasonalTopicsFor(date: Date): string[] {
   const month = date.getMonth(); // 0=Jan
-  // India seasonal cycle
-  const winter = [0, 1, 11]; // Dec–Feb
-  const summer = [2, 3, 4, 5]; // Mar–Jun
-  const monsoon = [6, 7, 8]; // Jul–Sep
-  const post = [9, 10]; // Oct–Nov festive/pollution
+  const coldMonths = [10, 11, 0, 1, 2]; // Nov–Mar (northern winter / southern summer)
+  const hotMonths = [5, 6, 7]; // Jun–Aug
+  const allergyMonths = [3, 4]; // Apr–May
+  const transitionMonths = [8, 9]; // Sep–Oct
 
-  if (winter.includes(month)) {
+  if (coldMonths.includes(month)) {
     return [
-      "staying healthy through winter in India",
-      "preventing cold and flu during seasonal change",
-      "why joint pain flares up in cold weather",
-      "winter skincare that actually works for Indian skin",
-      "the best warming foods for immunity this winter",
+      "staying healthy through the cold and flu season",
+      "why joint pain flares up when temperatures drop",
+      "indoor air quality during heating-on months",
+      "winter skin care backed by dermatology",
+      "warming foods, immunity and what evidence supports",
     ];
   }
-  if (summer.includes(month)) {
+  if (hotMonths.includes(month)) {
     return [
-      "preventing heat stroke during an Indian summer",
+      "preventing heat stroke and heat exhaustion",
       "dehydration warning signs you shouldn't ignore",
-      "why summer is the worst time for skin infections",
-      "safe outdoor activity when temperatures cross 40°C",
-      "cooling foods that don't just taste good — they help",
+      "summer skin infections and how to avoid them",
+      "exercising safely when it's over 35°C / 95°F",
+      "sunscreen myths versus what dermatologists actually use",
     ];
   }
-  if (monsoon.includes(month)) {
+  if (allergyMonths.includes(month)) {
     return [
-      "monsoon illnesses every Indian family should prepare for",
-      "preventing dengue and malaria at home",
-      "why waterborne infections spike in monsoon",
-      "fungal skin infections — why they thrive in humidity",
-      "foods that boost immunity during monsoon season",
+      "seasonal allergies — what works and what doesn't",
+      "asthma flares during high-pollen months",
+      "allergic conjunctivitis explained without jargon",
+      "indoor allergens that get worse with windows open",
+      "kids and allergy season — when to see a doctor",
     ];
   }
-  if (post.includes(month)) {
+  if (transitionMonths.includes(month)) {
     return [
-      "protecting your lungs during high pollution months",
-      "festive season eating without hurting your heart",
-      "managing diabetes during Diwali and festivals",
-      "why air quality matters even indoors",
-      "post-festival detox — what actually works vs marketing",
+      "respiratory illnesses that surge at season change",
+      "how seasonal change affects sleep and mood",
+      "preparing your immune system for the cold months",
+      "back-to-school season and family wellness",
+      "vaccination timing as flu season approaches",
     ];
   }
-  return BROAD_TOPICS;
+  return WELLNESS_TOPICS;
 }
 
-type TopicStrategy = "broad" | "specialty" | "seasonal";
+type TopicStrategy =
+  | "wellness"
+  | "nutrition"
+  | "mental_health"
+  | "fitness"
+  | "specialty"
+  | "news"
+  | "seasonal";
 
+// Day-of-week rotation: every category gets at least one slot per
+// week, plus seasonal/specialty wildcards on the weekend so content
+// stays varied without leaving any tab empty for long.
+//   Mon → Wellness
+//   Tue → Nutrition
+//   Wed → Mental Health
+//   Thu → Fitness
+//   Fri → Specialty (lands in Medical Tips / Wellness / Mental Health)
+//   Sat → News
+//   Sun → Seasonal (Medical Tips)
 function pickStrategy(date: Date): TopicStrategy {
-  // Rotate A/B/C across the week: Mon/Thu broad, Tue/Fri specialty, Wed/Sat/Sun seasonal
   const day = date.getDay(); // 0=Sun
-  if (day === 1 || day === 4) return "broad";
-  if (day === 2 || day === 5) return "specialty";
+  if (day === 1) return "wellness";
+  if (day === 2) return "nutrition";
+  if (day === 3) return "mental_health";
+  if (day === 4) return "fitness";
+  if (day === 5) return "specialty";
+  if (day === 6) return "news";
   return "seasonal";
+}
+
+function randomFrom<T>(arr: readonly T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]!;
 }
 
 function pickTopic(date: Date): { topic: string; category: string; linkedSpecialty?: string } {
   const strategy = pickStrategy(date);
-  if (strategy === "broad") {
-    const t = BROAD_TOPICS[Math.floor(Math.random() * BROAD_TOPICS.length)];
-    return { topic: t, category: "Wellness" };
+  switch (strategy) {
+    case "wellness":
+      return { topic: randomFrom(WELLNESS_TOPICS), category: "Wellness" };
+    case "nutrition":
+      return { topic: randomFrom(NUTRITION_TOPICS), category: "Nutrition" };
+    case "mental_health":
+      return { topic: randomFrom(MENTAL_HEALTH_TOPICS), category: "Mental Health" };
+    case "fitness":
+      return { topic: randomFrom(FITNESS_TOPICS), category: "Fitness" };
+    case "news":
+      return { topic: randomFrom(NEWS_TOPICS), category: "News" };
+    case "specialty": {
+      const spec = randomFrom(SPECIALTIES);
+      const topicBySpec: Record<string, string> = {
+        "General Physician": "the annual health check-up — what tests actually matter",
+        "Dermatologist": "acne in adults — causes that aren't just hormones",
+        "Gynecologist": "what a normal menstrual cycle actually looks like",
+        "Pediatrician": "when a child's fever needs a doctor vs home care",
+        "Dentist": "gum bleeding is never normal — here's what it means",
+        "Orthopedist": "chronic back pain — when to see a specialist",
+        "Psychiatrist": "the difference between sadness and clinical depression",
+        "Cardiologist": "early signs your heart is under stress",
+      };
+      return {
+        topic: topicBySpec[spec] || "common health issues we see every week",
+        category: categoryForSpecialty(spec),
+        linkedSpecialty: spec,
+      };
+    }
+    case "seasonal":
+    default: {
+      const pool = seasonalTopicsFor(date);
+      return { topic: randomFrom(pool), category: "Medical Tips" };
+    }
   }
-  if (strategy === "specialty") {
-    const spec = SPECIALTIES[Math.floor(Math.random() * SPECIALTIES.length)];
-    const topicBySpec: Record<string, string> = {
-      "General Physician": "the annual health check-up — what tests actually matter",
-      "Dermatologist": "acne in adults — causes that aren't just hormones",
-      "Gynecologist": "what a normal menstrual cycle actually looks like",
-      "Pediatrician": "when a child's fever needs a doctor vs home care",
-      "Dentist": "gum bleeding is never normal — here's what it means",
-      "Orthopedist": "chronic back pain — when to see a specialist",
-      "Psychiatrist": "the difference between sadness and clinical depression",
-      "Cardiologist": "early signs your heart is under stress",
-    };
-    return {
-      topic: topicBySpec[spec] || "common health issues we see every week",
-      category: categoryForSpecialty(spec),
-      linkedSpecialty: spec,
-    };
-  }
-  // seasonal
-  const pool = seasonalTopicsFor(date);
-  const t = pool[Math.floor(Math.random() * pool.length)];
-  return { topic: t, category: "Medical Tips" };
 }
 
 function categoryForSpecialty(spec: string): string {
@@ -161,7 +275,7 @@ export interface GeneratedArticle {
 }
 
 function buildSystemPrompt(): string {
-  return `You are a senior medical content editor writing for OduDoc, an Indian healthcare platform where patients book doctors and consult online.
+  return `You are a senior medical content editor writing for OduDoc, a global healthcare platform where patients book doctors and consult online. Readers are spread across North America, Europe, the Middle East, Africa, South Asia, Southeast Asia, and Latin America — keep examples, units, and idioms region-neutral unless the topic itself is regional.
 
 You write clear, accurate, patient-friendly health articles. Your audience is educated adults without medical training.
 
@@ -178,7 +292,9 @@ STYLE RULES:
 - Short paragraphs (2–4 sentences)
 - No fluff, no filler, no "in today's fast-paced world" openings
 - Use concrete numbers and ranges when they're standard/safe (e.g. "normal BP is under 120/80")
+- When citing temperatures, weights, distances etc., give BOTH metric and US units (e.g. "35°C / 95°F", "70 kg / 154 lb") so readers in any country can use the article
 - No emojis. No first-person ("I", "we") unless referring to the OduDoc platform
+- Avoid country-specific framing ("in India", "for Americans") unless the topic explicitly requires it
 - British or American English is fine, be consistent within the article
 
 SEO STRUCTURE RULES — every article must follow these:
@@ -197,7 +313,7 @@ OUTPUT FORMAT — respond with ONLY a valid JSON object, no markdown fences, no 
   "excerpt": "1-2 sentence meta description, 140-155 chars, includes primary keyword, designed to earn clicks from SERPs",
   "content": "Full article as clean HTML. Use <h2>, <h3>, <p>, <ul>, <li>, <strong>, <em> only — never <h1>, <div>, <span>, <img>, <a>, or inline styles. Target 700-900 words. Must follow the SEO STRUCTURE RULES above.",
   "tags": ["primary-keyword", "secondary-keyword", "related-term-1", "related-term-2", "related-term-3"],
-  "author": "Dr. <realistic Indian doctor name>"
+  "author": "Dr. <realistic full doctor name — vary the country of origin across articles (e.g. Anjali Mehta, James Carter, Maria Rossi, Olu Adeyemi, Chen Wei, Sara Al-Mansoori). Always start with 'Dr. '.>"
 }`;
 }
 
@@ -358,15 +474,26 @@ export async function generateBlogArticle(opts: GenerateOptions = {}): Promise<G
   let linkedSpecialty: string | undefined;
 
   if (topic) {
-    strategy = opts.strategy || "broad";
+    strategy = opts.strategy || "wellness";
     if (!category) category = "Wellness";
   } else {
     if (opts.strategy) {
-      // honour forced strategy
+      // Honour forced strategy: nudge the picker's date so its
+      // day-of-week branch lands on the requested rotation slot.
+      // Mon=wellness, Tue=nutrition, Wed=mental_health, Thu=fitness,
+      // Fri=specialty, Sat=news, Sun=seasonal.
+      const targetDay: Record<TopicStrategy, number> = {
+        wellness: 1,
+        nutrition: 2,
+        mental_health: 3,
+        fitness: 4,
+        specialty: 5,
+        news: 6,
+        seasonal: 0,
+      };
       const fakeDate = new Date(date);
-      if (opts.strategy === "broad") fakeDate.setDate(fakeDate.getDate() - ((fakeDate.getDay() - 1 + 7) % 7));
-      if (opts.strategy === "specialty") fakeDate.setDate(fakeDate.getDate() - ((fakeDate.getDay() - 2 + 7) % 7));
-      if (opts.strategy === "seasonal") fakeDate.setDate(fakeDate.getDate() - ((fakeDate.getDay() - 3 + 7) % 7));
+      const delta = (fakeDate.getDay() - targetDay[opts.strategy] + 7) % 7;
+      fakeDate.setDate(fakeDate.getDate() - delta);
       const picked = pickTopic(fakeDate);
       topic = picked.topic;
       category = picked.category;

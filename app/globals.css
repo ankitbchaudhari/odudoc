@@ -131,3 +131,30 @@
 .swiper-container-custom .swiper-pagination-bullet-active {
   @apply bg-primary-600;
 }
+
+/* Google Translate widget — suppress the default banner so the site
+   keeps its own chrome. The widget still translates the page; only its
+   visible UI is hidden. The body-shift it normally injects is undone
+   with `top: 0 !important`. The `.goog-te-*` selectors cover both the
+   floating banner ("Powered by Google Translate") and the inline
+   tooltip that pops up on hover-over translated nodes. */
+.skiptranslate,
+.goog-te-banner-frame,
+.goog-te-gadget,
+.goog-tooltip,
+.goog-tooltip:hover,
+.goog-text-highlight {
+  display: none !important;
+  visibility: hidden !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+body {
+  top: 0 !important;
+  position: static !important;
+}
+/* Keep our own LanguageSwitcher pill out of the translation pass —
+   the labels are already localized by the catalogue. */
+.notranslate {
+  white-space: pre-wrap;
+}

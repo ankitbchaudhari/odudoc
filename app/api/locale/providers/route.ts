@@ -6,11 +6,16 @@
 // into. Used by the booking flow so the checkout page can surface a
 // regional payment option (PayU in India, Tazapay in APAC, ConnectPay
 // in EU/US) without anyone hard-coding 'stripe'.
+//
+// Pinned to the Node runtime because providersForCountry() reads admin
+// settings via settings-store -> persistent-array -> the `postgres`
+// driver, which needs Node-only modules (crypto/stream/perf_hooks)
+// that aren't available on the Edge runtime.
 
 import { NextRequest, NextResponse } from "next/server";
 import { providersForCountry, suggestedProvider } from "@/lib/payment-routing";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
   const country = req.headers.get("x-vercel-ip-country") || "";

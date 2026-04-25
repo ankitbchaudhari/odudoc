@@ -7,6 +7,7 @@ import {
   type WithdrawalRequest,
 } from "@/lib/withdrawals-store";
 import { addAdminNotification } from "@/lib/admin-notifications-store";
+import { findDoctorByEmail } from "@/lib/doctors-store";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -64,6 +65,35 @@ export async function POST(req: NextRequest) {
       { error: "Account details are required" },
       { status: 400 }
     );
+  }
+
+  // Stripe payouts require a fully onboarded Connect account with
+  // payouts enabled. The audit caught that we previously accepted
+  // method=stripe + an arbitrary string and let the admin manually
+  // mark paid — opening up a path for an un-KYC'd doctor to get paid.
+  if (method === "stripe") {
+    const doctor = findDoctorByEmail(user.email);
+    if (!doctor?.stripeAccountId) {
+      return NextResponse.json(
+        { error: "Connect a Stripe account from your dashboard before requesting a Stripe payout." },
+        { status: 412 },
+      );
+    }
+    if (!doctor.stripePayoutsEnabled) {
+      return NextResponse.json(
+        {
+          error:
+            "Your Stripe Connect account has not finished onboarding (payouts not yet enabled). Complete the form on Stripe and try again.",
+        },
+        { status: 412 },
+      );
+    }
+    if (!doctor.stripeDetailsSubmitted) {
+      return NextResponse.json(
+        { error: "Stripe is still missing required details. Open the Connect form to finish." },
+        { status: 412 },
+      );
+    }
   }
 
   const record = createWithdrawal({

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import BlogCard from "@/components/BlogCard";
+import RelativeTime from "@/components/RelativeTime";
 import {
   blogPosts as seedBlogPosts,
   blogComments,
@@ -179,7 +180,9 @@ export default function BlogPostPage() {
                   <span>{post.author}</span>
                 </div>
                 <span>·</span>
-                <span>{post.date}</span>
+                <span>
+                  <RelativeTime date={post.createdAt || post.date} fallback={post.date} />
+                </span>
                 <span>·</span>
                 <span className="flex items-center gap-1">
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -329,7 +332,9 @@ export default function BlogPostPage() {
                       <div className="flex-1 rounded-xl border border-gray-100 bg-gray-50 p-4">
                         <div className="mb-2 flex items-center justify-between">
                           <p className="text-sm font-semibold text-gray-900">{comment.name}</p>
-                          <p className="text-xs text-gray-400">{comment.date}</p>
+                          <p className="text-xs text-gray-400">
+                            <RelativeTime date={comment.date} fallback={comment.date} />
+                          </p>
                         </div>
                         <p className="text-sm leading-relaxed text-gray-700">{comment.text}</p>
                       </div>

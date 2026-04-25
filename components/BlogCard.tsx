@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { BlogPost } from "@/lib/data";
 import { categoryGradients } from "@/lib/data";
+import RelativeTime from "@/components/RelativeTime";
 
 const categoryIcons: Record<string, string> = {
   Wellness: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
@@ -74,7 +75,9 @@ export default function BlogCard({ post }: { post: BlogPost }) {
             </div>
             <div>
               <p className="text-xs font-semibold text-gray-700">{post.author}</p>
-              <p className="text-xs text-gray-400">{post.date}</p>
+              <p className="text-xs text-gray-400">
+                <RelativeTime date={post.createdAt || post.date} fallback={post.date} />
+              </p>
             </div>
           </div>
           <Link

@@ -588,6 +588,9 @@ export interface BlogPost {
   readTime: string;
   featured: boolean;
   imageUrl?: string;
+  /** ISO timestamp from the DB. Optional because legacy seed posts in
+   *  this file don't carry one — UI falls back to parsing `date`. */
+  createdAt?: string;
 }
 
 export interface BlogComment {

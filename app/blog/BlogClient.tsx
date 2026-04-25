@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import BlogCard from "@/components/BlogCard";
 import NewsletterSignup from "@/components/NewsletterSignup";
+import RelativeTime from "@/components/RelativeTime";
 import {
   blogPosts as seedBlogPosts,
   blogCategories,
@@ -188,7 +189,9 @@ export default function BlogClient({ initialPosts }: { initialPosts: BlogPost[] 
                       <div>
                         <p className="text-sm font-semibold text-gray-800">{featuredPost.author}</p>
                         <p className="text-xs text-gray-400">
-                          {featuredPost.date} · {featuredPost.readTime}
+                          <RelativeTime date={featuredPost.createdAt || featuredPost.date} fallback={featuredPost.date} />
+                          {" · "}
+                          {featuredPost.readTime}
                         </p>
                       </div>
                     </div>

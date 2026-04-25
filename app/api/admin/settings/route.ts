@@ -17,6 +17,7 @@ const SECTIONS: (keyof SiteSettings)[] = [
   "smtp",
   "page",
   "currency",
+  "enabledCurrencies",
   "languages",
   "translations",
   "invoice",

@@ -115,6 +115,12 @@ export interface SiteSettings {
   smtp: SmtpSettings;
   page: PageSettings;
   currency: CurrencySettings;
+  // Currency codes accepted at checkout in addition to the default.
+  // Visitors get a switcher to pay in any of these. Pricing is still
+  // stored/displayed in `currency.code` — conversion happens at the
+  // payment step (see lib/currency-convert.ts). Optional for backwards
+  // compatibility with any persisted blobs that predate this field.
+  enabledCurrencies?: string[];
   languages: LanguageEntry[];
   translations: TranslationEntry[];
   invoice: InvoiceSettings;
@@ -183,13 +189,20 @@ const defaults: SiteSettings = {
     decimalSeparator: "1,234,567.89",
     decimals: 2,
   },
+  // Seeded from the top of the language catalogue (see lib/languages-catalogue.ts).
+  // Admins can extend this via the "Add from catalogue" picker on
+  // /admin/settings \u2192 Languages.
   languages: [
-    { id: "en", code: "en", name: "English", native: "English", default: true, enabled: true },
-    { id: "es", code: "es", name: "Spanish", native: "Espa\u00f1ol", default: false, enabled: true },
-    { id: "fr", code: "fr", name: "French", native: "Fran\u00e7ais", default: false, enabled: true },
-    { id: "ar", code: "ar", name: "Arabic", native: "\u0627\u0644\u0639\u0631\u0628\u064a\u0629", default: false, enabled: true },
-    { id: "hi", code: "hi", name: "Hindi", native: "\u0939\u093f\u0928\u094d\u0926\u0940", default: false, enabled: false },
+    { id: "en", code: "en", name: "English",    native: "English",   default: true,  enabled: true },
+    { id: "es", code: "es", name: "Spanish",    native: "Espa\u00f1ol", default: false, enabled: true },
+    { id: "fr", code: "fr", name: "French",     native: "Fran\u00e7ais", default: false, enabled: true },
+    { id: "ar", code: "ar", name: "Arabic",     native: "\u0627\u0644\u0639\u0631\u0628\u064a\u0629", default: false, enabled: true },
+    { id: "hi", code: "hi", name: "Hindi",      native: "\u0939\u093f\u0928\u094d\u0926\u0940", default: false, enabled: true },
+    { id: "zh", code: "zh", name: "Chinese",    native: "\u4e2d\u6587", default: false, enabled: true },
+    { id: "pt", code: "pt", name: "Portuguese", native: "Portugu\u00eas", default: false, enabled: true },
+    { id: "de", code: "de", name: "German",     native: "Deutsch",   default: false, enabled: true },
   ],
+  enabledCurrencies: ["USD", "EUR", "GBP", "INR", "AED"],
   translations: [
     { key: "book_appointment", en: "Book Appointment", translations: { es: "Reservar Cita", fr: "Prendre rendez-vous" } },
     { key: "video_consult",    en: "Video Consult",    translations: { es: "Consulta por Video", fr: "Consultation vid\u00e9o" } },

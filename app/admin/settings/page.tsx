@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type {
   SiteSettings,
   CommonSettings as CommonT,
@@ -15,6 +15,8 @@ import type {
   InvoiceSettings as InvoiceT,
   SocialProvider,
 } from "@/lib/settings-store";
+import { ALL_CURRENCIES, byCode as currencyByCode } from "@/lib/currencies";
+import { ALL_LANGUAGES } from "@/lib/languages-catalogue";
 
 const SECTIONS = [
   { id: "common", label: "Common Settings", icon: "⚙️", grad: "from-slate-500 to-gray-700" },
@@ -140,7 +142,14 @@ export default function AdminSettings() {
               {active === "manual-payment" && <ManualSection value={settings.manualPayments} onSave={(v) => save({ manualPayments: v })} />}
               {active === "smtp" && <SmtpSection value={settings.smtp} onSave={(v) => save({ smtp: v })} showToast={showToast} />}
               {active === "page" && <PageSection value={settings.page} onSave={(v) => save({ page: v })} />}
-              {active === "currency" && <CurrencySection value={settings.currency} onSave={(v) => save({ currency: v })} />}
+              {active === "currency" && (
+                <CurrencySection
+                  value={settings.currency}
+                  enabled={settings.enabledCurrencies || []}
+                  onSave={(v) => save({ currency: v })}
+                  onSaveEnabled={(v) => save({ enabledCurrencies: v })}
+                />
+              )}
               {active === "languages" && <LanguagesSection value={settings.languages} onSave={(v) => save({ languages: v })} />}
               {active === "translation" && (
                 <TranslationSection
@@ -446,50 +455,262 @@ function PageSection({ value, onSave }: { value: PageT; onSave: (v: PageT) => Pr
   );
 }
 
-function CurrencySection({ value, onSave }: { value: CurrencyT; onSave: (v: CurrencyT) => Promise<void> }) {
+function CurrencySection({
+  value,
+  enabled,
+  onSave,
+  onSaveEnabled,
+}: {
+  value: CurrencyT;
+  enabled: string[];
+  onSave: (v: CurrencyT) => Promise<void>;
+  onSaveEnabled: (v: string[]) => Promise<void>;
+}) {
   const [form, setForm] = useState(value);
   const [saving, setSaving] = useState(false);
+  const [query, setQuery] = useState("");
+  const [pickerOpen, setPickerOpen] = useState(false);
   useEffect(() => setForm(value), [value]);
+
+  // Apply a catalogue entry to the in-flight form. Keeps the per-field
+  // overrides editable below — admins still get the last word.
+  const applyFromCatalogue = (code: string) => {
+    const def = currencyByCode(code);
+    if (!def) return;
+    setForm({
+      name: def.name,
+      code: def.code,
+      symbol: def.symbol,
+      position: def.position,
+      decimalSeparator: def.decimalSeparator,
+      decimals: def.decimals,
+    });
+    setPickerOpen(false);
+    setQuery("");
+  };
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return ALL_CURRENCIES;
+    return ALL_CURRENCIES.filter(
+      (c) =>
+        c.code.toLowerCase().includes(q) ||
+        c.name.toLowerCase().includes(q) ||
+        c.symbol.toLowerCase().includes(q),
+    );
+  }, [query]);
+
   return (
-    <form onSubmit={async (e) => { e.preventDefault(); setSaving(true); await onSave(form); setSaving(false); }}>
-      <SectionHeader title="Currency Settings" subtitle="Default currency used across bookings, shop and invoices." />
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-        <Field label="Currency Name"><input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
-        <Field label="Currency Code"><input className={inputCls} value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} /></Field>
-        <Field label="Currency Symbol"><input className={inputCls} value={form.symbol} onChange={(e) => setForm({ ...form, symbol: e.target.value })} /></Field>
-        <Field label="Currency Position">
-          <select className={inputCls} value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value as CurrencyT["position"] })}>
-            <option value="left">Left ($100)</option>
-            <option value="right">Right (100$)</option>
-            <option value="left-space">Left with space ($ 100)</option>
-            <option value="right-space">Right with space (100 $)</option>
-          </select>
-        </Field>
-        <Field label="Decimal Separator">
-          <select className={inputCls} value={form.decimalSeparator} onChange={(e) => setForm({ ...form, decimalSeparator: e.target.value })}>
-            <option value="1,234,567.89">1,234,567.89</option>
-            <option value="1.234.567,89">1.234.567,89</option>
-            <option value="1 234 567.89">1 234 567.89</option>
-            <option value="1,23,456.70">1,23,456.70 (Indian)</option>
-          </select>
-        </Field>
-        <Field label="No of decimals">
-          <select className={inputCls} value={String(form.decimals)} onChange={(e) => setForm({ ...form, decimals: Number(e.target.value) })}>
-            <option value="0">0 (1234)</option>
-            <option value="1">1 (1234.5)</option>
-            <option value="2">2 (1234.56)</option>
-            <option value="3">3 (1234.567)</option>
-          </select>
-        </Field>
+    <div className="space-y-8">
+      <form onSubmit={async (e) => { e.preventDefault(); setSaving(true); await onSave(form); setSaving(false); }}>
+        <SectionHeader title="Currency Settings" subtitle="Default currency used across bookings, shop and invoices." />
+
+        <div className="mb-6 rounded-lg border border-gray-100 bg-gray-50/60 p-4">
+          <label className="mb-1.5 block text-sm font-medium text-gray-700">Pick from catalogue</label>
+          <div className="relative">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => { setQuery(e.target.value); setPickerOpen(true); }}
+              onFocus={() => setPickerOpen(true)}
+              placeholder={`Search ${ALL_CURRENCIES.length}+ currencies — code, name or symbol`}
+              className={inputCls}
+            />
+            {pickerOpen && (
+              <div className="absolute z-20 mt-1 max-h-72 w-full overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                {filtered.length === 0 ? (
+                  <p className="p-3 text-xs text-gray-400">No matches.</p>
+                ) : (
+                  filtered.slice(0, 80).map((c) => (
+                    <button
+                      type="button"
+                      key={c.code}
+                      onClick={() => applyFromCatalogue(c.code)}
+                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-primary-50"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="inline-flex h-6 w-12 items-center justify-center rounded bg-gray-100 font-mono text-xs text-gray-600">{c.code}</span>
+                        <span>{c.name}</span>
+                      </span>
+                      <span className="text-sm text-gray-500">{c.symbol}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+          <p className="mt-2 text-xs text-gray-400">
+            Selecting a currency auto-fills the fields below from ISO 4217 defaults. You can still override anything per-site.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <Field label="Currency Name"><input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+          <Field label="Currency Code"><input className={inputCls} value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} /></Field>
+          <Field label="Currency Symbol"><input className={inputCls} value={form.symbol} onChange={(e) => setForm({ ...form, symbol: e.target.value })} /></Field>
+          <Field label="Currency Position">
+            <select className={inputCls} value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value as CurrencyT["position"] })}>
+              <option value="left">Left ($100)</option>
+              <option value="right">Right (100$)</option>
+              <option value="left-space">Left with space ($ 100)</option>
+              <option value="right-space">Right with space (100 $)</option>
+            </select>
+          </Field>
+          <Field label="Decimal Separator">
+            <select className={inputCls} value={form.decimalSeparator} onChange={(e) => setForm({ ...form, decimalSeparator: e.target.value })}>
+              <option value="1,234,567.89">1,234,567.89</option>
+              <option value="1.234.567,89">1.234.567,89</option>
+              <option value="1 234 567.89">1 234 567.89</option>
+              <option value="1,23,456.70">1,23,456.70 (Indian)</option>
+            </select>
+          </Field>
+          <Field label="No of decimals">
+            <select className={inputCls} value={String(form.decimals)} onChange={(e) => setForm({ ...form, decimals: Number(e.target.value) })}>
+              <option value="0">0 (1234)</option>
+              <option value="1">1 (1234.5)</option>
+              <option value="2">2 (1234.56)</option>
+              <option value="3">3 (1234.567)</option>
+            </select>
+          </Field>
+        </div>
+        <div className="mt-6"><SaveButton saving={saving} /></div>
+      </form>
+
+      <EnabledCurrenciesCard value={enabled} defaultCode={value.code} onSave={onSaveEnabled} />
+    </div>
+  );
+}
+
+function EnabledCurrenciesCard({
+  value,
+  defaultCode,
+  onSave,
+}: {
+  value: string[];
+  defaultCode: string;
+  onSave: (v: string[]) => Promise<void>;
+}) {
+  // Always include the site default in the list — visitors should at
+  // minimum be able to pay in the default. We add it back on save if the
+  // admin somehow removes it.
+  const [list, setList] = useState<string[]>(value);
+  const [saving, setSaving] = useState(false);
+  const [query, setQuery] = useState("");
+  useEffect(() => setList(value), [value]);
+
+  const toggle = (code: string) => {
+    if (code === defaultCode) return; // default is locked-in
+    setList((prev) =>
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code],
+    );
+  };
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return ALL_CURRENCIES;
+    return ALL_CURRENCIES.filter(
+      (c) => c.code.toLowerCase().includes(q) || c.name.toLowerCase().includes(q),
+    );
+  }, [query]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const next = list.includes(defaultCode) ? list : [defaultCode, ...list];
+    await onSave(next);
+    setSaving(false);
+  };
+
+  return (
+    <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-5">
+      <SectionHeader
+        title="Accepted currencies for checkout"
+        subtitle="Visitors will see a switcher to pay in any of these. Pricing stays in the default currency; conversion happens at checkout."
+      />
+
+      <div className="mb-4 flex flex-wrap gap-2">
+        {(list.length === 0 ? [defaultCode] : list).map((code) => {
+          const def = currencyByCode(code);
+          const isDefault = code === defaultCode;
+          return (
+            <span
+              key={code}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
+                isDefault
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-white text-gray-700 ring-1 ring-gray-200"
+              }`}
+            >
+              <span className="font-mono">{code}</span>
+              {def && <span className="text-gray-400">{def.symbol}</span>}
+              {isDefault ? (
+                <span className="text-[10px] uppercase tracking-wide text-emerald-600">default</span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => toggle(code)}
+                  className="text-gray-400 hover:text-rose-500"
+                  aria-label={`Remove ${code}`}
+                >
+                  ×
+                </button>
+              )}
+            </span>
+          );
+        })}
       </div>
-      <div className="mt-6"><SaveButton saving={saving} /></div>
-    </form>
+
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search to add a currency..."
+        className={inputCls}
+      />
+
+      <div className="mt-3 max-h-64 overflow-auto rounded-lg border border-gray-100 bg-white">
+        {filtered.slice(0, 100).map((c) => {
+          const checked = list.includes(c.code) || c.code === defaultCode;
+          return (
+            <label
+              key={c.code}
+              className={`flex cursor-pointer items-center justify-between border-b border-gray-50 px-3 py-2 text-sm last:border-b-0 hover:bg-gray-50 ${
+                c.code === defaultCode ? "opacity-60" : ""
+              }`}
+            >
+              <span className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  disabled={c.code === defaultCode}
+                  onChange={() => toggle(c.code)}
+                />
+                <span className="font-mono text-xs text-gray-500">{c.code}</span>
+                <span className="text-gray-700">{c.name}</span>
+              </span>
+              <span className="text-sm text-gray-400">{c.symbol}</span>
+            </label>
+          );
+        })}
+      </div>
+
+      <div className="mt-4">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50"
+        >
+          {saving ? "Saving…" : "✓ Update accepted currencies"}
+        </button>
+      </div>
+    </div>
   );
 }
 
 function LanguagesSection({ value, onSave }: { value: LanguageEntry[]; onSave: (v: LanguageEntry[]) => Promise<void> }) {
   const [list, setList] = useState(value);
   const [saving, setSaving] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   useEffect(() => setList(value), [value]);
   const patchItem = (id: string, p: Partial<LanguageEntry>) =>
     setList(list.map((l) => (l.id === id ? { ...l, ...p } : l)));
@@ -497,9 +718,41 @@ function LanguagesSection({ value, onSave }: { value: LanguageEntry[]; onSave: (
   const remove = (id: string) => setList(list.filter((l) => l.id !== id));
   const add = () =>
     setList([...list, { id: `l-${Date.now()}`, code: "", name: "", native: "", default: false, enabled: true }]);
+
+  const addFromCatalogue = (codes: string[]) => {
+    const existing = new Set(list.map((l) => l.code.toLowerCase()));
+    const additions: LanguageEntry[] = [];
+    for (const code of codes) {
+      if (existing.has(code.toLowerCase())) continue;
+      const def = ALL_LANGUAGES.find((l) => l.code === code);
+      if (!def) continue;
+      additions.push({
+        id: `l-${def.code}-${Date.now()}-${additions.length}`,
+        code: def.code,
+        name: def.name,
+        native: def.native,
+        default: false,
+        enabled: true,
+      });
+    }
+    if (additions.length > 0) setList([...list, ...additions]);
+    setPickerOpen(false);
+  };
+
   return (
     <form onSubmit={async (e) => { e.preventDefault(); setSaving(true); await onSave(list); setSaving(false); }}>
       <SectionHeader title="Languages" subtitle="Add languages available to visitors." />
+
+      <div className="mb-4 flex items-center justify-end gap-2">
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          className="rounded-lg bg-gradient-to-r from-fuchsia-500 to-pink-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:-translate-y-0.5 hover:shadow-md"
+        >
+          + Add from catalogue
+        </button>
+      </div>
+
       <div className="overflow-hidden rounded-lg border border-gray-100">
         <table className="min-w-full divide-y divide-gray-100 text-sm">
           <thead className="bg-gray-50">
@@ -534,7 +787,110 @@ function LanguagesSection({ value, onSave }: { value: LanguageEntry[]; onSave: (
       </div>
       <button type="button" onClick={add} className="mt-4 rounded-lg border-2 border-dashed border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 hover:border-primary-400 hover:text-primary-600">+ Add Language</button>
       <div className="mt-6"><SaveButton saving={saving} /></div>
+
+      {pickerOpen && (
+        <LanguageCataloguePicker
+          existing={list.map((l) => l.code.toLowerCase())}
+          onCancel={() => setPickerOpen(false)}
+          onConfirm={addFromCatalogue}
+        />
+      )}
     </form>
+  );
+}
+
+function LanguageCataloguePicker({
+  existing,
+  onCancel,
+  onConfirm,
+}: {
+  existing: string[];
+  onCancel: () => void;
+  onConfirm: (codes: string[]) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [picked, setPicked] = useState<Record<string, boolean>>({});
+  const existingSet = useMemo(() => new Set(existing), [existing]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return ALL_LANGUAGES;
+    return ALL_LANGUAGES.filter(
+      (l) =>
+        l.code.toLowerCase().includes(q) ||
+        l.name.toLowerCase().includes(q) ||
+        l.native.toLowerCase().includes(q),
+    );
+  }, [query]);
+
+  const toggle = (code: string) =>
+    setPicked((prev) => ({ ...prev, [code]: !prev[code] }));
+
+  const pickedCount = Object.values(picked).filter(Boolean).length;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">Add languages from catalogue</h3>
+            <p className="text-xs text-gray-500">{ALL_LANGUAGES.length} languages available — already-added ones are disabled.</p>
+          </div>
+          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600" aria-label="Close">×</button>
+        </div>
+        <div className="border-b border-gray-100 p-4">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by code, English name or native name..."
+            className={inputCls}
+            autoFocus
+          />
+        </div>
+        <div className="flex-1 overflow-auto px-2 py-2">
+          {filtered.map((l) => {
+            const already = existingSet.has(l.code.toLowerCase());
+            const checked = !!picked[l.code];
+            return (
+              <label
+                key={l.code}
+                className={`flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-gray-50 ${
+                  already ? "opacity-50" : ""
+                }`}
+              >
+                <span className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={checked || already}
+                    disabled={already}
+                    onChange={() => toggle(l.code)}
+                  />
+                  <span className="inline-block w-12 font-mono text-xs text-gray-500">{l.code}</span>
+                  <span className="text-gray-700">{l.name}</span>
+                  <span className="text-xs text-gray-400">— {l.native}</span>
+                  {l.rtl && <span className="rounded bg-purple-100 px-1.5 text-[10px] font-medium text-purple-700">RTL</span>}
+                </span>
+                {already && <span className="text-xs text-gray-400">added</span>}
+              </label>
+            );
+          })}
+        </div>
+        <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-6 py-3">
+          <span className="text-xs text-gray-500">{pickedCount} selected</span>
+          <div className="flex gap-2">
+            <button onClick={onCancel} className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-white">Cancel</button>
+            <button
+              onClick={() => onConfirm(Object.keys(picked).filter((k) => picked[k]))}
+              disabled={pickedCount === 0}
+              className="rounded-lg bg-gradient-to-r from-fuchsia-500 to-pink-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              Add {pickedCount > 0 ? `${pickedCount} ` : ""}language{pickedCount === 1 ? "" : "s"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

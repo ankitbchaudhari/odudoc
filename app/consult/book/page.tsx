@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { type Doctor } from "@/lib/data";
+import CurrencySwitcher, { useCheckoutCurrency } from "@/components/CurrencySwitcher";
+import { convert } from "@/lib/currency-convert";
 
 const specialtyList = [
   { name: "General Physician", icon: "🩺", price: 25 },
@@ -99,6 +101,13 @@ export default function BookConsultationPage() {
   const [paymentsOff, setPaymentsOff] = useState(false);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
 
+  // Visitor-facing display currency. The actual paymentIntent below stays
+  // in USD (Stripe is configured against USD today); once we wire a live
+  // FX rate source into lib/currency-convert.ts, the intent should be
+  // created in the visitor's currency and we drop the USD assumption.
+  const checkout = useCheckoutCurrency();
+  const [convertedFee, setConvertedFee] = useState<number | null>(null);
+
   useEffect(() => {
     fetch("/api/payments-config")
       .then((r) => r.json())
@@ -191,6 +200,21 @@ export default function BookConsultationPage() {
   const selectedDoctorData = doctors.find((d) => d.id === selectedDoctor);
   const selectedSpecialtyData = specialtyList.find((s) => s.name === selectedSpecialty);
   const fee = selectedSpecialtyData?.price || selectedDoctorData?.fee || 25;
+
+  // Pull a converted display amount whenever the fee or chosen currency
+  // changes. convert() is currently a no-op (returns identity); the call
+  // is wired so the UI is ready as soon as a rate source lands.
+  useEffect(() => {
+    let cancelled = false;
+    if (!checkout.code || checkout.code === "USD") {
+      setConvertedFee(null);
+      return;
+    }
+    convert(fee, "USD", checkout.code).then((v) => {
+      if (!cancelled) setConvertedFee(v);
+    });
+    return () => { cancelled = true; };
+  }, [fee, checkout.code]);
 
   const setH = <K extends keyof MedicalHistoryForm>(k: K, v: MedicalHistoryForm[K]) =>
     setHistory((h) => ({ ...h, [k]: v }));
@@ -669,7 +693,18 @@ export default function BookConsultationPage() {
                     <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700">FREE today</span>
                   </span>
                 ) : (
-                  <span className="text-xl font-bold text-primary-600">${fee}</span>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="text-xl font-bold text-primary-600">
+                      {checkout.def?.symbol || "$"}{(convertedFee ?? fee).toFixed(checkout.def?.decimals ?? 2)}{" "}
+                      <span className="text-xs font-medium text-gray-400">{checkout.code}</span>
+                    </span>
+                    <CurrencySwitcher />
+                    {checkout.code !== "USD" && (
+                      <span className="text-[10px] text-gray-400">
+                        Charged as ${fee} USD · live conversion lands soon
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

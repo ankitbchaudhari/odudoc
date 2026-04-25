@@ -10,11 +10,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, isAdminConfigured } from "@/lib/firebase-admin";
 import { mintConsultToken, toE164 } from "@/lib/consult-otp";
+import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
+  // Token-exchange endpoint — cheap to abuse, expensive to leave open.
+  const blocked = await enforceRateLimit(req, "consult-firebase-verify", 15, "1 m");
+  if (blocked) return blocked;
+
   let body: { idToken?: string; firstName?: string; lastName?: string };
   try {
     body = await req.json();

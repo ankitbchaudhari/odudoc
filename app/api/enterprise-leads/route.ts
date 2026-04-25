@@ -8,6 +8,7 @@ import {
   deleteLead,
   type LeadStatus,
 } from "@/lib/enterprise-leads-store";
+import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,6 +28,12 @@ export async function GET() {
 
 // Public: submit a demo request.
 export async function POST(req: NextRequest) {
+  // Public form. Cap at 5/min/IP and 30/day/IP — generous for real
+  // hospitals submitting once or twice, but kills basic spam.
+  const burstBlocked = await enforceRateLimit(req, "enterprise-leads", 5, "1 m");
+  if (burstBlocked) return burstBlocked;
+  const dayBlocked = await enforceRateLimit(req, "enterprise-leads-day", 30, "1 d");
+  if (dayBlocked) return dayBlocked;
   try {
     const body = await req.json();
     if (

@@ -3,10 +3,16 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { checkVerification, toE164 } from "@/lib/consult-otp";
+import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
+  // Brute-force protection on the OTP check itself: 10 attempts per
+  // minute per IP is plenty for a real user fixing a typo.
+  const blocked = await enforceRateLimit(req, "consult-otp-verify", 10, "1 m");
+  if (blocked) return blocked;
+
   let body: { phone?: string; code?: string };
   try {
     body = await req.json();

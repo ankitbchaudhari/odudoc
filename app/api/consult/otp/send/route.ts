@@ -3,11 +3,21 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { startVerification, toE164, isVerifyConfigured } from "@/lib/consult-otp";
+import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
+  // Twilio Verify charges per send. Without a limit, anyone can hose
+  // /api/consult/otp/send and rack up an SMS bill — cap at 5/min/IP and
+  // 20/hour/IP. Real users send at most 1-2 codes; the burst window is
+  // generous enough to absorb a Resend retry.
+  const burstBlocked = await enforceRateLimit(req, "consult-otp-send", 5, "1 m");
+  if (burstBlocked) return burstBlocked;
+  const hourBlocked = await enforceRateLimit(req, "consult-otp-send-hour", 20, "1 h");
+  if (hourBlocked) return hourBlocked;
+
   let body: {
     firstName?: string;
     lastName?: string;

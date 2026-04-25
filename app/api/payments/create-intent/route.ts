@@ -5,6 +5,7 @@ import { parseJson } from '@/lib/api-validate';
 import { log } from "@/lib/log";
 import { byCode } from '@/lib/currencies';
 import { convert } from '@/lib/currency-convert';
+import { enforceRateLimit } from '@/lib/rate-limit-helpers';
 
 export const runtime = "nodejs";
 
@@ -33,6 +34,12 @@ const CreateIntentSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  // PaymentIntent creation isn't free for us — cap at 10/min/IP. A real
+  // user only creates one when they click "Pay"; abuse here drives up
+  // Stripe API costs and can poison fraud-detection signals.
+  const blocked = await enforceRateLimit(request, "create-intent", 10, "1 m");
+  if (blocked) return blocked;
+
   const parsed = await parseJson(request, CreateIntentSchema);
   if (!parsed.ok) return parsed.response;
   const { doctorId, doctorName, fee, patientName, patientPhone, timeSlot, currency } = parsed.data;

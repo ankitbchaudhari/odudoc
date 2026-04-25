@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import DemoRequestForm from "./DemoRequestForm";
 import EnterpriseCustomiser from "./EnterpriseCustomiser";
 import { ServiceLd, BreadcrumbLd } from "@/components/StructuredData";
 
@@ -197,7 +196,7 @@ const plans = [
       "Email support",
     ],
     cta: "Start free 14-day trial",
-    ctaHref: "#demo",
+    ctaHref: "/contact",
   },
   {
     name: "Hospital",
@@ -216,7 +215,7 @@ const plans = [
       "Priority phone support",
     ],
     cta: "Request pricing",
-    ctaHref: "#demo",
+    ctaHref: "/contact",
     highlight: true,
   },
   {
@@ -289,7 +288,7 @@ export default function CorporatePage() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href="#demo"
+                href="/contact"
                 className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-900 shadow-lg transition-transform hover:scale-[1.02]"
               >
                 Request a demo
@@ -454,7 +453,7 @@ export default function CorporatePage() {
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <Link
-              href="#demo"
+              href="/contact"
               className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg transition-transform hover:scale-[1.02] hover:bg-indigo-700"
             >
               See the AI demo live
@@ -575,33 +574,6 @@ export default function CorporatePage() {
         </div>
       </section>
 
-      {/* Demo form */}
-      <section id="demo" className="bg-gradient-to-br from-indigo-50 via-white to-teal-50 py-20">
-        <div className="mx-auto grid max-w-6xl items-start gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-          <div>
-            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">Book a personalised demo</h2>
-            <p className="mt-3 text-gray-500">
-              30-minute walkthrough of the modules that matter to you. Bring your CMO or IT lead —
-              we&apos;ll go deep on workflows, migration, and pricing.
-            </p>
-            <ul className="mt-6 space-y-3 text-sm text-gray-700">
-              <li className="flex gap-2">
-                <span className="text-emerald-500">✓</span> No-obligation demo, tailored to your hospital
-              </li>
-              <li className="flex gap-2">
-                <span className="text-emerald-500">✓</span> 14-day sandbox seeded with your departments
-              </li>
-              <li className="flex gap-2">
-                <span className="text-emerald-500">✓</span> Migration path from existing HMS
-              </li>
-              <li className="flex gap-2">
-                <span className="text-emerald-500">✓</span> Pricing quote within 48 hours
-              </li>
-            </ul>
-          </div>
-          <DemoRequestForm />
-        </div>
-      </section>
     </>
   );
 }

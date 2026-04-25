@@ -90,16 +90,37 @@ export default function CredentialingPage() {
     load();
   }
 
+  const FILTER_THEMES_CRED: Record<string, string> = {
+    all: "from-slate-500 to-gray-600",
+    active: "from-emerald-500 to-green-600",
+    expiring_soon: "from-amber-500 to-orange-600",
+    expired: "from-rose-500 to-red-600",
+    pending_verification: "from-indigo-500 to-blue-600",
+    suspended: "from-orange-500 to-red-600",
+    revoked: "from-rose-600 to-red-700",
+  };
+
   return (
     <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Credentialing & Privileging</h1>
-          <p className="text-sm text-slate-500">Licenses, certifications, malpractice, clinical privileges</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => { setEditCred(null); setShowCred(true); }} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Credential</button>
-          <button onClick={() => { setEditPriv(null); setShowPriv(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Privilege</button>
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-amber-600 via-orange-600 to-red-700 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-yellow-300/20 blur-3xl" />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-yellow-400" />
+              </span>
+              {stats ? `${stats.expiringSoon} expiring soon · ${stats.expired} expired · ${stats.activeCreds} active` : "Loading…"}
+            </div>
+            <h1 className="text-2xl font-bold">Credentialing & Privileging</h1>
+            <p className="mt-1 text-sm text-orange-50/90">Licenses, certifications, malpractice, clinical privileges.</p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => { setEditCred(null); setShowCred(true); }} className="rounded-lg bg-white/15 px-3 py-1.5 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/25">📜 Credential</button>
+            <button onClick={() => { setEditPriv(null); setShowPriv(true); }} className="rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-amber-700 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">🛡️ Privilege</button>
+          </div>
         </div>
       </div>
 
@@ -115,24 +136,45 @@ export default function CredentialingPage() {
         </div>
       )}
 
-      <div className="mb-4 flex items-center gap-2 border-b border-slate-200">
-        <TabBtn active={tab === "credentials"} onClick={() => setTab("credentials")}>Credentials ({credentials.length})</TabBtn>
-        <TabBtn active={tab === "privileges"} onClick={() => setTab("privileges")}>Privileges ({privileges.length})</TabBtn>
+      <div className="mb-4 flex flex-wrap gap-2">
+        {(["credentials","privileges"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`rounded-lg px-4 py-1.5 text-sm font-semibold capitalize transition hover:-translate-y-0.5 ${
+              tab === t
+                ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md"
+                : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"
+            }`}
+          >
+            {t} ({t === "credentials" ? credentials.length : privileges.length})
+          </button>
+        ))}
       </div>
 
       {tab === "credentials" && (
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <FilterPill active={filterStatus === ""} onClick={() => setFilterStatus("")}>All</FilterPill>
-          {CRED_STATUSES.map((s) => <FilterPill key={s} active={filterStatus === s} onClick={() => setFilterStatus(s)}>{CRED_STATUS_LABEL[s]}</FilterPill>)}
+          <button
+            onClick={() => setFilterStatus("")}
+            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition hover:-translate-y-0.5 ${filterStatus === "" ? `bg-gradient-to-r ${FILTER_THEMES_CRED.all} text-white shadow-md` : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"}`}
+          >All</button>
+          {CRED_STATUSES.map((s) => (
+            <button
+              key={s}
+              onClick={() => setFilterStatus(s)}
+              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition hover:-translate-y-0.5 ${filterStatus === s ? `bg-gradient-to-r ${FILTER_THEMES_CRED[s] || "from-slate-500 to-gray-600"} text-white shadow-md` : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"}`}
+            >{CRED_STATUS_LABEL[s]}</button>
+          ))}
         </div>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500" />
         {tab === "credentials" ? (
-          credentials.length === 0 ? <Empty label="No credentials." /> : (
+          credentials.length === 0 ? <Empty label="📜 No credentials." /> : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase text-slate-500">
+                <thead className="border-b border-gray-100 bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-red-50/60 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
                   <tr>
                     <th className="px-4 py-3">ID</th>
                     <th className="px-4 py-3">Staff</th>
@@ -145,9 +187,9 @@ export default function CredentialingPage() {
                     <th className="px-4 py-3"></th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-gray-100">
                   {credentials.map((c) => (
-                    <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50">
+                    <tr key={c.id} className="transition-colors hover:bg-amber-50/30">
                       <td className="px-4 py-3 font-mono text-xs text-slate-600">{c.id}</td>
                       <td className="px-4 py-3"><div className="font-medium">{c.staffName}</div><div className="text-xs text-slate-500">{c.role || "-"}</div></td>
                       <td className="px-4 py-3 text-xs">{CREDENTIAL_TYPE_LABEL[c.credentialType]}</td>
@@ -157,8 +199,8 @@ export default function CredentialingPage() {
                       <td className="px-4 py-3 text-xs">{VERIFY_LABEL[c.verificationMethod]}</td>
                       <td className="px-4 py-3"><Pill tone={c.status === "active" ? "emerald" : c.status === "expired" || c.status === "suspended" || c.status === "revoked" ? "rose" : c.status === "expiring_soon" ? "amber" : "indigo"}>{CRED_STATUS_LABEL[c.status]}</Pill></td>
                       <td className="px-4 py-3 text-right">
-                        <button onClick={() => { setEditCred(c); setShowCred(true); }} className="text-xs font-semibold text-primary-600 hover:underline">Edit</button>
-                        <button onClick={() => removeCred(c.id)} className="ml-3 text-xs font-semibold text-rose-600 hover:underline">Delete</button>
+                        <button onClick={() => { setEditCred(c); setShowCred(true); }} className="rounded-lg bg-gradient-to-r from-indigo-500 to-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">Edit</button>
+                        <button onClick={() => removeCred(c.id)} className="ml-2 rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:-translate-y-0.5 hover:bg-rose-100 hover:shadow">Delete</button>
                       </td>
                     </tr>
                   ))}
@@ -166,10 +208,10 @@ export default function CredentialingPage() {
               </table>
             </div>
           )
-        ) : privileges.length === 0 ? <Empty label="No privileges." /> : (
+        ) : privileges.length === 0 ? <Empty label="🛡️ No privileges." /> : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase text-slate-500">
+              <thead className="border-b border-gray-100 bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-red-50/60 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
                 <tr>
                   <th className="px-4 py-3">ID</th>
                   <th className="px-4 py-3">Staff</th>
@@ -182,9 +224,9 @@ export default function CredentialingPage() {
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-100">
                 {privileges.map((p) => (
-                  <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50">
+                  <tr key={p.id} className="transition-colors hover:bg-amber-50/30">
                     <td className="px-4 py-3 font-mono text-xs">{p.id}</td>
                     <td className="px-4 py-3"><div className="font-medium">{p.staffName}</div><div className="text-xs text-slate-500">{p.specialty || ""}</div></td>
                     <td className="px-4 py-3">{p.department || "-"}</td>
@@ -194,8 +236,8 @@ export default function CredentialingPage() {
                     <td className="px-4 py-3 whitespace-nowrap text-xs">{p.expiresDate ? new Date(p.expiresDate).toLocaleDateString() : "—"}</td>
                     <td className="px-4 py-3"><Pill tone={p.status === "granted" ? "emerald" : p.status === "proctored" ? "amber" : p.status === "requested" ? "indigo" : "rose"}>{PRIV_STATUS_LABEL[p.status]}</Pill></td>
                     <td className="px-4 py-3 text-right">
-                      <button onClick={() => { setEditPriv(p); setShowPriv(true); }} className="text-xs font-semibold text-primary-600 hover:underline">Edit</button>
-                      <button onClick={() => removePriv(p.id)} className="ml-3 text-xs font-semibold text-rose-600 hover:underline">Delete</button>
+                      <button onClick={() => { setEditPriv(p); setShowPriv(true); }} className="rounded-lg bg-gradient-to-r from-indigo-500 to-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">Edit</button>
+                      <button onClick={() => removePriv(p.id)} className="ml-2 rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:-translate-y-0.5 hover:bg-rose-100 hover:shadow">Delete</button>
                     </td>
                   </tr>
                 ))}
@@ -378,34 +420,35 @@ function PrivModal({ editing, onClose, onSaved }: { editing: PrivilegeGrant | nu
 }
 
 function StatTile({ label, value, tone }: { label: string; value: number; tone: "slate" | "amber" | "rose" | "emerald" | "indigo" }) {
-  const map: Record<string, string> = {
-    slate: "bg-slate-50 text-slate-700 ring-slate-200",
-    amber: "bg-amber-50 text-amber-700 ring-amber-200",
-    rose: "bg-rose-50 text-rose-700 ring-rose-200",
-    emerald: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-    indigo: "bg-indigo-50 text-indigo-700 ring-indigo-200",
+  const map: Record<string, { grad: string; ring: string; text: string; dot: string }> = {
+    slate: { grad: "from-slate-50 to-gray-50", ring: "ring-slate-200", text: "text-slate-700", dot: "bg-slate-400" },
+    amber: { grad: "from-amber-50 to-yellow-50", ring: "ring-amber-200", text: "text-amber-700", dot: "bg-amber-500" },
+    rose: { grad: "from-rose-50 to-red-50", ring: "ring-rose-200", text: "text-rose-700", dot: "bg-rose-500" },
+    emerald: { grad: "from-emerald-50 to-green-50", ring: "ring-emerald-200", text: "text-emerald-700", dot: "bg-emerald-500" },
+    indigo: { grad: "from-indigo-50 to-blue-50", ring: "ring-indigo-200", text: "text-indigo-700", dot: "bg-indigo-500" },
   };
-  return <div className={`rounded-lg p-3 ring-1 ${map[tone]}`}><div className="text-xs">{label}</div><div className="mt-1 text-2xl font-bold">{value}</div></div>;
-}
-function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode; }) {
-  return <button onClick={onClick} className={`-mb-px border-b-2 px-4 py-2 text-sm font-semibold ${active ? "border-primary-600 text-primary-600" : "border-transparent text-slate-500 hover:text-slate-700"}`}>{children}</button>;
-}
-function FilterPill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode; }) {
-  return <button onClick={onClick} className={`rounded-full px-3 py-1 text-xs font-semibold ${active ? "bg-primary-600 text-white" : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"}`}>{children}</button>;
+  const t = map[tone];
+  return (
+    <div className={`rounded-xl bg-gradient-to-br ${t.grad} p-3 ring-1 ${t.ring} shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}>
+      <div className="flex items-center gap-1.5"><span className={`h-1.5 w-1.5 rounded-full ${t.dot}`} /><div className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">{label}</div></div>
+      <div className={`mt-1 text-2xl font-bold ${t.text}`}>{value}</div>
+    </div>
+  );
 }
 function Pill({ tone, children }: { tone: "slate" | "amber" | "emerald" | "rose" | "indigo"; children: React.ReactNode; }) {
-  const map: Record<string, string> = {
-    slate: "bg-slate-100 text-slate-700",
-    amber: "bg-amber-100 text-amber-700",
-    emerald: "bg-emerald-100 text-emerald-700",
-    rose: "bg-rose-100 text-rose-700",
-    indigo: "bg-indigo-100 text-indigo-700",
+  const map: Record<string, { pill: string; dot: string }> = {
+    slate: { pill: "bg-gradient-to-r from-slate-50 to-gray-50 text-slate-700 ring-slate-200", dot: "bg-slate-400" },
+    amber: { pill: "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200", dot: "bg-amber-500" },
+    emerald: { pill: "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200", dot: "bg-emerald-500" },
+    rose: { pill: "bg-gradient-to-r from-rose-50 to-red-50 text-rose-700 ring-rose-200", dot: "bg-rose-500" },
+    indigo: { pill: "bg-gradient-to-r from-indigo-50 to-blue-50 text-indigo-700 ring-indigo-200", dot: "bg-indigo-500" },
   };
-  return <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${map[tone]}`}>{children}</span>;
+  const t = map[tone];
+  return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${t.pill}`}><span className={`h-1.5 w-1.5 rounded-full ${t.dot}`} />{children}</span>;
 }
 function Field({ label, children }: { label: string; children: React.ReactNode; }) {
   return <label className="block"><span className="mb-1 block text-xs font-medium text-slate-600">{label}</span>{children}</label>;
 }
 function Empty({ label }: { label: string }) {
-  return <div className="p-8 text-center text-sm text-slate-500">{label}</div>;
+  return <div className="py-16 text-center text-sm text-gray-400">{label}</div>;
 }

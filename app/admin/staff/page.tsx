@@ -20,10 +20,22 @@ const ROLES: StaffRole[] = [
 ];
 const STATUSES: StaffStatus[] = ["active", "on_leave", "inactive"];
 
-const STATUS_COLOR: Record<StaffStatus, string> = {
-  active: "bg-emerald-100 text-emerald-700",
-  on_leave: "bg-amber-100 text-amber-700",
-  inactive: "bg-slate-200 text-slate-600",
+const STATUS_STYLES: Record<StaffStatus, { pill: string; dot: string }> = {
+  active: { pill: "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200", dot: "bg-emerald-500" },
+  on_leave: { pill: "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200", dot: "bg-amber-500" },
+  inactive: { pill: "bg-gradient-to-r from-slate-50 to-gray-50 text-slate-600 ring-slate-200", dot: "bg-slate-400" },
+};
+
+const ROLE_STYLES: Record<StaffRole, { pill: string; dot: string }> = {
+  doctor: { pill: "bg-gradient-to-r from-rose-50 to-pink-50 text-rose-700 ring-rose-200", dot: "bg-rose-500" },
+  resident: { pill: "bg-gradient-to-r from-fuchsia-50 to-pink-50 text-fuchsia-700 ring-fuchsia-200", dot: "bg-fuchsia-500" },
+  nurse: { pill: "bg-gradient-to-r from-sky-50 to-blue-50 text-blue-700 ring-blue-200", dot: "bg-blue-500" },
+  technician: { pill: "bg-gradient-to-r from-violet-50 to-purple-50 text-violet-700 ring-violet-200", dot: "bg-violet-500" },
+  pharmacist: { pill: "bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 ring-emerald-200", dot: "bg-emerald-500" },
+  radiographer: { pill: "bg-gradient-to-r from-cyan-50 to-sky-50 text-cyan-700 ring-cyan-200", dot: "bg-cyan-500" },
+  admin: { pill: "bg-gradient-to-r from-indigo-50 to-blue-50 text-indigo-700 ring-indigo-200", dot: "bg-indigo-500" },
+  housekeeping: { pill: "bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 ring-amber-200", dot: "bg-amber-500" },
+  other: { pill: "bg-gradient-to-r from-slate-50 to-gray-50 text-slate-600 ring-slate-200", dot: "bg-slate-400" },
 };
 
 interface StaffForm {
@@ -158,34 +170,50 @@ export default function StaffPage() {
     nurses: list.filter((s) => s.role === "nurse").length,
   };
 
+  const TILE_THEMES: Array<{ label: string; value: number; gradient: string; ring: string; text: string; dot: string }> = [
+    { label: "Total", value: counts.total, gradient: "from-rose-50 to-pink-50", ring: "ring-rose-200", text: "text-rose-700", dot: "bg-rose-500" },
+    { label: "Active", value: counts.active, gradient: "from-emerald-50 to-green-50", ring: "ring-emerald-200", text: "text-emerald-700", dot: "bg-emerald-500" },
+    { label: "On leave", value: counts.on_leave, gradient: "from-amber-50 to-yellow-50", ring: "ring-amber-200", text: "text-amber-700", dot: "bg-amber-500" },
+    { label: "Doctors", value: counts.doctors, gradient: "from-fuchsia-50 to-pink-50", ring: "ring-fuchsia-200", text: "text-fuchsia-700", dot: "bg-fuchsia-500" },
+    { label: "Nurses", value: counts.nurses, gradient: "from-sky-50 to-blue-50", ring: "ring-sky-200", text: "text-sky-700", dot: "bg-sky-500" },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-900">Medical Staff</h2>
-          <p className="text-sm text-slate-500">
-            Staff roster — doctors, nurses, technicians, pharmacy & admin.
-          </p>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-600 via-pink-600 to-fuchsia-700 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-yellow-300/20 blur-3xl" />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-yellow-400" />
+              </span>
+              {counts.active} active staff · {counts.total} total
+            </div>
+            <h1 className="text-2xl font-bold">Medical Staff</h1>
+            <p className="mt-1 text-sm text-pink-50/90">
+              Staff roster — doctors, nurses, technicians, pharmacy & admin.
+            </p>
+          </div>
+          <button
+            onClick={() => (showForm ? reset() : setShowForm(true))}
+            className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-rose-700 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
+          >
+            {showForm ? "✕ Close" : "👥 New staff"}
+          </button>
         </div>
-        <button
-          onClick={() => (showForm ? reset() : setShowForm(true))}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          {showForm ? "Close" : "+ New staff"}
-        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        {([
-          ["Total", counts.total],
-          ["Active", counts.active, "text-emerald-600"],
-          ["On leave", counts.on_leave, "text-amber-600"],
-          ["Doctors", counts.doctors],
-          ["Nurses", counts.nurses],
-        ] as const).map(([lbl, v, accent]) => (
-          <div key={lbl} className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="text-[11px] uppercase tracking-wider text-slate-500">{lbl}</div>
-            <div className={`mt-1 text-2xl font-semibold ${accent || "text-slate-900"}`}>{v}</div>
+        {TILE_THEMES.map((t) => (
+          <div key={t.label} className={`rounded-xl bg-gradient-to-br ${t.gradient} p-4 ring-1 ${t.ring} shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}>
+            <div className="flex items-center gap-2">
+              <span className={`h-1.5 w-1.5 rounded-full ${t.dot}`} />
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">{t.label}</div>
+            </div>
+            <div className={`mt-1 text-2xl font-bold ${t.text}`}>{t.value}</div>
           </div>
         ))}
       </div>
@@ -206,8 +234,9 @@ export default function StaffPage() {
       )}
 
       {showForm && (
-        <form onSubmit={submit} className="space-y-3 rounded-lg border border-slate-200 bg-white p-5">
-          <h3 className="text-sm font-semibold">{editingId ? "Edit staff" : "New staff"}</h3>
+        <form onSubmit={submit} className="space-y-3 overflow-hidden rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+          <div className="-mx-5 -mt-5 mb-2 h-1 bg-gradient-to-r from-rose-500 via-pink-500 to-fuchsia-500" />
+          <h3 className="text-sm font-semibold text-slate-900">{editingId ? "Edit staff" : "New staff"}</h3>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <Field label="First name*"><input required value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className="input" /></Field>
             <Field label="Last name*"><input required value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} className="input" /></Field>
@@ -233,76 +262,90 @@ export default function StaffPage() {
             </div>
           </div>
           <div className="flex gap-2">
-            <button type="submit" className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white">{editingId ? "Save" : "Create"}</button>
-            <button type="button" onClick={reset} className="rounded-lg border border-slate-300 px-4 py-2 text-sm">Cancel</button>
+            <button type="submit" className="rounded-lg bg-gradient-to-r from-rose-500 to-pink-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">{editingId ? "Save" : "Create"}</button>
+            <button type="button" onClick={reset} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50">Cancel</button>
           </div>
         </form>
       )}
 
-      <div className="flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white p-4">
-        <Field label="Search"><input value={search} onChange={(e) => setSearch(e.target.value)} className="input w-60" placeholder="name / code / specialty" /></Field>
-        <Field label="Role">
-          <select value={role} onChange={(e) => setRole(e.target.value)} className="input">
-            <option value="">All</option>
-            {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
-          </select>
-        </Field>
-        <Field label="Status">
-          <select value={status} onChange={(e) => setStatus(e.target.value)} className="input">
-            <option value="">All</option>
-            {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </Field>
-        <button onClick={load} className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white">Apply</button>
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-rose-500 via-pink-500 to-fuchsia-500" />
+        <div className="flex flex-wrap items-end gap-3 p-4">
+          <Field label="Search"><input value={search} onChange={(e) => setSearch(e.target.value)} className="input w-60" placeholder="name / code / specialty" /></Field>
+          <Field label="Role">
+            <select value={role} onChange={(e) => setRole(e.target.value)} className="input">
+              <option value="">All</option>
+              {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </Field>
+          <Field label="Status">
+            <select value={status} onChange={(e) => setStatus(e.target.value)} className="input">
+              <option value="">All</option>
+              {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </Field>
+          <button onClick={load} className="rounded-lg bg-gradient-to-r from-rose-500 to-pink-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">Apply</button>
+        </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500">
-            <tr>
-              <th className="px-4 py-3">Staff</th>
-              <th className="px-4 py-3">Code</th>
-              <th className="px-4 py-3">Role</th>
-              <th className="px-4 py-3">Department</th>
-              <th className="px-4 py-3">Contact</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {loading ? (
-              <tr><td colSpan={7} className="px-4 py-6 text-center text-slate-400">Loading…</td></tr>
-            ) : list.length === 0 ? (
-              <tr><td colSpan={7} className="px-4 py-6 text-center text-slate-400">No staff.</td></tr>
-            ) : (
-              list.map((s) => (
-                <tr key={s.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3">
-                    <div className="font-medium text-slate-900">{s.firstName} {s.lastName}</div>
-                    {s.specialty && <div className="text-[11px] text-slate-500">{s.specialty}</div>}
-                    {s.qualifications && <div className="text-[11px] text-slate-500">{s.qualifications}</div>}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-600">{s.employeeCode}</td>
-                  <td className="px-4 py-3 capitalize text-slate-700">{s.role}</td>
-                  <td className="px-4 py-3 text-slate-700">{s.department || "—"}</td>
-                  <td className="px-4 py-3 text-xs text-slate-600">
-                    {s.phone || "—"}
-                    {s.email && <div>{s.email}</div>}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_COLOR[s.status]}`}>{s.status}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-1">
-                      <button onClick={() => startEdit(s)} className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Edit</button>
-                      <button onClick={() => remove(s.id)} className="rounded-md border border-red-300 px-2 py-1 text-xs text-red-700 hover:bg-red-50">Del</button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-rose-500 via-pink-500 to-fuchsia-500" />
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="border-b border-gray-100 bg-gradient-to-r from-rose-50/60 via-pink-50/40 to-fuchsia-50/60">
+              <tr className="text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                <th className="px-4 py-3">Staff</th>
+                <th className="px-4 py-3">Code</th>
+                <th className="px-4 py-3">Role</th>
+                <th className="px-4 py-3">Department</th>
+                <th className="px-4 py-3">Contact</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {loading ? (
+                <tr><td colSpan={7} className="py-16 text-center text-sm text-gray-400">Loading…</td></tr>
+              ) : list.length === 0 ? (
+                <tr><td colSpan={7} className="py-16 text-center text-sm text-gray-400">👥 No staff.</td></tr>
+              ) : (
+                list.map((s) => (
+                  <tr key={s.id} className="transition-colors hover:bg-rose-50/30">
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-slate-900">{s.firstName} {s.lastName}</div>
+                      {s.specialty && <div className="text-[11px] text-slate-500">{s.specialty}</div>}
+                      {s.qualifications && <div className="text-[11px] text-slate-500">{s.qualifications}</div>}
+                    </td>
+                    <td className="px-4 py-3 font-mono text-xs text-slate-600">{s.employeeCode}</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ring-1 ${ROLE_STYLES[s.role].pill}`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${ROLE_STYLES[s.role].dot}`} />
+                        {s.role}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-slate-700">{s.department || "—"}</td>
+                    <td className="px-4 py-3 text-xs text-slate-600">
+                      {s.phone || "—"}
+                      {s.email && <div>{s.email}</div>}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ring-1 ${STATUS_STYLES[s.status].pill}`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${STATUS_STYLES[s.status].dot}`} />
+                        {s.status.replace(/_/g, " ")}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end gap-1.5">
+                        <button onClick={() => startEdit(s)} className="rounded-lg bg-gradient-to-r from-indigo-500 to-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">Edit</button>
+                        <button onClick={() => remove(s.id)} className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:-translate-y-0.5 hover:bg-rose-100 hover:shadow">Del</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <style jsx>{`

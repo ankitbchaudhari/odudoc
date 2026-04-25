@@ -9,11 +9,11 @@ import type { OperationTheatre } from "@/lib/hospital/surgery-store";
 const SHIFT_TYPES: ShiftType[] = ["morning", "evening", "night", "on_call", "custom"];
 
 const TYPE_COLOR: Record<ShiftType, string> = {
-  morning: "bg-amber-100 text-amber-700 border-amber-200",
-  evening: "bg-orange-100 text-orange-700 border-orange-200",
-  night: "bg-indigo-100 text-indigo-700 border-indigo-200",
-  on_call: "bg-red-100 text-red-700 border-red-200",
-  custom: "bg-slate-100 text-slate-700 border-slate-200",
+  morning: "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-800 ring-amber-200",
+  evening: "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-800 ring-orange-200",
+  night: "bg-gradient-to-r from-indigo-50 to-violet-50 text-indigo-800 ring-indigo-200",
+  on_call: "bg-gradient-to-r from-rose-50 to-red-50 text-rose-800 ring-rose-200",
+  custom: "bg-gradient-to-r from-slate-50 to-gray-50 text-slate-800 ring-slate-200",
 };
 
 function weekDates(anchor: Date): string[] {
@@ -219,35 +219,54 @@ export default function RosterPage() {
   const onCallCount = shifts.filter((s) => s.shiftType === "on_call").length;
   const uniqueStaffOnDuty = new Set(shifts.map((s) => s.staffId)).size;
 
+  const TILES = [
+    { label: "Week of", value: new Date(week[0]).toLocaleDateString(), grad: "from-violet-50 to-purple-50", ring: "ring-violet-200", text: "text-violet-700", dot: "bg-violet-500" },
+    { label: "Total shifts", value: shifts.length, grad: "from-fuchsia-50 to-pink-50", ring: "ring-fuchsia-200", text: "text-fuchsia-700", dot: "bg-fuchsia-500" },
+    { label: "Staff on duty", value: uniqueStaffOnDuty, grad: "from-emerald-50 to-green-50", ring: "ring-emerald-200", text: "text-emerald-700", dot: "bg-emerald-500" },
+    { label: "On-call slots", value: onCallCount, grad: "from-rose-50 to-red-50", ring: "ring-rose-200", text: "text-rose-700", dot: "bg-rose-500" },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-900">Shift Roster</h2>
-          <p className="text-sm text-slate-500">
-            Weekly roster with conflict detection. Click a cell to add; click a shift to edit.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => shiftWeek(-1)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50">← Prev</button>
-          <button onClick={() => setAnchor(new Date())} className="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50">Today</button>
-          <button onClick={() => shiftWeek(1)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50">Next →</button>
-          <button onClick={() => openCreate()} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">
-            + Assign shift
-          </button>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-700 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-pink-300/20 blur-3xl" />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-pink-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-pink-400" />
+              </span>
+              {shifts.length} shifts · {uniqueStaffOnDuty} on duty · {onCallCount} on-call
+            </div>
+            <h1 className="text-2xl font-bold">Shift Roster</h1>
+            <p className="mt-1 text-sm text-purple-50/90">
+              Weekly roster with conflict detection. Click a cell to add; click a shift to edit.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => shiftWeek(-1)} className="rounded-lg bg-white/15 px-3 py-1.5 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/25">← Prev</button>
+            <button onClick={() => setAnchor(new Date())} className="rounded-lg bg-white/15 px-3 py-1.5 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/25">Today</button>
+            <button onClick={() => shiftWeek(1)} className="rounded-lg bg-white/15 px-3 py-1.5 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/25">Next →</button>
+            <button onClick={() => openCreate()} className="rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-violet-700 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
+              ✨ Assign shift
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {[
-          { label: "Week of", value: new Date(week[0]).toLocaleDateString() },
-          { label: "Total shifts", value: shifts.length },
-          { label: "Staff on duty", value: uniqueStaffOnDuty },
-          { label: "On-call slots", value: onCallCount, accent: "text-red-600" },
-        ].map((s) => (
-          <div key={s.label} className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="text-[11px] uppercase tracking-wider text-slate-500">{s.label}</div>
-            <div className={`mt-1 text-xl font-semibold ${s.accent || "text-slate-900"}`}>{s.value}</div>
+        {TILES.map((s) => (
+          <div key={s.label} className={`rounded-xl bg-gradient-to-br ${s.grad} p-4 ring-1 ${s.ring} shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}>
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${s.dot} opacity-60`} />
+                <span className={`relative inline-flex h-2 w-2 rounded-full ${s.dot}`} />
+              </span>
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">{s.label}</div>
+            </div>
+            <div className={`mt-1 text-xl font-bold ${s.text}`}>{s.value}</div>
           </div>
         ))}
       </div>
@@ -268,8 +287,9 @@ export default function RosterPage() {
       )}
 
       {showForm && (
-        <form onSubmit={submit} className="space-y-3 rounded-lg border border-slate-200 bg-white p-5">
-          <h3 className="text-sm font-semibold">{editingId ? "Edit shift" : "Assign shift"}</h3>
+        <form onSubmit={submit} className="space-y-3 overflow-hidden rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+          <div className="-mx-5 -mt-5 mb-2 h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500" />
+          <h3 className="text-sm font-semibold text-slate-900">{editingId ? "Edit shift" : "Assign shift"}</h3>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <Field label="Staff*">
               <select required value={form.staffId} onChange={(e) => setForm({ ...form, staffId: e.target.value })} className="input">
@@ -309,89 +329,92 @@ export default function RosterPage() {
             </div>
           </div>
           <div className="flex gap-2">
-            <button type="submit" className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white">{editingId ? "Save" : "Assign"}</button>
-            <button type="button" onClick={reset} className="rounded-lg border border-slate-300 px-4 py-2 text-sm">Cancel</button>
+            <button type="submit" className="rounded-lg bg-gradient-to-r from-violet-500 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">{editingId ? "Save" : "Assign"}</button>
+            <button type="button" onClick={reset} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50">Cancel</button>
             {editingId && (
-              <button type="button" onClick={() => { remove(editingId!); reset(); }} className="rounded-lg border border-red-300 px-4 py-2 text-sm text-red-700">Delete</button>
+              <button type="button" onClick={() => { remove(editingId!); reset(); }} className="rounded-lg bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:-translate-y-0.5 hover:bg-rose-100">Delete</button>
             )}
           </div>
         </form>
       )}
 
       {/* Week grid */}
-      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-        <table className="w-full min-w-[900px] text-xs">
-          <thead className="bg-slate-50">
-            <tr>
-              <th className="sticky left-0 z-10 bg-slate-50 px-3 py-2 text-left text-[11px] uppercase tracking-wider text-slate-500">Staff</th>
-              {week.map((d) => {
-                const day = new Date(d);
-                const isToday = d === new Date().toISOString().slice(0, 10);
-                return (
-                  <th key={d} className={`px-2 py-2 text-[11px] uppercase tracking-wider ${isToday ? "bg-primary-50 text-primary-700" : "text-slate-500"}`}>
-                    {day.toLocaleDateString(undefined, { weekday: "short" })}
-                    <div className="text-slate-400">{day.getDate()}/{day.getMonth() + 1}</div>
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {loading ? (
-              <tr><td colSpan={8} className="px-4 py-6 text-center text-slate-400">Loading…</td></tr>
-            ) : staffWithShifts.length === 0 ? (
-              <tr><td colSpan={8} className="px-4 py-6 text-center text-slate-400">No active staff. Add staff first.</td></tr>
-            ) : (
-              staffWithShifts.map((s) => {
-                const byDate = grid.get(s.id) || new Map();
-                return (
-                  <tr key={s.id}>
-                    <td className="sticky left-0 z-10 bg-white px-3 py-2 font-medium">
-                      <div className="text-slate-900">{s.firstName} {s.lastName}</div>
-                      <div className="text-[10px] text-slate-500">{s.role}{s.specialty ? ` · ${s.specialty}` : ""}</div>
-                    </td>
-                    {week.map((d) => {
-                      const cell: ShiftAssignment[] = byDate.get(d) || [];
-                      return (
-                        <td key={d} className="px-1.5 py-1.5 align-top">
-                          <div className="space-y-1">
-                            {cell.map((sh) => {
-                              const ward = sh.wardId ? wardMap.get(sh.wardId) : null;
-                              const ot = sh.otId ? otMap.get(sh.otId) : null;
-                              return (
-                                <button
-                                  key={sh.id}
-                                  onClick={() => openEdit(sh)}
-                                  className={`block w-full rounded border px-1.5 py-1 text-left text-[10px] ${TYPE_COLOR[sh.shiftType]} hover:opacity-80`}
-                                >
-                                  <div className="font-semibold">
-                                    {sh.shiftType === "on_call" ? "ON-CALL" : `${sh.start}–${sh.end}`}
-                                  </div>
-                                  {sh.role && <div className="text-[9px] opacity-80">{sh.role}</div>}
-                                  {(ward || ot) && (
-                                    <div className="text-[9px] opacity-70">
-                                      {ward?.name || ""}{ward && ot ? " · " : ""}{ot?.name || ""}
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500" />
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[900px] text-xs">
+            <thead className="border-b border-gray-100 bg-gradient-to-r from-violet-50/60 via-purple-50/40 to-fuchsia-50/60">
+              <tr>
+                <th className="sticky left-0 z-10 bg-gradient-to-r from-violet-50/80 to-purple-50/60 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-600">Staff</th>
+                {week.map((d) => {
+                  const day = new Date(d);
+                  const isToday = d === new Date().toISOString().slice(0, 10);
+                  return (
+                    <th key={d} className={`px-2 py-2 text-[11px] font-semibold uppercase tracking-wider ${isToday ? "bg-gradient-to-b from-fuchsia-100 to-pink-100 text-fuchsia-700" : "text-slate-600"}`}>
+                      {day.toLocaleDateString(undefined, { weekday: "short" })}
+                      <div className="text-slate-400">{day.getDate()}/{day.getMonth() + 1}</div>
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {loading ? (
+                <tr><td colSpan={8} className="py-16 text-center text-sm text-gray-400">Loading…</td></tr>
+              ) : staffWithShifts.length === 0 ? (
+                <tr><td colSpan={8} className="py-16 text-center text-sm text-gray-400">👥 No active staff. Add staff first.</td></tr>
+              ) : (
+                staffWithShifts.map((s) => {
+                  const byDate = grid.get(s.id) || new Map();
+                  return (
+                    <tr key={s.id} className="transition-colors hover:bg-violet-50/30">
+                      <td className="sticky left-0 z-10 bg-white px-3 py-2 font-medium">
+                        <div className="text-slate-900">{s.firstName} {s.lastName}</div>
+                        <div className="text-[10px] text-slate-500">{s.role}{s.specialty ? ` · ${s.specialty}` : ""}</div>
+                      </td>
+                      {week.map((d) => {
+                        const cell: ShiftAssignment[] = byDate.get(d) || [];
+                        return (
+                          <td key={d} className="px-1.5 py-1.5 align-top">
+                            <div className="space-y-1">
+                              {cell.map((sh) => {
+                                const ward = sh.wardId ? wardMap.get(sh.wardId) : null;
+                                const ot = sh.otId ? otMap.get(sh.otId) : null;
+                                return (
+                                  <button
+                                    key={sh.id}
+                                    onClick={() => openEdit(sh)}
+                                    className={`block w-full rounded-md px-1.5 py-1 text-left text-[10px] ring-1 transition hover:-translate-y-0.5 hover:shadow-sm ${TYPE_COLOR[sh.shiftType]}`}
+                                  >
+                                    <div className="font-semibold">
+                                      {sh.shiftType === "on_call" ? "ON-CALL" : `${sh.start}–${sh.end}`}
                                     </div>
-                                  )}
-                                </button>
-                              );
-                            })}
-                            <button
-                              onClick={() => openCreate(s.id, d)}
-                              className="block w-full rounded border border-dashed border-slate-300 px-1.5 py-0.5 text-[10px] text-slate-400 hover:border-slate-400 hover:text-slate-600"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                                    {sh.role && <div className="text-[9px] opacity-80">{sh.role}</div>}
+                                    {(ward || ot) && (
+                                      <div className="text-[9px] opacity-70">
+                                        {ward?.name || ""}{ward && ot ? " · " : ""}{ot?.name || ""}
+                                      </div>
+                                    )}
+                                  </button>
+                                );
+                              })}
+                              <button
+                                onClick={() => openCreate(s.id, d)}
+                                className="block w-full rounded-md border border-dashed border-violet-200 px-1.5 py-0.5 text-[10px] text-violet-400 transition hover:border-violet-400 hover:bg-violet-50 hover:text-violet-600"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <style jsx>{`

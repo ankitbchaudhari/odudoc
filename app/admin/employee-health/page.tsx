@@ -78,45 +78,102 @@ export default function EmployeeHealthPage() {
   const filteredEmps = useMemo(() => employees.filter((e) => (fRole ? e.role === fRole : true)), [employees, fRole]);
   const filteredEncs = useMemo(() => encounters.filter((e) => (fKind ? e.kind === fKind : true)), [encounters, fKind]);
 
+  const ROLE_THEMES: Record<EmployeeRole | "all", string> = {
+    all: "from-slate-500 to-gray-600",
+    doctor: "from-rose-500 to-pink-600",
+    nurse: "from-sky-500 to-blue-600",
+    technician: "from-violet-500 to-purple-600",
+    pharmacist: "from-emerald-500 to-teal-600",
+    housekeeping: "from-amber-500 to-orange-600",
+    security: "from-slate-600 to-gray-700",
+    admin: "from-indigo-500 to-blue-600",
+    food_services: "from-orange-500 to-red-600",
+    biomedical: "from-cyan-500 to-sky-600",
+    other: "from-slate-500 to-gray-600",
+  };
+  const KIND_THEMES: Record<EncounterKind | "all", string> = {
+    all: "from-slate-500 to-gray-600",
+    pre_employment: "from-emerald-500 to-teal-600",
+    periodic_exam: "from-cyan-500 to-sky-600",
+    vaccination: "from-green-500 to-emerald-600",
+    needlestick: "from-rose-500 to-red-600",
+    sharps_injury: "from-red-500 to-rose-700",
+    blood_body_fluid_exposure: "from-rose-600 to-pink-700",
+    tb_screening: "from-amber-500 to-orange-600",
+    n95_fit_test: "from-indigo-500 to-blue-600",
+    fitness_certificate: "from-teal-500 to-emerald-600",
+    return_to_work: "from-sky-500 to-cyan-600",
+    illness_absence: "from-amber-500 to-yellow-600",
+    injury_on_duty: "from-orange-500 to-red-600",
+    psych_wellness: "from-violet-500 to-purple-600",
+    radiation_monitoring: "from-fuchsia-500 to-pink-600",
+    other: "from-slate-500 to-gray-600",
+  };
+
   return (
     <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Employee Health Clinic</h1>
-          <p className="text-sm text-slate-500">Occupational health · Staff vaccinations · Sharps injury · Fitness certification</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => { setEditEmp(null); setShowEmp(true); }} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Staff</button>
-          <button onClick={() => { setEditEnc(null); setShowEnc(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Encounter</button>
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-green-600 to-teal-700 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-lime-300/20 blur-3xl" />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-lime-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-lime-400" />
+              </span>
+              {encounters.length} encounters · {stats ? `${stats.vaccinationsMonth} vaccinations this month` : "loading…"}
+            </div>
+            <h1 className="text-2xl font-bold">Employee Health Clinic</h1>
+            <p className="mt-1 text-sm text-emerald-50/90">Occupational health · Staff vaccinations · Sharps injury · Fitness certification.</p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => { setEditEmp(null); setShowEmp(true); }} className="rounded-lg bg-white/15 px-3 py-1.5 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/25">➕ Staff</button>
+            <button onClick={() => { setEditEnc(null); setShowEnc(true); }} className="rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-emerald-700 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">🩺 Encounter</button>
+          </div>
         </div>
       </div>
 
       {stats && (
         <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
-          <StatTile label="Active staff" value={stats.activeStaff} tone="slate" />
+          <StatTile label="Active staff" value={stats.activeStaff} tone="emerald" />
           <StatTile label="Hep B incomplete" value={stats.hepBIncomplete} tone="rose" />
           <StatTile label="Fitness expiring (30d)" value={stats.fitnessExpiring} tone="amber" />
-          <StatTile label="Vaccinations (mo)" value={stats.vaccinationsMonth} tone="emerald" />
+          <StatTile label="Vaccinations (mo)" value={stats.vaccinationsMonth} tone="green" />
           <StatTile label="Sharps (mo)" value={stats.sharpsMonth} tone="rose" />
           <StatTile label="Open exposures" value={stats.openExposures} tone="amber" />
           <StatTile label="Absence days (mo)" value={stats.absenceDaysMonth} tone="indigo" />
         </div>
       )}
 
-      <div className="mb-4 flex items-center gap-2">
-        <TabBtn active={tab === "encounters"} onClick={() => setTab("encounters")}>Encounters ({encounters.length})</TabBtn>
-        <TabBtn active={tab === "staff"} onClick={() => setTab("staff")}>Staff ({employees.length})</TabBtn>
+      <div className="mb-4 flex flex-wrap gap-2">
+        {(["encounters","staff"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`rounded-lg px-4 py-1.5 text-sm font-semibold capitalize transition hover:-translate-y-0.5 ${
+              tab === t
+                ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md"
+                : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"
+            }`}
+          >
+            {t} ({t === "encounters" ? encounters.length : employees.length})
+          </button>
+        ))}
       </div>
 
       {tab === "staff" && (
         <>
           <div className="mb-3 flex flex-wrap gap-2">
-            <FilterPill active={fRole === ""} onClick={() => setFRole("")}>All roles</FilterPill>
-            {ROLES.map((r) => <FilterPill key={r} active={fRole === r} onClick={() => setFRole(r)}>{ROLE_LABEL[r]}</FilterPill>)}
+            <button onClick={() => setFRole("")} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition hover:-translate-y-0.5 ${fRole === "" ? `bg-gradient-to-r ${ROLE_THEMES.all} text-white shadow-md` : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"}`}>All roles</button>
+            {ROLES.map((r) => (
+              <button key={r} onClick={() => setFRole(r)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition hover:-translate-y-0.5 ${fRole === r ? `bg-gradient-to-r ${ROLE_THEMES[r]} text-white shadow-md` : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"}`}>{ROLE_LABEL[r]}</button>
+            ))}
           </div>
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+            <div className="h-1 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500" />
+            <div className="overflow-x-auto"><table className="w-full text-sm">
+              <thead className="border-b border-gray-100 bg-gradient-to-r from-emerald-50/60 via-green-50/40 to-teal-50/60 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
                 <tr>
                   <th className="px-4 py-3">Employee</th>
                   <th className="px-4 py-3">Role</th>
@@ -128,9 +185,9 @@ export default function EmployeeHealthPage() {
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-gray-100">
                 {filteredEmps.map((e) => (
-                  <tr key={e.id} className="hover:bg-slate-50">
+                  <tr key={e.id} className="transition-colors hover:bg-emerald-50/30">
                     <td className="px-4 py-3">
                       <div className="font-semibold text-slate-900">{e.firstName} {e.lastName}</div>
                       <div className="text-xs text-slate-500">{e.employeeCode} · {e.id}</div>
@@ -145,14 +202,14 @@ export default function EmployeeHealthPage() {
                     </td>
                     <td className="px-4 py-3"><Pill status={e.employmentStatus}>{EMP_STATUS_LABEL[e.employmentStatus]}</Pill></td>
                     <td className="px-4 py-3 text-right">
-                      <button onClick={() => { setEditEmp(e); setShowEmp(true); }} className="mr-2 text-xs font-semibold text-primary-600 hover:text-primary-700">Edit</button>
-                      <button onClick={() => del(e.id)} className="text-xs font-semibold text-rose-600 hover:text-rose-700">Delete</button>
+                      <button onClick={() => { setEditEmp(e); setShowEmp(true); }} className="mr-2 rounded-lg bg-gradient-to-r from-indigo-500 to-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">Edit</button>
+                      <button onClick={() => del(e.id)} className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:-translate-y-0.5 hover:bg-rose-100 hover:shadow">Delete</button>
                     </td>
                   </tr>
                 ))}
-                {filteredEmps.length === 0 && <tr><td colSpan={8}><Empty>No staff yet.</Empty></td></tr>}
+                {filteredEmps.length === 0 && <tr><td colSpan={8}><Empty>👥 No staff yet.</Empty></td></tr>}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </>
       )}
@@ -160,12 +217,15 @@ export default function EmployeeHealthPage() {
       {tab === "encounters" && (
         <>
           <div className="mb-3 flex flex-wrap gap-2">
-            <FilterPill active={fKind === ""} onClick={() => setFKind("")}>All</FilterPill>
-            {ENC_KINDS.map((k) => <FilterPill key={k} active={fKind === k} onClick={() => setFKind(k)}>{ENC_KIND_LABEL[k]}</FilterPill>)}
+            <button onClick={() => setFKind("")} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition hover:-translate-y-0.5 ${fKind === "" ? `bg-gradient-to-r ${KIND_THEMES.all} text-white shadow-md` : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"}`}>All</button>
+            {ENC_KINDS.map((k) => (
+              <button key={k} onClick={() => setFKind(k)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition hover:-translate-y-0.5 ${fKind === k ? `bg-gradient-to-r ${KIND_THEMES[k]} text-white shadow-md` : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"}`}>{ENC_KIND_LABEL[k]}</button>
+            ))}
           </div>
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+            <div className="h-1 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500" />
+            <div className="overflow-x-auto"><table className="w-full text-sm">
+              <thead className="border-b border-gray-100 bg-gradient-to-r from-emerald-50/60 via-green-50/40 to-teal-50/60 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
                 <tr>
                   <th className="px-4 py-3">Employee</th>
                   <th className="px-4 py-3">Date</th>
@@ -176,9 +236,9 @@ export default function EmployeeHealthPage() {
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-gray-100">
                 {filteredEncs.map((x) => (
-                  <tr key={x.id} className="hover:bg-slate-50">
+                  <tr key={x.id} className="transition-colors hover:bg-emerald-50/30">
                     <td className="px-4 py-3">
                       <div className="font-semibold text-slate-900">{x.employeeName}</div>
                       <div className="text-xs text-slate-500">{x.department || "-"}{x.confidential ? " · ◉" : ""}</div>
@@ -194,14 +254,14 @@ export default function EmployeeHealthPage() {
                     <td className="px-4 py-3 text-xs text-slate-700">{x.attendedBy}</td>
                     <td className="px-4 py-3"><Pill status={x.status}>{ENC_STATUS_LABEL[x.status]}</Pill></td>
                     <td className="px-4 py-3 text-right">
-                      <button onClick={() => { setEditEnc(x); setShowEnc(true); }} className="mr-2 text-xs font-semibold text-primary-600 hover:text-primary-700">Edit</button>
-                      <button onClick={() => del(x.id, "encounter")} className="text-xs font-semibold text-rose-600 hover:text-rose-700">Delete</button>
+                      <button onClick={() => { setEditEnc(x); setShowEnc(true); }} className="mr-2 rounded-lg bg-gradient-to-r from-indigo-500 to-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">Edit</button>
+                      <button onClick={() => del(x.id, "encounter")} className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:-translate-y-0.5 hover:bg-rose-100 hover:shadow">Delete</button>
                     </td>
                   </tr>
                 ))}
-                {filteredEncs.length === 0 && <tr><td colSpan={7}><Empty>No encounters.</Empty></td></tr>}
+                {filteredEncs.length === 0 && <tr><td colSpan={7}><Empty>🩺 No encounters.</Empty></td></tr>}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </>
       )}
@@ -409,32 +469,46 @@ function EncounterModal({ employees, initial, onClose, onSaved }: { employees: E
   );
 }
 
-function StatTile({ label, value, tone }: { label: string; value: number; tone: "slate" | "amber" | "rose" | "emerald" | "indigo" }) {
-  const t: Record<string, string> = { slate: "bg-slate-50 text-slate-700", amber: "bg-amber-50 text-amber-700", rose: "bg-rose-50 text-rose-700", emerald: "bg-emerald-50 text-emerald-700", indigo: "bg-indigo-50 text-indigo-700" };
-  return <div className={`rounded-xl p-4 ${t[tone]}`}><div className="text-xs font-semibold uppercase tracking-wide opacity-80">{label}</div><div className="mt-1 text-2xl font-bold">{value}</div></div>;
-}
-function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button onClick={onClick} className={`rounded-lg px-4 py-2 text-sm font-semibold ${active ? "bg-primary-600 text-white" : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"}`}>{children}</button>;
-}
-function FilterPill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button onClick={onClick} className={`rounded-full border px-3 py-1 text-xs font-semibold ${active ? "border-primary-600 bg-primary-50 text-primary-700" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"}`}>{children}</button>;
+function StatTile({ label, value, tone }: { label: string; value: number; tone: "slate" | "amber" | "rose" | "emerald" | "indigo" | "green" }) {
+  const map: Record<string, { grad: string; ring: string; text: string; dot: string }> = {
+    slate: { grad: "from-slate-50 to-gray-50", ring: "ring-slate-200", text: "text-slate-700", dot: "bg-slate-400" },
+    amber: { grad: "from-amber-50 to-yellow-50", ring: "ring-amber-200", text: "text-amber-700", dot: "bg-amber-500" },
+    rose: { grad: "from-rose-50 to-red-50", ring: "ring-rose-200", text: "text-rose-700", dot: "bg-rose-500" },
+    emerald: { grad: "from-emerald-50 to-teal-50", ring: "ring-emerald-200", text: "text-emerald-700", dot: "bg-emerald-500" },
+    green: { grad: "from-green-50 to-lime-50", ring: "ring-green-200", text: "text-green-700", dot: "bg-green-500" },
+    indigo: { grad: "from-indigo-50 to-blue-50", ring: "ring-indigo-200", text: "text-indigo-700", dot: "bg-indigo-500" },
+  };
+  const t = map[tone];
+  return (
+    <div className={`rounded-xl bg-gradient-to-br ${t.grad} p-4 ring-1 ${t.ring} shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}>
+      <div className="flex items-center gap-1.5"><span className={`h-1.5 w-1.5 rounded-full ${t.dot}`} /><div className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">{label}</div></div>
+      <div className={`mt-1 text-2xl font-bold ${t.text}`}>{value}</div>
+    </div>
+  );
 }
 function Pill({ status, children }: { status: string; children: React.ReactNode }) {
-  const map: Record<string, string> = {
-    active: "bg-emerald-100 text-emerald-700", on_leave: "bg-amber-100 text-amber-700",
-    terminated: "bg-rose-100 text-rose-700", retired: "bg-slate-100 text-slate-700",
-    fit: "bg-emerald-100 text-emerald-700", fit_with_restrictions: "bg-amber-100 text-amber-700",
-    temporarily_unfit: "bg-rose-100 text-rose-700", permanently_unfit: "bg-rose-200 text-rose-800",
-    pending: "bg-slate-100 text-slate-700",
-    draft: "bg-slate-100 text-slate-700", open: "bg-indigo-100 text-indigo-700",
-    follow_up: "bg-amber-100 text-amber-700", closed: "bg-emerald-100 text-emerald-700",
-    referred: "bg-indigo-100 text-indigo-700",
+  const map: Record<string, { pill: string; dot: string }> = {
+    active: { pill: "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200", dot: "bg-emerald-500" },
+    on_leave: { pill: "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200", dot: "bg-amber-500" },
+    terminated: { pill: "bg-gradient-to-r from-rose-50 to-red-50 text-rose-700 ring-rose-200", dot: "bg-rose-500" },
+    retired: { pill: "bg-gradient-to-r from-slate-50 to-gray-50 text-slate-700 ring-slate-200", dot: "bg-slate-400" },
+    fit: { pill: "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200", dot: "bg-emerald-500" },
+    fit_with_restrictions: { pill: "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200", dot: "bg-amber-500" },
+    temporarily_unfit: { pill: "bg-gradient-to-r from-rose-50 to-red-50 text-rose-700 ring-rose-200", dot: "bg-rose-500" },
+    permanently_unfit: { pill: "bg-gradient-to-r from-rose-100 to-red-100 text-rose-800 ring-rose-300", dot: "bg-rose-600" },
+    pending: { pill: "bg-gradient-to-r from-slate-50 to-gray-50 text-slate-700 ring-slate-200", dot: "bg-slate-400" },
+    draft: { pill: "bg-gradient-to-r from-slate-50 to-gray-50 text-slate-700 ring-slate-200", dot: "bg-slate-400" },
+    open: { pill: "bg-gradient-to-r from-indigo-50 to-blue-50 text-indigo-700 ring-indigo-200", dot: "bg-indigo-500" },
+    follow_up: { pill: "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200", dot: "bg-amber-500" },
+    closed: { pill: "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200", dot: "bg-emerald-500" },
+    referred: { pill: "bg-gradient-to-r from-indigo-50 to-violet-50 text-indigo-700 ring-indigo-200", dot: "bg-indigo-500" },
   };
-  return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${map[status] || "bg-slate-100 text-slate-700"}`}>{children}</span>;
+  const t = map[status] || { pill: "bg-gradient-to-r from-slate-50 to-gray-50 text-slate-700 ring-slate-200", dot: "bg-slate-400" };
+  return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${t.pill}`}><span className={`h-1.5 w-1.5 rounded-full ${t.dot}`} />{children}</span>;
 }
 function Field({ label, full, children }: { label: string; full?: boolean; children: React.ReactNode }) {
   return <label className={`block ${full ? "md:col-span-3" : ""}`}><div className="mb-1 text-xs font-semibold text-slate-600">{label}</div>{children}</label>;
 }
 function Empty({ children }: { children: React.ReactNode }) {
-  return <div className="p-8 text-center text-sm text-slate-500">{children}</div>;
+  return <div className="py-16 text-center text-sm text-gray-400">{children}</div>;
 }

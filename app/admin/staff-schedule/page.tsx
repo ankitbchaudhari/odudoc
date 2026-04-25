@@ -28,13 +28,38 @@ const DEPTS: Department[] = ["ed","icu","or","ward","maternity","pediatrics","ph
 const SHIFT_TYPES: ShiftType[] = ["day","evening","night","on_call","standby"];
 const STATUSES: ShiftStatus[] = ["scheduled","confirmed","swap_requested","completed","absent","cancelled"];
 
-const STATUS_COLOR: Record<ShiftStatus, string> = {
-  scheduled: "bg-sky-100 text-sky-700",
-  confirmed: "bg-emerald-100 text-emerald-700",
-  swap_requested: "bg-amber-100 text-amber-700",
-  completed: "bg-slate-100 text-slate-600",
-  absent: "bg-rose-100 text-rose-700",
-  cancelled: "bg-slate-100 text-slate-500 line-through",
+const STATUS_STYLES: Record<ShiftStatus, { pill: string; dot: string }> = {
+  scheduled: { pill: "bg-gradient-to-r from-sky-50 to-blue-50 text-blue-700 ring-blue-200", dot: "bg-blue-500" },
+  confirmed: { pill: "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200", dot: "bg-emerald-500" },
+  swap_requested: { pill: "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200", dot: "bg-amber-500" },
+  completed: { pill: "bg-gradient-to-r from-slate-50 to-gray-50 text-slate-600 ring-slate-200", dot: "bg-slate-400" },
+  absent: { pill: "bg-gradient-to-r from-rose-50 to-red-50 text-rose-700 ring-rose-200", dot: "bg-rose-500" },
+  cancelled: { pill: "bg-gradient-to-r from-slate-50 to-gray-50 text-slate-500 ring-slate-200 line-through", dot: "bg-slate-400" },
+};
+
+const FILTER_THEMES_DEPT: Record<string, string> = {
+  all: "from-slate-500 to-gray-600",
+  ed: "from-rose-500 to-red-600",
+  icu: "from-fuchsia-500 to-pink-600",
+  or: "from-violet-500 to-purple-600",
+  ward: "from-sky-500 to-blue-600",
+  maternity: "from-pink-500 to-rose-600",
+  pediatrics: "from-amber-500 to-orange-600",
+  pharmacy: "from-emerald-500 to-green-600",
+  lab: "from-indigo-500 to-blue-600",
+  radiology: "from-cyan-500 to-sky-600",
+  outpatient: "from-teal-500 to-cyan-600",
+  admin: "from-slate-500 to-gray-600",
+  other: "from-slate-500 to-gray-600",
+};
+const FILTER_THEMES_STATUS: Record<string, string> = {
+  all: "from-slate-500 to-gray-600",
+  scheduled: "from-sky-500 to-blue-600",
+  confirmed: "from-emerald-500 to-green-600",
+  swap_requested: "from-amber-500 to-orange-600",
+  completed: "from-slate-500 to-gray-600",
+  absent: "from-rose-500 to-red-600",
+  cancelled: "from-slate-500 to-gray-600",
 };
 
 function toLocal(iso: string) {
@@ -129,110 +154,161 @@ export default function StaffSchedulePage() {
     return map;
   }, [shifts, weekStart]);
 
+  const weekShiftsCount = shifts.length;
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Staff scheduling</h1>
-          <p className="text-sm text-slate-500">Staff master, weekly rosters, shift assignments, swaps and overtime monitoring.</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => { setEditStaff(null); setShowStaffForm(true); }} className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50">+ Staff</button>
-          <button onClick={() => { setEditShift(null); setShowShiftForm(true); }} className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800">+ Shift</button>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-600 via-cyan-600 to-sky-700 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-emerald-300/20 blur-3xl" />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+              </span>
+              {weekShiftsCount} shifts this week{stats ? ` · ${stats.onNow} on duty` : ""}
+            </div>
+            <h1 className="text-2xl font-bold">Staff scheduling</h1>
+            <p className="mt-1 text-sm text-cyan-50/90">Staff master, weekly rosters, shift assignments, swaps and overtime monitoring.</p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => { setEditStaff(null); setShowStaffForm(true); }} className="rounded-lg bg-white/15 px-3 py-1.5 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/25">➕ Staff</button>
+            <button onClick={() => { setEditShift(null); setShowShiftForm(true); }} className="rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-teal-700 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">➕ Shift</button>
+          </div>
         </div>
       </div>
 
       {stats && (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
-          <Stat label="Active staff" value={stats.activeStaff} />
-          <Stat label="Shifts today" value={stats.shiftsToday} />
+          <Stat label="Active staff" value={stats.activeStaff} tone="teal" />
+          <Stat label="Shifts today" value={stats.shiftsToday} tone="cyan" />
           <Stat label="On duty now" value={stats.onNow} tone="emerald" />
-          <Stat label="On call now" value={stats.onCallNow} />
-          <Stat label="Week hours" value={stats.weekHours} />
+          <Stat label="On call now" value={stats.onCallNow} tone="sky" />
+          <Stat label="Week hours" value={stats.weekHours} tone="indigo" />
           <Stat label="Swap requests" value={stats.swapRequests} tone={stats.swapRequests > 0 ? "amber" : "slate"} />
           <Stat label="Absences (wk)" value={stats.absencesWeek} tone={stats.absencesWeek > 0 ? "rose" : "slate"} />
           <Stat label="Overtime (>50h)" value={stats.overtime} tone={stats.overtime > 0 ? "amber" : "slate"} />
         </div>
       )}
 
-      <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-1">
+      <div className="flex flex-wrap gap-2">
         {(["roster","staff"] as const).map((t) => (
-          <button key={t} onClick={() => setTab(t)} className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium ${tab === t ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}>
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition hover:-translate-y-0.5 ${
+              tab === t
+                ? "bg-gradient-to-r from-teal-500 to-cyan-600 text-white shadow-md"
+                : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"
+            }`}
+          >
             {t === "roster" ? "Roster" : "Staff directory"}
           </button>
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white p-3">
-        <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Dept</span>
-        <select value={filterDept} onChange={(e) => setFilterDept(e.target.value as Department | "")} className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm">
-          <option value="">All</option>
-          {DEPTS.map((d) => <option key={d} value={d}>{DEPT_LABEL[d]}</option>)}
-        </select>
-        {tab === "roster" && (
-          <>
-            <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Status</span>
-            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as ShiftStatus | "")} className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm">
-              <option value="">All</option>
-              {STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}
-            </select>
-            <div className="ml-auto flex items-center gap-2">
-              <button onClick={() => setWeekOffset(weekOffset - 1)} className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm">← Prev week</button>
-              <span className="text-sm text-slate-700">{weekStart.toLocaleDateString()} – {new Date(weekEnd.getTime() - 86_400_000).toLocaleDateString()}</span>
-              <button onClick={() => setWeekOffset(weekOffset + 1)} className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm">Next week →</button>
-              <button onClick={() => setWeekOffset(0)} className="rounded-md bg-slate-900 px-2 py-1 text-sm text-white">Today</button>
-            </div>
-          </>
-        )}
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500" />
+        <div className="flex flex-wrap items-center gap-2 p-3">
+          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Dept</span>
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              onClick={() => setFilterDept("")}
+              className={`rounded-lg px-2.5 py-1 text-xs font-semibold capitalize transition hover:-translate-y-0.5 ${filterDept === "" ? `bg-gradient-to-r ${FILTER_THEMES_DEPT.all} text-white shadow` : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"}`}
+            >All</button>
+            {DEPTS.map((d) => (
+              <button
+                key={d}
+                onClick={() => setFilterDept(d)}
+                className={`rounded-lg px-2.5 py-1 text-xs font-semibold capitalize transition hover:-translate-y-0.5 ${filterDept === d ? `bg-gradient-to-r ${FILTER_THEMES_DEPT[d] || "from-slate-500 to-gray-600"} text-white shadow` : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"}`}
+              >{DEPT_LABEL[d]}</button>
+            ))}
+          </div>
+          {tab === "roster" && (
+            <>
+              <span className="ml-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Status</span>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  onClick={() => setFilterStatus("")}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-semibold capitalize transition hover:-translate-y-0.5 ${filterStatus === "" ? `bg-gradient-to-r ${FILTER_THEMES_STATUS.all} text-white shadow` : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"}`}
+                >All</button>
+                {STATUSES.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setFilterStatus(s)}
+                    className={`rounded-lg px-2.5 py-1 text-xs font-semibold capitalize transition hover:-translate-y-0.5 ${filterStatus === s ? `bg-gradient-to-r ${FILTER_THEMES_STATUS[s] || "from-slate-500 to-gray-600"} text-white shadow` : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"}`}
+                  >{s.replace(/_/g, " ")}</button>
+                ))}
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                <button onClick={() => setWeekOffset(weekOffset - 1)} className="rounded-lg bg-gradient-to-r from-slate-500 to-gray-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">← Prev</button>
+                <span className="text-sm font-medium text-slate-700">{weekStart.toLocaleDateString()} – {new Date(weekEnd.getTime() - 86_400_000).toLocaleDateString()}</span>
+                <button onClick={() => setWeekOffset(weekOffset + 1)} className="rounded-lg bg-gradient-to-r from-slate-500 to-gray-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">Next →</button>
+                <button onClick={() => setWeekOffset(0)} className="rounded-lg bg-gradient-to-r from-teal-500 to-cyan-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">Today</button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {loading ? (
-        <div className="rounded-lg border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">Loading…</div>
+        <div className="rounded-xl bg-white p-16 text-center text-sm text-gray-400 shadow-sm ring-1 ring-gray-100">Loading…</div>
       ) : tab === "roster" ? (
         <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-7">
           {Array.from(byDay.entries()).map(([day, list]) => (
-            <div key={day} className="rounded-lg border border-slate-200 bg-white p-2">
-              <div className="text-xs font-medium text-slate-900">{day}</div>
-              <div className="mt-1 space-y-1">
-                {list.length === 0 && <div className="text-xs text-slate-400">—</div>}
-                {list.map((s) => (
-                  <div key={s.id} className="rounded-md border border-slate-200 bg-slate-50/40 p-1.5">
-                    <div className="flex items-center gap-1 flex-wrap">
-                      <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${STATUS_COLOR[s.status]}`}>{s.status.replace(/_/g, " ")}</span>
-                      <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-[10px] text-indigo-700">{SHIFT_TYPE_LABEL[s.shiftType]}</span>
+            <div key={day} className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+              <div className="h-1 bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500" />
+              <div className="p-2">
+                <div className="text-xs font-semibold text-slate-900">{day}</div>
+                <div className="mt-1 space-y-1">
+                  {list.length === 0 && <div className="text-xs text-slate-400">📅 —</div>}
+                  {list.map((s) => (
+                    <div key={s.id} className="rounded-md bg-gradient-to-br from-cyan-50/50 to-sky-50/40 p-1.5 ring-1 ring-cyan-100">
+                      <div className="flex items-center gap-1 flex-wrap">
+                        <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ring-1 ${STATUS_STYLES[s.status].pill}`}>
+                          <span className={`h-1 w-1 rounded-full ${STATUS_STYLES[s.status].dot}`} />
+                          {s.status.replace(/_/g, " ")}
+                        </span>
+                        <span className="rounded-full bg-gradient-to-r from-indigo-50 to-violet-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700 ring-1 ring-indigo-200">{SHIFT_TYPE_LABEL[s.shiftType]}</span>
+                      </div>
+                      <div className="mt-0.5 text-xs font-semibold text-slate-900">{s.staffName}</div>
+                      <div className="text-[11px] text-slate-500">{ROLE_LABEL[s.role]} · {DEPT_LABEL[s.department]}</div>
+                      <div className="text-[11px] text-slate-500">{fmt(s.startAt)} – {fmt(s.endAt)} ({shiftDurationHours(s)}h)</div>
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {s.status === "scheduled" && <button onClick={() => updateShiftStatus(s.id, "confirmed")} className="rounded-md bg-gradient-to-r from-emerald-500 to-green-600 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">✓ Confirm</button>}
+                        {s.status !== "completed" && s.status !== "cancelled" && <button onClick={() => updateShiftStatus(s.id, "swap_requested")} className="rounded-md bg-gradient-to-r from-amber-500 to-orange-600 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">Swap</button>}
+                        {s.status !== "completed" && <button onClick={() => updateShiftStatus(s.id, "absent")} className="rounded-md bg-rose-50 px-1.5 py-0.5 text-[10px] font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:-translate-y-0.5 hover:bg-rose-100">Absent</button>}
+                        <button onClick={() => { setEditShift(s); setShowShiftForm(true); }} className="rounded-md bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:bg-slate-50">Edit</button>
+                        <button onClick={() => deleteShift(s.id)} className="rounded-md bg-rose-50 px-1.5 py-0.5 text-[10px] font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:-translate-y-0.5 hover:bg-rose-100">✕</button>
+                      </div>
                     </div>
-                    <div className="mt-0.5 text-xs font-medium text-slate-900">{s.staffName}</div>
-                    <div className="text-[11px] text-slate-500">{ROLE_LABEL[s.role]} · {DEPT_LABEL[s.department]}</div>
-                    <div className="text-[11px] text-slate-500">{fmt(s.startAt)} – {fmt(s.endAt)} ({shiftDurationHours(s)}h)</div>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {s.status === "scheduled" && <button onClick={() => updateShiftStatus(s.id, "confirmed")} className="rounded-md border border-emerald-300 bg-white px-1.5 py-0.5 text-[10px] text-emerald-700">Confirm</button>}
-                      {s.status !== "completed" && s.status !== "cancelled" && <button onClick={() => updateShiftStatus(s.id, "swap_requested")} className="rounded-md border border-amber-300 bg-white px-1.5 py-0.5 text-[10px] text-amber-700">Swap</button>}
-                      {s.status !== "completed" && <button onClick={() => updateShiftStatus(s.id, "absent")} className="rounded-md border border-rose-300 bg-white px-1.5 py-0.5 text-[10px] text-rose-700">Absent</button>}
-                      <button onClick={() => { setEditShift(s); setShowShiftForm(true); }} className="rounded-md border border-slate-300 bg-white px-1.5 py-0.5 text-[10px] text-slate-700">Edit</button>
-                      <button onClick={() => deleteShift(s.id)} className="rounded-md border border-rose-300 bg-white px-1.5 py-0.5 text-[10px] text-rose-700">✕</button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
         <div className="space-y-2">
-          {staff.length === 0 && <div className="rounded-lg border border-dashed border-slate-300 bg-white p-12 text-center text-sm text-slate-500">No staff yet.</div>}
+          {staff.length === 0 && <div className="rounded-xl bg-white py-16 text-center text-sm text-gray-400 shadow-sm ring-1 ring-gray-100">👥 No staff yet.</div>}
           {staff.map((m) => (
-            <div key={m.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-white p-3">
-              <div className="flex-1 min-w-[240px]">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs text-indigo-700">{ROLE_LABEL[m.role]}</span>
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">{DEPT_LABEL[m.department]}</span>
-                  {!m.isActive && <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs text-rose-700">Inactive</span>}
+            <div key={m.id} className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100 transition hover:-translate-y-0.5 hover:shadow-md">
+              <div className="h-1 bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500" />
+              <div className="flex flex-wrap items-center gap-3 p-3">
+                <div className="flex-1 min-w-[240px]">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-indigo-50 to-blue-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200"><span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />{ROLE_LABEL[m.role]}</span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-cyan-50 to-sky-50 px-2 py-0.5 text-xs font-semibold text-cyan-700 ring-1 ring-cyan-200"><span className="h-1.5 w-1.5 rounded-full bg-cyan-500" />{DEPT_LABEL[m.department]}</span>
+                    {!m.isActive && <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-rose-50 to-red-50 px-2 py-0.5 text-xs font-semibold text-rose-700 ring-1 ring-rose-200"><span className="h-1.5 w-1.5 rounded-full bg-rose-500" />Inactive</span>}
+                  </div>
+                  <div className="mt-1 font-semibold text-slate-900">{m.firstName} {m.lastName}</div>
+                  <div className="text-xs text-slate-500">{m.id}{m.employeeCode ? ` · ${m.employeeCode}` : ""}{m.phone ? ` · ${m.phone}` : ""}{m.email ? ` · ${m.email}` : ""}{m.license ? ` · lic ${m.license}` : ""}</div>
                 </div>
-                <div className="mt-1 font-semibold text-slate-900">{m.firstName} {m.lastName}</div>
-                <div className="text-xs text-slate-500">{m.id}{m.employeeCode ? ` · ${m.employeeCode}` : ""}{m.phone ? ` · ${m.phone}` : ""}{m.email ? ` · ${m.email}` : ""}{m.license ? ` · lic ${m.license}` : ""}</div>
+                <button onClick={() => { setEditStaff(m); setShowStaffForm(true); }} className="rounded-lg bg-gradient-to-r from-indigo-500 to-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">Edit</button>
+                <button onClick={() => deleteStaff(m.id)} className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:-translate-y-0.5 hover:bg-rose-100 hover:shadow">Delete</button>
               </div>
-              <button onClick={() => { setEditStaff(m); setShowStaffForm(true); }} className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50">Edit</button>
-              <button onClick={() => deleteStaff(m.id)} className="rounded-md border border-rose-300 bg-white px-2 py-1 text-xs text-rose-700 hover:bg-rose-50">Delete</button>
             </div>
           ))}
         </div>
@@ -244,9 +320,24 @@ export default function StaffSchedulePage() {
   );
 }
 
-function Stat({ label, value, tone = "slate" }: { label: string; value: number | string; tone?: "slate" | "amber" | "rose" | "emerald" }) {
-  const c = { slate: "text-slate-900", amber: "text-amber-700", rose: "text-rose-700", emerald: "text-emerald-700" }[tone];
-  return <div className="rounded-lg border border-slate-200 bg-white p-3"><div className="text-xs text-slate-500">{label}</div><div className={`mt-0.5 text-xl font-semibold ${c}`}>{value}</div></div>;
+function Stat({ label, value, tone = "slate" }: { label: string; value: number | string; tone?: "slate" | "amber" | "rose" | "emerald" | "teal" | "cyan" | "sky" | "indigo" }) {
+  const themes: Record<string, { grad: string; ring: string; text: string; dot: string }> = {
+    slate: { grad: "from-slate-50 to-gray-50", ring: "ring-slate-200", text: "text-slate-700", dot: "bg-slate-400" },
+    amber: { grad: "from-amber-50 to-yellow-50", ring: "ring-amber-200", text: "text-amber-700", dot: "bg-amber-500" },
+    rose: { grad: "from-rose-50 to-red-50", ring: "ring-rose-200", text: "text-rose-700", dot: "bg-rose-500" },
+    emerald: { grad: "from-emerald-50 to-green-50", ring: "ring-emerald-200", text: "text-emerald-700", dot: "bg-emerald-500" },
+    teal: { grad: "from-teal-50 to-cyan-50", ring: "ring-teal-200", text: "text-teal-700", dot: "bg-teal-500" },
+    cyan: { grad: "from-cyan-50 to-sky-50", ring: "ring-cyan-200", text: "text-cyan-700", dot: "bg-cyan-500" },
+    sky: { grad: "from-sky-50 to-blue-50", ring: "ring-sky-200", text: "text-sky-700", dot: "bg-sky-500" },
+    indigo: { grad: "from-indigo-50 to-violet-50", ring: "ring-indigo-200", text: "text-indigo-700", dot: "bg-indigo-500" },
+  };
+  const t = themes[tone];
+  return (
+    <div className={`rounded-xl bg-gradient-to-br ${t.grad} p-3 ring-1 ${t.ring} shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}>
+      <div className="flex items-center gap-1.5"><span className={`h-1.5 w-1.5 rounded-full ${t.dot}`} /><div className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">{label}</div></div>
+      <div className={`mt-0.5 text-xl font-bold ${t.text}`}>{value}</div>
+    </div>
+  );
 }
 
 function StaffFormModal({ member, onClose, onSave }: { member: StaffMember | null; onClose: () => void; onSave: (b: Partial<StaffMember>) => void }) {

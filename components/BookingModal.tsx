@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { Doctor } from "@/lib/data";
 import PaymentForm from "@/components/PaymentForm";
+import CurrencySwitcher, { useCheckoutCurrency } from "@/components/CurrencySwitcher";
+import { convert } from "@/lib/currency-convert";
 import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase-client";
 import {
   RecaptchaVerifier,
@@ -86,6 +88,27 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [paymentsOff, setPaymentsOff] = useState(false);
+
+  // Visitor-chosen checkout currency. Pricing is authored in USD; the
+  // PaymentIntent is created in this currency server-side at the live
+  // FX rate. convert() is used here purely for the displayed amount on
+  // the slot/confirm screen.
+  const checkout = useCheckoutCurrency();
+  const [convertedFee, setConvertedFee] = useState<number | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    if (!checkout.code || checkout.code === "USD") {
+      setConvertedFee(null);
+      return;
+    }
+    convert(doctor.fee, "USD", checkout.code).then((v) => {
+      if (!cancelled) setConvertedFee(v);
+    });
+    return () => { cancelled = true; };
+  }, [doctor.fee, checkout.code]);
+  const displaySymbol = checkout.def?.symbol || "$";
+  const displayDecimals = checkout.def?.decimals ?? 2;
+  const displayFee = (convertedFee ?? doctor.fee).toFixed(displayDecimals);
 
   useEffect(() => {
     if (!open) return;
@@ -263,7 +286,9 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
         return;
       }
 
-      // Paid path: open Stripe PaymentIntent.
+      // Paid path: open Stripe PaymentIntent. The fee is authored in USD;
+      // create-intent converts to the visitor-chosen currency at the live
+      // FX rate and creates the PaymentIntent in that currency.
       const res = await fetch("/api/payments/create-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -275,6 +300,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
           patientPhone: phone.trim(),
           timeSlot: selectedSlot,
           consultToken: token,
+          currency: checkout.code,
         }),
       });
       const data = await res.json();
@@ -412,9 +438,12 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
         {step === "slot" && (
           <>
             <h2 className="text-lg font-bold text-gray-900">Book Appointment</h2>
-            <p className="mt-1 text-sm text-gray-500">
-              {doctor.name} &middot; ${doctor.fee}
-            </p>
+            <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm text-gray-500">
+                {doctor.name} &middot; {displaySymbol}{displayFee}
+              </p>
+              <CurrencySwitcher />
+            </div>
 
             <div className="mt-5">
               <label className="mb-1 block text-sm font-medium text-gray-700">Select a date</label>
@@ -598,7 +627,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                 ? "Verifying…"
                 : paymentsOff
                 ? "Verify & confirm booking"
-                : `Verify & continue to payment · $${doctor.fee}`}
+                : `Verify & continue to payment · ${displaySymbol}${displayFee}`}
             </button>
 
             <div className="mt-3 flex items-center justify-between text-xs text-gray-500">

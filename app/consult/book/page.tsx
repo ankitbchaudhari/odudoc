@@ -101,10 +101,11 @@ export default function BookConsultationPage() {
   const [paymentsOff, setPaymentsOff] = useState(false);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
 
-  // Visitor-facing display currency. The actual paymentIntent below stays
-  // in USD (Stripe is configured against USD today); once we wire a live
-  // FX rate source into lib/currency-convert.ts, the intent should be
-  // created in the visitor's currency and we drop the USD assumption.
+  // Visitor-facing display + payment currency. Pricing is authored in USD
+  // (the site's default currency); convert() pulls live daily rates from
+  // open.er-api.com via lib/currency-convert.ts and we send the converted
+  // amount + chosen code on the consultation record so dashboards and
+  // invoices match what the visitor saw.
   const checkout = useCheckoutCurrency();
   const [convertedFee, setConvertedFee] = useState<number | null>(null);
 
@@ -202,8 +203,8 @@ export default function BookConsultationPage() {
   const fee = selectedSpecialtyData?.price || selectedDoctorData?.fee || 25;
 
   // Pull a converted display amount whenever the fee or chosen currency
-  // changes. convert() is currently a no-op (returns identity); the call
-  // is wired so the UI is ready as soon as a rate source lands.
+  // changes. convert() now hits the live FX cache; on failure it returns
+  // identity so the UI never breaks on a rate-feed outage.
   useEffect(() => {
     let cancelled = false;
     if (!checkout.code || checkout.code === "USD") {
@@ -249,8 +250,14 @@ export default function BookConsultationPage() {
           dateLabel,
           timeSlot: selectedSlot,
           mode: "video",
+          // Always record the source amount in the site's default
+          // currency (USD) so analytics + payouts stay comparable;
+          // the visitor's chosen currency + converted display amount
+          // ride alongside for receipts and dashboards.
           fee,
           currency: "USD",
+          displayCurrency: checkout.code,
+          displayFee: convertedFee ?? fee,
           paymentProvider: "stripe",
           paymentIntentId: `demo_pi_${Date.now()}`,
           paymentStatus: "paid",

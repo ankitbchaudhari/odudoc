@@ -101,12 +101,24 @@ export default function LanguageSwitcher() {
   const activeDef = ALL_LANGUAGES.find((l) => l.code === activeCode);
   const activeLabel = activeDef?.code.toUpperCase() || (languageNames[activeCode as Language] ? activeCode.toUpperCase() : "EN");
 
+  // Open handler — also pokes GoogleTranslate.tsx to lazy-load so the
+  // translate.js download only happens when a real user is about to
+  // pick a language (rather than on every cold page paint).
+  const handleOpen = () => {
+    if (!open && typeof window !== "undefined") {
+      window.dispatchEvent(new Event("odudoc:request-translate"));
+    }
+    setOpen(!open);
+  };
+
   return (
     <div className="relative" ref={ref}>
       <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-primary-600"
+        onClick={handleOpen}
+        className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
         aria-label="Change language"
+        aria-haspopup="listbox"
+        aria-expanded={open}
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />

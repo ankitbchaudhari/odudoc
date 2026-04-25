@@ -1,14 +1,22 @@
 "use client";
 
-// Google Translate widget.
+// Google Translate widget — lazy loader.
 //
-// Loads google.translate.TranslateElement on first paint and exposes a
-// hidden init <div> for it to attach to. The visible LanguageSwitcher
-// dropdown writes the `googtrans` cookie + reloads, which is Google's
-// canonical activation pattern (the widget reads that cookie on load
-// and translates the page accordingly). The default Google "banner"
-// at the top of the page is suppressed via CSS in globals.css so the
-// site keeps its own chrome.
+// Two-mode load to keep the cold-cache LCP clean:
+//
+//   1. If the user already has a `googtrans` cookie from a previous
+//      visit (i.e. they picked a non-English language before), we load
+//      the script immediately on mount so the translated DOM appears
+//      without a flash of English.
+//
+//   2. Otherwise we wait for a `odudoc:request-translate` window event
+//      and only then inject the script. The LanguageSwitcher dispatches
+//      that event when the user actually opens the language dropdown.
+//      Net result: English-only visitors (the vast majority on first
+//      paint) never download Google's ~100 KB translate.js.
+//
+// The default Google "banner" at the top of the page is suppressed via
+// CSS in globals.css so the site keeps its own chrome.
 //
 // Coverage: every static + dynamic string in the rendered DOM is
 // machine-translated by Google for ~100 languages. For the 11 languages
@@ -17,6 +25,7 @@
 // retranslates anything t() didn't cover.
 
 import Script from "next/script";
+import { useEffect, useState } from "react";
 
 declare global {
   interface Window {
@@ -37,7 +46,25 @@ declare global {
   }
 }
 
+const REQUEST_EVENT = "odudoc:request-translate";
+
 export default function GoogleTranslate() {
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  useEffect(() => {
+    // Mode 1 — cookie present, load eagerly.
+    if (typeof document !== "undefined" && /(^|;)\s*googtrans=/.test(document.cookie)) {
+      setShouldLoad(true);
+      return;
+    }
+    // Mode 2 — wait for the switcher's request.
+    const onRequest = () => setShouldLoad(true);
+    window.addEventListener(REQUEST_EVENT, onRequest, { once: true });
+    return () => window.removeEventListener(REQUEST_EVENT, onRequest);
+  }, []);
+
+  if (!shouldLoad) return null;
+
   return (
     <>
       <div id="google_translate_element" style={{ display: "none" }} />

@@ -131,9 +131,20 @@ const sections = [
     icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
     title: "Data Retention",
     content: (
-      <p>
-        We retain your personal data for as long as your account is active or as needed to provide services. Medical records are retained per applicable healthcare regulations (typically 7-10 years). You may request deletion at any time.
-      </p>
+      <div className="space-y-3">
+        <p>
+          We retain personal data only as long as needed for the purposes it
+          was collected for. Specific retention windows:
+        </p>
+        <ul className="ml-5 list-disc space-y-1 text-sm">
+          <li><strong>Account data</strong> — for the lifetime of your account, plus 30 days after deletion (recovery window).</li>
+          <li><strong>Medical records &amp; prescriptions</strong> — 7 years from the consultation date, or longer where local healthcare law requires (e.g. 10 years in parts of the EU, indefinitely in some US states).</li>
+          <li><strong>Payment records</strong> — 7 years for tax / accounting compliance.</li>
+          <li><strong>Server logs &amp; analytics</strong> — 90 days, then aggregated.</li>
+          <li><strong>Marketing emails</strong> — until you unsubscribe, plus 30 days for the suppression-list record.</li>
+        </ul>
+        <p>You may request earlier deletion at any time via the Rights section below; statutory medical-record retention may delay full erasure of clinical data.</p>
+      </div>
     ),
   },
   {
@@ -159,6 +170,68 @@ const sections = [
             <p className="text-xs text-gray-500">{item.desc}</p>
           </div>
         ))}
+      </div>
+    ),
+  },
+  {
+    id: "international",
+    icon: "M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+    title: "International users — GDPR, UK GDPR &amp; CCPA",
+    content: (
+      <div className="space-y-3">
+        <p>
+          OduDoc serves patients and hospitals globally. Our servers are
+          located in the United States and the European Union, and your
+          data may be transferred to, stored in, or processed in any
+          country where we, our service providers, or our affiliates
+          operate. We rely on Standard Contractual Clauses (SCCs) and,
+          where applicable, the EU-US Data Privacy Framework for these
+          transfers.
+        </p>
+
+        <p className="font-semibold">If you are in the EU, UK, or EEA</p>
+        <p>
+          Under the GDPR / UK GDPR you have the right to: access,
+          rectify, erase, restrict, port, or object to processing of
+          your personal data; withdraw consent at any time; and lodge a
+          complaint with your supervisory authority (e.g. the ICO in the
+          UK, the CNIL in France). The legal bases we rely on are
+          contractual necessity (delivering the consultation you booked),
+          legitimate interest (fraud prevention, service improvement),
+          consent (marketing emails), and legal obligation (medical-
+          record retention).
+        </p>
+
+        <p className="font-semibold">If you are a California resident</p>
+        <p>
+          Under the CCPA / CPRA you have the right to know what personal
+          information we collect, to delete it (subject to exceptions like
+          medical-record retention), to correct it, to opt out of any
+          "sale" or "sharing" of personal information, and to non-
+          discrimination for exercising your rights. We do not sell your
+          personal information. To exercise CCPA rights, email
+          privacy@odudoc.com with the subject line <em>"CCPA request"</em>.
+        </p>
+
+        <p className="font-semibold">Other regions</p>
+        <p>
+          We honour comparable rights for residents of jurisdictions
+          including Canada (PIPEDA), Brazil (LGPD), the UAE (PDPL),
+          Australia (Privacy Act), and India (DPDP Act 2023). Where local
+          law grants you a stronger right than the rights listed above,
+          that stronger right applies.
+        </p>
+
+        <p className="font-semibold">Data Protection Officer</p>
+        <p>
+          For privacy-specific questions or to exercise any of the rights
+          above, contact our DPO at{" "}
+          <a className="font-semibold text-primary-600 hover:underline" href="mailto:dpo@odudoc.com">
+            dpo@odudoc.com
+          </a>
+          . We respond within 30 days as required under most data-
+          protection regimes.
+        </p>
       </div>
     ),
   },

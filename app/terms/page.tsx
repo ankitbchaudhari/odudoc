@@ -215,11 +215,39 @@ const sections = [
   {
     id: "governing",
     icon: "M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9",
-    title: "Governing Law",
+    title: "Governing Law &amp; Jurisdiction",
     content: (
-      <p>
-        These Terms are governed by the laws of the State of New York, United States. Any disputes shall be resolved in the courts of New York County.
-      </p>
+      <div className="space-y-3">
+        <p>
+          These Terms are governed by the laws of the State of Delaware,
+          United States, without regard to its conflict-of-laws principles.
+          OduDoc Inc. is incorporated in Delaware with its principal office
+          at 8 The Green, Suite A, Dover, Delaware 19901, United States.
+        </p>
+        <p>
+          Subject to the consumer-rights carve-out below, any dispute
+          arising out of or relating to these Terms or your use of the
+          Platform shall be resolved exclusively in the state or federal
+          courts located in New Castle County, Delaware, and you consent
+          to personal jurisdiction in those courts.
+        </p>
+        <p className="font-semibold">Consumer-protection carve-out</p>
+        <p>
+          If you are a consumer accessing the Platform from the European
+          Union, the United Kingdom, or any other jurisdiction whose
+          consumer-protection laws grant you a non-waivable right to bring
+          proceedings in your local courts under your local law, this
+          governing-law and forum clause does not deprive you of that
+          right.
+        </p>
+        <p className="font-semibold">No medical-emergency use</p>
+        <p>
+          The Platform is not for medical emergencies. If you or someone
+          you are with is experiencing a medical emergency, call your
+          local emergency services immediately (e.g. 911 in the US, 112
+          in the EU, 999 in the UK, 102/108 in India).
+        </p>
+      </div>
     ),
   },
   {

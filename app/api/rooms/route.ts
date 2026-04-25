@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { createDailyRoom, createDailyToken, generateRoomName, isDailyConfigured } from "@/lib/daily";
 import { createRoom, getRoom, getAllRooms } from "@/lib/rooms-store";
 import { consumeConsultToken } from "@/lib/consult-otp";
+import { createConsultation, markPaid, setStatus } from "@/lib/consultations-store";
 
 import { log } from "@/lib/log";
 export async function POST(req: NextRequest) {
@@ -33,7 +34,57 @@ export async function POST(req: NextRequest) {
     }
 
     const roomId = uuidv4();
-    const bId = bookingId || uuidv4().slice(0, 8);
+
+    // Resolve a real consultation id for this room. If the caller supplied
+    // one (the booked-flow case), use it; otherwise this is an instant or
+    // guest video-consult where no consultation row exists yet, so create
+    // a placeholder. We need a real id because /api/consultations/{id}/
+    // prescribe looks the row up by id when the doctor saves the Rx at
+    // the end of the call. Without a row, that POST 404s and the
+    // prescription is lost.
+    let bId = bookingId;
+    if (!bId) {
+      const phoneDigits = (patientPhone || "").replace(/[^0-9]/g, "");
+      const syntheticEmail = phoneDigits
+        ? `guest-${phoneDigits}@consult.odudoc.local`
+        : `guest-${roomId.slice(0, 8)}@consult.odudoc.local`;
+      const today = new Date();
+      const placeholder = createConsultation({
+        patientEmail: syntheticEmail,
+        patientName,
+        patientPhone: patientPhone || "",
+        doctorId,
+        doctorName: doctorName || "Doctor",
+        specialty: specialty || "General",
+        scheduledFor: today.toISOString(),
+        timeSlot: "now",
+        dateLabel: today.toISOString().slice(0, 10),
+        mode: "video",
+        fee: fee || 0,
+        paymentProvider: "manual",
+        medicalHistory: {
+          chiefComplaint: "",
+          symptoms: "",
+          duration: "",
+          severity: "",
+          allergies: "",
+          currentMedications: "",
+          pastConditions: "",
+          surgeries: "",
+          familyHistory: "",
+          smoker: "",
+          alcohol: "",
+          pregnant: "",
+          additional: "",
+        },
+      });
+      // Reflect that the call is happening now and was paid out-of-band
+      // (OTP-gated guest flow / instant consult — Stripe wasn't involved).
+      markPaid(placeholder.id, `manual-${roomId}`);
+      setStatus(placeholder.id, "in_progress");
+      bId = placeholder.id;
+    }
+
     const roomName = generateRoomName(doctorId, bId);
 
     let roomUrl = "";

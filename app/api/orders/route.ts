@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const order = createOrder({
+  const order = await createOrder({
     customer: body.customer,
     email: sessionEmail || body.email,
     phone: body.phone,

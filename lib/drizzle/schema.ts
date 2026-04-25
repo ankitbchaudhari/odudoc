@@ -258,6 +258,79 @@ export const products = pgTable(
 );
 
 // ---------------------------------------------------------------------------
+// Phase 5 — Shop orders
+// ---------------------------------------------------------------------------
+//
+// Pulls the orders blob (lib/orders-store.ts) into a real schema.
+// Header table holds the customer + totals; line items live in their
+// own table so we can index by vendor for the vendor dashboard's
+// "orders that contain my products" query without scanning every order.
+//
+// Order numbers move from `orders.length + 1` (fragile after deletes)
+// to a Postgres SEQUENCE, formatted ORD-YYYY-NNNNN at write time.
+
+export const orderNumberSeq = sql`CREATE SEQUENCE IF NOT EXISTS orders_number_seq START 1`;
+
+export const orders = pgTable(
+  "orders",
+  {
+    id: text("id").primaryKey(), // app-generated, e.g. "o-<base36>-<rand>"
+    orderNumber: text("order_number").notNull().unique(),
+    customer: text("customer").notNull(),
+    email: text("email").notNull(),
+    phone: text("phone").notNull().default(""),
+    subtotal: real("subtotal").notNull(),
+    shipping: real("shipping").notNull().default(0),
+    total: real("total").notNull(),
+    paymentStatus: text("payment_status").notNull().default("Pending"), // Paid|Pending|Refunded
+    orderStatus: text("order_status").notNull().default("Pending"), // Pending|Processing|Shipped|Delivered|Cancelled
+    shippingAddress: text("shipping_address").notNull(),
+    notes: text("notes"),
+    trackingNumber: text("tracking_number"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (t) => ({
+    emailIdx: index("orders_email_idx").on(t.email),
+    orderStatusIdx: index("orders_order_status_idx").on(t.orderStatus),
+    paymentStatusIdx: index("orders_payment_status_idx").on(t.paymentStatus),
+    createdAtIdx: index("orders_created_at_idx").on(t.createdAt),
+    // Composite for the admin "filter by status + sort by date" view.
+    statusCreatedIdx: index("orders_status_created_idx").on(
+      t.orderStatus,
+      t.createdAt,
+    ),
+  }),
+);
+
+export const orderItems = pgTable(
+  "order_items",
+  {
+    id: text("id").primaryKey(), // app-generated, "oi-<rand>"
+    orderId: text("order_id")
+      .notNull()
+      .references(() => orders.id),
+    productId: text("product_id"), // soft ref — products may be deleted post-order
+    name: text("name").notNull(), // snapshot at order time
+    quantity: integer("quantity").notNull(),
+    price: real("price").notNull(), // snapshot at order time
+    vendorId: text("vendor_id"), // soft ref for the same reason
+    vendorName: text("vendor_name"),
+    position: integer("position").notNull().default(0), // ordering within the order
+  },
+  (t) => ({
+    orderIdx: index("order_items_order_id_idx").on(t.orderId),
+    vendorIdx: index("order_items_vendor_id_idx").on(t.vendorId),
+    productIdx: index("order_items_product_id_idx").on(t.productId),
+  }),
+);
+
+// ---------------------------------------------------------------------------
 // Phase 3 — Bookings / Payments / PaymentEvents
 // ---------------------------------------------------------------------------
 
@@ -416,5 +489,16 @@ export const paymentEventsRelations = relations(paymentEvents, ({ one }) => ({
   payment: one(payments, {
     fields: [paymentEvents.paymentId],
     references: [payments.id],
+  }),
+}));
+
+export const ordersRelations = relations(orders, ({ many }) => ({
+  items: many(orderItems),
+}));
+
+export const orderItemsRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderItems.orderId],
+    references: [orders.id],
   }),
 }));

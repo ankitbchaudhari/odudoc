@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
 
     const shipping = 0; // flat — keep delivery free for v1
 
-    const order = createOrder({
+    const order = await createOrder({
       customer: patient.name,
       email: patient.email,
       phone: body.phone || patient.phone,

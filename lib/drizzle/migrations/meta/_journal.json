@@ -8,6 +8,13 @@
       "when": 1777003714036,
       "tag": "0000_phase_2_3_4_auth_bookings_payments_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777089600000,
+      "tag": "0001_phase_5_orders",
+      "breakpoints": true
     }
   ]
 }

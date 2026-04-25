@@ -7,15 +7,44 @@ import { type Doctor } from "@/lib/data";
 import CurrencySwitcher, { useCheckoutCurrency } from "@/components/CurrencySwitcher";
 import { convert } from "@/lib/currency-convert";
 
-const specialtyList = [
-  { name: "General Physician", icon: "🩺", price: 25 },
-  { name: "Dermatologist", icon: "✨", price: 35 },
-  { name: "Gynecologist", icon: "👩‍⚕️", price: 40 },
-  { name: "Pediatrician", icon: "👶", price: 30 },
-  { name: "Psychiatrist", icon: "🧠", price: 45 },
-  { name: "Cardiologist", icon: "❤️", price: 50 },
-  { name: "Orthopedist", icon: "🦴", price: 40 },
-  { name: "ENT Specialist", icon: "👂", price: 35 },
+// Specialty cards now come from /api/public/departments (admin-managed
+// in /admin/departments). The list below is a static fallback used only
+// if the API fetch fails — keeps the booking flow functional in case of
+// a cold-start hiccup on the departments store.
+interface Specialty {
+  id: string;
+  name: string;
+  emoji: string;
+  consultFee: number;
+  waitLabel: string;
+  doctorCount: number;
+  description: string;
+}
+
+const FALLBACK_SPECIALTIES: Specialty[] = [
+  { id: "fb-gp",    name: "General Physician", emoji: "🩺", consultFee: 25, waitLabel: "< 5 min",  doctorCount: 0, description: "Primary care" },
+  { id: "fb-derm",  name: "Dermatologist",     emoji: "✨", consultFee: 35, waitLabel: "< 10 min", doctorCount: 0, description: "Skin, hair and nails" },
+  { id: "fb-gyn",   name: "Gynecologist",      emoji: "👩‍⚕️", consultFee: 40, waitLabel: "< 10 min", doctorCount: 0, description: "Women's health" },
+  { id: "fb-ped",   name: "Pediatrician",      emoji: "👶", consultFee: 30, waitLabel: "< 15 min", doctorCount: 0, description: "Child healthcare" },
+  { id: "fb-psy",   name: "Psychiatrist",      emoji: "🧠", consultFee: 45, waitLabel: "< 20 min", doctorCount: 0, description: "Mental health" },
+  { id: "fb-card",  name: "Cardiologist",      emoji: "❤️", consultFee: 50, waitLabel: "< 30 min", doctorCount: 0, description: "Heart and vascular" },
+  { id: "fb-orth",  name: "Orthopedist",       emoji: "🦴", consultFee: 40, waitLabel: "< 20 min", doctorCount: 0, description: "Bones and joints" },
+  { id: "fb-ent",   name: "ENT Specialist",    emoji: "👂", consultFee: 35, waitLabel: "< 15 min", doctorCount: 0, description: "Ear, nose, throat" },
+];
+
+// Rotating gradient palette for the specialty cards. Index by `i % length`
+// so any number of departments cycles through the colours predictably.
+const SPECIALTY_THEMES: Array<{ from: string; via: string; to: string; ring: string; bg: string; emojiBg: string }> = [
+  { from: "from-rose-500",     via: "via-pink-500",     to: "to-fuchsia-600", ring: "ring-rose-200",     bg: "from-rose-50 to-pink-50",         emojiBg: "from-rose-100 to-pink-100" },
+  { from: "from-amber-500",    via: "via-orange-500",   to: "to-red-600",     ring: "ring-amber-200",    bg: "from-amber-50 to-orange-50",      emojiBg: "from-amber-100 to-orange-100" },
+  { from: "from-emerald-500",  via: "via-teal-500",     to: "to-cyan-600",    ring: "ring-emerald-200",  bg: "from-emerald-50 to-teal-50",      emojiBg: "from-emerald-100 to-teal-100" },
+  { from: "from-sky-500",      via: "via-blue-500",     to: "to-indigo-600",  ring: "ring-sky-200",      bg: "from-sky-50 to-blue-50",          emojiBg: "from-sky-100 to-blue-100" },
+  { from: "from-violet-500",   via: "via-purple-500",   to: "to-fuchsia-600", ring: "ring-violet-200",   bg: "from-violet-50 to-purple-50",     emojiBg: "from-violet-100 to-purple-100" },
+  { from: "from-fuchsia-500",  via: "via-pink-500",     to: "to-rose-600",    ring: "ring-fuchsia-200",  bg: "from-fuchsia-50 to-pink-50",      emojiBg: "from-fuchsia-100 to-pink-100" },
+  { from: "from-cyan-500",     via: "via-sky-500",      to: "to-blue-600",    ring: "ring-cyan-200",     bg: "from-cyan-50 to-sky-50",          emojiBg: "from-cyan-100 to-sky-100" },
+  { from: "from-lime-500",     via: "via-green-500",    to: "to-emerald-600", ring: "ring-lime-200",     bg: "from-lime-50 to-green-50",        emojiBg: "from-lime-100 to-green-100" },
+  { from: "from-indigo-500",   via: "via-violet-500",   to: "to-purple-600",  ring: "ring-indigo-200",   bg: "from-indigo-50 to-violet-50",     emojiBg: "from-indigo-100 to-violet-100" },
+  { from: "from-orange-500",   via: "via-amber-500",    to: "to-yellow-600",  ring: "ring-orange-200",   bg: "from-orange-50 to-amber-50",      emojiBg: "from-orange-100 to-amber-100" },
 ];
 
 // Slots come from /api/doctors/[id]/slots now — the server applies the
@@ -100,6 +129,8 @@ export default function BookConsultationPage() {
   const [error, setError] = useState("");
   const [paymentsOff, setPaymentsOff] = useState(false);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [specialties, setSpecialties] = useState<Specialty[]>(FALLBACK_SPECIALTIES);
+  const [specialtiesLoading, setSpecialtiesLoading] = useState(true);
 
   // Visitor-facing display + payment currency. Pricing is authored in USD
   // (the site's default currency); convert() pulls live daily rates from
@@ -120,6 +151,18 @@ export default function BookConsultationPage() {
         if (d && Array.isArray(d.doctors)) setDoctors(d.doctors);
       })
       .catch(() => {});
+    // Live admin-managed department list. Falls back to the static
+    // FALLBACK_SPECIALTIES if the request fails so the booking flow
+    // never lands on an empty grid.
+    fetch("/api/public/departments", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && Array.isArray(d.departments) && d.departments.length > 0) {
+          setSpecialties(d.departments);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setSpecialtiesLoading(false));
   }, []);
 
   // Fetch real slots whenever doctor or date changes. Also polls every
@@ -199,8 +242,8 @@ export default function BookConsultationPage() {
     : doctors;
 
   const selectedDoctorData = doctors.find((d) => d.id === selectedDoctor);
-  const selectedSpecialtyData = specialtyList.find((s) => s.name === selectedSpecialty);
-  const fee = selectedSpecialtyData?.price || selectedDoctorData?.fee || 25;
+  const selectedSpecialtyData = specialties.find((s) => s.name === selectedSpecialty);
+  const fee = selectedSpecialtyData?.consultFee || selectedDoctorData?.fee || 25;
 
   // Pull a converted display amount whenever the fee or chosen currency
   // changes. convert() now hits the live FX cache; on failure it returns
@@ -334,22 +377,103 @@ export default function BookConsultationPage() {
 
         {/* Step 1 */}
         {step === 1 && (
-          <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="mb-6 text-lg font-bold text-gray-900">Choose a Specialty</h2>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              {specialtyList.map((s) => (
-                <button
-                  key={s.name}
-                  onClick={() => { setSelectedSpecialty(s.name); setStep(2); }}
-                  className={`flex flex-col items-center rounded-xl border-2 p-6 text-center transition-all hover:shadow-md ${
-                    selectedSpecialty === s.name ? "border-primary-500 bg-primary-50" : "border-gray-100 hover:border-primary-200"
-                  }`}
-                >
-                  <span className="text-3xl">{s.icon}</span>
-                  <span className="mt-2 text-sm font-medium text-gray-900">{s.name}</span>
-                  <span className="mt-1 text-sm font-bold text-primary-600">${s.price}</span>
-                </button>
-              ))}
+          <div className="overflow-hidden rounded-3xl bg-white shadow-sm sm:rounded-3xl">
+            <div className="h-1.5 bg-gradient-to-r from-rose-500 via-amber-500 via-emerald-500 via-sky-500 to-violet-500" />
+            <div className="p-6 sm:p-8">
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Choose a Specialty</h2>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {specialtiesLoading
+                      ? "Loading departments…"
+                      : `${specialties.length} specialties available · admin-managed`}
+                  </p>
+                </div>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                  </span>
+                  Live availability
+                </span>
+              </div>
+
+              {specialtiesLoading ? (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-44 animate-pulse rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50"
+                    />
+                  ))}
+                </div>
+              ) : specialties.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-gray-200 py-12 text-center">
+                  <p className="text-sm text-gray-400">
+                    🏥 No specialties have been published yet.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                  {specialties.map((s, i) => {
+                    const theme = SPECIALTY_THEMES[i % SPECIALTY_THEMES.length]!;
+                    const active = selectedSpecialty === s.name;
+                    return (
+                      <button
+                        key={s.id}
+                        onClick={() => { setSelectedSpecialty(s.name); setStep(2); }}
+                        className={`group relative flex flex-col items-start overflow-hidden rounded-2xl border-2 p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
+                          active
+                            ? `border-transparent bg-gradient-to-br ${theme.bg} ring-2 ${theme.ring} shadow-md`
+                            : "border-gray-100 bg-white hover:border-transparent hover:" + theme.ring
+                        }`}
+                      >
+                        {/* Decorative blur blob — colour-themed, only visible on hover/active */}
+                        <div
+                          className={`pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gradient-to-br ${theme.from} ${theme.via} ${theme.to} opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-30 ${
+                            active ? "opacity-30" : ""
+                          }`}
+                        />
+
+                        {/* Emoji tile */}
+                        <div
+                          className={`mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${theme.emojiBg} text-2xl shadow-sm ring-1 ring-white`}
+                        >
+                          {s.emoji}
+                        </div>
+
+                        {/* Name */}
+                        <p className="line-clamp-2 text-sm font-bold text-gray-900">{s.name}</p>
+
+                        {/* Description */}
+                        {s.description && (
+                          <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-gray-500">
+                            {s.description}
+                          </p>
+                        )}
+
+                        {/* Footer: price + wait + doctor count */}
+                        <div className="mt-3 flex w-full flex-wrap items-center justify-between gap-1">
+                          <span
+                            className={`inline-flex items-center rounded-md bg-gradient-to-r ${theme.from} ${theme.to} bg-clip-text px-0 text-base font-extrabold text-transparent`}
+                          >
+                            ${s.consultFee}
+                          </span>
+                          <span className="text-[10px] font-medium text-gray-400">
+                            {s.waitLabel}
+                          </span>
+                        </div>
+                        {s.doctorCount > 0 && (
+                          <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-gray-50 px-2 py-0.5 text-[10px] font-medium text-gray-500 ring-1 ring-gray-100">
+                            <span className="h-1 w-1 rounded-full bg-emerald-500" />
+                            {s.doctorCount} doctor{s.doctorCount === 1 ? "" : "s"}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         )}

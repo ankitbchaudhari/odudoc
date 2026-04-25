@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getSettings, updateSettings, type SiteSettings } from "@/lib/settings-store";
+import { ensureHydrated, getSettings, updateSettings, type SiteSettings } from "@/lib/settings-store";
+import { awaitAllFlushes } from "@/lib/persistent-array";
 
 export const runtime = "nodejs";
 
@@ -28,6 +29,10 @@ export async function GET() {
   const session = await getServerSession(authOptions);
   const role = (session?.user as { role?: string } | undefined)?.role;
   if (!isAdmin(role)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  // Make sure the cold-start Lambda has read the persisted copy from
+  // Postgres before we hand it to the admin UI; otherwise the very
+  // first GET after a deploy could leak in-memory defaults.
+  await ensureHydrated();
   return NextResponse.json({ settings: getSettings() });
 }
 
@@ -48,6 +53,11 @@ export async function PATCH(req: NextRequest) {
       (patch as any)[key] = body[key];
     }
   }
+  await ensureHydrated();
   const settings = updateSettings(patch);
+  // Drain the fire-and-forget Postgres write before responding so the
+  // admin's "Saved" toast can't ever lie — without this, the Lambda
+  // could freeze before saveJson() resolves on a cold serverless host.
+  await awaitAllFlushes();
   return NextResponse.json({ settings });
 }

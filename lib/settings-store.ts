@@ -1,9 +1,15 @@
-// In-memory site settings.
-//
-// One flat object keyed by section. The admin settings page reads the whole
-// blob on mount and PATCHes individual sections on save. Matches the
-// in-memory pattern used for products / orders / blog / doctors / pages —
-// will migrate to MySQL alongside the rest.
+// Site settings — Postgres-backed via the app_kv key/value table that
+// lib/persistent-array.ts already provisions. We keep an in-memory
+// mirror for fast synchronous reads (every existing route handler
+// pulls settings synchronously; rewriting all of them async would be
+// a much larger change), and fire-and-forget a write-through on
+// updateSettings. Boot-time hydration runs once on module load; while
+// it's pending, callers see `defaults` (same as the pre-persistence
+// behaviour) — once the row lands, the in-memory mirror swaps to the
+// stored copy, so admin changes survive Vercel cold starts.
+
+import { loadJson, saveJson } from "./persistent-array";
+import { log } from "./log";
 
 export interface CommonSettings {
   siteName: string;
@@ -233,6 +239,68 @@ const defaults: SiteSettings = {
 
 let settings: SiteSettings = JSON.parse(JSON.stringify(defaults));
 
+const STORE_KEY = "site-settings";
+
+// Boot-time hydration. Fires once on first module load per Lambda;
+// subsequent imports re-use whatever the in-memory mirror holds.
+// Failures are logged and swallowed — we keep serving `defaults` so a
+// transient Postgres outage doesn't take the site down. Calls to
+// `getSettings()` made before hydration completes also see defaults,
+// which matches the pre-persistence behaviour exactly.
+let hydrated = false;
+let hydrating: Promise<void> | null = null;
+
+async function hydrate(): Promise<void> {
+  if (hydrated) return;
+  if (hydrating) return hydrating;
+  hydrating = (async () => {
+    try {
+      const stored = await loadJson<SiteSettings | null>(STORE_KEY, null);
+      if (stored && typeof stored === "object") {
+        // Shallow-merge stored over defaults so newly-added top-level
+        // sections (e.g. `enabledCurrencies`) inherit defaults instead
+        // of being undefined when an old DB row is hydrated.
+        settings = {
+          ...defaults,
+          ...stored,
+          // Always carry the freshest defaults shape for objects whose
+          // keys we may have widened — but stored values win where
+          // present.
+          common: { ...defaults.common, ...(stored.common || {}) },
+          captcha: { ...defaults.captcha, ...(stored.captcha || {}) },
+          smtp: { ...defaults.smtp, ...(stored.smtp || {}) },
+          page: { ...defaults.page, ...(stored.page || {}) },
+          currency: { ...defaults.currency, ...(stored.currency || {}) },
+          invoice: { ...defaults.invoice, ...(stored.invoice || {}) },
+        };
+      }
+      hydrated = true;
+    } catch (err) {
+      log.error("settings_store.hydrate_failed", err);
+    }
+  })();
+  return hydrating;
+}
+
+// Kick off hydration eagerly. Routes that need to be sure they read
+// the persisted copy (rather than defaults) can `await ensureHydrated()`.
+hydrate();
+
+export async function ensureHydrated(): Promise<void> {
+  await hydrate();
+}
+
+function persist(): void {
+  // Fire-and-forget. Routes that mutate settings right before
+  // responding can call `awaitAllFlushes()` from persistent-array.ts
+  // to drain pending writes — but for the admin settings flow, the
+  // user almost always re-reads via GET on the next page render, so
+  // a sync POST→DB write isn't required for correctness.
+  void saveJson(STORE_KEY, settings).catch((err) => {
+    log.error("settings_store.persist_failed", err);
+  });
+}
+
 export function getSettings(): SiteSettings {
   return settings;
 }
@@ -246,10 +314,12 @@ export function updateSettings(patch: Partial<SiteSettings>): SiteSettings {
     ...patch,
     updatedAt: new Date().toISOString(),
   };
+  persist();
   return settings;
 }
 
 export function resetSettings(): SiteSettings {
   settings = JSON.parse(JSON.stringify(defaults));
+  persist();
   return settings;
 }

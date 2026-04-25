@@ -1,16 +1,16 @@
 // Currency conversion.
 //
-// Live FX rates from https://open.er-api.com (free, no API key, daily rates
-// from a basket of central banks). One module-level Map<base, RateTable>
-// caches each base for an hour so concurrent callers and back-to-back
-// page renders reuse the same fetch — matches the in-memory pattern used
-// elsewhere in the codebase.
+// Two upstream FX providers, tried in order, both free and key-less:
+//   1. https://open.er-api.com   (ECB-backed daily rates, primary)
+//   2. https://api.exchangerate.host (CurrencyLayer-backed, fallback)
+// We rotate to the fallback if the primary errors or returns a malformed
+// payload, so a single provider's bad day doesn't break checkout.
 //
-// Failure modes are silent: if the upstream is unreachable or returns a
-// malformed payload, convert() falls back to the input amount unchanged
-// and getRates() returns an empty object. That keeps checkout from
-// hard-crashing when a third-party FX feed has a bad day; the visitor
-// just sees prices in the site's default currency until rates recover.
+// One module-level Map<base, RateTable> caches each base for an hour
+// so concurrent callers and back-to-back page renders reuse the same
+// fetch — matches the in-memory pattern used elsewhere in the codebase.
+// On total failure (both providers down), getRates() returns the most
+// recent cached entry if any, then empty object as last resort.
 
 export interface RateTable {
   base: string;
@@ -22,15 +22,42 @@ const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 const cache: Map<string, RateTable> = new Map();
 const inflight: Map<string, Promise<RateTable>> = new Map();
 
-async function fetchRates(base: string): Promise<RateTable> {
+async function fetchPrimary(base: string): Promise<RateTable> {
   const url = `https://open.er-api.com/v6/latest/${encodeURIComponent(base)}`;
   const r = await fetch(url, { cache: "no-store" });
-  if (!r.ok) throw new Error(`FX HTTP ${r.status}`);
+  if (!r.ok) throw new Error(`FX-primary HTTP ${r.status}`);
   const j = (await r.json()) as { result?: string; rates?: Record<string, number> };
   if (j.result !== "success" || !j.rates || typeof j.rates !== "object") {
-    throw new Error("FX bad payload");
+    throw new Error("FX-primary bad payload");
   }
   return { base, rates: j.rates, fetchedAt: Date.now() };
+}
+
+async function fetchFallback(base: string): Promise<RateTable> {
+  const url = `https://api.exchangerate.host/latest?base=${encodeURIComponent(base)}`;
+  const r = await fetch(url, { cache: "no-store" });
+  if (!r.ok) throw new Error(`FX-fallback HTTP ${r.status}`);
+  const j = (await r.json()) as { success?: boolean; rates?: Record<string, number> };
+  // exchangerate.host returns `success` as boolean OR omits it entirely
+  // depending on the build — accept anything with a non-empty rates map.
+  if (!j.rates || typeof j.rates !== "object" || Object.keys(j.rates).length === 0) {
+    throw new Error("FX-fallback bad payload");
+  }
+  return { base, rates: j.rates, fetchedAt: Date.now() };
+}
+
+async function fetchRates(base: string): Promise<RateTable> {
+  try {
+    return await fetchPrimary(base);
+  } catch (err) {
+    // Surface the primary failure so it shows up in observability, then
+    // try the fallback before giving up.
+    try {
+      return await fetchFallback(base);
+    } catch {
+      throw err;
+    }
+  }
 }
 
 export async function getRates(base: string): Promise<Record<string, number>> {

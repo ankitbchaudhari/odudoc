@@ -9,6 +9,7 @@ import CookieConsent from "@/components/CookieConsent";
 import BackToTop from "@/components/BackToTop";
 import AIChatbot from "@/components/AIChatbot";
 import GoogleTranslate from "@/components/GoogleTranslate";
+import ExperimentBootstrap from "@/components/ExperimentBootstrap";
 import LoadingBar from "@/components/LoadingBar";
 import { OrganizationLd, WebsiteLd } from "@/components/StructuredData";
 
@@ -141,6 +142,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <AIChatbot />
               <BackToTop />
               <GoogleTranslate />
+              <ExperimentBootstrap />
             </LanguageProvider>
           </CartProvider>
         </AuthProvider>

@@ -11,6 +11,23 @@ export interface Booking {
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
   paymentIntentId: string;
   createdAt: string;
+
+  // --- Additive mobile fields ---
+  // Older records (pre-Apr-2026, pre-mobile) may be missing these. Readers
+  // MUST treat them as optional. Introduced so the mobile "My consultations"
+  // screen can scope to the current user and filter upcoming vs past.
+  patientUserId?: string;      // users-store id; set for mobile bookings
+  patientEmail?: string;        // lowercased
+  date?: string;                // YYYY-MM-DD
+  appointmentType?: 'video' | 'in-person';
+  /** Scheduling lifecycle, distinct from paymentStatus. Default: 'scheduled'. */
+  status?: 'scheduled' | 'cancelled' | 'completed';
+  cancelledAt?: string;         // ISO-8601
+  cancelledBy?: 'patient' | 'doctor' | 'system';
+
+  /** Set by the appointment-reminders cron after a 24h-out push lands.
+   *  Idempotency marker — same job re-running won't double-push. */
+  reminderSentAt?: string;     // ISO-8601
 }
 
 const bookings: Booking[] = [];
@@ -79,4 +96,120 @@ export function updateBookingStatus(
     flush();
   }
   return booking;
+}
+
+/**
+ * Mark a booking as having had its 24h reminder dispatched. Returns true
+ * if the marker was actually set (false if the booking was missing or a
+ * marker was already in place — the cron uses this to count "first
+ * times" vs "already sent").
+ */
+export function markBookingReminderSent(id: string, when: string = new Date().toISOString()): boolean {
+  const b = bookings.find((x) => x.id === id);
+  if (!b) return false;
+  if (b.reminderSentAt) return false;
+  b.reminderSentAt = when;
+  flush();
+  return true;
+}
+
+/**
+ * Bookings whose slot starts inside [windowStartMs, windowEndMs] AND
+ * haven't been reminded yet. Cancelled / unpaid bookings are skipped.
+ */
+export function getBookingsDueForReminder(
+  windowStartMs: number,
+  windowEndMs: number
+): Booking[] {
+  return bookings.filter((b) => {
+    if (b.status === 'cancelled') return false;
+    if (b.paymentStatus !== 'paid') return false;
+    if (b.reminderSentAt) return false;
+    if (!b.date || !/^\d{2}:\d{2}$/.test(b.timeSlot)) return false;
+    const at = new Date(`${b.date}T${b.timeSlot}:00`).getTime();
+    if (Number.isNaN(at)) return false;
+    return at >= windowStartMs && at <= windowEndMs;
+  });
+}
+
+/**
+ * Patch payment fields on a booking by its id. Used by the mobile flow to
+ * attach a Stripe PaymentIntent the moment it's created (before the user
+ * has paid) so the subsequent verify call can locate the booking and
+ * double-check that the intent belongs to it.
+ */
+export function setBookingPayment(
+  id: string,
+  patch: {
+    paymentIntentId?: string;
+    paymentStatus?: Booking['paymentStatus'];
+  }
+): Booking | undefined {
+  const b = bookings.find((x) => x.id === id);
+  if (!b) return undefined;
+  if (patch.paymentIntentId !== undefined) b.paymentIntentId = patch.paymentIntentId;
+  if (patch.paymentStatus !== undefined) b.paymentStatus = patch.paymentStatus;
+  flush();
+  return b;
+}
+
+// ----- Mobile helpers -----------------------------------------------------
+
+/**
+ * Return every booking linked to a user id (set at creation time by the
+ * mobile endpoint). Falls back to email match so accounts created before
+ * the patientUserId field existed still show up, as long as the booking
+ * recorded an email.
+ */
+export function getBookingsForUser(
+  userId: string,
+  email?: string
+): Booking[] {
+  const lowerEmail = email?.toLowerCase();
+  return getBookings().filter((b) => {
+    if (b.patientUserId === userId) return true;
+    if (lowerEmail && b.patientEmail?.toLowerCase() === lowerEmail) return true;
+    return false;
+  });
+}
+
+/** Doctor-side view: every booking pinned to a given doctor id. Used by
+ *  the doctor mobile app's Today + Queue screens. */
+export function getBookingsForDoctor(doctorId: string): Booking[] {
+  return getBookings().filter((b) => b.doctorId === doctorId);
+}
+
+export type CancelResult =
+  | { ok: true; booking: Booking }
+  | { ok: false; reason: 'not_found' | 'not_owner' | 'already_cancelled' | 'too_late' };
+
+/**
+ * Patient-initiated cancel. Refuses if the booking isn't owned by the
+ * caller, if it was already cancelled, or if the slot starts within
+ * BOOKING_LEAD_MIN (spec: can't cancel in the last 30 min before).
+ */
+export function cancelBookingByUser(
+  bookingId: string,
+  userId: string,
+  opts: { leadMinutes: number }
+): CancelResult {
+  const b = bookings.find((x) => x.id === bookingId);
+  if (!b) return { ok: false, reason: 'not_found' };
+  if (b.patientUserId !== userId) return { ok: false, reason: 'not_owner' };
+  if (b.status === 'cancelled') return { ok: false, reason: 'already_cancelled' };
+
+  if (b.date && /^\d{2}:\d{2}$/.test(b.timeSlot)) {
+    const [h, m] = b.timeSlot.split(':').map(Number);
+    const start = new Date(`${b.date}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`);
+    const minutesUntil = (start.getTime() - Date.now()) / 60000;
+    if (minutesUntil < opts.leadMinutes) {
+      return { ok: false, reason: 'too_late' };
+    }
+  }
+
+  b.status = 'cancelled';
+  b.cancelledAt = new Date().toISOString();
+  b.cancelledBy = 'patient';
+  flush();
+  return { ok: true, booking: b };
 }

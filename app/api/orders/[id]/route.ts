@@ -9,9 +9,45 @@ import {
 } from "@/lib/orders-store";
 import { sendOrderStatusUpdateEmail } from "@/lib/email";
 import { recordOrderPayouts } from "@/lib/payouts-store";
+import { sendToEmail } from "@/lib/fcm";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
+
+// Map an OrderStatus to a tray-friendly title + body. Kept in one place
+// so the copy stays consistent if we tweak one of them.
+function pushCopyForStatus(
+  status: OrderStatus,
+  orderNumber: string,
+  trackingNumber?: string
+): { title: string; body: string } | null {
+  switch (status) {
+    case "Processing":
+      return {
+        title: "Order being prepared",
+        body: `${orderNumber} · we'll let you know when it ships.`,
+      };
+    case "Shipped":
+      return {
+        title: "Order shipped",
+        body: trackingNumber
+          ? `${orderNumber} · tracking ${trackingNumber}`
+          : `${orderNumber} is on its way.`,
+      };
+    case "Delivered":
+      return {
+        title: "Order delivered",
+        body: `${orderNumber} arrived. Pay the courier in cash if it was COD.`,
+      };
+    case "Cancelled":
+      return {
+        title: "Order cancelled",
+        body: `${orderNumber} was cancelled. Any payment will be refunded.`,
+      };
+    default:
+      return null;
+  }
+}
 
 function canManage(role: string | undefined): boolean {
   return role === "admin" || role === "staff";
@@ -92,8 +128,8 @@ export async function PATCH(
     recordOrderPayouts(next);
   }
 
-  // Only fire an email when the status actually changed, and not for "Pending"
-  // (that's covered by the confirmation email on create).
+  // Only fire notifications when the status actually changed, and not for
+  // "Pending" (that's covered by the confirmation email on create).
   if (
     prev.orderStatus !== next.orderStatus &&
     next.orderStatus !== "Pending"
@@ -107,6 +143,23 @@ export async function PATCH(
     }).catch((err) =>
       log.error("[orders] status email failed:", err)
     );
+
+    // Mobile push, best-effort. We key off the customer's email (not a
+    // userId) because pre-mobile orders have no userId; sendToEmail
+    // fans out across every device they've registered.
+    const copy = pushCopyForStatus(
+      next.orderStatus,
+      next.orderNumber,
+      next.trackingNumber
+    );
+    if (copy) {
+      void sendToEmail(next.email, {
+        title: copy.title,
+        body: copy.body,
+        deepLink: `order/${next.id}`,
+        channel: "orders",
+      });
+    }
   }
 
   return NextResponse.json({ order: next });

@@ -1,10 +1,25 @@
-// Hourly cron: send a reminder email to the patient ~24h before their
-// scheduled consultation. Idempotent via the `reminder24hSentAt` marker
-// on the consultation record.
+// Daily cron: send 24h-out reminders.
+//
+// Two passes:
+//   1. Consultations (existing flow) — email reminder. Idempotent via the
+//      ad-hoc `reminder24hSentAt` field on the consultation record.
+//   2. Bookings created by the mobile app — FCM push (and email when the
+//      consultation flow hasn't already covered it). Idempotent via
+//      `reminderSentAt` on the booking.
+//
+// Mobile bookings are a separate store from consultations (the latter
+// is created at room-creation time, the former at booking time), so we
+// scan both. Doing this in one job means the same window logic +
+// idempotency window applies to both.
 
 import { NextResponse } from "next/server";
 import { listConsultations } from "@/lib/consultations-store";
+import {
+  getBookingsDueForReminder,
+  markBookingReminderSent,
+} from "@/lib/bookings-store";
 import { sendEmail } from "@/lib/email";
+import { sendToUser, sendToEmail } from "@/lib/fcm";
 
 import { log } from "@/lib/log";
 const SITE_URL = "https://www.odudoc.com";
@@ -67,10 +82,52 @@ export async function GET(req: Request) {
       });
       (c as typeof c & { reminder24hSentAt?: string }).reminder24hSentAt = new Date().toISOString();
       sent++;
+      // Best-effort FCM push — only fires for users who have logged into
+      // the mobile app at least once. Falls back to email-keyed lookup
+      // when we don't have a userId on the consultation record.
+      try {
+        await sendToEmail(c.patientEmail, {
+          title: "Consultation tomorrow",
+          body: `${c.doctorName} · ${c.dateLabel} at ${c.timeSlot}`,
+          deepLink: `consult/${c.id}`,
+          channel: "appointments",
+        });
+      } catch (err) {
+        log.warn("cron.appointment_reminders.push_failed", { id: c.id });
+      }
     } catch (err) {
       log.error("cron.appointment_reminders.send_failed", err, { id: c.id });
     }
   }
 
-  return NextResponse.json({ ok: true, scanned: all.length, eligible: due.length, sent });
+  // ---- Pass 2: mobile bookings ------------------------------------------
+  // Cleanly separate from the consultation pass — different store, different
+  // idempotency marker. Bookings only get an FCM push (no email): the
+  // confirmation email already covers the slot details, and reminders are
+  // a "while you're holding your phone" prompt.
+  const bookingsDue = getBookingsDueForReminder(windowStart, windowEnd);
+  let bookingsSent = 0;
+  for (const b of bookingsDue) {
+    if (!b.patientUserId && !b.patientEmail) continue;
+    try {
+      const payload = {
+        title: "Consultation tomorrow",
+        body: `${b.doctorName} · ${b.date} at ${b.timeSlot}`,
+        deepLink: `consult/${b.id}`,
+        channel: "appointments" as const,
+      };
+      if (b.patientUserId) await sendToUser(b.patientUserId, payload);
+      else if (b.patientEmail) await sendToEmail(b.patientEmail, payload);
+      markBookingReminderSent(b.id);
+      bookingsSent++;
+    } catch (err) {
+      log.error("cron.appointment_reminders.booking_push_failed", err, { id: b.id });
+    }
+  }
+
+  return NextResponse.json({
+    ok: true,
+    consultations: { scanned: all.length, eligible: due.length, sent },
+    bookings: { eligible: bookingsDue.length, sent: bookingsSent },
+  });
 }

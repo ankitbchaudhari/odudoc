@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import dynamic from "next/dynamic";
 import "./globals.css";
 import ConditionalLayout from "@/components/ConditionalLayout";
 import { AuthProvider } from "@/lib/auth-context";
@@ -7,11 +8,20 @@ import { CartProvider } from "@/lib/cart-context";
 import { LanguageProvider } from "@/lib/language-context";
 import CookieConsent from "@/components/CookieConsent";
 import BackToTop from "@/components/BackToTop";
-import AIChatbot from "@/components/AIChatbot";
 import GoogleTranslate from "@/components/GoogleTranslate";
 import ExperimentBootstrap from "@/components/ExperimentBootstrap";
 import LoadingBar from "@/components/LoadingBar";
 import { OrganizationLd, WebsiteLd } from "@/components/StructuredData";
+
+// AIChatbot is a 500+ line client component that ships on every page
+// load but is only ever rendered as a floating bubble until a user
+// clicks it. Defer its bundle off the critical path with next/dynamic
+// so the main JS chunk shrinks and Largest Contentful Paint improves
+// for first-time visitors. ssr:false because the chatbot has no SEO
+// value — search crawlers don't need it in the initial HTML.
+const AIChatbot = dynamic(() => import("@/components/AIChatbot"), {
+  ssr: false,
+});
 
 const inter = Inter({ subsets: ["latin"] });
 

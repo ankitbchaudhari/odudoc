@@ -5,6 +5,8 @@ import {
   getDoctorById,
   updateDoctor,
   deleteDoctor,
+  setDoctorVerified,
+  setDoctorLicense,
   type DoctorStatus,
 } from "@/lib/doctors-store";
 import { sendDoctorRemovedEmail } from "@/lib/email";
@@ -72,8 +74,32 @@ export async function PATCH(
   if (Array.isArray(body.timeSlots))
     patch.timeSlots = (body.timeSlots as unknown[]).filter((s): s is string => typeof s === "string");
 
-  const doctor = updateDoctor(id, patch);
+  let doctor = updateDoctor(id, patch);
   if (!doctor) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  // Verification toggle is admin-only and stamped with the admin's
+  // email + timestamp by the helper. Routed here so the existing
+  // PATCH endpoint stays the single point of mutation.
+  if (typeof body.verified === "boolean") {
+    const adminEmail = (session?.user as { email?: string } | undefined)?.email || "admin";
+    doctor = setDoctorVerified(id, body.verified, adminEmail) || doctor;
+  }
+
+  // License fields go through the dedicated helper so country gets
+  // canonicalised to a 2-letter ISO code and updates record an audit
+  // timestamp consistently.
+  if (
+    typeof body.licenseCountry === "string" ||
+    typeof body.licenseNumber === "string" ||
+    typeof body.licenseExpiry === "string"
+  ) {
+    doctor = setDoctorLicense(id, {
+      country: typeof body.licenseCountry === "string" ? body.licenseCountry : undefined,
+      number: typeof body.licenseNumber === "string" ? body.licenseNumber : undefined,
+      expiry: typeof body.licenseExpiry === "string" ? body.licenseExpiry : undefined,
+    }) || doctor;
+  }
+
   return NextResponse.json({ doctor });
 }
 

@@ -67,10 +67,19 @@ export default function DoctorCard({ doctor, hidePhoto = false }: { doctor: Doct
 
       {/* Info */}
       <div className="flex flex-1 flex-col p-5">
-        <Link href={`/doctors/${doctor.id}`} className="inline-block">
+        <Link href={`/doctors/${doctor.id}`} className="inline-flex items-center gap-1.5">
           <h3 className="text-base font-semibold text-primary-600 transition-colors hover:text-primary-700">
             {doctor.name}
           </h3>
+          {doctor.verified && (
+            <span
+              title="Credentials verified by OduDoc"
+              aria-label="Verified doctor"
+              className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-blue-600 text-[10px] text-white shadow ring-1 ring-white"
+            >
+              ✓
+            </span>
+          )}
         </Link>
         <p className="mt-0.5 text-xs text-gray-400 line-clamp-1">{doctor.qualifications}</p>
 

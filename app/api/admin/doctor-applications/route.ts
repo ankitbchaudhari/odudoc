@@ -16,6 +16,8 @@ import {
   findDoctorByEmail,
   createDoctor,
   DOCTOR_SPECIALTIES,
+  setDoctorLicense,
+  setDoctorVerified,
 } from "@/lib/doctors-store";
 import { sendDoctorApplicationStatusEmail } from "@/lib/email";
 import { inviteDoctor } from "@/lib/doctor-invite";
@@ -48,8 +50,9 @@ export async function PATCH(req: NextRequest) {
   if (!body.id || !body.status) {
     return NextResponse.json({ error: "id and status required" }, { status: 400 });
   }
+  const adminEmail = (session?.user as { email?: string } | undefined)?.email || "admin";
   const prev = getApplicationById(body.id);
-  const updated = updateApplicationStatus(body.id, body.status, body.adminNotes);
+  const updated = updateApplicationStatus(body.id, body.status, body.adminNotes, adminEmail);
   if (!updated) {
     return NextResponse.json({ error: "Application not found" }, { status: 404 });
   }
@@ -66,7 +69,7 @@ export async function PATCH(req: NextRequest) {
       ? updated.specialty
       : "General Physician";
     try {
-      createDoctor({
+      const created = createDoctor({
         name: updated.fullName,
         specialty,
         email: updated.email,
@@ -80,6 +83,15 @@ export async function PATCH(req: NextRequest) {
           : updated.gender?.toLowerCase() === "male" ? "Male"
           : undefined,
       });
+      // Carry the license fields + verification onto the Doctor record.
+      // Admin approval IS the verification step, so flip the verified
+      // badge on at the same time.
+      setDoctorLicense(created.id, {
+        country: updated.licenseCountry || updated.country,
+        number: updated.licenseNumber,
+        expiry: updated.licenseExpiry,
+      });
+      setDoctorVerified(created.id, true, adminEmail);
       // Provision the doctor's login (7-day temp password) and send the
       // welcome email + SMS. Failures are logged but non-fatal — the
       // approval still stands.

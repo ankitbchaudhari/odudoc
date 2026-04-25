@@ -104,6 +104,15 @@ export default function DoctorProfilePage() {
             <div className="flex-1 text-center sm:text-left">
               <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:justify-start">
                 <h1 className="text-2xl font-bold text-gray-900">{doctor.name}</h1>
+                {doctor.verified && (
+                  <span
+                    title="Credentials verified by OduDoc"
+                    aria-label="Verified doctor"
+                    className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 px-2 py-0.5 text-xs font-semibold text-white shadow ring-1 ring-white"
+                  >
+                    <span aria-hidden="true">✓</span> Verified
+                  </span>
+                )}
                 <DoctorPresenceBadge doctorId={doctor.id} size="md" />
               </div>
               <p className="text-primary-600">{doctor.specialty}</p>

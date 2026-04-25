@@ -2,9 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { addApplication } from "@/lib/doctor-applications-store";
 import { addAdminNotification } from "@/lib/admin-notifications-store";
 import { sendDoctorApplicationReceivedEmail } from "@/lib/email";
+import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 
 import { log } from "@/lib/log";
 export async function POST(req: NextRequest) {
+  // Open POST writing PII to the doctor-applications store. Cap at
+  // 3/min/IP and 20/day/IP — real applicants submit once.
+  const burstBlocked = await enforceRateLimit(req, "doctor-register", 3, "1 m");
+  if (burstBlocked) return burstBlocked;
+  const dayBlocked = await enforceRateLimit(req, "doctor-register-day", 20, "1 d");
+  if (dayBlocked) return dayBlocked;
   try {
     const body = await req.json();
 
@@ -65,13 +72,18 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Gender is restricted to male/female on the signup form.
-    if (body.gender !== "male" && body.gender !== "female") {
+    // Gender is restricted to male/female on the signup form. The
+    // client used to send capitalised "Male"/"Female" while this
+    // handler required lowercase — that 400'd every registration.
+    // Normalise to lowercase before checking.
+    const gender = typeof body.gender === "string" ? body.gender.trim().toLowerCase() : "";
+    if (gender !== "male" && gender !== "female") {
       return NextResponse.json(
         { error: "Gender must be male or female" },
         { status: 400 }
       );
     }
+    body.gender = gender;
 
     const app = addApplication({
       fullName: body.fullName,

@@ -1,7 +1,16 @@
 "use client";
 
+// Hospital onboarding / contact form.
+//
+// Single worldwide form for hospitals and clinics in any country.
+// Posts to /api/enterprise-leads which captures the lead in the admin
+// inbox. Country dropdown is the full ISO 3166-1 list (196 entries),
+// phone is free-text with international hint, and the modules picker
+// matches the platform's actual module suite.
+
 import { useState } from "react";
 import WorkingHours from "@/components/WorkingHours";
+import { COUNTRIES } from "@/lib/countries";
 
 const contactInfo = [
   {
@@ -36,12 +45,82 @@ const contactInfo = [
   },
 ];
 
-export default function ContactPage() {
-  const [submitted, setSubmitted] = useState(false);
+const BEDS_RANGES = [
+  { id: "<20",     label: "<20 beds" },
+  { id: "20-50",   label: "20–50 beds" },
+  { id: "50-200",  label: "50–200 beds" },
+  { id: "200+",    label: "200+ beds" },
+  { id: "clinic",  label: "Clinic / OPD only" },
+];
 
-  const handleSubmit = (e: React.FormEvent) => {
+const MODULES = [
+  "Patient Management",
+  "IPD / OPD",
+  "Lab Management",
+  "Pharmacy",
+  "Billing & Accounting",
+  "Inventory",
+  "Surgery / OT",
+  "Radiology & DICOM",
+  "Telemedicine",
+  "AI & Voice Consultation",
+];
+
+export default function ContactPage() {
+  const [orgName, setOrgName] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState("");
+  const [beds, setBeds] = useState("");
+  const [modules, setModules] = useState<string[]>([]);
+  const [currentSystem, setCurrentSystem] = useState("");
+  const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const toggleModule = (m: string) => {
+    setModules((prev) => (prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]));
+  };
+
+  const reset = () => {
+    setOrgName(""); setContactName(""); setEmail(""); setPhone("");
+    setCountry(""); setBeds(""); setModules([]); setCurrentSystem("");
+    setMessage(""); setError(null); setSubmitted(false);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/enterprise-leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          organizationName: orgName,
+          contactName,
+          contactEmail: email,
+          contactPhone: phone || undefined,
+          country: country || undefined,
+          bedsRange: beds || undefined,
+          interestedModules: modules,
+          currentSystem: currentSystem || undefined,
+          message: message || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setError(j.error || `Couldn't submit (HTTP ${res.status}).`);
+        return;
+      }
+      setSubmitted(true);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -52,16 +131,17 @@ export default function ContactPage() {
         <div className="pointer-events-none absolute -bottom-32 -right-24 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-rose-200/40 to-amber-200/40 blur-3xl" />
         <div className="relative mx-auto max-w-3xl px-4 text-center">
           <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary-100 to-teal-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-primary-700">
-            <span>💬</span> We're Listening
+            <span>🏥</span> For Hospitals Worldwide
           </span>
           <h1 className="mt-6 text-4xl font-bold text-gray-900 md:text-6xl">
-            Get in{" "}
+            Talk to{" "}
             <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-rose-500 bg-clip-text text-transparent">
-              Touch
+              our team
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg text-gray-600">
-            Have a question or need help? We would love to hear from you — our team replies within 24 hours.
+            We work with hospitals, clinics and diagnostic chains in 100+ countries.
+            Tell us about your facility — we'll line up a 30-min walkthrough tailored to it.
           </p>
         </div>
       </section>
@@ -107,22 +187,19 @@ export default function ContactPage() {
                 <WorkingHours />
               </div>
 
-              {/* Map */}
-              <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all hover:shadow-xl">
-                <div className="relative">
-                  <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.2412648750455!2d-73.98784368459395!3d40.74844797932681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259a9b3117469%3A0xd134e199a405a163!2sEmpire%20State%20Building!5e0!3m2!1sen!2sus!4v1629910380000!5m2!1sen!2sus"
-                    width="100%"
-                    height="400"
-                    style={{ border: 0 }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title="OduDoc Office Location"
-                  />
-                </div>
-                <div className="bg-gradient-to-r from-primary-50 to-teal-50 px-4 py-3">
-                  <p className="text-sm font-medium text-primary-700">📍 Visit us at our main office</p>
+              {/* Trust strip — replaces the US-only office map with a worldwide
+                  signal so visitors from any region see themselves in the page. */}
+              <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:shadow-xl">
+                <h3 className="mb-3 font-bold text-gray-900">Where we serve</h3>
+                <p className="text-sm text-gray-500">
+                  Hospitals, clinics and diagnostic chains across North America,
+                  Europe, the GCC, Africa, South Asia, Southeast Asia and Latin
+                  America. Localized currency, language, and compliance in every region.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {["🇺🇸", "🇬🇧", "🇨🇦", "🇦🇪", "🇸🇦", "🇮🇳", "🇸🇬", "🇿🇦", "🇰🇪", "🇧🇷", "🇲🇽", "🇦🇺"].map((f) => (
+                    <span key={f} className="text-2xl" aria-hidden="true">{f}</span>
+                  ))}
                 </div>
               </div>
             </div>
@@ -132,95 +209,203 @@ export default function ContactPage() {
               {submitted ? (
                 <div className="flex min-h-[400px] flex-col items-center justify-center text-center">
                   <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-3xl text-white shadow-lg ring-4 ring-white">
-                    &#10003;
+                    ✓
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Message Sent!</h2>
-                  <p className="mt-2 text-gray-500">
-                    Thank you for reaching out. We will get back to you within 24 hours.
+                  <h2 className="text-2xl font-bold text-gray-900">Request received!</h2>
+                  <p className="mt-2 max-w-md text-gray-500">
+                    Thank you for reaching out. Our hospital partnerships team will
+                    get back to you within 24 hours with a tailored walkthrough plan.
                   </p>
                   <button
-                    onClick={() => setSubmitted(false)}
+                    onClick={reset}
                     className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary-600 via-teal-600 to-emerald-600 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary-600/30 transition-all hover:scale-105"
                   >
-                    Send Another Message
+                    Submit another
                   </button>
                 </div>
               ) : (
                 <>
                   <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary-100 to-rose-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-primary-700">
-                    <span>✨</span> Send a Message
+                    <span>✨</span> Book a walkthrough
                   </span>
-                  <h2 className="mt-4 mb-6 text-2xl font-bold text-gray-900">
-                    Tell us how we can{" "}
+                  <h2 className="mt-4 mb-1 text-2xl font-bold text-gray-900">
+                    Tell us about your{" "}
                     <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-rose-500 bg-clip-text text-transparent">
-                      help
+                      hospital
                     </span>
                   </h2>
+                  <p className="mb-6 text-sm text-gray-500">
+                    30-minute walkthrough tailored to your facility — modules, migration, and pricing.
+                  </p>
                   <form onSubmit={handleSubmit} className="space-y-5">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                        Hospital / Organization Name *
+                      </label>
+                      <input
+                        required
+                        type="text"
+                        value={orgName}
+                        onChange={(e) => setOrgName(e.target.value)}
+                        placeholder="St. Mary's General Hospital"
+                        className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+                      />
+                    </div>
+
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                       <div>
-                        <label className="mb-1.5 block text-sm font-semibold text-gray-700">
-                          Full Name
+                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                          Your Name *
                         </label>
                         <input
                           required
                           type="text"
-                          placeholder="John Doe"
+                          value={contactName}
+                          onChange={(e) => setContactName(e.target.value)}
+                          placeholder="Dr. Anjali Mehta"
                           className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
                         />
                       </div>
                       <div>
-                        <label className="mb-1.5 block text-sm font-semibold text-gray-700">
-                          Email Address
+                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                          Work Email *
                         </label>
                         <input
                           required
                           type="email"
-                          placeholder="john@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="you@hospital.org"
                           className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
                         />
                       </div>
                     </div>
+
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                          Phone
+                        </label>
+                        <input
+                          type="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="+CC followed by number"
+                          inputMode="tel"
+                          className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                          Country
+                        </label>
+                        <select
+                          value={country}
+                          onChange={(e) => setCountry(e.target.value)}
+                          className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+                        >
+                          <option value="">Select a country…</option>
+                          {COUNTRIES.map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
                     <div>
-                      <label className="mb-1.5 block text-sm font-semibold text-gray-700">
-                        Phone Number
+                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                        Beds / Capacity
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {BEDS_RANGES.map((b) => {
+                          const active = beds === b.id;
+                          return (
+                            <button
+                              type="button"
+                              key={b.id}
+                              onClick={() => setBeds(active ? "" : b.id)}
+                              className={`rounded-full border-2 px-4 py-1.5 text-sm font-medium transition ${
+                                active
+                                  ? "border-primary-500 bg-gradient-to-r from-primary-500 to-teal-500 text-white shadow-md"
+                                  : "border-gray-200 bg-white text-gray-700 hover:border-primary-300 hover:bg-primary-50"
+                              }`}
+                            >
+                              {b.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                        Which modules interest you?
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {MODULES.map((m) => {
+                          const active = modules.includes(m);
+                          return (
+                            <button
+                              type="button"
+                              key={m}
+                              onClick={() => toggleModule(m)}
+                              className={`rounded-full border-2 px-3 py-1.5 text-sm font-medium transition ${
+                                active
+                                  ? "border-primary-500 bg-gradient-to-r from-primary-500 to-teal-500 text-white shadow-md"
+                                  : "border-gray-200 bg-white text-gray-700 hover:border-primary-300 hover:bg-primary-50"
+                              }`}
+                            >
+                              {m}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                        Current HMS / system (if any)
                       </label>
                       <input
-                        type="tel"
-                        placeholder="+1 (555) 000-0000"
+                        type="text"
+                        value={currentSystem}
+                        onChange={(e) => setCurrentSystem(e.target.value)}
+                        placeholder="e.g. eHospital, paper records, in-house tool"
                         className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
                       />
                     </div>
+
                     <div>
-                      <label className="mb-1.5 block text-sm font-semibold text-gray-700">
-                        Subject
-                      </label>
-                      <select className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm text-gray-600 outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10">
-                        <option>General Inquiry</option>
-                        <option>Appointment Help</option>
-                        <option>Technical Support</option>
-                        <option>Billing Question</option>
-                        <option>Partnership</option>
-                        <option>Feedback</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block text-sm font-semibold text-gray-700">
-                        Message
+                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                        Anything else?
                       </label>
                       <textarea
-                        required
-                        rows={5}
-                        placeholder="How can we help you?"
+                        rows={4}
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Migration timeline, regulatory needs, languages required…"
                         className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
                       />
                     </div>
+
+                    {error && (
+                      <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm text-rose-700">
+                        {error}
+                      </p>
+                    )}
+
                     <button
                       type="submit"
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-600 via-teal-600 to-emerald-600 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary-600/30 transition-all hover:scale-105 sm:w-auto"
+                      disabled={submitting}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-600 via-teal-600 to-emerald-600 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary-600/30 transition-all hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100 sm:w-auto"
                     >
-                      Send Message →
+                      {submitting ? "Sending…" : "Request walkthrough →"}
                     </button>
+
+                    <p className="text-xs text-gray-400">
+                      We reply within 24 hours. By submitting you agree to our
+                      privacy policy. No spam — promise.
+                    </p>
                   </form>
                 </>
               )}

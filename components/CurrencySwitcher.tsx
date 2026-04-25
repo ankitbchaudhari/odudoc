@@ -145,11 +145,13 @@ export default function CurrencySwitcher({ className = "" }: { className?: strin
   }
   return (
     <label className={`inline-flex items-center gap-2 text-xs ${className}`}>
-      <span className="text-gray-500">Pay in:</span>
+      <span className="text-gray-500" id="checkout-currency-label">Pay in:</span>
       <select
         value={code}
         onChange={(e) => set(e.target.value)}
-        className="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 outline-none focus:border-primary-500"
+        aria-labelledby="checkout-currency-label"
+        aria-label="Payment currency"
+        className="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 outline-none focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500/30 focus-visible:ring-offset-1"
       >
         {enabled.map((c) => (
           <option key={c.code} value={c.code}>

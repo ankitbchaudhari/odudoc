@@ -422,7 +422,9 @@ export default function BookConsultationPage() {
                       <button
                         key={s.id}
                         onClick={() => { setSelectedSpecialty(s.name); setStep(2); }}
-                        className={`group relative flex flex-col items-start overflow-hidden rounded-2xl border-2 p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
+                        aria-pressed={active}
+                        aria-label={`Choose ${s.name} — consultation from $${s.consultFee}`}
+                        className={`group relative flex flex-col items-start overflow-hidden rounded-2xl border-2 p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 ${
                           active
                             ? `border-transparent bg-gradient-to-br ${theme.bg} ring-2 ${theme.ring} shadow-md`
                             : "border-gray-100 bg-white hover:border-transparent hover:" + theme.ring

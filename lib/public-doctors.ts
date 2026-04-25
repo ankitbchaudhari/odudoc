@@ -47,6 +47,7 @@ function toPublic(admin: AdminDoctor): PublicDoctor {
     initials: initials || "DR",
     photoUrl: admin.imageUrl,
     instantAvailable: isInstantlyAvailable(admin),
+    verified: admin.verified === true,
   };
 }
 

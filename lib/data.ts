@@ -22,6 +22,10 @@ export interface Doctor {
   initials: string;
   photoUrl?: string;
   instantAvailable?: boolean;
+  /** Admin-set verified flag — drives the "Verified" badge in the
+   *  public doctor cards + profile. Optional so seed/legacy rows
+   *  that never went through the verification gate render unbadged. */
+  verified?: boolean;
 }
 
 export interface Specialty {

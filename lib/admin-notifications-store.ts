@@ -19,7 +19,8 @@ export type AdminNotificationType =
   | "payment_failed"
   | "subscription_activated"
   | "subscription_cancelled"
-  | "module_request";
+  | "module_request"
+  | "license_expiry";
 
 export interface AdminNotification {
   id: string;

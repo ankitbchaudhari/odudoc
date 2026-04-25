@@ -102,6 +102,37 @@ export interface Doctor {
   // their laptop without untoggling).
   instantAvailable?: boolean;
   instantAvailableUntil?: string; // ISO timestamp
+
+  // -------------------------------------------------------------------
+  // Compliance / verification
+  // -------------------------------------------------------------------
+  /** True when an admin has verified the doctor's credentials. Drives
+   *  the "Verified" badge on patient-facing surfaces. */
+  verified?: boolean;
+  verifiedAt?: string; // ISO
+  verifiedBy?: string; // admin email
+
+  /** ISO 3166-1 alpha-2 country code that issued the medical license.
+   *  Drives the label/regex applied at registration ("NPI" for US,
+   *  "MCI / State Council" for IN, "GMC" for GB, etc.). */
+  licenseCountry?: string;
+  /** Free-text license number — kept as-is for legacy rows. */
+  licenseNumber?: string;
+  /** ISO date (YYYY-MM-DD) the medical license expires. Drives the
+   *  daily expiry-warning cron. */
+  licenseExpiry?: string;
+
+  // -------------------------------------------------------------------
+  // Stripe Connect (direct — doctors are not vendors)
+  // -------------------------------------------------------------------
+  /** Stripe Connect account id (acct_…). Set at first /onboard call. */
+  stripeAccountId?: string;
+  /** Mirror of the latest /v1/accounts/{id} retrieve so the dashboard
+   *  can render onboarding state without re-hitting Stripe per page. */
+  stripeDetailsSubmitted?: boolean;
+  stripePayoutsEnabled?: boolean;
+  stripeChargesEnabled?: boolean;
+  stripeAccountUpdatedAt?: string; // ISO of the last sync
 }
 
 export function isInstantlyAvailable(d: Doctor, at: Date = new Date()): boolean {
@@ -369,6 +400,85 @@ export function updateDoctor(
   if (patch.country !== undefined) d.country = patch.country;
   if (patch.services !== undefined) d.services = patch.services;
   if (patch.timeSlots !== undefined) d.timeSlots = patch.timeSlots;
+  d.updatedAt = now();
+  flush();
+  return d;
+}
+
+// ---------------------------------------------------------------------
+// Compliance / verification helpers
+// ---------------------------------------------------------------------
+
+/** Mark a doctor verified (or unverified) by an admin. */
+export function setDoctorVerified(
+  id: string,
+  verified: boolean,
+  adminEmail: string,
+): Doctor | null {
+  const d = doctors.find((x) => x.id === id);
+  if (!d) return null;
+  d.verified = verified;
+  if (verified) {
+    d.verifiedAt = now();
+    d.verifiedBy = adminEmail.toLowerCase();
+  } else {
+    d.verifiedAt = undefined;
+    d.verifiedBy = undefined;
+  }
+  d.updatedAt = now();
+  flush();
+  return d;
+}
+
+/** Set or update a doctor's medical-license metadata. Used by the admin
+ *  application-approval flow + by the doctor's own license edit form. */
+export function setDoctorLicense(
+  id: string,
+  patch: { country?: string; number?: string; expiry?: string },
+): Doctor | null {
+  const d = doctors.find((x) => x.id === id);
+  if (!d) return null;
+  if (patch.country !== undefined) d.licenseCountry = patch.country.toUpperCase().slice(0, 2);
+  if (patch.number !== undefined) d.licenseNumber = patch.number.trim();
+  if (patch.expiry !== undefined) d.licenseExpiry = patch.expiry;
+  d.updatedAt = now();
+  flush();
+  return d;
+}
+
+// ---------------------------------------------------------------------
+// Stripe Connect helpers (direct — doctors are not vendors)
+// ---------------------------------------------------------------------
+
+/** Find a doctor by their Stripe Connect account id. Used by the
+ *  webhook handler when applying account.updated events. */
+export function findDoctorByStripeAccount(stripeAccountId: string): Doctor | null {
+  return doctors.find((d) => d.stripeAccountId === stripeAccountId) || null;
+}
+
+/** Persist the Stripe Connect account id when /onboard creates one. */
+export function setDoctorStripeAccount(id: string, stripeAccountId: string): Doctor | null {
+  const d = doctors.find((x) => x.id === id);
+  if (!d) return null;
+  d.stripeAccountId = stripeAccountId;
+  d.stripeAccountUpdatedAt = now();
+  d.updatedAt = now();
+  flush();
+  return d;
+}
+
+/** Mirror the latest /v1/accounts/{id} retrieve. Called from the
+ *  /refresh route and from account.updated webhooks. */
+export function syncDoctorStripeStatus(
+  id: string,
+  status: { detailsSubmitted: boolean; payoutsEnabled: boolean; chargesEnabled: boolean },
+): Doctor | null {
+  const d = doctors.find((x) => x.id === id);
+  if (!d) return null;
+  d.stripeDetailsSubmitted = status.detailsSubmitted;
+  d.stripePayoutsEnabled = status.payoutsEnabled;
+  d.stripeChargesEnabled = status.chargesEnabled;
+  d.stripeAccountUpdatedAt = now();
   d.updatedAt = now();
   flush();
   return d;

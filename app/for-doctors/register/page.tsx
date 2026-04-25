@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { COUNTRIES } from "@/lib/countries";
+import { listLicenseCountries, licenseMetaFor } from "@/lib/medical-licenses";
 
 const SPECIALTIES = [
   "Cardiology",
@@ -175,7 +176,9 @@ interface FormState {
   country: string;
   clinicAddress: string;
   // Step 2
+  licenseCountry: string;
   licenseNumber: string;
+  licenseExpiry: string;
   specialty: string;
   subSpecialty: string;
   yearsExperience: string;
@@ -197,6 +200,10 @@ interface FormState {
   // Step 5
   acceptTerms: boolean;
   acceptPrivacy: boolean;
+  // Compliance acceptance — typed-name signature against the
+  // jurisdiction-appropriate BAA / DPA / generic DPA shown in Step 5.
+  complianceAccepted: boolean;
+  complianceSignature: string;
 }
 
 const initialState: FormState = {
@@ -208,7 +215,9 @@ const initialState: FormState = {
   address: "",
   country: "",
   clinicAddress: "",
+  licenseCountry: "",
   licenseNumber: "",
+  licenseExpiry: "",
   specialty: "",
   subSpecialty: "",
   yearsExperience: "",
@@ -227,6 +236,8 @@ const initialState: FormState = {
   fee: "150",
   acceptTerms: false,
   acceptPrivacy: false,
+  complianceAccepted: false,
+  complianceSignature: "",
 };
 
 const STEPS = [
@@ -291,7 +302,17 @@ function DoctorRegisterForm() {
       if (!form.country) e.country = "Country is required";
     }
     if (s === 2) {
+      if (!form.licenseCountry) e.licenseCountry = "Select the country that issued your license";
       if (!form.licenseNumber.trim()) e.licenseNumber = "License number is required";
+      if (!form.licenseExpiry) {
+        e.licenseExpiry = "License expiry date is required";
+      } else {
+        const expiry = new Date(form.licenseExpiry);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (Number.isNaN(expiry.getTime())) e.licenseExpiry = "Invalid date";
+        else if (expiry < today) e.licenseExpiry = "License is already expired — please renew before applying";
+      }
       if (!form.specialty) e.specialty = "Specialty is required";
       if (!form.yearsExperience) e.yearsExperience = "Experience is required";
       if (!form.qualifications.trim()) e.qualifications = "Qualifications required";
@@ -325,6 +346,11 @@ function DoctorRegisterForm() {
     if (s === 5) {
       if (!form.acceptTerms) e.acceptTerms = "You must accept the terms";
       if (!form.acceptPrivacy) e.acceptPrivacy = "You must accept the privacy policy";
+      if (!form.complianceAccepted) {
+        e.complianceSignature = "Tick the data-protection agreement box to continue";
+      } else if (!form.complianceSignature.trim() || form.complianceSignature.trim().length < 2) {
+        e.complianceSignature = "Type your full name to sign the agreement";
+      }
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -348,7 +374,10 @@ function DoctorRegisterForm() {
         address: form.address,
         country: form.country,
         clinicAddress: form.clinicAddress,
+        licenseCountry: form.licenseCountry,
         licenseNumber: form.licenseNumber,
+        licenseExpiry: form.licenseExpiry,
+        complianceSignature: form.complianceSignature,
         specialty: form.specialty,
         subSpecialty: form.subSpecialty,
         yearsExperience: parseInt(form.yearsExperience) || 0,
@@ -859,12 +888,52 @@ function Step2({
       </div>
 
       <div className="mt-8 grid gap-6 sm:grid-cols-2">
-        <Field label="Medical License Number" error={errors.licenseNumber} required icon={PROFESSIONAL_ICONS.license}>
+        <Field
+          label="License Country"
+          required
+          icon={PROFESSIONAL_ICONS.license}
+          hint="The country that issued your medical license. Drives the field labels below."
+        >
+          <select
+            className={inputClass}
+            value={form.licenseCountry}
+            onChange={(e) => update("licenseCountry", e.target.value)}
+          >
+            <option value="">Select issuing country…</option>
+            {listLicenseCountries().map((m) => (
+              <option key={m.country} value={m.country}>
+                {m.countryName} — {m.authorityName}
+              </option>
+            ))}
+            <option value="OTHER">Other / not listed</option>
+          </select>
+        </Field>
+        <Field
+          label={licenseMetaFor(form.licenseCountry).fieldLabel}
+          error={errors.licenseNumber}
+          required
+          icon={PROFESSIONAL_ICONS.license}
+          hint={licenseMetaFor(form.licenseCountry).helpText}
+        >
           <input
             className={inputClass}
             value={form.licenseNumber}
             onChange={(e) => update("licenseNumber", e.target.value)}
-            placeholder="MCI / State Council #"
+            placeholder={licenseMetaFor(form.licenseCountry).placeholder}
+          />
+        </Field>
+        <Field
+          label="License Expiry"
+          required
+          icon={PROFESSIONAL_ICONS.license}
+          hint="Date your current license expires. We email reminders 30 / 14 / 3 days out."
+        >
+          <input
+            type="date"
+            className={inputClass}
+            value={form.licenseExpiry}
+            onChange={(e) => update("licenseExpiry", e.target.value)}
+            min={new Date().toISOString().slice(0, 10)}
           />
         </Field>
         <Field label="Specialty" error={errors.specialty} required icon={PROFESSIONAL_ICONS.specialty}>
@@ -1448,6 +1517,60 @@ function Step5({
           </span>
         </label>
         {errors.acceptPrivacy && <p className="text-xs text-red-600">{errors.acceptPrivacy}</p>}
+
+        {/* Compliance acceptance — wording branches off the license
+            country picked in Step 2. Captures a typed-name signature
+            so the audit log has a defensible artefact, not just a
+            checkbox. */}
+        {(() => {
+          const meta = licenseMetaFor(form.licenseCountry);
+          const titles: Record<typeof meta.framework, string> = {
+            HIPAA_BAA: "HIPAA Business Associate Agreement",
+            GDPR_DPA: "GDPR Data Processing Agreement",
+            GENERIC_DPA: "Data Processing Agreement",
+          };
+          const summaries: Record<typeof meta.framework, string> = {
+            HIPAA_BAA:
+              "OduDoc acts as a Business Associate under HIPAA. We process Protected Health Information only to deliver consultations you book through the platform; we do not sell PHI; we apply administrative, physical, and technical safeguards; we will report any breach to you within 60 days and to HHS as required.",
+            GDPR_DPA:
+              "OduDoc acts as a Processor under GDPR / UK GDPR. We process personal data only on your documented instructions, apply Article 32 security measures, transfer data outside the EEA only under Standard Contractual Clauses, and assist with data-subject-rights requests within statutory windows.",
+            GENERIC_DPA:
+              "OduDoc processes patient data on your behalf solely to deliver booked consultations. We apply industry-standard encryption in transit (TLS 1.3) and at rest (AES-256), keep audit logs of every read and write, and notify you within 72 hours of any confirmed security incident.",
+          };
+          return (
+            <div className="mt-4 rounded-xl border-2 border-primary-200 bg-gradient-to-br from-primary-50 to-teal-50 p-4">
+              <p className="mb-1 text-xs font-bold uppercase tracking-wider text-primary-700">
+                Required — {titles[meta.framework]}
+              </p>
+              <p className="mb-3 text-sm text-gray-700">{summaries[meta.framework]}</p>
+              <label className="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={form.complianceAccepted}
+                  onChange={(e) => update("complianceAccepted", e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                />
+                <span className="text-sm text-gray-700">
+                  I have read and accept the <strong>{titles[meta.framework]}</strong>. I confirm I am authorised to bind my practice to this agreement.
+                </span>
+              </label>
+              <div className="mt-3">
+                <label className="mb-1 block text-xs font-semibold text-gray-600">
+                  Type your full name as a signature *
+                </label>
+                <input
+                  className={inputClass}
+                  value={form.complianceSignature}
+                  onChange={(e) => update("complianceSignature", e.target.value)}
+                  placeholder={form.fullName || "Dr. Your Name"}
+                />
+              </div>
+              {errors.complianceSignature && (
+                <p className="mt-1 text-xs text-red-600">{errors.complianceSignature}</p>
+              )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

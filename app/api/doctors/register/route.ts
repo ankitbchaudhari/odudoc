@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { addApplication } from "@/lib/doctor-applications-store";
 import { addAdminNotification } from "@/lib/admin-notifications-store";
 import { sendDoctorApplicationReceivedEmail } from "@/lib/email";
-import { enforceRateLimit } from "@/lib/rate-limit-helpers";
+import { enforceRateLimit, clientIp } from "@/lib/rate-limit-helpers";
+import { licenseMetaFor } from "@/lib/medical-licenses";
+import { recordAcceptance, CURRENT_VERSIONS } from "@/lib/doctor-baa-store";
 
 import { log } from "@/lib/log";
 export async function POST(req: NextRequest) {
@@ -85,6 +87,33 @@ export async function POST(req: NextRequest) {
     }
     body.gender = gender;
 
+    // Country drives the license-field labelling AND which compliance
+    // framework (HIPAA BAA / GDPR DPA / generic DPA) the applicant
+    // signed. Canonicalise to a 2-letter ISO code; default to "" if
+    // the applicant left the country field as free-text address.
+    const rawCountry = typeof body.country === "string" ? body.country.trim().toUpperCase() : "";
+    const licenseCountry =
+      typeof body.licenseCountry === "string"
+        ? body.licenseCountry.trim().toUpperCase().slice(0, 2)
+        : rawCountry.slice(0, 2);
+    const meta = licenseMetaFor(licenseCountry);
+
+    // Compliance acceptance — required field. The form must surface
+    // the BAA/DPA wording corresponding to meta.framework and capture
+    // a typed-name signature. Without it we refuse the registration so
+    // we never have a doctor record without a valid acceptance trail.
+    const signature =
+      typeof body.complianceSignature === "string" ? body.complianceSignature.trim() : "";
+    if (signature.length < 2) {
+      return NextResponse.json(
+        {
+          error:
+            "Please type your full name to acknowledge the data-protection agreement before submitting.",
+        },
+        { status: 400 },
+      );
+    }
+
     const app = addApplication({
       fullName: body.fullName,
       email: body.email,
@@ -92,7 +121,13 @@ export async function POST(req: NextRequest) {
       dateOfBirth: body.dateOfBirth,
       gender: body.gender,
       address: `${body.address}${body.country ? ", " + body.country : ""}`,
+      country: licenseCountry || undefined,
       licenseNumber: body.licenseNumber,
+      licenseCountry: licenseCountry || undefined,
+      licenseExpiry:
+        typeof body.licenseExpiry === "string" && body.licenseExpiry.length >= 8
+          ? body.licenseExpiry
+          : undefined,
       specialty: body.specialty,
       subSpecialty: body.subSpecialty || "",
       yearsExperience: Number(body.yearsExperience) || 0,
@@ -109,7 +144,31 @@ export async function POST(req: NextRequest) {
       },
       plan: body.plan === "premium" ? "premium" : "free",
       fee: Number(body.fee) || 100,
+      compliance: {
+        framework: meta.framework,
+        version: CURRENT_VERSIONS[meta.framework],
+        acceptedAt: new Date().toISOString(),
+        ipAddress: clientIp(req),
+        signature,
+      },
     });
+
+    // Persist the acceptance to the dedicated audit store too — that's
+    // the table we'd produce in a regulatory dispute. The compliance
+    // field on the application gives the same info inline; this row
+    // is the durable, application-id-decoupled record.
+    try {
+      recordAcceptance({
+        applicationId: app.id,
+        email: body.email,
+        framework: meta.framework,
+        ipAddress: clientIp(req),
+        userAgent: req.headers.get("user-agent") || undefined,
+        signature,
+      });
+    } catch (err) {
+      log.error("doctor_register.baa_record_failed", err);
+    }
 
     try {
       addAdminNotification({

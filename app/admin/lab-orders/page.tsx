@@ -224,13 +224,26 @@ export default function LabOrdersPage() {
 
   if (error === "no_active_org") {
     return (
-      <div className="p-8">
-        <h1 className="text-2xl font-bold mb-2">Lab Orders</h1>
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mt-4">
-          <p className="text-amber-900 font-medium">No active organization</p>
-          <p className="text-sm text-amber-800 mt-1">
-            Select an organization from the switcher in the top bar.
-          </p>
+      <div className="p-4 md:p-8 max-w-7xl">
+        <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-fuchsia-600 via-pink-600 to-rose-700 p-6 text-white shadow-lg">
+          <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-accent-300/20 blur-3xl" />
+          <div className="relative">
+            <h1 className="text-2xl font-bold">Lab Orders</h1>
+            <p className="mt-1 text-sm text-pink-50/90">
+              Clinical lab investigations — order, collect, result, report.
+            </p>
+          </div>
+        </div>
+        <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-rose-50 via-amber-50 to-rose-50 shadow-sm ring-1 ring-rose-200/60">
+          <div className="h-1 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500" />
+          <div className="p-8 text-center">
+            <div className="mb-3 text-5xl">🧪</div>
+            <h2 className="text-lg font-bold text-rose-900">No active organization</h2>
+            <p className="mt-2 text-sm text-rose-800/90">
+              Select an organization from the switcher in the top bar.
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -238,20 +251,31 @@ export default function LabOrdersPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-7xl">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Lab Orders</h1>
-          <p className="text-sm text-gray-500">
-            Clinical lab investigations — order, collect, result, report.
-          </p>
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-fuchsia-600 via-pink-600 to-rose-700 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-accent-300/20 blur-3xl" />
+        <div className="relative flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-pink-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-pink-400" />
+              </span>
+              {orders.length} order{orders.length === 1 ? "" : "s"}
+            </div>
+            <h1 className="text-2xl font-bold">Lab Orders</h1>
+            <p className="mt-1 text-sm text-pink-50/90">
+              Clinical lab investigations — order, collect, result, report.
+            </p>
+          </div>
+          <button
+            onClick={() => (showForm ? resetForm() : setShowForm(true))}
+            disabled={patients.length === 0}
+            className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-pink-700 shadow transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {showForm ? "Cancel" : "🧪 + New lab order"}
+          </button>
         </div>
-        <button
-          onClick={() => (showForm ? resetForm() : setShowForm(true))}
-          disabled={patients.length === 0}
-          className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-        >
-          {showForm ? "Cancel" : "+ New lab order"}
-        </button>
       </div>
 
       {showForm && (
@@ -397,14 +421,14 @@ export default function LabOrdersPage() {
           <div className="flex gap-2">
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700"
+              className="rounded-lg bg-gradient-to-r from-fuchsia-500 to-pink-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md"
             >
-              {editingId ? "Save changes" : "Create lab order"}
+              {editingId ? "💾 Save changes" : "🧪 Create lab order"}
             </button>
             <button
               type="button"
               onClick={resetForm}
-              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+              className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-gray-200 transition hover:-translate-y-0.5 hover:shadow"
             >
               Cancel
             </button>
@@ -430,122 +454,141 @@ export default function LabOrdersPage() {
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium ${
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition hover:-translate-y-0.5 ${
                 statusFilter === s
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-gradient-to-r from-fuchsia-500 to-pink-600 text-white shadow"
+                  : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"
               }`}
             >
-              {s}
+              {s.replace("_", " ")}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500" />
         {loading ? (
-          <div className="p-8 text-center text-gray-500 text-sm">Loading…</div>
+          <p className="py-16 text-center text-sm text-gray-400">Loading…</p>
         ) : orders.length === 0 ? (
-          <div className="p-8 text-center text-gray-500 text-sm">
-            No lab orders match the filters.
-          </div>
+          <p className="py-16 text-center text-sm text-gray-400">
+            🧪 No lab orders match the filters.
+          </p>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
-              <tr>
-                <th className="px-4 py-2">Ordered</th>
-                <th className="px-4 py-2">Patient</th>
-                <th className="px-4 py-2">Priority</th>
-                <th className="px-4 py-2">Tests</th>
-                <th className="px-4 py-2">Status</th>
-                <th className="px-4 py-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((o) => {
-                const p = patientsById.get(o.patientId);
-                const resultedCount = o.items.filter((i) => i.value).length;
-                return (
-                  <>
-                    <tr key={o.id} className="border-t border-gray-100 hover:bg-gray-50 align-top">
-                      <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-600">
-                        {new Date(o.orderedAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-2">
-                        {p ? (
-                          <>
-                            <div className="font-medium">{p.firstName} {p.lastName}</div>
-                            <div className="text-xs font-mono text-gray-400">{p.mrn}</div>
-                          </>
-                        ) : (
-                          <span className="text-gray-400 italic">unknown</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2">
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium uppercase ${
-                          o.priority === "stat" ? "bg-red-100 text-red-700" :
-                          o.priority === "urgent" ? "bg-amber-100 text-amber-700" :
-                          "bg-gray-100 text-gray-700"
-                        }`}>
-                          {o.priority}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2">
-                        <div className="text-xs">
-                          {resultedCount}/{o.items.length} resulted
-                        </div>
-                        <div className="text-[11px] text-gray-500 truncate max-w-xs">
-                          {o.items.map((i) => i.testName).join(", ")}
-                        </div>
-                      </td>
-                      <td className="px-4 py-2">
-                        <select
-                          value={o.status}
-                          onChange={(e) => updateStatus(o, e.target.value as LabOrderStatus)}
-                          className="text-xs px-2 py-1 border border-gray-200 rounded"
-                        >
-                          {STATUSES.map((s) => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-4 py-2 text-right whitespace-nowrap">
-                        <button
-                          onClick={() => setResultsFor(resultsFor === o.id ? null : o.id)}
-                          className="text-emerald-600 hover:underline mr-3"
-                        >
-                          Results
-                        </button>
-                        <button
-                          onClick={() => loadForEdit(o)}
-                          className="text-blue-600 hover:underline mr-3"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => remove(o)}
-                          className="text-red-600 hover:underline"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                    {resultsFor === o.id && (
-                      <tr className="bg-slate-50 border-t border-gray-100">
-                        <td colSpan={6} className="px-4 py-4">
-                          <ResultsEditor
-                            order={o}
-                            onSave={(rs) => submitResults(o.id, rs)}
-                            onCancel={() => setResultsFor(null)}
-                          />
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b border-gray-100 bg-gradient-to-r from-fuchsia-50/60 via-pink-50/40 to-rose-50/60">
+                <tr className="text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  <th className="px-5 py-3">Ordered</th>
+                  <th className="px-5 py-3">Patient</th>
+                  <th className="px-5 py-3">Priority</th>
+                  <th className="px-5 py-3">Tests</th>
+                  <th className="px-5 py-3">Status</th>
+                  <th className="px-5 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {orders.map((o) => {
+                  const p = patientsById.get(o.patientId);
+                  const resultedCount = o.items.filter((i) => i.value).length;
+                  const priorityStyle =
+                    o.priority === "stat"
+                      ? "bg-gradient-to-r from-rose-500 to-red-600 text-white"
+                      : o.priority === "urgent"
+                      ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white"
+                      : "bg-gradient-to-r from-slate-100 to-gray-100 text-gray-700 ring-1 ring-gray-200";
+                  const statusStyle =
+                    o.status === "ordered"
+                      ? { pill: "bg-gradient-to-r from-sky-50 to-blue-50 text-blue-700 ring-blue-200", dot: "bg-blue-500" }
+                      : o.status === "collected" || o.status === "in_progress"
+                      ? { pill: "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200", dot: "bg-amber-500" }
+                      : o.status === "completed" || o.status === "reported"
+                      ? { pill: "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200", dot: "bg-emerald-500" }
+                      : { pill: "bg-gradient-to-r from-rose-50 to-red-50 text-rose-700 ring-rose-200", dot: "bg-rose-500" };
+                  return (
+                    <>
+                      <tr key={o.id} className="align-top transition-colors hover:bg-pink-50/30">
+                        <td className="px-5 py-3 whitespace-nowrap text-xs text-gray-600">
+                          {new Date(o.orderedAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-5 py-3">
+                          {p ? (
+                            <>
+                              <div className="font-medium text-gray-900">{p.firstName} {p.lastName}</div>
+                              <div className="text-xs font-mono text-gray-400">{p.mrn}</div>
+                            </>
+                          ) : (
+                            <span className="text-gray-400 italic">unknown</span>
+                          )}
+                        </td>
+                        <td className="px-5 py-3">
+                          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold uppercase shadow ${priorityStyle}`}>
+                            {o.priority}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3">
+                          <div className="text-xs font-semibold text-gray-900">
+                            {resultedCount}/{o.items.length} resulted
+                          </div>
+                          <div className="text-[11px] text-gray-500 truncate max-w-xs">
+                            {o.items.map((i) => i.testName).join(", ")}
+                          </div>
+                        </td>
+                        <td className="px-5 py-3">
+                          <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ring-1 ${statusStyle.pill}`}>
+                            <span className={`h-1.5 w-1.5 rounded-full ${statusStyle.dot}`} />
+                            {o.status.replace("_", " ")}
+                          </span>
+                          <select
+                            value={o.status}
+                            onChange={(e) => updateStatus(o, e.target.value as LabOrderStatus)}
+                            className="ml-2 text-xs px-2 py-1 border border-gray-200 rounded bg-white"
+                          >
+                            {STATUSES.map((s) => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-5 py-3">
+                          <div className="flex justify-end gap-1.5">
+                            <button
+                              onClick={() => setResultsFor(resultsFor === o.id ? null : o.id)}
+                              className="rounded-lg bg-gradient-to-r from-emerald-500 to-green-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md"
+                            >
+                              📊 Results
+                            </button>
+                            <button
+                              onClick={() => loadForEdit(o)}
+                              className="rounded-lg bg-gradient-to-r from-fuchsia-500 to-pink-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md"
+                            >
+                              ✏️ Edit
+                            </button>
+                            <button
+                              onClick={() => remove(o)}
+                              className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:-translate-y-0.5 hover:bg-rose-100 hover:shadow"
+                            >
+                              ✕ Delete
+                            </button>
+                          </div>
                         </td>
                       </tr>
-                    )}
-                  </>
-                );
-              })}
-            </tbody>
-          </table>
+                      {resultsFor === o.id && (
+                        <tr className="bg-gradient-to-r from-fuchsia-50/40 via-pink-50/30 to-rose-50/40 border-t border-gray-100">
+                          <td colSpan={6} className="px-5 py-4">
+                            <ResultsEditor
+                              order={o}
+                              onSave={(rs) => submitResults(o.id, rs)}
+                              onCancel={() => setResultsFor(null)}
+                            />
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

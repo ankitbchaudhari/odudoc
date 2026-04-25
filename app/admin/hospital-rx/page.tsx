@@ -190,13 +190,26 @@ export default function HospitalRxPage() {
 
   if (error === "no_active_org") {
     return (
-      <div className="p-8">
-        <h1 className="text-2xl font-bold mb-2">Hospital Prescriptions</h1>
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mt-4">
-          <p className="text-amber-900 font-medium">No active organization</p>
-          <p className="text-sm text-amber-800 mt-1">
-            Select an organization from the switcher in the top bar.
-          </p>
+      <div className="p-4 md:p-8 max-w-7xl">
+        <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-sky-600 via-blue-600 to-indigo-700 p-6 text-white shadow-lg">
+          <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-accent-300/20 blur-3xl" />
+          <div className="relative">
+            <h1 className="text-2xl font-bold">Hospital Prescriptions</h1>
+            <p className="mt-1 text-sm text-sky-50/90">
+              Medication orders issued during encounters. Feeds pharmacy dispensing.
+            </p>
+          </div>
+        </div>
+        <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-rose-50 via-amber-50 to-rose-50 shadow-sm ring-1 ring-rose-200/60">
+          <div className="h-1 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500" />
+          <div className="p-8 text-center">
+            <div className="mb-3 text-5xl">💊</div>
+            <h2 className="text-lg font-bold text-rose-900">No active organization</h2>
+            <p className="mt-2 text-sm text-rose-800/90">
+              Select an organization from the switcher in the top bar.
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -204,27 +217,42 @@ export default function HospitalRxPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-7xl">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Hospital Prescriptions</h1>
-          <p className="text-sm text-gray-500">
-            Medication orders issued during encounters. Feeds pharmacy dispensing.
-          </p>
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-sky-600 via-blue-600 to-indigo-700 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-accent-300/20 blur-3xl" />
+        <div className="relative flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-sky-400" />
+              </span>
+              {rxs.length} prescription{rxs.length === 1 ? "" : "s"}
+            </div>
+            <h1 className="text-2xl font-bold">Hospital Prescriptions</h1>
+            <p className="mt-1 text-sm text-sky-50/90">
+              Medication orders issued during encounters. Feeds pharmacy dispensing.
+            </p>
+          </div>
+          <button
+            onClick={() => (showForm ? resetForm() : setShowForm(true))}
+            disabled={patients.length === 0}
+            className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {showForm ? "Cancel" : "💊 + New prescription"}
+          </button>
         </div>
-        <button
-          onClick={() => (showForm ? resetForm() : setShowForm(true))}
-          disabled={patients.length === 0}
-          className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-        >
-          {showForm ? "Cancel" : "+ New prescription"}
-        </button>
       </div>
 
       {patients.length === 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 text-sm text-amber-900">
-          No patients yet.{" "}
-          <a href="/admin/patients" className="underline font-medium">Add a patient</a>{" "}
-          first.
+        <div className="overflow-hidden rounded-xl bg-gradient-to-r from-rose-50 via-amber-50 to-rose-50 mb-6 ring-1 ring-rose-200/60">
+          <div className="h-1 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500" />
+          <div className="p-4 text-sm text-rose-900">
+            <span className="mr-1">⚠️</span>
+            No patients yet.{" "}
+            <a href="/admin/patients" className="underline font-semibold">Add a patient</a>{" "}
+            first.
+          </div>
         </div>
       )}
 
@@ -371,14 +399,14 @@ export default function HospitalRxPage() {
           <div className="flex gap-2">
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700"
+              className="rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md"
             >
-              {editingId ? "Save changes" : "Create prescription"}
+              {editingId ? "💾 Save changes" : "💊 Create prescription"}
             </button>
             <button
               type="button"
               onClick={resetForm}
-              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+              className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-gray-200 transition hover:-translate-y-0.5 hover:shadow"
             >
               Cancel
             </button>
@@ -399,103 +427,120 @@ export default function HospitalRxPage() {
             </option>
           ))}
         </select>
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-wrap">
           {(["all", ...STATUSES] as const).map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium ${
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition hover:-translate-y-0.5 ${
                 statusFilter === s
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow"
+                  : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"
               }`}
             >
-              {s}
+              {s.replace("_", " ")}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500" />
         {loading ? (
-          <div className="p-8 text-center text-gray-500 text-sm">Loading…</div>
+          <p className="py-16 text-center text-sm text-gray-400">Loading…</p>
         ) : rxs.length === 0 ? (
-          <div className="p-8 text-center text-gray-500 text-sm">
-            No prescriptions match the filters.
-          </div>
+          <p className="py-16 text-center text-sm text-gray-400">
+            💊 No prescriptions match the filters.
+          </p>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
-              <tr>
-                <th className="px-4 py-2">Issued</th>
-                <th className="px-4 py-2">Patient</th>
-                <th className="px-4 py-2">Doctor</th>
-                <th className="px-4 py-2">Medications</th>
-                <th className="px-4 py-2">Status</th>
-                <th className="px-4 py-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {rxs.map((rx) => {
-                const p = patientsById.get(rx.patientId);
-                return (
-                  <tr key={rx.id} className="border-t border-gray-100 hover:bg-gray-50 align-top">
-                    <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-600">
-                      {new Date(rx.issuedAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-2">
-                      {p ? (
-                        <>
-                          <div className="font-medium">{p.firstName} {p.lastName}</div>
-                          <div className="text-xs font-mono text-gray-400">{p.mrn}</div>
-                        </>
-                      ) : (
-                        <span className="text-gray-400 italic">unknown</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2">{rx.doctorName || "—"}</td>
-                    <td className="px-4 py-2">
-                      <div className="space-y-0.5">
-                        {rx.items.map((i, idx) => (
-                          <div key={idx} className="text-xs">
-                            <span className="font-medium">{i.drugName}</span>
-                            {i.strength && <span className="text-gray-500"> · {i.strength}</span>}
-                            {i.frequency && <span className="text-gray-500"> · {i.frequency}</span>}
-                            {i.durationDays && <span className="text-gray-500"> · {i.durationDays}d</span>}
-                          </div>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-4 py-2">
-                      <select
-                        value={rx.status}
-                        onChange={(e) => updateStatus(rx, e.target.value as PrescriptionStatus)}
-                        className="text-xs px-2 py-1 border border-gray-200 rounded"
-                      >
-                        {STATUSES.map((s) => (
-                          <option key={s} value={s}>{s}</option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="px-4 py-2 text-right whitespace-nowrap">
-                      <button
-                        onClick={() => loadForEdit(rx)}
-                        className="text-blue-600 hover:underline mr-3"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => remove(rx)}
-                        className="text-red-600 hover:underline"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b border-gray-100 bg-gradient-to-r from-sky-50/60 via-blue-50/40 to-indigo-50/60">
+                <tr className="text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  <th className="px-5 py-3">Issued</th>
+                  <th className="px-5 py-3">Patient</th>
+                  <th className="px-5 py-3">Doctor</th>
+                  <th className="px-5 py-3">Medications</th>
+                  <th className="px-5 py-3">Status</th>
+                  <th className="px-5 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {rxs.map((rx) => {
+                  const p = patientsById.get(rx.patientId);
+                  const statusStyle =
+                    rx.status === "active"
+                      ? { pill: "bg-gradient-to-r from-sky-50 to-blue-50 text-blue-700 ring-blue-200", dot: "bg-blue-500" }
+                      : rx.status === "completed"
+                      ? { pill: "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200", dot: "bg-emerald-500" }
+                      : rx.status === "on_hold"
+                      ? { pill: "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200", dot: "bg-amber-500" }
+                      : { pill: "bg-gradient-to-r from-rose-50 to-red-50 text-rose-700 ring-rose-200", dot: "bg-rose-500" };
+                  return (
+                    <tr key={rx.id} className="align-top transition-colors hover:bg-sky-50/30">
+                      <td className="px-5 py-3 whitespace-nowrap text-xs text-gray-600">
+                        {new Date(rx.issuedAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-5 py-3">
+                        {p ? (
+                          <>
+                            <div className="font-medium text-gray-900">{p.firstName} {p.lastName}</div>
+                            <div className="text-xs font-mono text-gray-400">{p.mrn}</div>
+                          </>
+                        ) : (
+                          <span className="text-gray-400 italic">unknown</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3 text-gray-700">{rx.doctorName || "—"}</td>
+                      <td className="px-5 py-3">
+                        <div className="space-y-0.5">
+                          {rx.items.map((i, idx) => (
+                            <div key={idx} className="text-xs">
+                              <span className="font-semibold text-gray-900">{i.drugName}</span>
+                              {i.strength && <span className="text-gray-500"> · {i.strength}</span>}
+                              {i.frequency && <span className="text-gray-500"> · {i.frequency}</span>}
+                              {i.durationDays && <span className="text-gray-500"> · {i.durationDays}d</span>}
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ring-1 ${statusStyle.pill}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${statusStyle.dot}`} />
+                          {rx.status.replace("_", " ")}
+                        </span>
+                        <select
+                          value={rx.status}
+                          onChange={(e) => updateStatus(rx, e.target.value as PrescriptionStatus)}
+                          className="ml-2 text-xs px-2 py-1 border border-gray-200 rounded bg-white"
+                        >
+                          {STATUSES.map((s) => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-5 py-3">
+                        <div className="flex justify-end gap-1.5">
+                          <button
+                            onClick={() => loadForEdit(rx)}
+                            className="rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            onClick={() => remove(rx)}
+                            className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:-translate-y-0.5 hover:bg-rose-100 hover:shadow"
+                          >
+                            ✕ Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

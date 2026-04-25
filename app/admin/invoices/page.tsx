@@ -289,13 +289,26 @@ export default function InvoicesPage() {
 
   if (error === "no_active_org") {
     return (
-      <div className="p-8">
-        <h1 className="text-2xl font-bold mb-2">Invoices</h1>
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mt-4">
-          <p className="text-amber-900 font-medium">No active organization</p>
-          <p className="text-sm text-amber-800 mt-1">
-            Select an organization from the switcher.
-          </p>
+      <div className="p-4 md:p-8 max-w-7xl">
+        <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-yellow-600 p-6 text-white shadow-lg">
+          <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-accent-300/20 blur-3xl" />
+          <div className="relative">
+            <h1 className="text-2xl font-bold">Invoices</h1>
+            <p className="mt-1 text-sm text-amber-50/90">
+              Patient billing with line items, tax, discounts, and payments.
+            </p>
+          </div>
+        </div>
+        <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-rose-50 via-amber-50 to-rose-50 shadow-sm ring-1 ring-rose-200/60">
+          <div className="h-1 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500" />
+          <div className="p-8 text-center">
+            <div className="mb-3 text-5xl">🧾</div>
+            <h2 className="text-lg font-bold text-rose-900">No active organization</h2>
+            <p className="mt-2 text-sm text-rose-800/90">
+              Select an organization from the switcher.
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -303,20 +316,31 @@ export default function InvoicesPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-7xl">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Invoices</h1>
-          <p className="text-sm text-gray-500">
-            Patient billing with line items, tax, discounts, and payments.
-          </p>
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-yellow-600 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-accent-300/20 blur-3xl" />
+        <div className="relative flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-200 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-yellow-300" />
+              </span>
+              {invoices.length} invoice{invoices.length === 1 ? "" : "s"}
+            </div>
+            <h1 className="text-2xl font-bold">Invoices</h1>
+            <p className="mt-1 text-sm text-amber-50/90">
+              Patient billing with line items, tax, discounts, and payments.
+            </p>
+          </div>
+          <button
+            onClick={() => (showForm ? resetForm() : setShowForm(true))}
+            disabled={patients.length === 0}
+            className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-amber-700 shadow transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {showForm ? "Cancel" : "🧾 + New invoice"}
+          </button>
         </div>
-        <button
-          onClick={() => (showForm ? resetForm() : setShowForm(true))}
-          disabled={patients.length === 0}
-          className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-        >
-          {showForm ? "Cancel" : "+ New invoice"}
-        </button>
       </div>
 
       {showForm && (
@@ -504,14 +528,14 @@ export default function InvoicesPage() {
           <div className="flex gap-2">
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700"
+              className="rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md"
             >
-              {editingId ? "Save changes" : "Create invoice"}
+              {editingId ? "💾 Save changes" : "🧾 Create invoice"}
             </button>
             <button
               type="button"
               onClick={resetForm}
-              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+              className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-gray-200 transition hover:-translate-y-0.5 hover:shadow"
             >
               Cancel
             </button>
@@ -537,98 +561,107 @@ export default function InvoicesPage() {
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium ${
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition hover:-translate-y-0.5 ${
                 statusFilter === s
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow"
+                  : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"
               }`}
             >
-              {s}
+              {s.replace("_", " ")}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500" />
         {loading ? (
-          <div className="p-8 text-center text-gray-500 text-sm">Loading…</div>
+          <p className="py-16 text-center text-sm text-gray-400">Loading…</p>
         ) : invoices.length === 0 ? (
-          <div className="p-8 text-center text-gray-500 text-sm">
-            No invoices match the filters.
-          </div>
+          <p className="py-16 text-center text-sm text-gray-400">
+            🧾 No invoices match the filters.
+          </p>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
-              <tr>
-                <th className="px-4 py-2">Invoice #</th>
-                <th className="px-4 py-2">Patient</th>
-                <th className="px-4 py-2">Created</th>
-                <th className="px-4 py-2 text-right">Total</th>
-                <th className="px-4 py-2 text-right">Paid</th>
-                <th className="px-4 py-2 text-right">Balance</th>
-                <th className="px-4 py-2">Status</th>
-                <th className="px-4 py-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoices.map((inv) => {
-                const p = patientsById.get(inv.patientId);
-                const statusColor =
-                  inv.status === "paid" ? "bg-emerald-100 text-emerald-700" :
-                  inv.status === "partially_paid" ? "bg-amber-100 text-amber-700" :
-                  inv.status === "issued" ? "bg-blue-100 text-blue-700" :
-                  inv.status === "draft" ? "bg-gray-100 text-gray-700" :
-                  "bg-red-100 text-red-700";
-                return (
-                  <>
-                    <tr key={inv.id} className="border-t border-gray-100 hover:bg-gray-50 align-top">
-                      <td className="px-4 py-2 font-mono text-xs">{inv.invoiceNumber}</td>
-                      <td className="px-4 py-2">
-                        {p ? (
-                          <>
-                            <div className="font-medium">{p.firstName} {p.lastName}</div>
-                            <div className="text-xs font-mono text-gray-400">{p.mrn}</div>
-                          </>
-                        ) : (
-                          <span className="text-gray-400 italic">unknown</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2 text-xs text-gray-600 whitespace-nowrap">
-                        {new Date(inv.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-2 text-right font-medium">
-                        {fmtMoney(inv.grandTotal, inv.currency)}
-                      </td>
-                      <td className="px-4 py-2 text-right text-emerald-700">
-                        {fmtMoney(inv.paidTotal, inv.currency)}
-                      </td>
-                      <td className={`px-4 py-2 text-right font-semibold ${inv.balance > 0 ? "text-red-600" : "text-gray-500"}`}>
-                        {fmtMoney(inv.balance, inv.currency)}
-                      </td>
-                      <td className="px-4 py-2">
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium uppercase ${statusColor}`}>
-                          {inv.status.replace("_", " ")}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2 text-right whitespace-nowrap">
-                        {inv.status === "draft" && (
-                          <button onClick={() => issueDraft(inv)} className="text-blue-600 hover:underline mr-3">Issue</button>
-                        )}
-                        {inv.status !== "void" && inv.status !== "paid" && (
-                          <button onClick={() => setPaymentFor(paymentFor === inv.id ? null : inv.id)} className="text-emerald-600 hover:underline mr-3">
-                            Pay
-                          </button>
-                        )}
-                        <button onClick={() => loadForEdit(inv)} className="text-blue-600 hover:underline mr-3">Edit</button>
-                        {inv.status !== "void" && (
-                          <button onClick={() => voidInvoice(inv)} className="text-amber-600 hover:underline mr-3">Void</button>
-                        )}
-                        <button onClick={() => remove(inv)} className="text-red-600 hover:underline">Delete</button>
-                      </td>
-                    </tr>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b border-gray-100 bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-yellow-50/60">
+                <tr className="text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  <th className="px-5 py-3">Invoice #</th>
+                  <th className="px-5 py-3">Patient</th>
+                  <th className="px-5 py-3">Created</th>
+                  <th className="px-5 py-3 text-right">Total</th>
+                  <th className="px-5 py-3 text-right">Paid</th>
+                  <th className="px-5 py-3 text-right">Balance</th>
+                  <th className="px-5 py-3">Status</th>
+                  <th className="px-5 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {invoices.map((inv) => {
+                  const p = patientsById.get(inv.patientId);
+                  const statusStyle =
+                    inv.status === "paid"
+                      ? { pill: "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200", dot: "bg-emerald-500" }
+                      : inv.status === "partially_paid"
+                      ? { pill: "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200", dot: "bg-amber-500" }
+                      : inv.status === "issued"
+                      ? { pill: "bg-gradient-to-r from-sky-50 to-blue-50 text-blue-700 ring-blue-200", dot: "bg-blue-500" }
+                      : inv.status === "draft"
+                      ? { pill: "bg-gradient-to-r from-slate-50 to-gray-50 text-slate-700 ring-slate-200", dot: "bg-slate-500" }
+                      : { pill: "bg-gradient-to-r from-rose-50 to-red-50 text-rose-700 ring-rose-200", dot: "bg-rose-500" };
+                  return (
+                    <>
+                      <tr key={inv.id} className="align-top transition-colors hover:bg-amber-50/30">
+                        <td className="px-5 py-3 font-mono text-xs text-gray-700">{inv.invoiceNumber}</td>
+                        <td className="px-5 py-3">
+                          {p ? (
+                            <>
+                              <div className="font-medium text-gray-900">{p.firstName} {p.lastName}</div>
+                              <div className="text-xs font-mono text-gray-400">{p.mrn}</div>
+                            </>
+                          ) : (
+                            <span className="text-gray-400 italic">unknown</span>
+                          )}
+                        </td>
+                        <td className="px-5 py-3 text-xs text-gray-600 whitespace-nowrap">
+                          {new Date(inv.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-5 py-3 text-right font-semibold text-gray-900">
+                          {fmtMoney(inv.grandTotal, inv.currency)}
+                        </td>
+                        <td className="px-5 py-3 text-right text-emerald-700 font-semibold">
+                          {fmtMoney(inv.paidTotal, inv.currency)}
+                        </td>
+                        <td className={`px-5 py-3 text-right font-bold ${inv.balance > 0 ? "text-rose-600" : "text-gray-400"}`}>
+                          {fmtMoney(inv.balance, inv.currency)}
+                        </td>
+                        <td className="px-5 py-3">
+                          <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ring-1 ${statusStyle.pill}`}>
+                            <span className={`h-1.5 w-1.5 rounded-full ${statusStyle.dot}`} />
+                            {inv.status.replace("_", " ")}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3">
+                          <div className="flex justify-end gap-1.5 flex-wrap">
+                            {inv.status === "draft" && (
+                              <button onClick={() => issueDraft(inv)} className="rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">📤 Issue</button>
+                            )}
+                            {inv.status !== "void" && inv.status !== "paid" && (
+                              <button onClick={() => setPaymentFor(paymentFor === inv.id ? null : inv.id)} className="rounded-lg bg-gradient-to-r from-emerald-500 to-green-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">
+                                💵 Pay
+                              </button>
+                            )}
+                            <button onClick={() => loadForEdit(inv)} className="rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">✏️ Edit</button>
+                            {inv.status !== "void" && (
+                              <button onClick={() => voidInvoice(inv)} className="rounded-lg bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200 transition hover:-translate-y-0.5 hover:bg-amber-100 hover:shadow">⊘ Void</button>
+                            )}
+                            <button onClick={() => remove(inv)} className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:-translate-y-0.5 hover:bg-rose-100 hover:shadow">✕ Delete</button>
+                          </div>
+                        </td>
+                      </tr>
                     {(paymentFor === inv.id || inv.payments.length > 0) && (
-                      <tr className="bg-slate-50 border-t border-gray-100">
-                        <td colSpan={8} className="px-4 py-3">
+                      <tr className="bg-gradient-to-r from-amber-50/40 via-orange-50/30 to-yellow-50/40 border-t border-gray-100">
+                        <td colSpan={8} className="px-5 py-3">
                           {inv.payments.length > 0 && (
                             <div className="mb-3">
                               <div className="text-xs font-semibold text-gray-700 mb-1">Payments</div>
@@ -692,13 +725,13 @@ export default function InvoicesPage() {
                               </div>
                               <button
                                 onClick={() => submitPayment(inv.id)}
-                                className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700"
+                                className="rounded-lg bg-gradient-to-r from-emerald-500 to-green-600 px-3 py-1.5 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md"
                               >
-                                Record payment
+                                💵 Record payment
                               </button>
                               <button
                                 onClick={() => setPaymentFor(null)}
-                                className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm hover:bg-gray-100"
+                                className="rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-gray-700 ring-1 ring-gray-200 transition hover:-translate-y-0.5 hover:shadow"
                               >
                                 Cancel
                               </button>
@@ -712,6 +745,7 @@ export default function InvoicesPage() {
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

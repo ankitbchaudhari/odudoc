@@ -224,13 +224,26 @@ export default function AdminEncountersPage() {
 
   if (error === "no_active_org") {
     return (
-      <div className="p-8">
-        <h1 className="text-2xl font-bold mb-2">Encounters</h1>
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mt-4">
-          <p className="text-amber-900 font-medium mb-1">No active organization</p>
-          <p className="text-sm text-amber-800">
-            Select an organization from the switcher in the top bar to manage encounters.
-          </p>
+      <div className="p-4 md:p-8 max-w-7xl">
+        <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-700 p-6 text-white shadow-lg">
+          <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-accent-300/20 blur-3xl" />
+          <div className="relative">
+            <h1 className="text-2xl font-bold">Encounters</h1>
+            <p className="mt-1 text-sm text-violet-50/90">
+              Patient visits — OPD, IPD, emergency, follow-up, telemedicine.
+            </p>
+          </div>
+        </div>
+        <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-rose-50 via-amber-50 to-rose-50 shadow-sm ring-1 ring-rose-200/60">
+          <div className="h-1 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500" />
+          <div className="p-8 text-center">
+            <div className="mb-3 text-5xl">🏥</div>
+            <h2 className="text-lg font-bold text-rose-900">No active organization</h2>
+            <p className="mt-2 text-sm text-rose-800/90">
+              Select an organization from the switcher in the top bar to manage encounters.
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -238,27 +251,42 @@ export default function AdminEncountersPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-7xl">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Encounters</h1>
-          <p className="text-sm text-gray-500">
-            Patient visits — OPD, IPD, emergency, follow-up, telemedicine.
-          </p>
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-700 p-6 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-accent-300/20 blur-3xl" />
+        <div className="relative flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fuchsia-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-fuchsia-400" />
+              </span>
+              {encounters.length} encounter{encounters.length === 1 ? "" : "s"}
+            </div>
+            <h1 className="text-2xl font-bold">Encounters</h1>
+            <p className="mt-1 text-sm text-violet-50/90">
+              Patient visits — OPD, IPD, emergency, follow-up, telemedicine.
+            </p>
+          </div>
+          <button
+            onClick={() => (showForm ? resetForm() : setShowForm(true))}
+            disabled={patients.length === 0}
+            className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-violet-700 shadow transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {showForm ? "Cancel" : "✨ + New encounter"}
+          </button>
         </div>
-        <button
-          onClick={() => (showForm ? resetForm() : setShowForm(true))}
-          disabled={patients.length === 0}
-          className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-        >
-          {showForm ? "Cancel" : "+ New encounter"}
-        </button>
       </div>
 
       {patients.length === 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 text-sm text-amber-900">
-          No patients in this org yet.{" "}
-          <a href="/admin/patients" className="underline font-medium">Add a patient</a>{" "}
-          before creating encounters.
+        <div className="overflow-hidden rounded-xl bg-gradient-to-r from-rose-50 via-amber-50 to-rose-50 mb-6 ring-1 ring-rose-200/60">
+          <div className="h-1 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500" />
+          <div className="p-4 text-sm text-rose-900">
+            <span className="mr-1">⚠️</span>
+            No patients in this org yet.{" "}
+            <a href="/admin/patients" className="underline font-semibold">Add a patient</a>{" "}
+            before creating encounters.
+          </div>
         </div>
       )}
 
@@ -389,14 +417,14 @@ export default function AdminEncountersPage() {
           <div className="flex gap-2">
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700"
+              className="rounded-lg bg-gradient-to-r from-violet-500 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md"
             >
-              {editingId ? "Save changes" : "Create encounter"}
+              {editingId ? "💾 Save changes" : "✨ Create encounter"}
             </button>
             <button
               type="button"
               onClick={resetForm}
-              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+              className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-gray-200 transition hover:-translate-y-0.5 hover:shadow"
             >
               Cancel
             </button>
@@ -422,10 +450,10 @@ export default function AdminEncountersPage() {
             <button
               key={t}
               onClick={() => setTypeFilter(t)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium ${
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition hover:-translate-y-0.5 ${
                 typeFilter === t
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow"
+                  : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"
               }`}
             >
               {t}
@@ -437,10 +465,10 @@ export default function AdminEncountersPage() {
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium ${
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition hover:-translate-y-0.5 ${
                 statusFilter === s
-                  ? "bg-emerald-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white shadow"
+                  : "bg-white text-gray-700 ring-1 ring-gray-200 hover:shadow"
               }`}
             >
               {s}
@@ -449,99 +477,111 @@ export default function AdminEncountersPage() {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500" />
         {loading ? (
-          <div className="p-8 text-center text-gray-500 text-sm">Loading…</div>
+          <p className="py-16 text-center text-sm text-gray-400">Loading…</p>
         ) : encounters.length === 0 ? (
-          <div className="p-8 text-center text-gray-500 text-sm">
-            No encounters match the current filters.
-          </div>
+          <p className="py-16 text-center text-sm text-gray-400">
+            🩺 No encounters match the current filters.
+          </p>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
-              <tr>
-                <th className="px-4 py-2">Date</th>
-                <th className="px-4 py-2">Patient</th>
-                <th className="px-4 py-2">Type</th>
-                <th className="px-4 py-2">Doctor</th>
-                <th className="px-4 py-2">Diagnosis</th>
-                <th className="px-4 py-2">Status</th>
-                <th className="px-4 py-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {encounters.map((e) => {
-                const p = patientsById.get(e.patientId);
-                return (
-                  <tr
-                    key={e.id}
-                    className="border-t border-gray-100 hover:bg-gray-50"
-                  >
-                    <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-600">
-                      {new Date(e.startedAt).toLocaleDateString()}
-                      <br />
-                      <span className="text-gray-400">
-                        {new Date(e.startedAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2">
-                      {p ? (
-                        <>
-                          <div className="font-medium">
-                            {p.firstName} {p.lastName}
-                          </div>
-                          <div className="text-xs font-mono text-gray-400">{p.mrn}</div>
-                        </>
-                      ) : (
-                        <span className="text-gray-400 italic">unknown</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2">
-                      <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs font-medium uppercase">
-                        {e.type}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2">{e.doctorName || "—"}</td>
-                    <td className="px-4 py-2 max-w-xs truncate" title={e.diagnosis}>
-                      {e.diagnosis || "—"}
-                    </td>
-                    <td className="px-4 py-2">
-                      <select
-                        value={e.status}
-                        onChange={(ev) =>
-                          updateStatus(e, ev.target.value as EncounterStatus)
-                        }
-                        className="text-xs px-2 py-1 border border-gray-200 rounded"
-                      >
-                        {STATUSES.map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="px-4 py-2 text-right whitespace-nowrap">
-                      <button
-                        onClick={() => loadForEdit(e)}
-                        className="text-blue-600 hover:underline mr-3"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => remove(e)}
-                        className="text-red-600 hover:underline"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b border-gray-100 bg-gradient-to-r from-violet-50/60 via-purple-50/40 to-fuchsia-50/60">
+                <tr className="text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  <th className="px-5 py-3">Date</th>
+                  <th className="px-5 py-3">Patient</th>
+                  <th className="px-5 py-3">Type</th>
+                  <th className="px-5 py-3">Doctor</th>
+                  <th className="px-5 py-3">Diagnosis</th>
+                  <th className="px-5 py-3">Status</th>
+                  <th className="px-5 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {encounters.map((e) => {
+                  const p = patientsById.get(e.patientId);
+                  const statusStyle =
+                    e.status === "open"
+                      ? { pill: "bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 ring-emerald-200", dot: "bg-emerald-500" }
+                      : e.status === "closed"
+                      ? { pill: "bg-gradient-to-r from-slate-50 to-gray-50 text-slate-700 ring-slate-200", dot: "bg-slate-500" }
+                      : { pill: "bg-gradient-to-r from-rose-50 to-red-50 text-rose-700 ring-rose-200", dot: "bg-rose-500" };
+                  return (
+                    <tr key={e.id} className="transition-colors hover:bg-violet-50/30">
+                      <td className="px-5 py-3 whitespace-nowrap text-xs text-gray-600">
+                        {new Date(e.startedAt).toLocaleDateString()}
+                        <br />
+                        <span className="text-gray-400">
+                          {new Date(e.startedAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3">
+                        {p ? (
+                          <>
+                            <div className="font-medium text-gray-900">
+                              {p.firstName} {p.lastName}
+                            </div>
+                            <div className="text-xs font-mono text-gray-400">{p.mrn}</div>
+                          </>
+                        ) : (
+                          <span className="text-gray-400 italic">unknown</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className="inline-flex rounded-full bg-gradient-to-r from-violet-50 to-purple-50 px-2.5 py-1 text-xs font-semibold uppercase text-violet-700 ring-1 ring-violet-200">
+                          {e.type}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-gray-700">{e.doctorName || "—"}</td>
+                      <td className="px-5 py-3 max-w-xs truncate text-gray-700" title={e.diagnosis}>
+                        {e.diagnosis || "—"}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ring-1 ${statusStyle.pill}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${statusStyle.dot}`} />
+                          {e.status}
+                        </span>
+                        <select
+                          value={e.status}
+                          onChange={(ev) =>
+                            updateStatus(e, ev.target.value as EncounterStatus)
+                          }
+                          className="ml-2 text-xs px-2 py-1 border border-gray-200 rounded bg-white"
+                        >
+                          {STATUSES.map((s) => (
+                            <option key={s} value={s}>
+                              {s}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-5 py-3">
+                        <div className="flex justify-end gap-1.5">
+                          <button
+                            onClick={() => loadForEdit(e)}
+                            className="rounded-lg bg-gradient-to-r from-violet-500 to-purple-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            onClick={() => remove(e)}
+                            className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:-translate-y-0.5 hover:bg-rose-100 hover:shadow"
+                          >
+                            ✕ Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

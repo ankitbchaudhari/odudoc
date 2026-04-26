@@ -331,6 +331,44 @@ export const orderItems = pgTable(
 );
 
 // ---------------------------------------------------------------------------
+// Phase 6 — Doctor withdrawal requests
+// ---------------------------------------------------------------------------
+//
+// Same shape as the bindPersistentArray store in lib/withdrawals-store.ts.
+// Indexes match the read paths: by doctor email (doctor's own list) and
+// by status (admin "pending requests" filter).
+
+export const withdrawals = pgTable(
+  "withdrawals",
+  {
+    id: text("id").primaryKey(), // app-generated, "wd-<base36>-<rand>"
+    doctorEmail: text("doctor_email").notNull(),
+    doctorName: text("doctor_name").notNull(),
+    amount: real("amount").notNull(),
+    method: text("method").notNull(), // bank_transfer | paypal | stripe | other
+    accountDetails: text("account_details").notNull(),
+    notes: text("notes"),
+    status: text("status").notNull().default("pending"), // pending|approved|rejected|paid
+    adminNote: text("admin_note"),
+    requestedAt: timestamp("requested_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    doctorEmailIdx: index("withdrawals_doctor_email_idx").on(t.doctorEmail),
+    statusIdx: index("withdrawals_status_idx").on(t.status),
+    requestedAtIdx: index("withdrawals_requested_at_idx").on(t.requestedAt),
+    statusRequestedIdx: index("withdrawals_status_requested_idx").on(
+      t.status,
+      t.requestedAt,
+    ),
+  }),
+);
+
+// ---------------------------------------------------------------------------
 // Phase 3 — Bookings / Payments / PaymentEvents
 // ---------------------------------------------------------------------------
 

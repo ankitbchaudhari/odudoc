@@ -9,6 +9,8 @@ import {
   type LeadStatus,
 } from "@/lib/enterprise-leads-store";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
+import { pushLeadToHubspot, isHubspotConfigured } from "@/lib/hubspot";
+import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -58,6 +60,24 @@ export async function POST(req: NextRequest) {
       currentSystem: body.currentSystem ? String(body.currentSystem) : undefined,
       message: body.message ? String(body.message) : undefined,
     });
+
+    // Mirror to HubSpot when configured. Fire-and-forget — local lead
+    // store is the source of truth, HubSpot is a downstream sync, and
+    // a HubSpot 5xx must never reject the applicant's submission.
+    if (isHubspotConfigured()) {
+      void pushLeadToHubspot({
+        organizationName: lead.organizationName,
+        contactName: lead.contactName,
+        contactEmail: lead.contactEmail,
+        contactPhone: lead.contactPhone,
+        country: lead.country,
+        bedsRange: lead.bedsRange,
+        interestedModules: lead.interestedModules,
+        currentSystem: lead.currentSystem,
+        message: lead.message,
+      }).catch((err) => log.error("enterprise_leads.hubspot_push_failed", err));
+    }
+
     return NextResponse.json({ ok: true, id: lead.id });
   } catch {
     return NextResponse.json({ error: "bad_request" }, { status: 400 });

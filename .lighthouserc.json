@@ -1,0 +1,43 @@
+{
+  "ci": {
+    "_comment": "Lighthouse CI config. Audits the most important public surfaces — anything a first-time visitor or a search crawler is most likely to hit. Numbers are hardware-aware (LH runs in headless Chrome on a GitHub-hosted Linux VM, scoring tends to come in 5-10 points lower than a Lighthouse run on the same site from a fast laptop). Thresholds reflect that.",
+    "collect": {
+      "url": [
+        "https://www.odudoc.com/",
+        "https://www.odudoc.com/consult",
+        "https://www.odudoc.com/doctors",
+        "https://www.odudoc.com/blog",
+        "https://www.odudoc.com/contact",
+        "https://www.odudoc.com/corporate",
+        "https://www.odudoc.com/about",
+        "https://www.odudoc.com/privacy"
+      ],
+      "numberOfRuns": 3,
+      "settings": {
+        "preset": "desktop",
+        "_skipAudits_comment": "Drop the audits that are noisy on third-party-heavy pages (uses-rel-preconnect for fonts.gstatic.com is unavoidable; bootup-time on a cold cache fluctuates).",
+        "skipAudits": ["uses-rel-preconnect"]
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": ["error", { "minScore": 0.75 }],
+        "categories:accessibility": ["error", { "minScore": 0.9 }],
+        "categories:best-practices": ["error", { "minScore": 0.9 }],
+        "categories:seo": ["error", { "minScore": 0.9 }],
+        "_comment_per_metric": "Per-metric thresholds for the metrics that matter to conversion.",
+        "first-contentful-paint": ["warn", { "maxNumericValue": 1800 }],
+        "largest-contentful-paint": ["warn", { "maxNumericValue": 2500 }],
+        "cumulative-layout-shift": ["warn", { "maxNumericValue": 0.1 }],
+        "interaction-to-next-paint": ["warn", { "maxNumericValue": 200 }],
+        "_comment_a11y_floor": "A11y is held to a higher bar than perf. Anything below 90 means a gradient card has bad contrast, a focus ring is missing, or a form field has no label.",
+        "color-contrast": ["error", { "minScore": 1 }],
+        "label": ["error", { "minScore": 1 }],
+        "image-alt": ["error", { "minScore": 1 }]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}

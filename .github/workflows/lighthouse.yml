@@ -1,0 +1,54 @@
+name: Lighthouse CI
+
+# Runs Lighthouse against the deployed production site once the Vercel
+# deploy lands, plus on a daily schedule so we catch perf/a11y/SEO
+# regressions even on quiet days. Fails the build if any audited page
+# drops below the thresholds in .lighthouserc.json — keeps the bar
+# visible in PR status checks.
+#
+# Why post-deploy and not preview-deploy: preview deploys don't have
+# the production env (no Stripe key, no Postgres DSN, no analytics)
+# so their Lighthouse scores aren't representative of what real
+# users will experience. Auditing the production URL is honest.
+#
+# Why not fail-merge on regression: Lighthouse scores depend on
+# upstream conditions (CDN cache state, third-party script latency)
+# that aren't always under our control. We surface the score as a
+# status check; the human still ships the merge button.
+
+on:
+  # Runs after every successful deploy to main (Vercel posts a
+  # "deployment_status" event when its production deploy finishes).
+  deployment_status:
+  # Daily heartbeat at 09:00 UTC — catches third-party drift even
+  # when nothing has merged.
+  schedule:
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+
+jobs:
+  audit:
+    # Skip every deployment_status event except production-success.
+    # Without this guard the workflow re-runs on preview deploys too,
+    # which we explicitly don't want to audit.
+    if: |
+      github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
+      || (github.event_name == 'deployment_status'
+          && github.event.deployment_status.state == 'success'
+          && github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.13.x
+
+      - name: Run Lighthouse against production
+        run: lhci autorun --config=./.lighthouserc.json
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}

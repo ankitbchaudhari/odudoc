@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Consultation } from "@/lib/consultations-store";
 import type { PrescriptionRecord } from "@/lib/prescriptions-store";
+import DoctorComplianceTile from "@/components/DoctorComplianceTile";
+import BaaReacceptancePrompt from "@/components/BaaReacceptancePrompt";
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -212,6 +214,14 @@ export default function DoctorDashboardPage() {
               <p className="mt-1 text-xs text-gray-400">{s.sub}</p>
             </Link>
           ))}
+        </div>
+
+        {/* Compliance + payouts strip — verification, license expiry, Stripe.
+            Sits above the main grid so onboarding gaps grab attention before
+            the doctor dives into the appointments view. */}
+        <div className="mb-6 space-y-4">
+          <BaaReacceptancePrompt />
+          <DoctorComplianceTile />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">

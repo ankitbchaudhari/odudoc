@@ -175,6 +175,140 @@ async function persistOrderRow(o: Order): Promise<void> {
   }
 }
 
+// ---------------------------------------------------------------------
+// Phase B reads — relational sources of truth.
+//
+// These async readers query the orders + order_items tables directly
+// instead of the JSON blob. They're new APIs alongside the existing
+// sync readers so callers can migrate incrementally. The cron / a one-
+// shot script can compare these results against the blob output for
+// the same input to validate the migration before we do Phase C
+// (delete the sync blob readers).
+// ---------------------------------------------------------------------
+
+interface OrderRow {
+  id: string;
+  order_number: string;
+  customer: string;
+  email: string;
+  phone: string;
+  subtotal: number;
+  shipping: number;
+  total: number;
+  payment_status: string;
+  order_status: string;
+  shipping_address: string;
+  notes: string | null;
+  tracking_number: string | null;
+  created_at: Date | string;
+  updated_at: Date | string;
+}
+
+interface OrderItemRow {
+  id: string;
+  order_id: string;
+  product_id: string | null;
+  name: string;
+  quantity: number;
+  price: number;
+  vendor_id: string | null;
+  vendor_name: string | null;
+  position: number;
+}
+
+function rowToOrder(o: OrderRow, items: OrderItemRow[]): Order {
+  return {
+    id: o.id,
+    orderNumber: o.order_number,
+    customer: o.customer,
+    email: o.email,
+    phone: o.phone,
+    items: items
+      .sort((a, b) => a.position - b.position)
+      .map((it) => ({
+        productId: it.product_id ?? undefined,
+        name: it.name,
+        quantity: it.quantity,
+        price: it.price,
+        vendorId: it.vendor_id ?? undefined,
+        vendorName: it.vendor_name ?? undefined,
+      })),
+    subtotal: o.subtotal,
+    shipping: o.shipping,
+    total: o.total,
+    paymentStatus: o.payment_status as PaymentStatus,
+    orderStatus: o.order_status as OrderStatus,
+    shippingAddress: o.shipping_address,
+    notes: o.notes ?? undefined,
+    trackingNumber: o.tracking_number ?? undefined,
+    createdAt:
+      typeof o.created_at === "string"
+        ? o.created_at
+        : (o.created_at as Date).toISOString(),
+    updatedAt:
+      typeof o.updated_at === "string"
+        ? o.updated_at
+        : (o.updated_at as Date).toISOString(),
+  };
+}
+
+/** Phase B reader — pulls orders from the relational tables. Async
+ *  parallel of listOrders(). Apply the same filter signature so call
+ *  sites can swap with minimal diff. */
+export async function listOrdersFromDb(opts: {
+  email?: string;
+  status?: OrderStatus | "All";
+} = {}): Promise<Order[]> {
+  const orderRows = (await db.execute(
+    drizzleSql`
+      SELECT * FROM orders
+      WHERE deleted_at IS NULL
+        ${opts.email ? drizzleSql`AND lower(email) = ${opts.email.toLowerCase()}` : drizzleSql``}
+        ${opts.status && opts.status !== "All" ? drizzleSql`AND order_status = ${opts.status}` : drizzleSql``}
+      ORDER BY created_at DESC
+    `,
+  )) as unknown as OrderRow[];
+  if (orderRows.length === 0) return [];
+  const ids = orderRows.map((r) => r.id);
+  const itemRows = (await db.execute(
+    drizzleSql`SELECT * FROM order_items WHERE order_id = ANY(${ids})`,
+  )) as unknown as OrderItemRow[];
+  const byOrderId = new Map<string, OrderItemRow[]>();
+  for (const it of itemRows) {
+    const list = byOrderId.get(it.order_id) || [];
+    list.push(it);
+    byOrderId.set(it.order_id, list);
+  }
+  return orderRows.map((r) => rowToOrder(r, byOrderId.get(r.id) || []));
+}
+
+export async function getOrderByIdFromDb(id: string): Promise<Order | null> {
+  const orderRows = (await db.execute(
+    drizzleSql`SELECT * FROM orders WHERE id = ${id} AND deleted_at IS NULL LIMIT 1`,
+  )) as unknown as OrderRow[];
+  if (orderRows.length === 0) return null;
+  const itemRows = (await db.execute(
+    drizzleSql`SELECT * FROM order_items WHERE order_id = ${id}`,
+  )) as unknown as OrderItemRow[];
+  return rowToOrder(orderRows[0]!, itemRows);
+}
+
+/** Diagnostic — compares blob vs DB row counts. Useful as a manual
+ *  preflight before flipping a caller from listOrders to listOrdersFromDb,
+ *  and as a daily sanity-check cron during the dual-write window. */
+export async function compareOrderCounts(): Promise<{
+  blobCount: number;
+  dbCount: number;
+  drift: number;
+}> {
+  const blobCount = orders.length;
+  const rows = (await db.execute(
+    drizzleSql`SELECT count(*)::int AS n FROM orders WHERE deleted_at IS NULL`,
+  )) as unknown as Array<{ n: number }>;
+  const dbCount = rows[0]?.n ?? 0;
+  return { blobCount, dbCount, drift: dbCount - blobCount };
+}
+
 export function listOrders(opts: {
   email?: string;
   status?: OrderStatus | "All";

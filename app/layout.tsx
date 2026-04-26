@@ -10,6 +10,7 @@ import CookieConsent from "@/components/CookieConsent";
 import BackToTop from "@/components/BackToTop";
 import GoogleTranslate from "@/components/GoogleTranslate";
 import ExperimentBootstrap from "@/components/ExperimentBootstrap";
+import Analytics from "@/components/Analytics";
 import LoadingBar from "@/components/LoadingBar";
 import { OrganizationLd, WebsiteLd } from "@/components/StructuredData";
 
@@ -153,6 +154,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <BackToTop />
               <GoogleTranslate />
               <ExperimentBootstrap />
+              <Analytics />
             </LanguageProvider>
           </CartProvider>
         </AuthProvider>

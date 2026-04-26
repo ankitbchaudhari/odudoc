@@ -267,7 +267,7 @@ function ApplicationCard({
           </p>
           <div className="space-y-2">
             {docs.map((d) => (
-              <DocLink key={d.label} label={d.label} value={d.value} />
+              <DocLink key={d.label} label={d.label} value={d.value} applicationId={app.id} />
             ))}
             {app.documents.specialtyCertifications &&
               app.documents.specialtyCertifications.length > 0 && (
@@ -276,7 +276,7 @@ function ApplicationCard({
                     Specialty Certifications
                   </p>
                   {app.documents.specialtyCertifications.map((v, i) => (
-                    <DocLink key={i} label={`Cert ${i + 1}`} value={v} />
+                    <DocLink key={i} label={`Cert ${i + 1}`} value={v} applicationId={app.id} />
                   ))}
                 </div>
               )}
@@ -338,7 +338,15 @@ function InfoRow({
   );
 }
 
-function DocLink({ label, value }: { label: string; value?: string }) {
+function DocLink({
+  label,
+  value,
+  applicationId,
+}: {
+  label: string;
+  value?: string;
+  applicationId?: string;
+}) {
   if (!value) {
     return (
       <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-xs text-gray-400">
@@ -348,44 +356,46 @@ function DocLink({ label, value }: { label: string; value?: string }) {
     );
   }
   const isUrl = value.startsWith("http");
-  // Derive a friendly filename from the URL pathname so the download
-  // lands as e.g. "medical-license.pdf" instead of a random hash.
-  let downloadName = `${label.replace(/\s+/g, "-").toLowerCase()}`;
-  if (isUrl) {
+
+  // View click no longer hits files.odudoc.com directly. We mint a
+  // signed, short-lived, admin-session-gated URL via /api/admin/blob/sign
+  // and open that — the proxy at /api/admin/blob/fetch streams the
+  // bytes after a fresh admin check + audit-log entry.
+  const handleView = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!isUrl) return;
     try {
-      const u = new URL(value);
-      const last = u.pathname.split("/").filter(Boolean).pop() || "";
-      if (last) downloadName = last;
-    } catch {
-      /* keep the label-based fallback */
+      const r = await fetch("/api/admin/blob/sign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: value, applicationId }),
+      });
+      const j = await r.json();
+      if (!r.ok || !j.url) {
+        alert(j.error || `Failed to mint URL (${r.status})`);
+        return;
+      }
+      window.open(j.url, "_blank", "noopener,noreferrer");
+    } catch (err) {
+      alert((err as Error).message);
     }
-  }
+  };
+
   return (
     <div className="flex items-center justify-between gap-2 rounded-lg border border-gray-100 bg-white px-3 py-2 text-xs">
       <span className="font-medium text-gray-700">{label}</span>
       {isUrl ? (
         <div className="flex items-center gap-1.5">
-          <a
-            href={value}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={handleView}
             className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-primary-600 to-teal-600 px-2.5 py-1 font-semibold text-white hover:scale-105"
+            title="Opens an audit-logged, time-limited link"
           >
             View
             <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
-          </a>
-          <a
-            href={`/api/admin/download?url=${encodeURIComponent(value)}&name=${encodeURIComponent(downloadName)}`}
-            title={`Download ${downloadName}`}
-            className="inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-2.5 py-1 font-semibold text-gray-700 hover:bg-gray-50"
-          >
-            Download
-            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-          </a>
+          </button>
         </div>
       ) : (
         <span className="truncate text-gray-500" title={value}>

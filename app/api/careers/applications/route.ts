@@ -18,6 +18,7 @@ import {
 import { addAdminNotification } from "@/lib/admin-notifications-store";
 import { findDoctorByEmail, createDoctor } from "@/lib/doctors-store";
 import { inviteDoctor } from "@/lib/doctor-invite";
+import { awaitAllFlushesStrict, PersistenceError } from "@/lib/persistent-array";
 
 import { log } from "@/lib/log";
 // Node runtime — we need Buffer / multipart handling and outbound fetch to the VPS.
@@ -88,6 +89,26 @@ export async function POST(req: NextRequest) {
         cvStoredFilename: stored.filename,
       });
 
+      // Make sure the Postgres write actually landed before responding.
+      // Without this drain, a paused / unreachable DB silently drops the
+      // application and the applicant sees "Application received" while
+      // their data evaporates with the next Lambda recycle.
+      try {
+        await awaitAllFlushesStrict();
+      } catch (err) {
+        log.error("careers.apply.persist_failed", err, {
+          email,
+          isPersistenceError: err instanceof PersistenceError,
+        });
+        return NextResponse.json(
+          {
+            error:
+              "Application service is temporarily unavailable. Please try again in a few minutes — your CV has not been saved.",
+          },
+          { status: 503 },
+        );
+      }
+
       try {
         const jobTitleForNotif = jobId ? getJobById(jobId)?.title : undefined;
         addAdminNotification({
@@ -131,6 +152,19 @@ export async function POST(req: NextRequest) {
       coverLetter: body.coverLetter || "",
       cvFileName: body.cvFileName,
     });
+
+    try {
+      await awaitAllFlushesStrict();
+    } catch (err) {
+      log.error("careers.apply.persist_failed", err, { email: body.email });
+      return NextResponse.json(
+        {
+          error:
+            "Application service is temporarily unavailable. Please try again in a few minutes.",
+        },
+        { status: 503 },
+      );
+    }
 
     try {
       const jobTitleForNotif = body.jobId ? getJobById(body.jobId)?.title : undefined;

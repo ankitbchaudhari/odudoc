@@ -11,6 +11,7 @@ import { sendPatientBookingReceived, sendDoctorNewRequest } from "@/lib/consulta
 import { paymentsDisabled } from "@/lib/payments-config";
 import { validateSlot } from "@/lib/slot-utils";
 import { findDoctorByEmail } from "@/lib/doctors-store";
+import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -151,6 +152,26 @@ export async function POST(req: NextRequest) {
     paymentIntentId: effectivePaymentIntent,
     medicalHistory: mh,
   });
+
+  // Confirm the booking actually persisted before responding. A
+  // dropped consultation is the worst possible failure here — the
+  // patient pays and gets a confirmation page but no doctor sees the
+  // booking on their dashboard.
+  try {
+    await awaitAllFlushesStrict();
+  } catch (err) {
+    log.error("consultations.persist_failed", err, {
+      consultationId: c.id,
+      patientEmail,
+    });
+    return NextResponse.json(
+      {
+        error:
+          "Booking service is temporarily unavailable. If you were charged, no consultation was created — please contact support.",
+      },
+      { status: 503 },
+    );
+  }
 
   // If the client already confirmed payment (demo flow without a real
   // gateway round-trip), flip to awaiting_doctor and fire emails now.

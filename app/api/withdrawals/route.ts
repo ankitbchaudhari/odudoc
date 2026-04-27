@@ -8,6 +8,7 @@ import {
 } from "@/lib/withdrawals-store";
 import { addAdminNotification } from "@/lib/admin-notifications-store";
 import { findDoctorByEmail } from "@/lib/doctors-store";
+import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -104,6 +105,23 @@ export async function POST(req: NextRequest) {
     accountDetails,
     notes: (body.notes || "").trim() || undefined,
   });
+
+  // Verify the withdrawal write hit Postgres before responding. A
+  // silently-dropped withdrawal is the worst possible failure mode
+  // here — the doctor would think the request is queued for payment
+  // when in reality it never reached the admin inbox.
+  try {
+    await awaitAllFlushesStrict();
+  } catch (err) {
+    log.error("withdrawals.persist_failed", err, { doctorEmail: user.email });
+    return NextResponse.json(
+      {
+        error:
+          "Withdrawal service is temporarily unavailable. Please try again in a few minutes.",
+      },
+      { status: 503 },
+    );
+  }
 
   try {
     addAdminNotification({

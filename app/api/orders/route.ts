@@ -10,6 +10,7 @@ import { reserveStock, getProductById } from "@/lib/products-store";
 import { recordOrderPayouts } from "@/lib/payouts-store";
 import { sendOrderConfirmationEmail, sendVendorNewOrderEmail } from "@/lib/email";
 import { getVendorById } from "@/lib/vendors-store";
+import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -140,6 +141,22 @@ export async function POST(req: NextRequest) {
     shippingAddress: body.shippingAddress,
     notes: body.notes,
   });
+
+  // Confirm the order (and the payout ledger entries below) hit
+  // Postgres before responding. A silently-dropped order means we'd
+  // accept payment but have no record of what to ship.
+  try {
+    await awaitAllFlushesStrict();
+  } catch (err) {
+    log.error("orders.persist_failed", err, { orderId: order.id });
+    return NextResponse.json(
+      {
+        error:
+          "Order service is temporarily unavailable. If you were charged, no order was created — please contact support.",
+      },
+      { status: 503 },
+    );
+  }
 
   // Record payout ledger entries if the order was paid up-front.
   if (order.paymentStatus === "Paid") recordOrderPayouts(order);

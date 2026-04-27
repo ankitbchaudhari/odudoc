@@ -10,6 +10,7 @@ import {
 } from "@/lib/enterprise-leads-store";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 import { pushLeadToHubspot, isHubspotConfigured } from "@/lib/hubspot";
+import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -60,6 +61,24 @@ export async function POST(req: NextRequest) {
       currentSystem: body.currentSystem ? String(body.currentSystem) : undefined,
       message: body.message ? String(body.message) : undefined,
     });
+
+    // Confirm the lead landed in Postgres before responding so a
+    // dropped lead doesn't manifest as "I submitted the form and
+    // nobody got back to me" three weeks later.
+    try {
+      await awaitAllFlushesStrict();
+    } catch (err) {
+      log.error("enterprise_leads.persist_failed", err, {
+        contactEmail: lead.contactEmail,
+      });
+      return NextResponse.json(
+        {
+          error:
+            "Lead form is temporarily unavailable. Please try again or email us directly at support@odudoc.com.",
+        },
+        { status: 503 },
+      );
+    }
 
     // Mirror to HubSpot when configured. Fire-and-forget — local lead
     // store is the source of truth, HubSpot is a downstream sync, and

@@ -5,6 +5,7 @@ import { sendDoctorApplicationReceivedEmail } from "@/lib/email";
 import { enforceRateLimit, clientIp } from "@/lib/rate-limit-helpers";
 import { licenseMetaFor } from "@/lib/medical-licenses";
 import { recordAcceptance, CURRENT_VERSIONS } from "@/lib/doctor-baa-store";
+import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
 import { log } from "@/lib/log";
 export async function POST(req: NextRequest) {
@@ -168,6 +169,23 @@ export async function POST(req: NextRequest) {
       });
     } catch (err) {
       log.error("doctor_register.baa_record_failed", err);
+    }
+
+    // Confirm the application + BAA acceptance actually persisted to
+    // Postgres. Without this drain, an unreachable DB silently drops
+    // both records and the applicant sees a confirmation email with
+    // no record on our side.
+    try {
+      await awaitAllFlushesStrict();
+    } catch (err) {
+      log.error("doctor_register.persist_failed", err, { email: body.email });
+      return NextResponse.json(
+        {
+          error:
+            "Doctor registration service is temporarily unavailable. Please try again in a few minutes.",
+        },
+        { status: 503 },
+      );
     }
 
     try {

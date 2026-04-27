@@ -505,6 +505,32 @@ export function touchLastLogin(email: string): void {
   }
 }
 
+// Whitelisted fields the mobile app (or any self-service path) is allowed to
+// update on the user's own record. Email/role/password are NOT here on
+// purpose — those have dedicated flows with extra checks.
+export type SelfUpdatablePatch = Partial<{
+  name: string;
+  phone: string;
+}>;
+
+export function updateUserSelf(
+  email: string,
+  patch: SelfUpdatablePatch
+): User | null {
+  const u = findUserByEmail(email);
+  if (!u) return null;
+  if (patch.name !== undefined) {
+    const trimmed = patch.name.trim();
+    if (trimmed.length > 0 && trimmed.length <= 120) u.name = trimmed;
+  }
+  if (patch.phone !== undefined) {
+    const trimmed = patch.phone.trim();
+    if (trimmed.length <= 32) u.phone = trimmed;
+  }
+  flush();
+  return u;
+}
+
 export function isInactiveFor(email: string, days: number): boolean {
   const u = findUserByEmail(email);
   if (!u) return false;

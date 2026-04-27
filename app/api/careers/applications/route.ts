@@ -10,7 +10,7 @@ import {
   deleteApplication,
   reloadApplications,
 } from "@/lib/careers-store";
-import { uploadFile } from "@/lib/files-service";
+import { uploadFile, deleteFile } from "@/lib/files-service";
 import {
   sendCareerApplicationReceived,
   sendCareerStatusUpdateEmail,
@@ -100,10 +100,20 @@ export async function POST(req: NextRequest) {
           email,
           isPersistenceError: err instanceof PersistenceError,
         });
+        // Clean up the orphan CV that uploaded successfully but lost
+        // its metadata partner. Otherwise every failed retry leaves a
+        // PDF on the file server with no way to find it again.
+        try {
+          await deleteFile("cvs", stored.filename);
+        } catch (delErr) {
+          log.error("careers.apply.orphan_cleanup_failed", delErr, {
+            filename: stored.filename,
+          });
+        }
         return NextResponse.json(
           {
             error:
-              "Application service is temporarily unavailable. Please try again in a few minutes — your CV has not been saved.",
+              "Application service is temporarily unavailable. Please try again in a few minutes — your application was not saved.",
           },
           { status: 503 },
         );
@@ -160,7 +170,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Application service is temporarily unavailable. Please try again in a few minutes.",
+            "Application service is temporarily unavailable. Please try again in a few minutes — your application was not saved.",
         },
         { status: 503 },
       );

@@ -330,16 +330,128 @@ export default function VoicePrescriptionPage() {
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
               disabled={listening}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm disabled:opacity-50"
+              className="max-w-[260px] rounded-lg border border-gray-300 px-3 py-2 text-sm disabled:opacity-50"
             >
-              <option value="en-IN">English (India)</option>
-              <option value="en-US">English (US)</option>
-              <option value="en-GB">English (UK)</option>
-              <option value="en-NG">English (Nigeria)</option>
-              <option value="hi-IN">हिन्दी (Hindi)</option>
-              <option value="gu-IN">ગુજરાતી (Gujarati)</option>
-              <option value="mr-IN">मराठी (Marathi)</option>
-              <option value="ta-IN">தமிழ் (Tamil)</option>
+              <optgroup label="English">
+                <option value="en-IN">English (India)</option>
+                <option value="en-US">English (US)</option>
+                <option value="en-GB">English (UK)</option>
+                <option value="en-AU">English (Australia)</option>
+                <option value="en-CA">English (Canada)</option>
+                <option value="en-IE">English (Ireland)</option>
+                <option value="en-NZ">English (New Zealand)</option>
+                <option value="en-ZA">English (South Africa)</option>
+                <option value="en-NG">English (Nigeria)</option>
+                <option value="en-PH">English (Philippines)</option>
+                <option value="en-SG">English (Singapore)</option>
+                <option value="en-HK">English (Hong Kong)</option>
+              </optgroup>
+              <optgroup label="Indian languages">
+                <option value="hi-IN">हिन्दी (Hindi)</option>
+                <option value="bn-IN">বাংলা (Bengali — India)</option>
+                <option value="gu-IN">ગુજરાતી (Gujarati)</option>
+                <option value="kn-IN">ಕನ್ನಡ (Kannada)</option>
+                <option value="ml-IN">മലയാളം (Malayalam)</option>
+                <option value="mr-IN">मराठी (Marathi)</option>
+                <option value="pa-IN">ਪੰਜਾਬੀ (Punjabi)</option>
+                <option value="ta-IN">தமிழ் (Tamil)</option>
+                <option value="te-IN">తెలుగు (Telugu)</option>
+                <option value="ur-IN">اردو (Urdu — India)</option>
+              </optgroup>
+              <optgroup label="Spanish">
+                <option value="es-ES">Español (Spain)</option>
+                <option value="es-MX">Español (Mexico)</option>
+                <option value="es-AR">Español (Argentina)</option>
+                <option value="es-CL">Español (Chile)</option>
+                <option value="es-CO">Español (Colombia)</option>
+                <option value="es-PE">Español (Peru)</option>
+                <option value="es-US">Español (US)</option>
+                <option value="es-VE">Español (Venezuela)</option>
+              </optgroup>
+              <optgroup label="French">
+                <option value="fr-FR">Français (France)</option>
+                <option value="fr-CA">Français (Canada)</option>
+                <option value="fr-BE">Français (Belgium)</option>
+                <option value="fr-CH">Français (Switzerland)</option>
+              </optgroup>
+              <optgroup label="Portuguese">
+                <option value="pt-BR">Português (Brazil)</option>
+                <option value="pt-PT">Português (Portugal)</option>
+              </optgroup>
+              <optgroup label="Chinese">
+                <option value="zh-CN">中文 (Mandarin, Simplified)</option>
+                <option value="zh-TW">中文 (Mandarin, Taiwan)</option>
+                <option value="zh-HK">中文 (Cantonese, Hong Kong)</option>
+              </optgroup>
+              <optgroup label="Arabic">
+                <option value="ar-SA">العربية (Saudi Arabia)</option>
+                <option value="ar-AE">العربية (UAE)</option>
+                <option value="ar-EG">العربية (Egypt)</option>
+                <option value="ar-JO">العربية (Jordan)</option>
+                <option value="ar-KW">العربية (Kuwait)</option>
+                <option value="ar-LB">العربية (Lebanon)</option>
+                <option value="ar-MA">العربية (Morocco)</option>
+                <option value="ar-QA">العربية (Qatar)</option>
+              </optgroup>
+              <optgroup label="Other European">
+                <option value="de-DE">Deutsch (Germany)</option>
+                <option value="de-AT">Deutsch (Austria)</option>
+                <option value="de-CH">Deutsch (Switzerland)</option>
+                <option value="it-IT">Italiano (Italy)</option>
+                <option value="nl-NL">Nederlands (Netherlands)</option>
+                <option value="nl-BE">Nederlands (Belgium)</option>
+                <option value="pl-PL">Polski (Poland)</option>
+                <option value="ru-RU">Русский (Russia)</option>
+                <option value="uk-UA">Українська (Ukraine)</option>
+                <option value="cs-CZ">Čeština (Czech)</option>
+                <option value="sk-SK">Slovenčina (Slovak)</option>
+                <option value="hu-HU">Magyar (Hungary)</option>
+                <option value="ro-RO">Română (Romania)</option>
+                <option value="bg-BG">Български (Bulgaria)</option>
+                <option value="el-GR">Ελληνικά (Greek)</option>
+                <option value="tr-TR">Türkçe (Turkey)</option>
+                <option value="sv-SE">Svenska (Sweden)</option>
+                <option value="no-NO">Norsk (Norway)</option>
+                <option value="da-DK">Dansk (Denmark)</option>
+                <option value="fi-FI">Suomi (Finland)</option>
+                <option value="is-IS">Íslenska (Iceland)</option>
+                <option value="hr-HR">Hrvatski (Croatia)</option>
+                <option value="sr-RS">Српски (Serbia)</option>
+                <option value="sl-SI">Slovenščina (Slovenia)</option>
+                <option value="lt-LT">Lietuvių (Lithuania)</option>
+                <option value="lv-LV">Latviešu (Latvia)</option>
+                <option value="et-EE">Eesti (Estonia)</option>
+                <option value="ca-ES">Català (Catalan)</option>
+                <option value="eu-ES">Euskara (Basque)</option>
+                <option value="gl-ES">Galego (Galician)</option>
+              </optgroup>
+              <optgroup label="Asian">
+                <option value="ja-JP">日本語 (Japanese)</option>
+                <option value="ko-KR">한국어 (Korean)</option>
+                <option value="th-TH">ไทย (Thai)</option>
+                <option value="vi-VN">Tiếng Việt (Vietnamese)</option>
+                <option value="id-ID">Bahasa Indonesia</option>
+                <option value="ms-MY">Bahasa Melayu (Malaysia)</option>
+                <option value="fil-PH">Filipino (Philippines)</option>
+                <option value="km-KH">ភាសាខ្មែរ (Khmer)</option>
+                <option value="lo-LA">ລາວ (Lao)</option>
+                <option value="my-MM">မြန်မာ (Burmese)</option>
+                <option value="si-LK">සිංහල (Sinhala)</option>
+                <option value="ne-NP">नेपाली (Nepali)</option>
+              </optgroup>
+              <optgroup label="Middle East / Other">
+                <option value="he-IL">עברית (Hebrew)</option>
+                <option value="fa-IR">فارسی (Persian)</option>
+                <option value="ur-PK">اردو (Urdu — Pakistan)</option>
+                <option value="bn-BD">বাংলা (Bengali — Bangladesh)</option>
+              </optgroup>
+              <optgroup label="African">
+                <option value="af-ZA">Afrikaans (South Africa)</option>
+                <option value="sw-KE">Kiswahili (Kenya)</option>
+                <option value="sw-TZ">Kiswahili (Tanzania)</option>
+                <option value="am-ET">አማርኛ (Amharic)</option>
+                <option value="zu-ZA">isiZulu (South Africa)</option>
+              </optgroup>
             </select>
             <button
               onClick={clearAll}

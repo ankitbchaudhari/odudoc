@@ -101,6 +101,26 @@ export async function tailJsonArray<T>(key: string, n: number): Promise<T[]> {
   }
 }
 
+// Per-key tracking of the most recent flush failure. Routes that care
+// about durability (careers/apply, doctor-register, withdrawals, etc.)
+// drain pending flushes via awaitAllFlushesStrict() which reads from
+// this map and throws if any key has a recent error. Cleared by
+// awaitAllFlushesStrict() after consumption so the next request sees
+// a clean slate.
+const recentFlushErrors: Map<string, Error> = new Map();
+
+/** Read the current set of recorded flush errors (key → Error). Useful
+ *  for diagnostics; awaitAllFlushesStrict() also returns them. */
+export function getRecentFlushErrors(): Map<string, Error> {
+  return new Map(recentFlushErrors);
+}
+
+/** Forget any recorded flush errors. Called by awaitAllFlushesStrict()
+ *  after it raises so the next request starts clean. */
+export function clearRecentFlushErrors(): void {
+  recentFlushErrors.clear();
+}
+
 export async function saveJson<T>(key: string, data: T): Promise<void> {
   try {
     await kvReady();
@@ -110,8 +130,15 @@ export async function saveJson<T>(key: string, data: T): Promise<void> {
       ON CONFLICT (key) DO UPDATE
         SET data = EXCLUDED.data, updated_at = now()
     `;
+    // Successful save — clear any earlier failure for this key so a
+    // subsequent strict drain doesn't fail because of stale history.
+    recentFlushErrors.delete(key);
   } catch (err) {
     log.error("persistent_array.save_failed", err, { key });
+    recentFlushErrors.set(
+      key,
+      err instanceof Error ? err : new Error(String(err)),
+    );
   }
 }
 
@@ -132,6 +159,59 @@ export async function awaitAllFlushes(): Promise<void> {
   while (pendingFlushes.size > 0) {
     await Promise.allSettled(Array.from(pendingFlushes));
   }
+}
+
+/**
+ * Stricter sibling of awaitAllFlushes — drains the same queue, then
+ * THROWS if any saveJson() call recorded a failure during this draining
+ * pass (i.e. since the last call to clearRecentFlushErrors). Use this
+ * in route handlers that mutate persistent data and need to be sure
+ * the write actually landed before responding to the client.
+ *
+ * Pattern at a route handler:
+ *
+ *   try {
+ *     // do the mutation through your store helper, e.g. addApplication(...)
+ *     await awaitAllFlushesStrict();
+ *   } catch (err) {
+ *     log.error("careers.apply.persist_failed", err);
+ *     return NextResponse.json(
+ *       { error: "Application service temporarily unavailable" },
+ *       { status: 503 },
+ *     );
+ *   }
+ *
+ * The route returns 503 instead of pretending the submission succeeded.
+ * Clears the error map on entry so each request sees a fresh slate.
+ *
+ * The thrown error is a `PersistenceError` with a `.errors` array of
+ * `{ key, error }` so callers can log structured details.
+ */
+export class PersistenceError extends Error {
+  errors: Array<{ key: string; error: Error }>;
+  constructor(errors: Array<{ key: string; error: Error }>) {
+    const summary = errors.map((e) => `${e.key}: ${e.error.message}`).join("; ");
+    super(`Persistence failed for ${errors.length} key(s): ${summary}`);
+    this.name = "PersistenceError";
+    this.errors = errors;
+  }
+}
+
+export async function awaitAllFlushesStrict(): Promise<void> {
+  // Reset error state at entry so the strict check only catches errors
+  // produced during *this* drain (not stale ones from a prior request
+  // running on the same warm Lambda).
+  const beforeKeys = new Set(recentFlushErrors.keys());
+  for (const key of beforeKeys) recentFlushErrors.delete(key);
+
+  await awaitAllFlushes();
+
+  if (recentFlushErrors.size === 0) return;
+  const captured = Array.from(recentFlushErrors.entries()).map(
+    ([key, error]) => ({ key, error }),
+  );
+  recentFlushErrors.clear();
+  throw new PersistenceError(captured);
 }
 
 export interface PersistentArrayHandle {

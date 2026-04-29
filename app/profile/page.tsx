@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRef, useState } from "react";
 import IdentityVerificationCard from "@/components/IdentityVerificationCard";
 import AbhaCard from "@/components/AbhaCard";
+import PhoneInput from "@/components/PhoneInput";
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
@@ -268,12 +269,10 @@ export default function ProfilePage() {
                 <label className="mb-1.5 block text-sm font-medium text-gray-700">
                   Phone number
                 </label>
-                <input
-                  type="tel"
+                <PhoneInput
                   value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  placeholder="+1 (555) 000-0000"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  onChange={(next) => setForm({ ...form, phone: next })}
+                  defaultIso="IN"
                 />
               </div>
               <div>

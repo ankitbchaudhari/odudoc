@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { COUNTRIES } from "@/lib/countries";
+import PhoneInput from "@/components/PhoneInput";
 
 // Tiny inline icon helpers to keep JSX readable.
 const Icon = {
@@ -237,19 +238,11 @@ export default function RegisterPage() {
                   <label htmlFor="phone" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-600">
                     Phone number
                   </label>
-                  <div className="relative">
-                    <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{Icon.phone}</span>
-                    <input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      required
-                      value={form.phone}
-                      onChange={handleChange}
-                      placeholder="+1 555 123 4567"
-                      className={inputCls}
-                    />
-                  </div>
+                  <PhoneInput
+                    value={form.phone}
+                    onChange={(next) => setForm((f) => ({ ...f, phone: next }))}
+                    defaultIso="IN"
+                  />
                 </div>
               </div>
 

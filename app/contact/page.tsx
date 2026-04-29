@@ -10,6 +10,7 @@
 
 import { useState } from "react";
 import WorkingHours from "@/components/WorkingHours";
+import PhoneInput from "@/components/PhoneInput";
 import { COUNTRIES } from "@/lib/countries";
 
 const contactInfo = [
@@ -286,13 +287,10 @@ export default function ContactPage() {
                         <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
                           Phone
                         </label>
-                        <input
-                          type="tel"
+                        <PhoneInput
                           value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          placeholder="+CC followed by number"
-                          inputMode="tel"
-                          className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+                          onChange={(next) => setPhone(next)}
+                          defaultIso="IN"
                         />
                       </div>
                       <div>

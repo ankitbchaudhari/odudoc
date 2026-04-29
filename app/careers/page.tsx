@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { JobVacancy } from "@/lib/careers-store";
+import PhoneInput from "@/components/PhoneInput";
 
 export default function CareersPage() {
   const [jobs, setJobs] = useState<JobVacancy[]>([]);
@@ -345,13 +346,10 @@ function ApplicationForm({
                 <label className="mb-1 block text-xs font-medium text-gray-700">
                   Contact Number *
                 </label>
-                <input
-                  type="tel"
-                  required
+                <PhoneInput
                   value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  placeholder="+1 555 000 0000"
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                  onChange={(next) => setForm({ ...form, phone: next })}
+                  defaultIso="IN"
                 />
               </div>
 

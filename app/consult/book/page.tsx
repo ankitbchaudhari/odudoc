@@ -6,6 +6,7 @@ import Link from "next/link";
 import { type Doctor } from "@/lib/data";
 import CurrencySwitcher, { useCheckoutCurrency } from "@/components/CurrencySwitcher";
 import { convert } from "@/lib/currency-convert";
+import PhoneInput from "@/components/PhoneInput";
 
 // Specialty cards now come from /api/public/departments (admin-managed
 // in /admin/departments). The list below is a static fallback used only
@@ -603,9 +604,11 @@ export default function BookConsultationPage() {
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">Phone</label>
-                <input type="tel" value={patientPhone} onChange={(e) => setPatientPhone(e.target.value)}
-                  placeholder="+1 555 123 4567"
-                  className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary-500" />
+                <PhoneInput
+                  value={patientPhone}
+                  onChange={(next) => setPatientPhone(next)}
+                  defaultIso="IN"
+                />
               </div>
               <div className="sm:col-span-2">
                 <label className="mb-2 block text-sm font-medium text-gray-700">Email</label>

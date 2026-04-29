@@ -24,6 +24,36 @@ const { hydrate, flush } = bindPersistentArray<Subscriber>(
 );
 await hydrate();
 
+// One-time cleanup on cold start: nuke the legacy demo seed (304
+// user@example.com rows + 8 named seeds) from prod databases that
+// hydrated before we emptied the seed function. Idempotent — once
+// clean, this is a no-op.
+(function cleanupLegacyDemoRows(): void {
+  const legacyEmails = new Set([
+    "sridhari.lk@gmail.com",
+    "neerajjan1995@gmail.com",
+    "keyur.p@gmail.com",
+    "bpantlee@gmail.com",
+    "priya@example.com",
+    "sajib.malik96@gmail.com",
+    "junaedchaddara@gmail.com",
+  ]);
+  let removed = 0;
+  for (let i = subscribers.length - 1; i >= 0; i--) {
+    const s = subscribers[i];
+    if (
+      /@example\.(com|org|net)$/i.test(s.email) ||
+      s.id.startsWith("s-seed-") ||
+      /^s[1-8]$/.test(s.id) ||
+      legacyEmails.has(s.email)
+    ) {
+      subscribers.splice(i, 1);
+      removed++;
+    }
+  }
+  if (removed) flush();
+})();
+
 export function listSubscribers(opts: { activeOnly?: boolean; limit?: number } = {}): Subscriber[] {
   let list = [...subscribers].sort((a, b) => (a.subscribedAt < b.subscribedAt ? 1 : -1));
   if (opts.activeOnly) list = list.filter((s) => s.active);

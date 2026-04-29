@@ -367,6 +367,7 @@ export default function DoctorDashboardPage() {
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { label: "Consultations", href: "/dashboard/doctor/consultations", icon: "📋", bg: "from-sky-100 to-blue-100" },
+                  { label: "Clinic EMR", href: "/dashboard/doctor/emr", icon: "🩺", bg: "from-emerald-100 to-cyan-100" },
                   { label: "Prescriptions", href: "/dashboard/doctor/prescriptions", icon: "💊", bg: "from-rose-100 to-orange-100" },
                   { label: "AI Prescription", href: "/dashboard/doctor/ai-prescription", icon: "🤖", bg: "from-indigo-100 to-purple-100" },
                   { label: "Voice Prescription", href: "/dashboard/doctor/voice-prescription", icon: "🎤", bg: "from-rose-100 to-pink-100" },

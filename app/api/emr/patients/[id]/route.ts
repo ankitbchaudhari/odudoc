@@ -8,6 +8,8 @@ import {
   updatePatient,
   deletePatient,
   reloadPatients,
+  resolveClinic,
+  canWrite,
   type Sex,
 } from "@/lib/emr-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
@@ -15,42 +17,36 @@ import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
 
-function isAllowedRole(role: string | undefined): boolean {
-  return role === "doctor" || role === "admin";
-}
-
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-async function resolveDoctorEmail(): Promise<{
-  email?: string;
-  role?: string;
-} | null> {
+async function resolveOrForbid() {
   const session = await getServerSession(authOptions);
   const user = session?.user as { email?: string; role?: string } | undefined;
-  if (!user?.email || !isAllowedRole(user.role)) return null;
-  return user;
+  return resolveClinic(user?.email, user?.role);
+}
+
+function ownerScope(clinic: { role: string; ownerEmail: string }): string | undefined {
+  return clinic.role === "admin" ? undefined : clinic.ownerEmail;
 }
 
 export async function GET(_req: NextRequest, ctx: RouteContext) {
-  const user = await resolveDoctorEmail();
-  if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const clinic = await resolveOrForbid();
+  if (!clinic) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   const { id } = await ctx.params;
   await reloadPatients();
-  const patient = await getPatientById(
-    id,
-    user.role === "admin" ? undefined : user.email
-  );
-  if (!patient) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
+  const patient = await getPatientById(id, ownerScope(clinic));
+  if (!patient) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ patient });
 }
 
 export async function PATCH(req: NextRequest, ctx: RouteContext) {
-  const user = await resolveDoctorEmail();
-  if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const clinic = await resolveOrForbid();
+  if (!clinic) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!canWrite(clinic.role, "patients")) {
+    return NextResponse.json({ error: "Your role can't edit patients." }, { status: 403 });
+  }
   const { id } = await ctx.params;
   let body: {
     firstName?: string;
@@ -95,14 +91,8 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   if (body.archive) patch.archivedAt = new Date().toISOString();
   if (body.unarchive) patch.archivedAt = null;
 
-  const patient = await updatePatient(
-    id,
-    patch,
-    user.role === "admin" ? undefined : user.email
-  );
-  if (!patient) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
+  const patient = await updatePatient(id, patch, ownerScope(clinic));
+  if (!patient) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   try {
     await awaitAllFlushesStrict();
@@ -113,19 +103,19 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
       { status: 503 }
     );
   }
-
   return NextResponse.json({ patient });
 }
 
 export async function DELETE(_req: NextRequest, ctx: RouteContext) {
-  const user = await resolveDoctorEmail();
-  if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const clinic = await resolveOrForbid();
+  if (!clinic) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  // Only owners + admins can delete a patient (cascades visits/files/invoices).
+  if (clinic.role !== "owner" && clinic.role !== "admin") {
+    return NextResponse.json({ error: "Only the clinic owner can delete patients." }, { status: 403 });
+  }
   const { id } = await ctx.params;
   await reloadPatients();
-  const ok = await deletePatient(
-    id,
-    user.role === "admin" ? undefined : user.email
-  );
+  const ok = await deletePatient(id, ownerScope(clinic));
   if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ ok: true });
 }

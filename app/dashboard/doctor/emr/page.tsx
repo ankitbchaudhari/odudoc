@@ -34,27 +34,47 @@ interface Stats {
   visitsToday: number;
   visitsThisMonth: number;
   newPatientsThisMonth: number;
+  pendingInvoices?: number;
+  pendingInvoicesAmount?: number;
+}
+
+interface Quota {
+  month: string;
+  used: number;
+  limit: number;
+  unlocked: boolean;
+  blocked: boolean;
+  remaining: number;
+  unlockAmount: number;
+  unlockCurrency: string;
 }
 
 export default function EmrLandingPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [recentVisits, setRecentVisits] = useState<Visit[]>([]);
+  const [quota, setQuota] = useState<Quota | null>(null);
+  const [role, setRole] = useState<string>("owner");
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [showNew, setShowNew] = useState(false);
+  const [paywall, setPaywall] = useState(false);
+  const [unlocking, setUnlocking] = useState(false);
+  const [unlockToast, setUnlockToast] = useState<string | null>(null);
 
   const refresh = useCallback(async (q = "") => {
     setLoading(true);
     try {
-      const [statsRes, patientsRes, visitsRes] = await Promise.all([
+      const [statsRes, patientsRes, visitsRes, quotaRes] = await Promise.all([
         fetch("/api/emr/stats"),
         fetch(`/api/emr/patients${q ? `?query=${encodeURIComponent(q)}` : ""}`),
         fetch("/api/emr/visits?recent=1"),
+        fetch("/api/emr/quota"),
       ]);
       if (statsRes.ok) {
         const data = await statsRes.json();
         setStats(data.stats || null);
+        if (data.role) setRole(data.role);
       }
       if (patientsRes.ok) {
         const data = await patientsRes.json();
@@ -64,6 +84,10 @@ export default function EmrLandingPage() {
         const data = await visitsRes.json();
         setRecentVisits(data.visits || []);
       }
+      if (quotaRes.ok) {
+        const data = await quotaRes.json();
+        setQuota(data.quota || null);
+      }
     } finally {
       setLoading(false);
     }
@@ -72,6 +96,52 @@ export default function EmrLandingPage() {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  // Handle Stripe success/cancel redirects landing back here.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
+    const unlocked = params.get("unlocked");
+    const canceled = params.get("canceled");
+    if (unlocked === "1" && sessionId) {
+      (async () => {
+        try {
+          const res = await fetch(
+            `/api/emr/quota/confirm?session_id=${encodeURIComponent(sessionId)}`
+          );
+          if (res.ok) {
+            setUnlockToast("Unlock confirmed — unlimited patients this month.");
+            refresh();
+          } else {
+            const data = await res.json().catch(() => ({}));
+            setUnlockToast(data.error || "Unlock pending — refresh in a moment.");
+          }
+        } catch {
+          setUnlockToast("Unlock pending — refresh in a moment.");
+        } finally {
+          // Clean URL.
+          window.history.replaceState({}, "", "/dashboard/doctor/emr");
+        }
+      })();
+    } else if (canceled === "1") {
+      setUnlockToast("Unlock canceled. You can buy it later when you need it.");
+      window.history.replaceState({}, "", "/dashboard/doctor/emr");
+    }
+  }, [refresh]);
+
+  async function startUnlock() {
+    setUnlocking(true);
+    try {
+      const res = await fetch("/api/emr/quota/checkout", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || "Checkout failed");
+      window.location.href = data.url;
+    } catch (err) {
+      setUnlockToast(err instanceof Error ? err.message : "Checkout failed");
+      setUnlocking(false);
+    }
+  }
 
   // Debounced search.
   useEffect(() => {
@@ -121,8 +191,22 @@ export default function EmrLandingPage() {
               >
                 ← Dashboard
               </Link>
+              {(role === "owner" || role === "admin") && (
+                <Link
+                  href="/dashboard/doctor/emr/staff"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-indigo-300 hover:bg-white hover:text-indigo-700"
+                >
+                  Staff
+                </Link>
+              )}
               <button
-                onClick={() => setShowNew(true)}
+                onClick={() => {
+                  if (quota?.blocked) {
+                    setPaywall(true);
+                  } else {
+                    setShowNew(true);
+                  }
+                }}
                 className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:shadow-xl hover:shadow-emerald-500/40"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
@@ -134,6 +218,30 @@ export default function EmrLandingPage() {
             </div>
           </div>
         </div>
+
+        {unlockToast && (
+          <div className="mb-4 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 shadow-sm">
+            <svg viewBox="0 0 20 20" fill="currentColor" className="mt-0.5 h-5 w-5 text-emerald-600">
+              <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+            </svg>
+            <div className="flex-1">{unlockToast}</div>
+            <button
+              onClick={() => setUnlockToast(null)}
+              className="text-emerald-500 hover:text-emerald-800"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* Quota banner — only visible to owner/staff (admin sees no quota) */}
+        {quota && role !== "admin" && (
+          <QuotaBanner
+            quota={quota}
+            isOwner={role === "owner"}
+            onUnlock={() => setPaywall(true)}
+          />
+        )}
 
         {/* Stats */}
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -315,8 +423,187 @@ export default function EmrLandingPage() {
             // Navigate straight into the new patient's profile.
             window.location.href = `/dashboard/doctor/emr/patients/${newId}`;
           }}
+          onQuotaBlocked={() => {
+            setShowNew(false);
+            setPaywall(true);
+          }}
         />
       )}
+
+      {paywall && quota && (
+        <PaywallModal
+          quota={quota}
+          isOwner={role === "owner"}
+          unlocking={unlocking}
+          onClose={() => setPaywall(false)}
+          onUnlock={startUnlock}
+        />
+      )}
+    </div>
+  );
+}
+
+function QuotaBanner({
+  quota,
+  isOwner,
+  onUnlock,
+}: {
+  quota: Quota;
+  isOwner: boolean;
+  onUnlock: () => void;
+}) {
+  const pct = Math.min(100, Math.round((quota.used / quota.limit) * 100));
+  const tone = quota.unlocked
+    ? { bg: "from-emerald-50 to-cyan-50", ring: "border-emerald-200", text: "text-emerald-800", bar: "from-emerald-500 to-cyan-500" }
+    : quota.blocked
+      ? { bg: "from-rose-50 to-amber-50", ring: "border-rose-200", text: "text-rose-800", bar: "from-rose-500 to-amber-500" }
+      : pct >= 80
+        ? { bg: "from-amber-50 to-orange-50", ring: "border-amber-200", text: "text-amber-800", bar: "from-amber-500 to-orange-500" }
+        : { bg: "from-emerald-50 to-cyan-50", ring: "border-emerald-200", text: "text-emerald-800", bar: "from-emerald-500 to-cyan-500" };
+  return (
+    <div className={`mb-6 overflow-hidden rounded-2xl border bg-gradient-to-r ${tone.bg} ${tone.ring} p-4 shadow-sm`}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className={`text-xs font-bold uppercase tracking-wide ${tone.text}`}>
+              {quota.unlocked
+                ? "Unlimited this month"
+                : quota.blocked
+                  ? "Monthly limit reached"
+                  : "Free tier usage"}
+            </p>
+            <span className="rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold text-slate-700">
+              {quota.month}
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-slate-700">
+            {quota.unlocked ? (
+              <>You've unlocked unlimited patients for this month. Cap resets next month.</>
+            ) : quota.blocked ? (
+              <>You've added <b>{quota.used}/{quota.limit}</b> patients this month. Add more by unlocking — <b>${quota.unlockAmount}</b> for the rest of {quota.month}.</>
+            ) : (
+              <><b>{quota.used}/{quota.limit}</b> patients added this month — <b>{quota.remaining}</b> remaining on the free plan.</>
+            )}
+          </p>
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/60">
+            <div
+              className={`h-full rounded-full bg-gradient-to-r ${tone.bar} transition-all`}
+              style={{ width: `${quota.unlocked ? 100 : pct}%` }}
+            />
+          </div>
+        </div>
+        {!quota.unlocked && isOwner && (
+          <button
+            onClick={onUnlock}
+            className={`shrink-0 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition ${
+              quota.blocked
+                ? "bg-gradient-to-r from-rose-600 to-amber-600 shadow-rose-500/30 hover:shadow-xl"
+                : "bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 shadow-indigo-500/30 hover:shadow-xl"
+            }`}
+          >
+            {quota.blocked ? `Unlock for $${quota.unlockAmount}` : `Buy unlock — $${quota.unlockAmount}`}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PaywallModal({
+  quota,
+  isOwner,
+  unlocking,
+  onClose,
+  onUnlock,
+}: {
+  quota: Quota;
+  isOwner: boolean;
+  unlocking: boolean;
+  onClose: () => void;
+  onUnlock: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl"
+      >
+        <div className="bg-gradient-to-br from-rose-50 via-amber-50 to-orange-50 px-6 py-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-amber-500 text-white shadow-md">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0110 0v4" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">
+                You've reached the free monthly limit
+              </h3>
+              <p className="mt-1 text-sm text-slate-600">
+                {quota.used} of {quota.limit} patients added in <b>{quota.month}</b>.
+                The cap resets on the 1st of next month.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="px-6 py-5">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Unlimited unlock
+                </p>
+                <p className="mt-1 text-sm text-slate-700">
+                  Lifts the cap for the rest of <b>{quota.month}</b>.
+                </p>
+              </div>
+              <p className="text-3xl font-bold text-slate-900">
+                ${quota.unlockAmount}
+                <span className="ml-0.5 text-sm font-normal text-slate-500">/mo</span>
+              </p>
+            </div>
+            <ul className="mt-3 space-y-1 text-sm text-slate-700">
+              <li className="flex items-start gap-2">
+                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                <span>Unlimited new patients this calendar month</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                <span>One-time payment via Stripe — no auto-renewal</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                <span>Visits, files, invoices, staff — always free</span>
+              </li>
+            </ul>
+          </div>
+          <div className="mt-5 flex flex-col-reverse items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end">
+            <button
+              onClick={onClose}
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Close
+            </button>
+            {isOwner ? (
+              <button
+                onClick={onUnlock}
+                disabled={unlocking}
+                className="rounded-xl bg-gradient-to-r from-rose-600 via-amber-600 to-orange-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-500/30 disabled:opacity-50"
+              >
+                {unlocking ? "Opening Stripe…" : `Unlock for $${quota.unlockAmount}`}
+              </button>
+            ) : (
+              <span className="text-xs text-slate-500">
+                Only the clinic owner can purchase the unlock.
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -366,9 +653,11 @@ function timeAgo(iso: string): string {
 function NewPatientModal({
   onClose,
   onCreated,
+  onQuotaBlocked,
 }: {
   onClose: () => void;
   onCreated: (id: string) => void;
+  onQuotaBlocked?: () => void;
 }) {
   const [form, setForm] = useState({
     firstName: "",
@@ -403,6 +692,10 @@ function NewPatientModal({
         headers: { "content-type": "application/json" },
         body: JSON.stringify(form),
       });
+      if (res.status === 402 && onQuotaBlocked) {
+        onQuotaBlocked();
+        return;
+      }
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Save failed");
       onCreated(data.patient.id);

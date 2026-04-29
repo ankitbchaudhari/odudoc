@@ -1,5 +1,6 @@
-// EMR patients API — list + create. Doctor-scoped (doctors only see
-// their own patients; admin sees all).
+// EMR patients API — list + create. Clinic-scoped (resolved via
+// resolveClinic so staff members read/write under the owner doctor's
+// clinic). POST is gated by the 50/month free quota.
 
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
@@ -8,6 +9,9 @@ import {
   listPatients,
   createPatient,
   reloadPatients,
+  resolveClinic,
+  canWrite,
+  getQuotaState,
   type Sex,
 } from "@/lib/emr-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
@@ -15,30 +19,18 @@ import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
 
-function isAllowedRole(role: string | undefined): boolean {
-  return role === "doctor" || role === "admin";
-}
-
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const user = session?.user as { email?: string; role?: string } | undefined;
-  if (!user?.email) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  if (!isAllowedRole(user.role)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const clinic = await resolveClinic(user?.email, user?.role);
+  if (!clinic) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  // Reload from DB so a sibling Lambda's CREATE/PATCH/DELETE is visible
-  // even on a warm Lambda that has a stale in-memory copy.
   await reloadPatients();
-
   const query = req.nextUrl.searchParams.get("query") || undefined;
-  const includeArchived =
-    req.nextUrl.searchParams.get("archived") === "1";
+  const includeArchived = req.nextUrl.searchParams.get("archived") === "1";
 
   const patients = await listPatients({
-    doctorEmail: user.role === "admin" ? undefined : user.email,
+    ownerEmail: clinic.role === "admin" ? undefined : clinic.ownerEmail,
     query,
     includeArchived,
   });
@@ -48,11 +40,31 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const user = session?.user as { email?: string; role?: string } | undefined;
-  if (!user?.email) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const clinic = await resolveClinic(user?.email, user?.role);
+  if (!clinic) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!canWrite(clinic.role, "patients")) {
+    return NextResponse.json(
+      { error: "Your role can't add patients. Ask the clinic owner." },
+      { status: 403 }
+    );
   }
-  if (!isAllowedRole(user.role)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  // Quota gate. Admin bypasses entirely (cross-clinic — not a single
+  // clinic's quota). Owner + staff are checked against the owner's
+  // monthly bucket.
+  if (clinic.role !== "admin") {
+    const quota = await getQuotaState(clinic.ownerEmail);
+    if (quota.blocked) {
+      return NextResponse.json(
+        {
+          error: "Monthly patient quota reached",
+          quota,
+          // 402 = Payment Required — the canonical signal for client
+          // code to open the unlock paywall.
+        },
+        { status: 402 }
+      );
+    }
   }
 
   let body: {
@@ -78,20 +90,16 @@ export async function POST(req: NextRequest) {
   const lastName = (body.lastName || "").trim();
   const phone = (body.phone || "").trim();
   if (!firstName || !lastName) {
-    return NextResponse.json(
-      { error: "firstName and lastName are required" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "firstName and lastName are required" }, { status: 400 });
   }
   if (!phone) {
-    return NextResponse.json(
-      { error: "phone is required" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "phone is required" }, { status: 400 });
   }
 
+  const ownerEmail =
+    clinic.role === "admin" ? clinic.userEmail : clinic.ownerEmail;
   const patient = await createPatient({
-    doctorEmail: user.email,
+    ownerEmail,
     firstName,
     lastName,
     age: (body.age || "").toString(),
@@ -105,20 +113,15 @@ export async function POST(req: NextRequest) {
     notes: body.notes,
   });
 
-  // Confirm Postgres took the write before responding — the
-  // launch-checklist 503-on-silent-failure pattern.
   try {
     await awaitAllFlushesStrict();
   } catch (err) {
     log.error("emr.patients.persist_failed", err, {
-      doctorEmail: user.email,
+      ownerEmail,
       patientId: patient.id,
     });
     return NextResponse.json(
-      {
-        error:
-          "EMR service is temporarily unavailable. Please try again — your patient was not saved.",
-      },
+      { error: "EMR service is temporarily unavailable. Please retry — your patient was not saved." },
       { status: 503 }
     );
   }

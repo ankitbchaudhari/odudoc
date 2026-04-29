@@ -5,7 +5,7 @@
 // one place: typing a note shouldn't require navigating to another
 // page and losing the patient's context.
 
-import { use, useCallback, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 interface Patient {
@@ -37,6 +37,41 @@ interface Visit {
   createdAt: string;
 }
 
+interface EmrFile {
+  id: string;
+  category: "lab" | "scan" | "report" | "other";
+  label: string;
+  originalName: string;
+  url: string;
+  size: number;
+  contentType: string;
+  createdAt: string;
+}
+
+interface InvoiceLine {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+interface Invoice {
+  id: string;
+  number: string;
+  issueDate: string;
+  dueDate?: string;
+  lineItems: InvoiceLine[];
+  subtotal: number;
+  taxRate?: number;
+  taxAmount?: number;
+  total: number;
+  currency: string;
+  status: "draft" | "sent" | "paid" | "void";
+  notes?: string;
+  paidAt?: string;
+  paymentMethod?: string;
+  createdAt: string;
+}
+
 const EMPTY_VISIT = {
   visitDate: new Date().toISOString().slice(0, 10),
   chiefComplaint: "",
@@ -45,6 +80,15 @@ const EMPTY_VISIT = {
   assessment: "",
   plan: "",
   vitals: "",
+};
+
+const EMPTY_INVOICE_FORM = {
+  issueDate: new Date().toISOString().slice(0, 10),
+  dueDate: "",
+  taxRate: "",
+  currency: "USD",
+  notes: "",
+  lineItems: [{ description: "Consultation", quantity: 1, unitPrice: 0 }],
 };
 
 export default function PatientDetailPage({
@@ -64,13 +108,26 @@ export default function PatientDetailPage({
   const [savingVisit, setSavingVisit] = useState(false);
   const [visitFormOpen, setVisitFormOpen] = useState(false);
 
+  const [files, setFiles] = useState<EmrFile[]>([]);
+  const [uploadLabel, setUploadLabel] = useState("");
+  const [uploadCategory, setUploadCategory] = useState<EmrFile["category"]>("lab");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoiceForm, setInvoiceForm] = useState(EMPTY_INVOICE_FORM);
+  const [invoiceFormOpen, setInvoiceFormOpen] = useState(false);
+  const [savingInvoice, setSavingInvoice] = useState(false);
+
   const fetchAll = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [pRes, vRes] = await Promise.all([
+      const [pRes, vRes, fRes, iRes] = await Promise.all([
         fetch(`/api/emr/patients/${id}`),
         fetch(`/api/emr/visits?patientId=${id}`),
+        fetch(`/api/emr/files?patientId=${id}`),
+        fetch(`/api/emr/invoices?patientId=${id}`),
       ]);
       if (!pRes.ok) {
         const data = await pRes.json().catch(() => ({}));
@@ -83,12 +140,143 @@ export default function PatientDetailPage({
         const vData = await vRes.json();
         setVisits(vData.visits || []);
       }
+      if (fRes.ok) {
+        const fData = await fRes.json();
+        setFiles(fData.files || []);
+      }
+      if (iRes.ok) {
+        const iData = await iRes.json();
+        setInvoices(iData.invoices || []);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Load failed");
     } finally {
       setLoading(false);
     }
   }, [id]);
+
+  async function uploadEmrFile(file: File) {
+    setUploading(true);
+    setError(null);
+    try {
+      const fd = new FormData();
+      fd.append("patientId", id);
+      fd.append("file", file);
+      fd.append("label", uploadLabel || file.name);
+      fd.append("category", uploadCategory);
+      const res = await fetch("/api/emr/files", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      setFiles((prev) => [data.file, ...prev]);
+      setUploadLabel("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function deleteEmrFile(fileId: string) {
+    if (!confirm("Delete this file? This cannot be undone.")) return;
+    try {
+      const res = await fetch(`/api/emr/files?id=${fileId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Delete failed");
+      }
+      setFiles((prev) => prev.filter((f) => f.id !== fileId));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Delete failed");
+    }
+  }
+
+  async function saveInvoice(e: React.FormEvent) {
+    e.preventDefault();
+    setSavingInvoice(true);
+    setError(null);
+    try {
+      const cleanLines = invoiceForm.lineItems
+        .map((li) => ({
+          description: li.description.trim(),
+          quantity: Number(li.quantity) || 0,
+          unitPrice: Number(li.unitPrice) || 0,
+        }))
+        .filter((li) => li.description && li.quantity > 0);
+      if (cleanLines.length === 0) {
+        setError("Add at least one line item with a description and quantity.");
+        setSavingInvoice(false);
+        return;
+      }
+      const res = await fetch("/api/emr/invoices", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          patientId: id,
+          issueDate: invoiceForm.issueDate,
+          dueDate: invoiceForm.dueDate || undefined,
+          taxRate: invoiceForm.taxRate ? Number(invoiceForm.taxRate) : undefined,
+          currency: invoiceForm.currency,
+          notes: invoiceForm.notes || undefined,
+          lineItems: cleanLines,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Save failed");
+      setInvoices((prev) => [data.invoice, ...prev]);
+      setInvoiceForm(EMPTY_INVOICE_FORM);
+      setInvoiceFormOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setSavingInvoice(false);
+    }
+  }
+
+  async function setInvoiceStatus(invId: string, status: Invoice["status"]) {
+    try {
+      const res = await fetch(`/api/emr/invoices/${invId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Update failed");
+      setInvoices((prev) => prev.map((i) => (i.id === invId ? data.invoice : i)));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Update failed");
+    }
+  }
+
+  function downloadFhir() {
+    window.open(`/api/emr/patients/${id}/fhir`, "_blank");
+  }
+
+  function updateLine(idx: number, field: keyof InvoiceLine, value: string | number) {
+    setInvoiceForm((p) => ({
+      ...p,
+      lineItems: p.lineItems.map((li, i) => (i === idx ? { ...li, [field]: value } : li)),
+    }));
+  }
+  function addLine() {
+    setInvoiceForm((p) => ({
+      ...p,
+      lineItems: [...p.lineItems, { description: "", quantity: 1, unitPrice: 0 }],
+    }));
+  }
+  function removeLine(idx: number) {
+    setInvoiceForm((p) => ({
+      ...p,
+      lineItems: p.lineItems.filter((_, i) => i !== idx),
+    }));
+  }
+  const invoiceSubtotal = invoiceForm.lineItems.reduce(
+    (s, li) => s + (Number(li.quantity) || 0) * (Number(li.unitPrice) || 0),
+    0
+  );
+  const invoiceTax =
+    invoiceForm.taxRate ? (invoiceSubtotal * Number(invoiceForm.taxRate)) / 100 : 0;
+  const invoiceTotal = invoiceSubtotal + invoiceTax;
 
   useEffect(() => {
     fetchAll();
@@ -400,11 +588,11 @@ export default function PatientDetailPage({
             <div className="px-6 py-12 text-center">
               <p className="text-sm font-semibold text-slate-700">No visits logged yet</p>
               <p className="mt-1 text-xs text-slate-500">
-                Click <b>+ New visit</b> to record a SOAP note for today's
+                Click <b>+ New visit</b> to record a SOAP note for today&apos;s
                 consultation.
               </p>
             </div>
-          ) : (
+          ) : visits.length === 0 ? null : (
             <ol className="relative divide-y divide-slate-100">
               {visits.map((v) => (
                 <li key={v.id} className="px-6 py-5">
@@ -446,8 +634,339 @@ export default function PatientDetailPage({
             </ol>
           )}
         </div>
+
+        {/* Files */}
+        <div className="mt-6 overflow-hidden rounded-3xl border border-white/60 bg-white/80 shadow-sm backdrop-blur-xl">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-4">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold text-slate-900">Files</h2>
+              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                {files.length}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={uploadCategory}
+                onChange={(e) => setUploadCategory(e.target.value as EmrFile["category"])}
+                className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs"
+              >
+                <option value="lab">Lab report</option>
+                <option value="scan">Scan / X-ray</option>
+                <option value="report">Report</option>
+                <option value="other">Other</option>
+              </select>
+              <input
+                value={uploadLabel}
+                onChange={(e) => setUploadLabel(e.target.value)}
+                placeholder="Label (e.g. CBC 04-29)"
+                className="w-44 rounded-lg border border-slate-200 px-2 py-1.5 text-xs outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/15"
+              />
+              <input
+                ref={fileInputRef}
+                type="file"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadEmrFile(f);
+                }}
+                className="hidden"
+                id="emr-file-upload"
+              />
+              <label
+                htmlFor="emr-file-upload"
+                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold transition ${
+                  uploading
+                    ? "bg-slate-200 text-slate-500"
+                    : "bg-gradient-to-r from-cyan-600 to-teal-600 text-white shadow-md shadow-cyan-500/20 hover:shadow-lg"
+                }`}
+              >
+                {uploading ? "Uploading…" : "+ Upload file"}
+              </label>
+            </div>
+          </div>
+          {files.length === 0 ? (
+            <div className="px-6 py-10 text-center text-xs text-slate-500">
+              No files yet — upload lab reports, scans, or other PDFs/images (max 10 MB).
+            </div>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {files.map((f) => (
+                <li key={f.id} className="flex items-center gap-3 px-6 py-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cyan-50 text-cyan-700 ring-1 ring-cyan-100">
+                    {f.category === "scan" ? "🩻" : f.category === "lab" ? "🧪" : f.category === "report" ? "📄" : "📎"}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-slate-900">
+                      {f.label}
+                    </p>
+                    <p className="truncate text-xs text-slate-500">
+                      {f.originalName} · {Math.round(f.size / 1024)} KB · {f.createdAt.slice(0, 10)}
+                    </p>
+                  </div>
+                  <a
+                    href={f.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-lg bg-slate-100 px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-200"
+                  >
+                    Open
+                  </a>
+                  <button
+                    onClick={() => deleteEmrFile(f.id)}
+                    className="rounded-lg px-2 py-1.5 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
+                  >
+                    Delete
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Invoices */}
+        <div className="mt-6 overflow-hidden rounded-3xl border border-white/60 bg-white/80 shadow-sm backdrop-blur-xl">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-4">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold text-slate-900">Invoices</h2>
+              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                {invoices.length}
+              </span>
+            </div>
+            <button
+              onClick={() => setInvoiceFormOpen((v) => !v)}
+              className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                invoiceFormOpen
+                  ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  : "bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md shadow-amber-500/20 hover:shadow-lg"
+              }`}
+            >
+              {invoiceFormOpen ? "Close" : "+ New invoice"}
+            </button>
+          </div>
+
+          {invoiceFormOpen && (
+            <form onSubmit={saveInvoice} className="border-b border-slate-100 bg-amber-50/30 p-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <Field
+                  label="Issue date"
+                  type="date"
+                  value={invoiceForm.issueDate}
+                  onChange={(v) => setInvoiceForm((p) => ({ ...p, issueDate: v }))}
+                />
+                <Field
+                  label="Due date"
+                  type="date"
+                  value={invoiceForm.dueDate}
+                  onChange={(v) => setInvoiceForm((p) => ({ ...p, dueDate: v }))}
+                />
+                <Field
+                  label="Currency"
+                  value={invoiceForm.currency}
+                  onChange={(v) => setInvoiceForm((p) => ({ ...p, currency: v.toUpperCase() }))}
+                />
+              </div>
+              <div className="mt-4 rounded-xl border border-slate-200 bg-white">
+                <div className="border-b border-slate-100 px-3 py-2 text-xs font-semibold text-slate-600">
+                  Line items
+                </div>
+                <div className="divide-y divide-slate-100">
+                  {invoiceForm.lineItems.map((li, i) => (
+                    <div key={i} className="grid grid-cols-12 items-center gap-2 p-3">
+                      <input
+                        value={li.description}
+                        onChange={(e) => updateLine(i, "description", e.target.value)}
+                        placeholder="Description"
+                        className="col-span-6 rounded-lg border border-slate-200 px-2 py-1.5 text-xs outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15"
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={li.quantity}
+                        onChange={(e) => updateLine(i, "quantity", Number(e.target.value))}
+                        className="col-span-2 rounded-lg border border-slate-200 px-2 py-1.5 text-xs outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15"
+                        placeholder="Qty"
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={li.unitPrice}
+                        onChange={(e) => updateLine(i, "unitPrice", Number(e.target.value))}
+                        className="col-span-3 rounded-lg border border-slate-200 px-2 py-1.5 text-xs outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15"
+                        placeholder="Unit price"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeLine(i)}
+                        className="col-span-1 rounded-lg text-xs text-rose-600 hover:bg-rose-50"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between border-t border-slate-100 px-3 py-2">
+                  <button
+                    type="button"
+                    onClick={addLine}
+                    className="text-xs font-semibold text-amber-700 hover:underline"
+                  >
+                    + Add line
+                  </button>
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-slate-500">Tax %</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      value={invoiceForm.taxRate}
+                      onChange={(e) => setInvoiceForm((p) => ({ ...p, taxRate: e.target.value }))}
+                      className="w-16 rounded-lg border border-slate-200 px-2 py-1 outline-none focus:border-amber-500"
+                    />
+                    <span className="ml-2 text-slate-500">Total</span>
+                    <span className="font-bold tabular-nums text-slate-900">
+                      {invoiceForm.currency} {invoiceTotal.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <FieldArea
+                wide
+                label="Notes"
+                value={invoiceForm.notes}
+                onChange={(v) => setInvoiceForm((p) => ({ ...p, notes: v }))}
+                placeholder="Visible on the invoice."
+              />
+              <div className="mt-4 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInvoiceForm(EMPTY_INVOICE_FORM);
+                    setInvoiceFormOpen(false);
+                  }}
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingInvoice}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-amber-500/30 disabled:opacity-50"
+                >
+                  {savingInvoice ? "Saving…" : "Save invoice"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {invoices.length === 0 && !invoiceFormOpen ? (
+            <div className="px-6 py-10 text-center text-xs text-slate-500">
+              No invoices yet — log a consultation fee, lab work, or follow-up charge.
+            </div>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {invoices.map((inv) => (
+                <li key={inv.id} className="px-6 py-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-bold text-slate-900">{inv.number}</p>
+                        <InvoiceStatusBadge status={inv.status} />
+                        <span className="text-[11px] text-slate-500">
+                          {inv.issueDate}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-slate-700">
+                        {inv.lineItems.map((l) => l.description).join(" · ")}
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        {inv.currency} {inv.subtotal.toFixed(2)}
+                        {inv.taxAmount ? ` + ${inv.taxAmount.toFixed(2)} tax` : ""}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold tabular-nums text-slate-900">
+                        {inv.currency} {inv.total.toFixed(2)}
+                      </p>
+                      <div className="mt-1 flex flex-wrap justify-end gap-1">
+                        {inv.status !== "paid" && (
+                          <button
+                            onClick={() => setInvoiceStatus(inv.id, "paid")}
+                            className="rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-emerald-700"
+                          >
+                            Mark paid
+                          </button>
+                        )}
+                        {inv.status === "draft" && (
+                          <button
+                            onClick={() => setInvoiceStatus(inv.id, "sent")}
+                            className="rounded-lg bg-slate-700 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-slate-900"
+                          >
+                            Mark sent
+                          </button>
+                        )}
+                        {inv.status !== "void" && inv.status !== "paid" && (
+                          <button
+                            onClick={() => setInvoiceStatus(inv.id, "void")}
+                            className="rounded-lg px-2.5 py-1 text-[11px] font-semibold text-slate-500 hover:bg-slate-100"
+                          >
+                            Void
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* FHIR export */}
+        <div className="mt-6 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-indigo-50/60 via-violet-50/60 to-fuchsia-50/60 p-5 shadow-sm backdrop-blur-xl">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                Interoperability
+              </p>
+              <h2 className="mt-1 text-base font-bold text-slate-900">
+                Export FHIR R4 bundle
+              </h2>
+              <p className="mt-1 text-xs text-slate-600">
+                Download this patient&apos;s record (demographics, allergies,
+                conditions, encounters) as a FHIR JSON bundle for migration to
+                another EMR.
+              </p>
+            </div>
+            <button
+              onClick={downloadFhir}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-indigo-600"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+              </svg>
+              Export FHIR
+            </button>
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
+
+function InvoiceStatusBadge({ status }: { status: Invoice["status"] }) {
+  const map: Record<Invoice["status"], { bg: string; text: string }> = {
+    draft: { bg: "bg-slate-100", text: "text-slate-700" },
+    sent: { bg: "bg-blue-50", text: "text-blue-700" },
+    paid: { bg: "bg-emerald-50", text: "text-emerald-700" },
+    void: { bg: "bg-rose-50", text: "text-rose-700" },
+  };
+  const m = map[status];
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${m.bg} ${m.text}`}>
+      {status}
+    </span>
   );
 }
 

@@ -111,6 +111,24 @@ export interface Doctor {
   verified?: boolean;
   verifiedAt?: string; // ISO
   verifiedBy?: string; // admin email
+  /** ISO timestamp when the doctor self-submitted their verification
+   *  documents. Presence of this field + verified=false means
+   *  "pending_review" — the dashboard shows a "we're checking your
+   *  documents" interstitial instead of the upload form. */
+  verificationSubmittedAt?: string;
+  /** Stored URLs for the documents the doctor uploaded during
+   *  self-serve verification. The admin reviews these from the
+   *  doctor-detail page. */
+  verificationDocs?: {
+    idFrontUrl?: string;
+    idBackUrl?: string;
+    selfieUrl?: string;
+    licenseUrl?: string;
+  };
+  /** Set by the admin if a verification submission is rejected. The
+   *  doctor sees this on the gate and can resubmit. Cleared on the
+   *  next submission. */
+  verificationRejectionReason?: string;
 
   /** ISO 3166-1 alpha-2 country code that issued the medical license.
    *  Drives the label/regex applied at registration ("NPI" for US,
@@ -441,6 +459,66 @@ export function setDoctorLicense(
   if (patch.country !== undefined) d.licenseCountry = patch.country.toUpperCase().slice(0, 2);
   if (patch.number !== undefined) d.licenseNumber = patch.number.trim();
   if (patch.expiry !== undefined) d.licenseExpiry = patch.expiry;
+  d.updatedAt = now();
+  flush();
+  return d;
+}
+
+/** Record a self-serve verification submission. Doesn't actually
+ *  flip the `verified` flag — that's still admin-gated — but it
+ *  stamps the upload time and stashes the document URLs so the
+ *  admin can review them. Clears any prior rejection reason since
+ *  this is a fresh attempt. */
+export function submitDoctorVerification(
+  id: string,
+  patch: {
+    docs: {
+      idFrontUrl?: string;
+      idBackUrl?: string;
+      selfieUrl?: string;
+      licenseUrl?: string;
+    };
+    licenseCountry?: string;
+    licenseNumber?: string;
+    licenseExpiry?: string;
+  },
+): Doctor | null {
+  const d = doctors.find((x) => x.id === id);
+  if (!d) return null;
+  // Merge over any existing partial uploads — the doctor may submit
+  // ID front + back in one round and resend a clearer selfie later.
+  d.verificationDocs = { ...(d.verificationDocs || {}), ...patch.docs };
+  d.verificationSubmittedAt = now();
+  d.verificationRejectionReason = undefined;
+  if (patch.licenseCountry !== undefined) {
+    d.licenseCountry = patch.licenseCountry.toUpperCase().slice(0, 2);
+  }
+  if (patch.licenseNumber !== undefined) {
+    d.licenseNumber = patch.licenseNumber.trim();
+  }
+  if (patch.licenseExpiry !== undefined) {
+    d.licenseExpiry = patch.licenseExpiry;
+  }
+  d.updatedAt = now();
+  flush();
+  return d;
+}
+
+/** Admin-side: reject a verification submission with a reason that
+ *  the doctor will see on their gate. Keeps verified=false and
+ *  clears verificationSubmittedAt so the doctor sees the upload
+ *  form again instead of the "pending review" state. */
+export function rejectDoctorVerification(
+  id: string,
+  reason: string,
+): Doctor | null {
+  const d = doctors.find((x) => x.id === id);
+  if (!d) return null;
+  d.verified = false;
+  d.verifiedAt = undefined;
+  d.verifiedBy = undefined;
+  d.verificationSubmittedAt = undefined;
+  d.verificationRejectionReason = reason.trim() || "Documents could not be verified.";
   d.updatedAt = now();
   flush();
   return d;

@@ -14,7 +14,13 @@ const PUBLIC_BASE_URL = (
   process.env.FILES_BASE_URL?.trim() || "https://files.odudoc.com"
 ).replace(/\/+$/, "");
 
-export type FileCategory = "cvs" | "prescriptions" | "recordings" | "licenses" | "emr";
+export type FileCategory =
+  | "cvs"
+  | "prescriptions"
+  | "recordings"
+  | "licenses"
+  | "emr"
+  | "doctor-verification";
 
 export interface UploadResult {
   filename: string; // pathname we store in our DB (e.g. "cvs/169.../name.pdf")

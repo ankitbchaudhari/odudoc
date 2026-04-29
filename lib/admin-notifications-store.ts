@@ -9,6 +9,7 @@ import { bindPersistentArray } from "./persistent-array";
 export type AdminNotificationType =
   | "user_signup"
   | "doctor_application"
+  | "doctor_verification_submission"
   | "career_application"
   | "blog_published"
   | "withdrawal_request"

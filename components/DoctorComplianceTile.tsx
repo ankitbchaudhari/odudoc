@@ -110,24 +110,36 @@ export default function DoctorComplianceTile() {
 
         <ul className="space-y-3 text-sm">
           {/* Verification */}
-          <li className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2">
-            <div>
-              <p className="font-semibold text-gray-900">Identity verified</p>
-              <p className="text-xs text-gray-500">
-                {me.verified
-                  ? `Verified${me.verifiedAt ? ` on ${new Date(me.verifiedAt).toLocaleDateString()}` : ""}`
-                  : "Pending — admin will email you when complete."}
-              </p>
+          <li className="rounded-xl border border-gray-100 bg-gray-50 px-3 py-2">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="font-semibold text-gray-900">Identity verified</p>
+                <p className="text-xs text-gray-500">
+                  {me.verified
+                    ? `Verified${me.verifiedAt ? ` on ${new Date(me.verifiedAt).toLocaleDateString()}` : ""}`
+                    : "Submit ID + selfie + license documents to activate your dashboard."}
+                </p>
+              </div>
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${
+                  me.verified
+                    ? "bg-gradient-to-r from-sky-50 to-blue-50 text-sky-700 ring-sky-200"
+                    : "bg-amber-50 text-amber-700 ring-amber-200"
+                }`}
+              >
+                {me.verified ? "✓ Verified" : "Pending"}
+              </span>
             </div>
-            <span
-              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${
-                me.verified
-                  ? "bg-gradient-to-r from-sky-50 to-blue-50 text-sky-700 ring-sky-200"
-                  : "bg-amber-50 text-amber-700 ring-amber-200"
-              }`}
-            >
-              {me.verified ? "✓ Verified" : "Pending"}
-            </span>
+            {!me.verified && (
+              <div className="mt-2.5">
+                <a
+                  href="/dashboard/doctor"
+                  className="inline-block rounded-lg bg-gradient-to-r from-amber-500 to-rose-500 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  Start verification →
+                </a>
+              </div>
+            )}
           </li>
 
           {/* License expiry */}

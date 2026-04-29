@@ -1029,6 +1029,34 @@ export async function getInvoiceByPublicToken(
   return invoices.find((i) => i.publicToken === token);
 }
 
+/** Backfill / rotate the public payment token on an invoice. Used by
+ *  the re-issue flow for legacy invoices that pre-date EMR v3 (which
+ *  lack publicToken entirely) and as a manual rotation if a doctor
+ *  wants to invalidate a link they already shared. Always returns
+ *  the new token via the updated invoice row. */
+export async function regenerateInvoicePublicToken(
+  id: string,
+  ownerEmail?: string
+): Promise<EmrInvoice | undefined> {
+  await hydrateInvoices();
+  const idx = invoices.findIndex((i) => i.id === id);
+  if (idx === -1) return undefined;
+  const current = invoices[idx];
+  if (ownerEmail && current.doctorEmail !== ownerEmail.toLowerCase()) return undefined;
+  const newToken = `pay-${Math.random().toString(36).slice(2, 10)}${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
+  const next: EmrInvoice = {
+    ...current,
+    publicToken: newToken,
+    // Drop any cached checkout session — the old link's session
+    // metadata still references this invoice id, but we want any
+    // future "Copy link" interaction to start fresh.
+    stripeSessionId: undefined,
+    updatedAt: nowIso(),
+  };
+  invoices.splice(idx, 1, next);
+  return next;
+}
+
 export async function setInvoiceCheckoutSession(
   id: string,
   sessionId: string

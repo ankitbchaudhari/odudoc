@@ -259,16 +259,70 @@ export default function PatientDetailPage({
   }
 
   async function copyPaymentLink(inv: Invoice) {
-    if (!inv.publicToken) return;
-    const url = `${window.location.origin}/pay/${inv.publicToken}`;
+    let token = inv.publicToken;
+    // Lazy-generate for legacy invoices created before publicToken
+    // existed on the schema. The user gets a single click that
+    // "just works" instead of seeing a different button label.
+    if (!token) {
+      try {
+        const res = await fetch(`/api/emr/invoices/${inv.id}/payment-link`, {
+          method: "POST",
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Could not create link");
+        token = data.invoice.publicToken;
+        // Reflect the freshly-tokened row in local state so further
+        // clicks skip the generation roundtrip.
+        setInvoices((prev) =>
+          prev.map((i) => (i.id === inv.id ? data.invoice : i))
+        );
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Could not create link");
+        return;
+      }
+    }
+    if (!token) return;
+    const url = `${window.location.origin}/pay/${token}`;
     try {
       await navigator.clipboard.writeText(url);
       setError(null);
-      setCopiedToken(inv.publicToken);
+      setCopiedToken(token);
       setTimeout(() => setCopiedToken(null), 2000);
     } catch {
       // Fallback: just show the URL so the doctor can copy by hand.
       window.prompt("Copy this payment link:", url);
+    }
+  }
+
+  async function rotatePaymentLink(inv: Invoice) {
+    if (
+      !confirm(
+        "Rotate this invoice's payment link? Anyone who has the old URL will get a 'not found' error."
+      )
+    ) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/emr/invoices/${inv.id}/payment-link`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Rotate failed");
+      setInvoices((prev) =>
+        prev.map((i) => (i.id === inv.id ? data.invoice : i))
+      );
+      // Auto-copy the freshly-rotated link as a convenience — the
+      // doctor most likely wants to share the new URL right now.
+      const url = `${window.location.origin}/pay/${data.invoice.publicToken}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopiedToken(data.invoice.publicToken);
+        setTimeout(() => setCopiedToken(null), 2000);
+      } catch {
+        window.prompt("New payment link:", url);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Rotate failed");
     }
   }
 
@@ -910,18 +964,37 @@ export default function PatientDetailPage({
                         {inv.currency} {inv.total.toFixed(2)}
                       </p>
                       <div className="mt-1 flex flex-wrap justify-end gap-1">
-                        {inv.publicToken && inv.status !== "paid" && inv.status !== "void" && (
-                          <button
-                            onClick={() => copyPaymentLink(inv)}
-                            className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition ${
-                              copiedToken === inv.publicToken
-                                ? "bg-emerald-100 text-emerald-700"
-                                : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
-                            }`}
-                            title="Copy patient-facing payment link"
-                          >
-                            {copiedToken === inv.publicToken ? "✓ Link copied" : "Copy pay link"}
-                          </button>
+                        {inv.status !== "paid" && inv.status !== "void" && (
+                          <>
+                            <button
+                              onClick={() => copyPaymentLink(inv)}
+                              className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition ${
+                                copiedToken === inv.publicToken
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                              }`}
+                              title={
+                                inv.publicToken
+                                  ? "Copy patient-facing payment link"
+                                  : "Generate and copy a patient-facing payment link"
+                              }
+                            >
+                              {copiedToken === inv.publicToken
+                                ? "✓ Link copied"
+                                : inv.publicToken
+                                  ? "Copy pay link"
+                                  : "Get pay link"}
+                            </button>
+                            {inv.publicToken && (
+                              <button
+                                onClick={() => rotatePaymentLink(inv)}
+                                className="rounded-lg px-1.5 py-1 text-[11px] font-semibold text-slate-500 hover:bg-slate-100"
+                                title="Rotate the payment link (invalidates the old URL)"
+                              >
+                                ↻
+                              </button>
+                            )}
+                          </>
                         )}
                         {inv.status !== "paid" && (
                           <button

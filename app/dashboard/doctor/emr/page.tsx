@@ -461,46 +461,58 @@ function QuotaBanner({
   onUnlock: () => void;
 }) {
   const pct = Math.min(100, Math.round((quota.used / quota.limit) * 100));
-  const tone = quota.unlocked
-    ? { bg: "from-emerald-50 to-cyan-50", ring: "border-emerald-200", text: "text-emerald-800", bar: "from-emerald-500 to-cyan-500" }
-    : quota.blocked
+  // Three visual states: under-quota (green), >=80% (amber), at-cap (rose).
+  const tone =
+    quota.blocked
       ? { bg: "from-rose-50 to-amber-50", ring: "border-rose-200", text: "text-rose-800", bar: "from-rose-500 to-amber-500" }
       : pct >= 80
         ? { bg: "from-amber-50 to-orange-50", ring: "border-amber-200", text: "text-amber-800", bar: "from-amber-500 to-orange-500" }
         : { bg: "from-emerald-50 to-cyan-50", ring: "border-emerald-200", text: "text-emerald-800", bar: "from-emerald-500 to-cyan-500" };
+  const planLabel = quota.unlocked ? "Practice unlock" : "Free plan";
+  // Hard cap for unlocked clinics is /corporate; for free it's the $50 unlock.
+  const showUnlockBtn = !quota.unlocked && isOwner;
   return (
     <div className={`mb-6 overflow-hidden rounded-2xl border bg-gradient-to-r ${tone.bg} ${tone.ring} p-4 shadow-sm`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className={`text-xs font-bold uppercase tracking-wide ${tone.text}`}>
-              {quota.unlocked
-                ? "Unlimited this month"
-                : quota.blocked
-                  ? "Monthly limit reached"
-                  : "Free tier usage"}
+              {planLabel} · {quota.blocked ? "monthly limit reached" : `${quota.month} usage`}
             </p>
             <span className="rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold text-slate-700">
               {quota.month}
             </span>
           </div>
           <p className="mt-1 text-sm text-slate-700">
-            {quota.unlocked ? (
-              <>You've unlocked unlimited patients for this month. Cap resets next month.</>
-            ) : quota.blocked ? (
-              <>You've added <b>{quota.used}/{quota.limit}</b> patients this month. Add more by unlocking — <b>${quota.unlockAmount}</b> for the rest of {quota.month}.</>
+            {quota.blocked ? (
+              quota.unlocked ? (
+                <>
+                  You&apos;ve hit <b>{quota.used}/{quota.limit}</b> patients on the
+                  Practice unlock — the highest paid tier. For more, switch to{" "}
+                  <a href="/corporate" className="font-bold text-indigo-700 underline">OduDoc Corporate</a>.
+                </>
+              ) : (
+                <>
+                  You&apos;ve added <b>{quota.used}/{quota.limit}</b> patients this
+                  month. Buy the <b>${quota.unlockAmount}</b> Practice unlock to
+                  raise the cap to <b>{250}</b>.
+                </>
+              )
             ) : (
-              <><b>{quota.used}/{quota.limit}</b> patients added this month — <b>{quota.remaining}</b> remaining on the free plan.</>
+              <>
+                <b>{quota.used}/{quota.limit}</b> patients this month —
+                <b> {quota.remaining}</b> remaining on the {planLabel.toLowerCase()}.
+              </>
             )}
           </p>
           <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/60">
             <div
               className={`h-full rounded-full bg-gradient-to-r ${tone.bar} transition-all`}
-              style={{ width: `${quota.unlocked ? 100 : pct}%` }}
+              style={{ width: `${pct}%` }}
             />
           </div>
         </div>
-        {!quota.unlocked && isOwner && (
+        {showUnlockBtn && (
           <button
             onClick={onUnlock}
             className={`shrink-0 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition ${
@@ -511,6 +523,14 @@ function QuotaBanner({
           >
             {quota.blocked ? `Unlock for $${quota.unlockAmount}` : `Buy unlock — $${quota.unlockAmount}`}
           </button>
+        )}
+        {quota.unlocked && quota.blocked && (
+          <a
+            href="/corporate"
+            className="shrink-0 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:bg-indigo-600"
+          >
+            Visit /corporate
+          </a>
         )}
       </div>
     </div>
@@ -530,6 +550,10 @@ function PaywallModal({
   onClose: () => void;
   onUnlock: () => void;
 }) {
+  // Two distinct copy paths:
+  // - free → block at 50: pitch the $50 Practice unlock (raises cap to 250)
+  // - unlocked → block at 250: pitch /corporate (no third paid tier)
+  const atTopTier = quota.unlocked;
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-sm p-4"
@@ -549,46 +573,81 @@ function PaywallModal({
             </div>
             <div>
               <h3 className="text-lg font-bold text-slate-900">
-                You've reached the free monthly limit
+                {atTopTier
+                  ? "You've reached the Practice unlock cap"
+                  : "You've reached the free monthly limit"}
               </h3>
               <p className="mt-1 text-sm text-slate-600">
                 {quota.used} of {quota.limit} patients added in <b>{quota.month}</b>.
-                The cap resets on the 1st of next month.
+                {atTopTier
+                  ? " The Practice unlock is the highest self-serve tier — bigger volume needs OduDoc Corporate."
+                  : " The cap resets on the 1st of next month, or upgrade now."}
               </p>
             </div>
           </div>
         </div>
         <div className="px-6 py-5">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Unlimited unlock
-                </p>
-                <p className="mt-1 text-sm text-slate-700">
-                  Lifts the cap for the rest of <b>{quota.month}</b>.
+          {atTopTier ? (
+            <div className="rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-fuchsia-50 p-4">
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                    OduDoc Corporate
+                  </p>
+                  <p className="mt-1 text-sm text-slate-700">
+                    Multi-clinic, hospital-grade tier. Custom volume, BAA / DPA
+                    available, dedicated support.
+                  </p>
+                </div>
+                <p className="text-base font-bold text-slate-900">Talk to us</p>
+              </div>
+              <ul className="mt-3 space-y-1 text-sm text-slate-700">
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                  <span>Unlimited patients per month</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                  <span>Unlimited staff &amp; multiple clinics</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                  <span>Hospital-grade compliance + SLA</span>
+                </li>
+              </ul>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Practice unlock
+                  </p>
+                  <p className="mt-1 text-sm text-slate-700">
+                    Lifts the cap for the rest of <b>{quota.month}</b>.
+                  </p>
+                </div>
+                <p className="text-3xl font-bold text-slate-900">
+                  ${quota.unlockAmount}
+                  <span className="ml-0.5 text-sm font-normal text-slate-500">/mo</span>
                 </p>
               </div>
-              <p className="text-3xl font-bold text-slate-900">
-                ${quota.unlockAmount}
-                <span className="ml-0.5 text-sm font-normal text-slate-500">/mo</span>
-              </p>
+              <ul className="mt-3 space-y-1 text-sm text-slate-700">
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span>Up to <b>250 patients</b> this calendar month</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span>3 nurses + 3 front desk + 3 staff doctors</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span>One-time Stripe payment — no auto-renew</span>
+                </li>
+              </ul>
             </div>
-            <ul className="mt-3 space-y-1 text-sm text-slate-700">
-              <li className="flex items-start gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                <span>Unlimited new patients this calendar month</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                <span>One-time payment via Stripe — no auto-renewal</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                <span>Visits, files, invoices, staff — always free</span>
-              </li>
-            </ul>
-          </div>
+          )}
           <div className="mt-5 flex flex-col-reverse items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end">
             <button
               onClick={onClose}
@@ -596,7 +655,14 @@ function PaywallModal({
             >
               Close
             </button>
-            {isOwner ? (
+            {atTopTier ? (
+              <a
+                href="/corporate"
+                className="rounded-xl bg-slate-900 px-5 py-2.5 text-center text-sm font-semibold text-white shadow-lg hover:bg-indigo-600"
+              >
+                Visit /corporate →
+              </a>
+            ) : isOwner ? (
               <button
                 onClick={onUnlock}
                 disabled={unlocking}

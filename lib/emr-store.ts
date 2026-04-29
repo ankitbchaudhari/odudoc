@@ -895,6 +895,10 @@ export async function deleteStaff(
 /* ============================================================ */
 
 export const FREE_PATIENTS_PER_MONTH = 50;
+/** Patients per calendar month allowed on the $50 unlock tier.
+ *  Beyond this the only path is /corporate — there's no second
+ *  paid unlock above this one. */
+export const UNLOCKED_PATIENTS_PER_MONTH = 250;
 export const QUOTA_UNLOCK_AMOUNT = 50; // USD
 
 /** Staff seats included on each plan. The clinic owner (the doctor
@@ -965,18 +969,21 @@ export async function getQuotaState(ownerEmail: string): Promise<QuotaState> {
   const unlocked = quotaUnlocks.some(
     (u) => u.ownerEmail.toLowerCase() === owner && u.month === month
   );
-  const blocked = !unlocked && used >= FREE_PATIENTS_PER_MONTH;
+  // Tier-driven cap: free = 50, unlocked = 250. Beyond 250 the only
+  // path forward is /corporate — there is no second paid step.
+  const limit = unlocked ? UNLOCKED_PATIENTS_PER_MONTH : FREE_PATIENTS_PER_MONTH;
+  const blocked = used >= limit;
   const staffLimits = getStaffLimits(unlocked);
   const staffUsage = await getStaffUsage(owner);
   return {
     month,
     used,
-    limit: FREE_PATIENTS_PER_MONTH,
+    limit,
     unlocked,
     unlockAmount: QUOTA_UNLOCK_AMOUNT,
     unlockCurrency: "USD",
     blocked,
-    remaining: Math.max(0, FREE_PATIENTS_PER_MONTH - used),
+    remaining: Math.max(0, limit - used),
     staffLimits,
     staffUsage,
   };

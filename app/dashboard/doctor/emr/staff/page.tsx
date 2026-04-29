@@ -439,12 +439,12 @@ export default function StaffPage() {
                   <li>✓ 50 patients / month</li>
                 </ul>
                 <p className="mt-3 text-[11px] font-semibold text-slate-500">
-                  Current plan
+                  {quota.unlocked ? "Includes free tier" : "Current plan"}
                 </p>
               </div>
               <div className="rounded-2xl border-2 border-indigo-500 bg-gradient-to-br from-indigo-50 to-fuchsia-50 p-4 ring-2 ring-indigo-100">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-700">
-                  Recommended
+                  {quota.unlocked ? "Current plan" : "Recommended"}
                 </p>
                 <p className="mt-1 text-2xl font-bold text-slate-900">
                   $50<span className="text-sm font-normal text-slate-500">/mo</span>
@@ -453,7 +453,7 @@ export default function StaffPage() {
                   <li>✓ 3 nurses</li>
                   <li>✓ 3 front desk</li>
                   <li>✓ 3 staff doctors</li>
-                  <li>✓ Unlimited patients</li>
+                  <li>✓ Up to 250 patients / month</li>
                 </ul>
                 {quota.unlocked ? (
                   <p className="mt-3 text-[11px] font-semibold text-emerald-700">

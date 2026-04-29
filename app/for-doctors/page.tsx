@@ -355,13 +355,13 @@ export default function ForDoctorsPage() {
                 Practice unlock — $50 / month
               </h3>
               <p className="mt-2 text-sm text-emerald-50">
-                Lifts both caps for the rest of the calendar month — patients
-                AND staff seats. Single one-time payment per month, no
+                Lifts both caps for the calendar month — up to 250 patients
+                AND a 3+3+3 team. Single one-time payment per month, no
                 auto-renew.
               </p>
               <ul className="mt-5 space-y-2 text-sm text-emerald-50">
                 {[
-                  "Unlimited new patients",
+                  "Up to 250 new patients / month",
                   "3 nurses + 3 front desk + 3 staff doctors",
                   "Pay via Stripe — issued by your existing OduDoc account",
                   "Cancel anytime by simply not paying next time",
@@ -386,11 +386,11 @@ export default function ForDoctorsPage() {
                   Multi-clinic / hospital
                 </p>
                 <h3 className="mt-1 text-lg font-bold text-slate-900">
-                  Bigger team than 3+3+3? OduDoc Corporate.
+                  More than 250 patients/month or 3+3+3 staff? OduDoc Corporate.
                 </h3>
                 <p className="mt-1 text-sm text-gray-600">
-                  Unlimited staff &amp; roles, multi-clinic admin, BAA / DPA
-                  available, custom SLA. Talk to us.
+                  Unlimited patients, unlimited staff &amp; roles, multi-clinic
+                  admin, BAA / DPA available, custom SLA. Talk to us.
                 </p>
               </div>
               <Link

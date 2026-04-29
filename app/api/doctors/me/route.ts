@@ -11,6 +11,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { findDoctorByEmail } from "@/lib/doctors-store";
+import { displayCurrencyForCountry } from "@/lib/doctor-display-currency";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,5 +31,10 @@ export async function GET() {
     licenseReminderTier?: string;
   };
   void _ignore;
-  return NextResponse.json({ doctor: safe });
+  // Surface the doctor's display currency derived from their country.
+  // Drives every money figure on /dashboard/doctor — earnings,
+  // transactions, payouts, EMR invoices etc. — so a doctor in India
+  // sees ₹ everywhere instead of $. Pure derivation, no DB write.
+  const displayCurrency = displayCurrencyForCountry(doctor.country);
+  return NextResponse.json({ doctor: safe, displayCurrency });
 }

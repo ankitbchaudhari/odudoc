@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { WithdrawalRequest } from "@/lib/withdrawals-store";
 import type { DoctorEarning } from "@/lib/doctor-earnings-store";
+import { useDoctorMoney } from "@/components/useDoctorMoney";
 
 const STATUS_STYLES: Record<WithdrawalRequest["status"], string> = {
   pending: "bg-yellow-50 text-yellow-700",
@@ -36,6 +37,10 @@ export default function DoctorEarningsPage() {
   const [periods, setPeriods] = useState({ today: 0, week: 0, month: 0 });
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  // Doctor's display currency + USD→target FX. India doctors see ₹,
+  // US doctors see $, etc. Stored amounts (USD) get converted at
+  // render time only.
+  const money = useDoctorMoney();
 
   const loadAll = async () => {
     setLoading(true);
@@ -97,7 +102,7 @@ export default function DoctorEarningsPage() {
                 Available Balance
               </p>
               <p className="mt-1 text-4xl font-bold">
-                ${AVAILABLE_BALANCE.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                {money.format(AVAILABLE_BALANCE)}
               </p>
               <p className="mt-1 text-xs text-primary-100">
                 Payouts are reviewed by admin and paid within 1-2 working days.
@@ -117,9 +122,9 @@ export default function DoctorEarningsPage() {
         {/* Period summaries */}
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
           {[
-            { label: "Today", value: `$${periods.today.toFixed(2)}` },
-            { label: "This Week", value: `$${periods.week.toFixed(2)}` },
-            { label: "This Month", value: `$${periods.month.toFixed(2)}` },
+            { label: "Today", value: money.format(periods.today) },
+            { label: "This Week", value: money.format(periods.week) },
+            { label: "This Month", value: money.format(periods.month) },
           ].map((x) => (
             <div key={x.label} className="rounded-xl bg-white p-5 shadow-sm">
               <p className="text-xs font-medium uppercase tracking-wider text-gray-500">{x.label}</p>
@@ -156,13 +161,13 @@ export default function DoctorEarningsPage() {
                       </td>
                       <td className="py-3 pr-4 text-gray-700">{e.patientName}</td>
                       <td className="py-3 pr-4 text-gray-900">
-                        {e.currency} {e.grossAmount.toFixed(2)}
+                        {money.formatFrom(e.grossAmount, e.currency)}
                       </td>
                       <td className="py-3 pr-4 text-gray-500">
-                        −{e.currency} {e.commissionAmount.toFixed(2)}
+                        −{money.formatFrom(e.commissionAmount, e.currency)}
                       </td>
                       <td className="py-3 pr-4 font-semibold text-gray-900">
-                        {e.currency} {e.netAmount.toFixed(2)}
+                        {money.formatFrom(e.netAmount, e.currency)}
                       </td>
                       <td className="py-3">
                         <span
@@ -222,7 +227,7 @@ export default function DoctorEarningsPage() {
                         {formatDate(w.requestedAt)}
                       </td>
                       <td className="py-3 pr-4 font-semibold text-gray-900">
-                        ${w.amount.toLocaleString()}
+                        {money.format(w.amount)}
                       </td>
                       <td className="py-3 pr-4 text-gray-700">
                         {METHOD_LABELS[w.method]}

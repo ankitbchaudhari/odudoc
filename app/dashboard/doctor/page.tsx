@@ -7,6 +7,7 @@ import type { Consultation } from "@/lib/consultations-store";
 import type { PrescriptionRecord } from "@/lib/prescriptions-store";
 import DoctorComplianceTile from "@/components/DoctorComplianceTile";
 import BaaReacceptancePrompt from "@/components/BaaReacceptancePrompt";
+import { useDoctorMoney } from "@/components/useDoctorMoney";
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -21,6 +22,11 @@ export default function DoctorDashboardPage() {
   const [prescriptions, setPrescriptions] = useState<PrescriptionRecord[]>([]);
   const [instant, setInstant] = useState<{ available: boolean; until: string | null }>({ available: false, until: null });
   const [instantBusy, setInstantBusy] = useState(false);
+  // Doctor's display currency (driven by their country) + FX rate.
+  // India-based doctors get ₹ everywhere, US doctors $, etc. The
+  // platform's stored fees are USD-denominated; this hook converts
+  // at display time only.
+  const money = useDoctorMoney();
 
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -104,7 +110,7 @@ export default function DoctorDashboardPage() {
     },
     {
       label: "This Month",
-      value: `$${earningsMonth}`,
+      value: money.format(earningsMonth),
       sub: `${completedThisMonth.length} completed`,
       gradient: "from-fuchsia-500 to-purple-600",
       icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
@@ -355,8 +361,8 @@ export default function DoctorDashboardPage() {
                 </Link>
               </div>
               <div className="mt-4 space-y-3">
-                <EarnRow label="Today" value={`$${earningsToday}`} />
-                <EarnRow label="This Month" value={`$${earningsMonth}`} />
+                <EarnRow label="Today" value={money.format(earningsToday)} />
+                <EarnRow label="This Month" value={money.format(earningsMonth)} />
                 <EarnRow label="Completed" value={`${completedThisMonth.length}`} />
               </div>
             </div>

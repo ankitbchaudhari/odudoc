@@ -113,6 +113,56 @@ export interface EmrInvoice {
   updatedAt: string;
 }
 
+/* ---------- Medical certificates ---------- */
+
+export type CertificateType =
+  | "sick-leave"
+  | "fitness-to-work"
+  | "fitness-to-travel"
+  | "fitness-for-activity"
+  | "vaccination"
+  | "general";
+
+export type CertificateStatus = "active" | "voided";
+
+export interface EmrCertificate {
+  id: string;
+  doctorEmail: string;          // clinic owner
+  patientId: string;
+  authoredBy: string;
+  /** Human-friendly running number, e.g. CERT-2026-0001. */
+  number: string;
+  type: CertificateType;
+  issueDate: string;            // YYYY-MM-DD
+  /** Inclusive validity start — for sick-leave / travel / activity. */
+  fromDate?: string;
+  /** Inclusive validity end. */
+  toDate?: string;
+  /** Convenience field for sick-leave certs — pre-computed from
+   *  fromDate/toDate where present. */
+  daysOfRest?: number;
+  diagnosis: string;
+  findings?: string;
+  restrictions?: string;
+  recommendations?: string;
+  /** Snapshot of the doctor's identity at issue time so the
+   *  certificate stays valid even if the doctor's profile changes
+   *  later. */
+  doctorName: string;
+  doctorQualification?: string;
+  doctorRegistration?: string;
+  clinicName?: string;
+  /** Capability URL for public verification (e.g. HR confirming
+   *  the certificate is real). Stays constant for the certificate's
+   *  lifetime; rotate via the same payment-link endpoint pattern if
+   *  needed. */
+  publicToken: string;
+  status: CertificateStatus;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 /* ---------- Audit log ---------- */
 
 export type AuditAction =
@@ -127,6 +177,10 @@ export type AuditAction =
   | "invoice.update"
   | "invoice.delete"
   | "invoice.paid_online"
+  | "certificate.create"
+  | "certificate.update"
+  | "certificate.delete"
+  | "certificate.verified"
   | "staff.add"
   | "staff.remove"
   | "quota.unlock";
@@ -225,6 +279,13 @@ const {
   reload: reloadAuditInternal,
 } = bindPersistentArray<EmrAuditEntry>("emr-audit", auditLog, () => []);
 
+const certificates: EmrCertificate[] = [];
+const {
+  hydrate: hydrateCertificates,
+  reload: reloadCertificatesInternal,
+  tombstone: tombstoneCertificate,
+} = bindPersistentArray<EmrCertificate>("emr-certificates", certificates, () => []);
+
 export async function reloadPatients() { await reloadPatientsInternal(); }
 export async function reloadVisits() { await reloadVisitsInternal(); }
 export async function reloadFiles() { await reloadFilesInternal(); }
@@ -232,6 +293,7 @@ export async function reloadInvoices() { await reloadInvoicesInternal(); }
 export async function reloadStaff() { await reloadStaffInternal(); }
 export async function reloadUnlocks() { await reloadUnlocksInternal(); }
 export async function reloadAudit() { await reloadAuditInternal(); }
+export async function reloadCertificates() { await reloadCertificatesInternal(); }
 
 function nowIso(): string { return new Date().toISOString(); }
 function uid(prefix: string): string {
@@ -293,6 +355,7 @@ export type EmrResource =
   | "visits"
   | "files"
   | "invoices"
+  | "certificates"
   | "staff"
   | "fhir";
 
@@ -311,12 +374,14 @@ export function canWrite(role: ClinicAccess["role"], resource: EmrResource): boo
     return resource !== "staff";
   }
   if (role === "nurse") {
-    // Nurse: can write visits + files; can read patients/invoices but not modify.
+    // Nurse: can write visits + files. Cannot issue certificates —
+    // those carry the doctor's medical-council registration number
+    // and can't be delegated.
     return resource === "visits" || resource === "files";
   }
   if (role === "frontdesk") {
     // Front desk: registers patients, raises invoices, uploads files.
-    // Cannot write visits (clinical notes) or manage staff.
+    // Cannot write visits (clinical notes), certificates, or staff.
     return resource === "patients" || resource === "invoices" || resource === "files";
   }
   return false;
@@ -461,6 +526,13 @@ export async function deletePatient(
     if (invoices[i].patientId === id) {
       const removed = invoices.splice(i, 1)[0];
       await tombstoneInvoice(removed.id);
+    }
+  }
+  await hydrateCertificates();
+  for (let i = certificates.length - 1; i >= 0; i--) {
+    if (certificates[i].patientId === id) {
+      const removed = certificates.splice(i, 1)[0];
+      await tombstoneCertificate(removed.id);
     }
   }
   return true;
@@ -1180,6 +1252,143 @@ function hl7Date(iso: string): string {
     pad(d.getUTCMinutes()) +
     pad(d.getUTCSeconds())
   );
+}
+
+/* ============================================================ */
+/*  Medical certificates                                        */
+/* ============================================================ */
+
+export interface CreateCertificateInput {
+  ownerEmail: string;
+  authoredBy: string;
+  patientId: string;
+  type: CertificateType;
+  issueDate?: string;
+  fromDate?: string;
+  toDate?: string;
+  diagnosis: string;
+  findings?: string;
+  restrictions?: string;
+  recommendations?: string;
+  doctorName: string;
+  doctorQualification?: string;
+  doctorRegistration?: string;
+  clinicName?: string;
+  notes?: string;
+}
+
+function nextCertificateNumber(ownerEmail: string): string {
+  const year = new Date().getUTCFullYear();
+  const owner = ownerEmail.toLowerCase();
+  const mine = certificates.filter(
+    (c) => c.doctorEmail === owner && c.number.startsWith(`CERT-${year}-`)
+  );
+  return `CERT-${year}-${String(mine.length + 1).padStart(4, "0")}`;
+}
+
+function diffDaysInclusive(from?: string, to?: string): number | undefined {
+  if (!from || !to) return undefined;
+  const f = new Date(from + "T00:00:00Z").getTime();
+  const t = new Date(to + "T00:00:00Z").getTime();
+  if (isNaN(f) || isNaN(t) || t < f) return undefined;
+  return Math.round((t - f) / (24 * 60 * 60 * 1000)) + 1;
+}
+
+export async function createCertificate(
+  input: CreateCertificateInput
+): Promise<EmrCertificate> {
+  await hydrateCertificates();
+  const now = nowIso();
+  const days = diffDaysInclusive(input.fromDate, input.toDate);
+  const cert: EmrCertificate = {
+    id: uid("cert"),
+    doctorEmail: input.ownerEmail.toLowerCase(),
+    authoredBy: input.authoredBy.toLowerCase(),
+    patientId: input.patientId,
+    number: nextCertificateNumber(input.ownerEmail),
+    type: input.type,
+    issueDate: input.issueDate || now.slice(0, 10),
+    fromDate: input.fromDate,
+    toDate: input.toDate,
+    daysOfRest: days,
+    diagnosis: input.diagnosis.trim(),
+    findings: input.findings?.trim() || undefined,
+    restrictions: input.restrictions?.trim() || undefined,
+    recommendations: input.recommendations?.trim() || undefined,
+    doctorName: input.doctorName.trim(),
+    doctorQualification: input.doctorQualification?.trim() || undefined,
+    doctorRegistration: input.doctorRegistration?.trim() || undefined,
+    clinicName: input.clinicName?.trim() || undefined,
+    publicToken: `cert-${Math.random().toString(36).slice(2, 10)}${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`,
+    status: "active",
+    notes: input.notes?.trim() || undefined,
+    createdAt: now,
+    updatedAt: now,
+  };
+  certificates.push(cert);
+  return cert;
+}
+
+export async function listCertificatesForPatient(
+  patientId: string,
+  ownerEmail?: string
+): Promise<EmrCertificate[]> {
+  await hydrateCertificates();
+  return certificates
+    .filter((c) => c.patientId === patientId)
+    .filter((c) => (ownerEmail ? c.doctorEmail === ownerEmail.toLowerCase() : true))
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export async function getCertificateById(
+  id: string,
+  ownerEmail?: string
+): Promise<EmrCertificate | undefined> {
+  await hydrateCertificates();
+  const c = certificates.find((x) => x.id === id);
+  if (!c) return undefined;
+  if (ownerEmail && c.doctorEmail !== ownerEmail.toLowerCase()) return undefined;
+  return c;
+}
+
+export async function getCertificateByPublicToken(
+  token: string
+): Promise<EmrCertificate | undefined> {
+  await hydrateCertificates();
+  return certificates.find((c) => c.publicToken === token);
+}
+
+export async function updateCertificate(
+  id: string,
+  patch: Partial<Pick<EmrCertificate, "status" | "notes" | "restrictions" | "recommendations">>,
+  ownerEmail?: string
+): Promise<EmrCertificate | undefined> {
+  await hydrateCertificates();
+  const idx = certificates.findIndex((c) => c.id === id);
+  if (idx === -1) return undefined;
+  const current = certificates[idx];
+  if (ownerEmail && current.doctorEmail !== ownerEmail.toLowerCase()) return undefined;
+  const next: EmrCertificate = {
+    ...current,
+    ...patch,
+    updatedAt: nowIso(),
+  };
+  certificates.splice(idx, 1, next);
+  return next;
+}
+
+export async function deleteCertificate(
+  id: string,
+  ownerEmail?: string
+): Promise<boolean> {
+  await hydrateCertificates();
+  const idx = certificates.findIndex((c) => c.id === id);
+  if (idx === -1) return false;
+  const current = certificates[idx];
+  if (ownerEmail && current.doctorEmail !== ownerEmail.toLowerCase()) return false;
+  certificates.splice(idx, 1);
+  await tombstoneCertificate(id);
+  return true;
 }
 
 /** Build a small HL7 v2.5.1 ADT^A08 + visit OBX message stream for

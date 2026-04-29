@@ -73,6 +73,45 @@ interface Invoice {
   createdAt: string;
 }
 
+type CertificateType =
+  | "sick-leave"
+  | "fitness-to-work"
+  | "fitness-to-travel"
+  | "fitness-for-activity"
+  | "vaccination"
+  | "general";
+
+interface Certificate {
+  id: string;
+  number: string;
+  type: CertificateType;
+  issueDate: string;
+  fromDate?: string;
+  toDate?: string;
+  daysOfRest?: number;
+  diagnosis: string;
+  findings?: string;
+  restrictions?: string;
+  recommendations?: string;
+  doctorName: string;
+  doctorQualification?: string;
+  doctorRegistration?: string;
+  clinicName?: string;
+  publicToken: string;
+  status: "active" | "voided";
+  notes?: string;
+  createdAt: string;
+}
+
+const CERT_TYPE_LABEL: Record<CertificateType, string> = {
+  "sick-leave": "Sick leave",
+  "fitness-to-work": "Fitness to work",
+  "fitness-to-travel": "Fitness to travel",
+  "fitness-for-activity": "Fitness for activity",
+  vaccination: "Vaccination",
+  general: "General medical",
+};
+
 const EMPTY_VISIT = {
   visitDate: new Date().toISOString().slice(0, 10),
   chiefComplaint: "",
@@ -90,6 +129,22 @@ const EMPTY_INVOICE_FORM = {
   currency: "USD",
   notes: "",
   lineItems: [{ description: "Consultation", quantity: 1, unitPrice: 0 }],
+};
+
+const EMPTY_CERT_FORM = {
+  type: "sick-leave" as CertificateType,
+  issueDate: new Date().toISOString().slice(0, 10),
+  fromDate: new Date().toISOString().slice(0, 10),
+  toDate: "",
+  diagnosis: "",
+  findings: "",
+  restrictions: "",
+  recommendations: "Adequate rest and follow-up if symptoms persist.",
+  doctorName: "",
+  doctorQualification: "",
+  doctorRegistration: "",
+  clinicName: "",
+  notes: "",
 };
 
 export default function PatientDetailPage({
@@ -121,15 +176,21 @@ export default function PatientDetailPage({
   const [savingInvoice, setSavingInvoice] = useState(false);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [certForm, setCertForm] = useState(EMPTY_CERT_FORM);
+  const [certFormOpen, setCertFormOpen] = useState(false);
+  const [savingCert, setSavingCert] = useState(false);
+
   const fetchAll = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [pRes, vRes, fRes, iRes] = await Promise.all([
+      const [pRes, vRes, fRes, iRes, cRes] = await Promise.all([
         fetch(`/api/emr/patients/${id}`),
         fetch(`/api/emr/visits?patientId=${id}`),
         fetch(`/api/emr/files?patientId=${id}`),
         fetch(`/api/emr/invoices?patientId=${id}`),
+        fetch(`/api/emr/certificates?patientId=${id}`),
       ]);
       if (!pRes.ok) {
         const data = await pRes.json().catch(() => ({}));
@@ -149,6 +210,10 @@ export default function PatientDetailPage({
       if (iRes.ok) {
         const iData = await iRes.json();
         setInvoices(iData.invoices || []);
+      }
+      if (cRes.ok) {
+        const cData = await cRes.json();
+        setCertificates(cData.certificates || []);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Load failed");
@@ -266,6 +331,190 @@ export default function PatientDetailPage({
     )
       return;
     window.open(`/api/emr/patients/${id}/export`, "_blank");
+  }
+
+  async function saveCertificate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!certForm.diagnosis.trim()) {
+      setError("Diagnosis is required to issue a certificate.");
+      return;
+    }
+    if (!certForm.doctorName.trim()) {
+      setError("Doctor name is required (this is snapshotted on the certificate).");
+      return;
+    }
+    if (
+      ["sick-leave", "fitness-to-travel", "fitness-for-activity"].includes(
+        certForm.type
+      ) &&
+      (!certForm.fromDate || !certForm.toDate)
+    ) {
+      setError("From / to dates are required for this certificate type.");
+      return;
+    }
+    setSavingCert(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/emr/certificates", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ patientId: id, ...certForm }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Save failed");
+      setCertificates((prev) => [data.certificate, ...prev]);
+      // Keep doctor identity fields populated for the next certificate.
+      setCertForm({
+        ...EMPTY_CERT_FORM,
+        doctorName: certForm.doctorName,
+        doctorQualification: certForm.doctorQualification,
+        doctorRegistration: certForm.doctorRegistration,
+        clinicName: certForm.clinicName,
+      });
+      setCertFormOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setSavingCert(false);
+    }
+  }
+
+  async function setCertStatus(certId: string, status: "active" | "voided") {
+    try {
+      const res = await fetch(`/api/emr/certificates/${certId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Update failed");
+      setCertificates((prev) =>
+        prev.map((c) => (c.id === certId ? data.certificate : c))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Update failed");
+    }
+  }
+
+  function escape(s: string | undefined): string {
+    if (!s) return "";
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function printCertificate(cert: Certificate) {
+    if (!patient) return;
+    const win = window.open("", "_blank");
+    if (!win) {
+      alert("Please allow pop-ups to print certificates.");
+      return;
+    }
+    const verifyUrl = `${window.location.origin}/verify/${cert.publicToken}`;
+    const patientLine = `${patient.firstName} ${patient.lastName}`.trim();
+    const ageSex = [
+      patient.age && `${patient.age} yrs`,
+      patient.sex,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    const typeLabel = CERT_TYPE_LABEL[cert.type];
+    const dateRange =
+      cert.fromDate && cert.toDate
+        ? `${cert.fromDate} to ${cert.toDate}${
+            cert.daysOfRest ? ` (${cert.daysOfRest} day${cert.daysOfRest === 1 ? "" : "s"})` : ""
+          }`
+        : "";
+    const html = `<!DOCTYPE html><html><head>
+<title>Certificate ${cert.number} — ${patientLine}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#0f172a;padding:48px;max-width:780px;margin:0 auto;line-height:1.55}
+  .frame{border:6px double #1e293b;padding:40px}
+  h1{font-size:14px;letter-spacing:6px;text-align:center;font-weight:700;color:#475569;text-transform:uppercase}
+  h2{font-size:24px;text-align:center;margin-top:8px;font-weight:800;color:#0f172a}
+  .clinic{font-size:13px;color:#475569;text-align:center;margin-top:14px}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:#475569;margin:24px 0;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:10px 0}
+  .meta b{color:#0f172a;font-weight:700}
+  .body{font-size:15px;margin-top:24px;line-height:1.8}
+  .body strong{color:#0f172a}
+  .row{display:grid;grid-template-columns:170px 1fr;gap:8px;margin:6px 0;font-size:14px}
+  .label{font-weight:600;color:#475569}
+  .value{color:#0f172a}
+  .restrictions{margin-top:18px;padding:12px 14px;background:#fff7ed;border-left:4px solid #f59e0b;font-size:13px}
+  .recommendations{margin-top:14px;font-size:13px;color:#1e293b}
+  .footer{margin-top:48px;display:flex;justify-content:space-between;align-items:flex-end;font-size:12px;color:#475569}
+  .sign{text-align:right}
+  .sign .doctor{font-weight:700;color:#0f172a;font-size:15px}
+  .sign .reg{font-family:monospace;font-size:11px}
+  .verify{margin-top:32px;text-align:center;padding:14px;border:1px dashed #94a3b8;font-size:11px;color:#475569;background:#f8fafc}
+  .verify b{color:#0f172a}
+  .verify code{background:#fff;padding:2px 6px;border-radius:4px;border:1px solid #cbd5e1;font-size:11px}
+  .voided{color:#b91c1c;font-weight:800;font-size:18px;text-align:center;margin-top:14px;letter-spacing:6px}
+  @media print{
+    body{padding:24px}
+    .frame{border-color:#000}
+  }
+</style>
+</head><body>
+<div class="frame">
+  <h1>Medical Certificate</h1>
+  <h2>${typeLabel}</h2>
+  ${cert.clinicName ? `<div class="clinic">${escape(cert.clinicName)}</div>` : ""}
+  ${cert.status === "voided" ? `<div class="voided">— VOIDED —</div>` : ""}
+
+  <div class="meta">
+    <span>Certificate No: <b>${escape(cert.number)}</b></span>
+    <span>Issued: <b>${escape(cert.issueDate)}</b></span>
+  </div>
+
+  <div class="body">
+    This is to certify that <strong>${escape(patientLine)}</strong>${ageSex ? ` (${escape(ageSex)})` : ""},
+    after examination, has been diagnosed with <strong>${escape(cert.diagnosis)}</strong>.
+  </div>
+
+  <div style="margin-top:18px">
+    ${cert.findings ? `<div class="row"><div class="label">Findings</div><div class="value">${escape(cert.findings)}</div></div>` : ""}
+    ${dateRange ? `<div class="row"><div class="label">Period</div><div class="value">${escape(dateRange)}</div></div>` : ""}
+  </div>
+
+  ${cert.restrictions ? `<div class="restrictions"><b>Restrictions:</b> ${escape(cert.restrictions)}</div>` : ""}
+  ${cert.recommendations ? `<div class="recommendations"><b>Recommendations:</b> ${escape(cert.recommendations)}</div>` : ""}
+
+  <div class="footer">
+    <div>
+      ${cert.doctorRegistration ? `Reg. No: <span style="font-family:monospace">${escape(cert.doctorRegistration)}</span><br/>` : ""}
+      <span style="font-size:10px;color:#94a3b8">This certificate is valid only when verified at the URL below.</span>
+    </div>
+    <div class="sign">
+      <div class="doctor">${escape(cert.doctorName)}</div>
+      ${cert.doctorQualification ? `<div>${escape(cert.doctorQualification)}</div>` : ""}
+    </div>
+  </div>
+
+  <div class="verify">
+    <b>Verify this certificate online:</b><br/>
+    <code>${verifyUrl}</code>
+  </div>
+</div>
+<script>setTimeout(function(){window.print();}, 350);</script>
+</body></html>`;
+    win.document.write(html);
+    win.document.close();
+  }
+
+  async function copyVerifyLink(cert: Certificate) {
+    const url = `${window.location.origin}/verify/${cert.publicToken}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedToken(cert.publicToken);
+      setTimeout(() => setCopiedToken(null), 2000);
+    } catch {
+      window.prompt("Copy this verification link:", url);
+    }
   }
 
   async function copyPaymentLink(inv: Invoice) {
@@ -1031,6 +1280,229 @@ export default function PatientDetailPage({
                           </button>
                         )}
                       </div>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Medical certificates */}
+        <div className="mt-6 overflow-hidden rounded-3xl border border-white/60 bg-white/80 shadow-sm backdrop-blur-xl">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-4">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold text-slate-900">Medical certificates</h2>
+              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                {certificates.length}
+              </span>
+            </div>
+            <button
+              onClick={() => setCertFormOpen((v) => !v)}
+              className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                certFormOpen
+                  ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  : "bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg"
+              }`}
+            >
+              {certFormOpen ? "Close" : "+ Issue certificate"}
+            </button>
+          </div>
+
+          {certFormOpen && (
+            <form onSubmit={saveCertificate} className="border-b border-slate-100 bg-indigo-50/30 p-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <label className="block sm:col-span-2">
+                  <span className="mb-1 block text-xs font-semibold text-slate-700">
+                    Certificate type *
+                  </span>
+                  <select
+                    value={certForm.type}
+                    onChange={(e) =>
+                      setCertForm((p) => ({ ...p, type: e.target.value as CertificateType }))
+                    }
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
+                  >
+                    <option value="sick-leave">Sick leave</option>
+                    <option value="fitness-to-work">Fitness to work / return to duty</option>
+                    <option value="fitness-to-travel">Fitness to travel</option>
+                    <option value="fitness-for-activity">Fitness for activity / sport</option>
+                    <option value="vaccination">Vaccination certificate</option>
+                    <option value="general">General medical certificate</option>
+                  </select>
+                </label>
+                <Field
+                  label="Issue date"
+                  type="date"
+                  value={certForm.issueDate}
+                  onChange={(v) => setCertForm((p) => ({ ...p, issueDate: v }))}
+                  required
+                />
+                <div />
+                <Field
+                  label="Valid from"
+                  type="date"
+                  value={certForm.fromDate}
+                  onChange={(v) => setCertForm((p) => ({ ...p, fromDate: v }))}
+                />
+                <Field
+                  label="Valid until"
+                  type="date"
+                  value={certForm.toDate}
+                  onChange={(v) => setCertForm((p) => ({ ...p, toDate: v }))}
+                />
+                <FieldArea
+                  wide
+                  required
+                  label="Diagnosis"
+                  value={certForm.diagnosis}
+                  onChange={(v) => setCertForm((p) => ({ ...p, diagnosis: v }))}
+                  placeholder="e.g. Acute viral fever (URI)"
+                />
+                <FieldArea
+                  wide
+                  label="Findings (optional)"
+                  value={certForm.findings}
+                  onChange={(v) => setCertForm((p) => ({ ...p, findings: v }))}
+                  placeholder="Brief examination findings — printed on the certificate."
+                />
+                <FieldArea
+                  wide
+                  label="Restrictions"
+                  value={certForm.restrictions}
+                  onChange={(v) => setCertForm((p) => ({ ...p, restrictions: v }))}
+                  placeholder="No heavy lifting, no driving, etc."
+                />
+                <FieldArea
+                  wide
+                  label="Recommendations"
+                  value={certForm.recommendations}
+                  onChange={(v) => setCertForm((p) => ({ ...p, recommendations: v }))}
+                />
+              </div>
+
+              <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+                <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                  Issuing doctor — snapshotted onto the certificate
+                </p>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <Field
+                    label="Doctor name"
+                    required
+                    value={certForm.doctorName}
+                    onChange={(v) => setCertForm((p) => ({ ...p, doctorName: v }))}
+                    placeholder="Dr. Jane Doe"
+                  />
+                  <Field
+                    label="Qualification"
+                    value={certForm.doctorQualification}
+                    onChange={(v) => setCertForm((p) => ({ ...p, doctorQualification: v }))}
+                    placeholder="MBBS, MD"
+                  />
+                  <Field
+                    label="Medical-council reg. no."
+                    value={certForm.doctorRegistration}
+                    onChange={(v) => setCertForm((p) => ({ ...p, doctorRegistration: v }))}
+                    placeholder="MCI 12345"
+                  />
+                  <Field
+                    label="Clinic name"
+                    value={certForm.clinicName}
+                    onChange={(v) => setCertForm((p) => ({ ...p, clinicName: v }))}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCertForm(EMPTY_CERT_FORM);
+                    setCertFormOpen(false);
+                  }}
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingCert}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 disabled:opacity-50"
+                >
+                  {savingCert ? "Issuing…" : "Issue certificate"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {certificates.length === 0 && !certFormOpen ? (
+            <div className="px-6 py-10 text-center text-xs text-slate-500">
+              No certificates yet — click <b>+ Issue certificate</b> to create
+              a sick leave, fitness, or vaccination certificate.
+            </div>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {certificates.map((cert) => (
+                <li key={cert.id} className="px-6 py-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-bold text-slate-900">{cert.number}</p>
+                        <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-700 ring-1 ring-indigo-100">
+                          {CERT_TYPE_LABEL[cert.type]}
+                        </span>
+                        {cert.status === "voided" && (
+                          <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-rose-700 ring-1 ring-rose-100">
+                            voided
+                          </span>
+                        )}
+                        <span className="text-[11px] text-slate-500">{cert.issueDate}</span>
+                      </div>
+                      <p className="mt-1 text-sm text-slate-700">{cert.diagnosis}</p>
+                      {cert.fromDate && cert.toDate && (
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          Period: {cert.fromDate} → {cert.toDate}
+                          {cert.daysOfRest ? ` · ${cert.daysOfRest} day${cert.daysOfRest === 1 ? "" : "s"}` : ""}
+                        </p>
+                      )}
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        Issued by <b>{cert.doctorName}</b>
+                        {cert.doctorRegistration ? ` · Reg. ${cert.doctorRegistration}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap justify-end gap-1">
+                      <button
+                        onClick={() => printCertificate(cert)}
+                        className="rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-indigo-600"
+                      >
+                        Print
+                      </button>
+                      <button
+                        onClick={() => copyVerifyLink(cert)}
+                        className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition ${
+                          copiedToken === cert.publicToken
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                        }`}
+                        title="Copy public verification link"
+                      >
+                        {copiedToken === cert.publicToken ? "✓ Copied" : "Copy verify link"}
+                      </button>
+                      {cert.status === "active" ? (
+                        <button
+                          onClick={() => setCertStatus(cert.id, "voided")}
+                          className="rounded-lg px-2.5 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
+                        >
+                          Void
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setCertStatus(cert.id, "active")}
+                          className="rounded-lg px-2.5 py-1 text-[11px] font-semibold text-emerald-600 hover:bg-emerald-50"
+                        >
+                          Reactivate
+                        </button>
+                      )}
                     </div>
                   </div>
                 </li>

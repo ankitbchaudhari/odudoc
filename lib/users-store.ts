@@ -64,6 +64,15 @@ export interface User {
   medicalId?: string;
   identity?: UserIdentity;
 
+  /** ISO 3166-1 alpha-2 country code (e.g. "IN", "US"). Captured at
+   *  signup from the registration form's country dropdown. Drives
+   *  cross-border eligibility — Indian-licensed doctors can only
+   *  consult patients with country=IN per the IMC telemedicine
+   *  guidelines. Optional because pre-feature accounts don't have
+   *  it; phone-based heuristic in lib/consultation-eligibility.ts
+   *  fills the gap. */
+  country?: string;
+
   // ------------------------------------------------------------------
   // Referral program
   //
@@ -358,6 +367,35 @@ export function createUser(
   const hashedPassword = bcrypt.hashSync(data.password, 10);
   const taken = new Set(users.map((u) => u.medicalId).filter(Boolean) as string[]);
   const codes = new Set(users.map((u) => u.referralCode).filter(Boolean) as string[]);
+  // Country may arrive either as ISO alpha-2 ("IN") or — historically —
+  // as the country name ("India"). We canonicalise once on the way in
+  // so consultation-eligibility checks don't have to re-normalise on
+  // every read. Names longer than 2 chars get a best-effort look-up
+  // against our currency catalogue's country index (which knows that
+  // "India" maps to "IN").
+  let normalisedCountry: string | undefined;
+  const rawCountry = (data as { country?: string }).country;
+  if (typeof rawCountry === "string" && rawCountry.trim()) {
+    const trimmed = rawCountry.trim();
+    if (trimmed.length === 2) {
+      normalisedCountry = trimmed.toUpperCase();
+    } else {
+      // Cheap full-name → ISO heuristic; we only need to handle the
+      // values our /auth/register form emits. Anything else falls back
+      // to slicing the first two letters (matches existing
+      // /api/doctors/register behaviour).
+      const lower = trimmed.toLowerCase();
+      const knownNames: Record<string, string> = {
+        india: "IN",
+        "united states": "US",
+        "united kingdom": "GB",
+        canada: "CA",
+        australia: "AU",
+      };
+      normalisedCountry = (knownNames[lower] || trimmed.slice(0, 2)).toUpperCase();
+    }
+  }
+
   const newUser: User = {
     id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     name: data.name,
@@ -372,6 +410,7 @@ export function createUser(
     warnings: [],
     medicalId: generateUniqueMedicalId((c) => taken.has(c)),
     identity: { status: "unverified" },
+    country: normalisedCountry,
     referralCode: generateReferralCode((c) => codes.has(c)),
     referralCreditCents: 0,
   };

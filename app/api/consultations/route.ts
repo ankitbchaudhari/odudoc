@@ -10,8 +10,10 @@ import {
 import { sendPatientBookingReceived, sendDoctorNewRequest } from "@/lib/consultation-emails";
 import { paymentsDisabled } from "@/lib/payments-config";
 import { validateSlot } from "@/lib/slot-utils";
-import { findDoctorByEmail } from "@/lib/doctors-store";
+import { findDoctorByEmail, getDoctorById } from "@/lib/doctors-store";
+import { findUserByEmail } from "@/lib/users-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
+import { checkConsultationEligibility } from "@/lib/consultation-eligibility";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -104,6 +106,32 @@ export async function POST(req: NextRequest) {
   } else {
     if (!body.specialty || !body.scheduledFor || !body.timeSlot) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+  }
+
+  // Cross-border eligibility — Indian-licensed doctors are
+  // restricted to Indian patients per the IMC telemedicine
+  // guidelines. We hard-gate at booking time so a direct-link
+  // bypass (e.g. someone shares a doctor's profile URL with a
+  // non-Indian friend) can't slip through. Pool bookings have no
+  // doctor yet, so this only applies to specific-doctor flows.
+  if (!isPool && body.doctorId) {
+    const doctor = getDoctorById(String(body.doctorId));
+    if (doctor) {
+      const patientUser = findUserByEmail(patientEmail);
+      const eligibility = checkConsultationEligibility({
+        doctorCountry: doctor.country,
+        patientCountry: patientUser?.country,
+        patientPhone:
+          (typeof body.patientPhone === "string" && body.patientPhone) ||
+          patientUser?.phone,
+      });
+      if (!eligibility.allowed) {
+        return NextResponse.json(
+          { error: eligibility.reason, code: "ELIGIBILITY_BLOCKED" },
+          { status: 403 },
+        );
+      }
     }
   }
 

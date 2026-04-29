@@ -13,6 +13,12 @@ const RegisterSchema = z.object({
   email: emailSchema,
   phone: phoneSchema,
   password: z.string().min(6).max(200),
+  /** Country selected on the signup form. Accepted as either ISO
+   *  alpha-2 ("IN") or full name ("India") — users-store.ts
+   *  canonicalises on the way in. Drives cross-border consultation
+   *  eligibility (Indian doctors are restricted to Indian patients
+   *  per IMC telemedicine guidelines). */
+  country: z.string().trim().max(64).optional(),
   /** Optional referral code carried over from a `?ref=…` URL or a
    *  cookie set by the marketing site. We attribute the referral
    *  immediately on signup so the referee's first-paid-consultation
@@ -41,7 +47,7 @@ export async function POST(request: NextRequest) {
   try {
     const parsed = await parseJson(request, RegisterSchema);
     if (parsed instanceof NextResponse) return parsed;
-    const { name, email, phone, password, referralCode } = parsed;
+    const { name, email, phone, password, country, referralCode } = parsed;
 
     // Public signup is for patients only. Doctors are onboarded by admin
     // after applying through /for-doctors/register.
@@ -58,7 +64,14 @@ export async function POST(request: NextRequest) {
 
     // Create the user in "unverified" state — they must click the link in
     // the verification email before they can sign in.
-    const user = createUser({ name, email, phone, password, role });
+    const user = createUser({
+      name,
+      email,
+      phone,
+      password,
+      role,
+      country,
+    } as Parameters<typeof createUser>[0]);
 
     // Apply referral attribution if a code came through. Best-effort:
     // bad / self / duplicate codes are silently skipped (no point

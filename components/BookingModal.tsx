@@ -444,6 +444,23 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
               </p>
               <CurrencySwitcher />
             </div>
+            {(() => {
+              const c = (doctor.country || "").trim().toLowerCase();
+              if (c === "india" || c === "in" || c === "ind" || c === "bharat") {
+                return (
+                  <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                    <span className="text-base leading-none">🇮🇳</span>
+                    <span>
+                      <b>Available to patients in India only.</b> Per IMC
+                      telemedicine guidelines, this doctor can only consult
+                      patients located in India. Please use an Indian phone
+                      number when booking.
+                    </span>
+                  </div>
+                );
+              }
+              return null;
+            })()}
 
             <div className="mt-5">
               <label className="mb-1 block text-sm font-medium text-gray-700">Select a date</label>

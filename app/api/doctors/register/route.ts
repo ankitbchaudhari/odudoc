@@ -219,6 +219,16 @@ export async function POST(req: NextRequest) {
       log.error("[doctor-register] admin notification failed:", err);
     }
 
+    // Close the loop on outreach: if the admin had previously sent
+    // an invitation to this email via /admin/doctor-invites, mark
+    // that invite as "registered" so the conversion column updates.
+    try {
+      const { markInviteRegistered } = await import("@/lib/doctor-invites-store");
+      await markInviteRegistered(body.email, app.id);
+    } catch (err) {
+      log.error("[doctor-register] invite_mark_registered_failed", err);
+    }
+
     // Confirmation email to the applicant. Awaited so the Vercel Lambda
     // doesn't exit before Resend finishes the HTTP call (previously this was
     // void-ed and the email was regularly lost on cold starts). Failures

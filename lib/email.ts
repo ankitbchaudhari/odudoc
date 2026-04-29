@@ -239,6 +239,60 @@ export async function sendWelcomeEmail(params: {
   });
 }
 
+export async function sendDoctorInvitationEmail(params: {
+  to: string;
+  /** Optional — drops "Dear Dr. Sathish" instead of "Dear Doctor". */
+  name?: string;
+  /** Optional — when present, drops a single sentence about the
+   *  specialty so the email reads like considered outreach rather
+   *  than a blast. */
+  specialty?: string;
+  /** Optional country (alpha-2). For "IN" we add the IMC sentence
+   *  about cross-border restrictions so the doctor isn't surprised
+   *  later. */
+  country?: string;
+}): Promise<SendEmailResult> {
+  const greeting = params.name
+    ? `Dear Dr. ${escapeHtml(params.name.replace(/^Dr\.?\s+/i, ""))}`
+    : "Dear Doctor";
+  const specialtyLine = params.specialty
+    ? `<p>Your background in <strong>${escapeHtml(params.specialty)}</strong> is exactly the profile patients struggle to find online — and OduDoc gives you a clean way to consult, prescribe, and run a side practice without monthly EMR fees.</p>`
+    : `<p>OduDoc is a telemedicine + electronic medical-records platform for doctors who want a clean way to consult online and run their own practice without monthly EMR fees.</p>`;
+  const indiaLine =
+    (params.country || "").toUpperCase() === "IN"
+      ? `<p style="font-size:13px;color:#475569;">Per IMC telemedicine guidelines, India-licensed doctors on OduDoc consult Indian patients only. We support ABHA Health ID linking for compliant care-context sharing.</p>`
+      : "";
+  const html = renderShell({
+    preheader: "An invitation to join OduDoc — telemedicine + free EMR.",
+    heading: "Join OduDoc",
+    bodyHtml: `
+      <p>${greeting},</p>
+      ${specialtyLine}
+      <p style="margin-top:14px;"><strong>What you get on OduDoc — for free:</strong></p>
+      <ul style="padding-left:20px;margin:8px 0;line-height:1.7;">
+        <li>Verified profile on <strong>${BRAND}</strong>'s public directory — set your own fee, accept consults when you want.</li>
+        <li><strong>70% commission</strong> on every paid consultation, weekly Stripe payouts. No subscription, no lock-in.</li>
+        <li><strong>Free Clinic EMR</strong> — patients, SOAP notes, prescriptions, lab files, invoices with online patient payment. 50 new patients / month free, $50 unlock for 250.</li>
+        <li><strong>AI prescription assistant</strong> + <strong>voice dictation</strong> in 90+ languages.</li>
+        <li>One-click <strong>FHIR / HL7 export</strong> — no platform lock-in, ever.</li>
+      </ul>
+      ${indiaLine}
+      <p style="margin-top:14px;">The full application takes about 10 minutes — license + ID upload, our team verifies you within 48 hours.</p>
+    `,
+    ctaLabel: "Apply now",
+    ctaUrl: `${SITE_URL}/for-doctors`,
+    footerNote: "Questions before you apply? Reply to this email and our team will respond the same day.",
+  });
+
+  return sendEmail({
+    from: "admin",
+    to: params.to,
+    subject: `Invitation to join ${BRAND} — telemedicine + free clinic EMR`,
+    html,
+    replyTo: `admin@${DOMAIN}`,
+  });
+}
+
 export async function sendDoctorApplicationReceivedEmail(params: {
   to: string;
   fullName: string;

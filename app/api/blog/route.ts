@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { listPosts, createPost, type BlogStatus } from "@/lib/blog-store";
+import { notifySubscribersOfNewPost } from "@/lib/blog-notifications";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -100,6 +101,27 @@ export async function POST(req: NextRequest) {
     featured: body.featured,
     status: body.status,
   });
+
+  // Newsletter blast on publish. Drafts don't trigger — admin only sees
+  // the email go out once the post actually flips to Published. Best-
+  // effort: failures are logged but don't fail the publish call. The
+  // notify helper has its own dedupe so a republish doesn't re-blast.
+  if (post.status === "Published") {
+    try {
+      const sent = await notifySubscribersOfNewPost({
+        id: post.id,
+        slug: post.slug,
+        title: post.title,
+        excerpt: post.excerpt,
+        category: post.category,
+        author: post.author,
+        imageUrl: post.imageUrl,
+      });
+      if (sent > 0) log.info("blog.notify.sent", { postId: post.id, recipients: sent });
+    } catch (err) {
+      log.error("blog.notify.publish_hook_failed", err, { postId: post.id });
+    }
+  }
 
   return NextResponse.json({ post }, { status: 201 });
 }

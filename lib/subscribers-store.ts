@@ -16,28 +16,11 @@ const subscribers: Subscriber[] = [];
 const { hydrate, flush } = bindPersistentArray<Subscriber>(
   "subscribers",
   subscribers,
-  () => {
-    const seed: Subscriber[] = [
-      { id: "s1", email: "sridhari.lk@gmail.com",       subscribedAt: "2026-04-14T12:00:00Z", source: "footer", active: true },
-      { id: "s2", email: "neerajjan1995@gmail.com",     subscribedAt: "2026-04-14T10:10:00Z", source: "footer", active: true },
-      { id: "s3", email: "keyur.p@gmail.com",           subscribedAt: "2026-04-13T18:45:00Z", source: "blog",   active: true },
-      { id: "s4", email: "bpantlee@gmail.com",          subscribedAt: "2026-04-13T09:20:00Z", source: "footer", active: true },
-      { id: "s5", email: "admin@odudoc.com",            subscribedAt: "2026-04-12T22:00:00Z", source: "admin",  active: true },
-      { id: "s6", email: "priya@example.com",           subscribedAt: "2026-04-12T14:30:00Z", source: "popup",  active: true },
-      { id: "s7", email: "sajib.malik96@gmail.com",     subscribedAt: "2026-04-11T11:00:00Z", source: "blog",   active: true },
-      { id: "s8", email: "junaedchaddara@gmail.com",    subscribedAt: "2026-04-11T08:00:00Z", source: "footer", active: true },
-    ];
-    for (let i = 0; i < 304; i++) {
-      seed.push({
-        id: `s-seed-${i}`,
-        email: `user${i + 1}@example.com`,
-        subscribedAt: new Date(Date.now() - (i + 1) * 86400000).toISOString(),
-        source: "footer",
-        active: true,
-      });
-    }
-    return seed;
-  }
+  // Seed empty — real subscribers come from public newsletter form +
+  // auto-subscribe-on-verify hook in the auth flow. Earlier builds
+  // shipped a 312-row demo set; purgeDemoSubscribers() below removes
+  // any leftover seed rows from existing prod databases.
+  () => []
 );
 await hydrate();
 
@@ -113,6 +96,35 @@ export function bulkAddSubscribers(emails: string[], source = "import"): { added
   }
   if (added || reactivated) flush();
   return { added, reactivated, skipped };
+}
+
+/** One-shot cleanup for the legacy demo seed. Removes any subscriber whose
+ *  email ends in @example.com (always fake) plus the specific seed addresses
+ *  shipped before we wired up the public newsletter form. Returns the number
+ *  of rows removed. Idempotent — safe to call repeatedly. */
+export function purgeDemoSubscribers(): { removed: number } {
+  const legacySeedEmails = new Set([
+    "sridhari.lk@gmail.com",
+    "neerajjan1995@gmail.com",
+    "keyur.p@gmail.com",
+    "bpantlee@gmail.com",
+    "priya@example.com",
+    "sajib.malik96@gmail.com",
+    "junaedchaddara@gmail.com",
+  ]);
+  let removed = 0;
+  for (let i = subscribers.length - 1; i >= 0; i--) {
+    const s = subscribers[i];
+    const isExampleDomain = /@example\.(com|org|net)$/i.test(s.email);
+    const isLegacySeedId = s.id.startsWith("s-seed-") || /^s[1-8]$/.test(s.id);
+    const isLegacyEmail = legacySeedEmails.has(s.email);
+    if (isExampleDomain || isLegacySeedId || isLegacyEmail) {
+      subscribers.splice(i, 1);
+      removed++;
+    }
+  }
+  if (removed) flush();
+  return { removed };
 }
 
 export function removeSubscriber(id: string): boolean {

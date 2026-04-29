@@ -8,6 +8,8 @@ import {
   deletePost,
   type BlogStatus,
 } from "@/lib/blog-store";
+import { notifySubscribersOfNewPost } from "@/lib/blog-notifications";
+import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
 
@@ -71,8 +73,32 @@ export async function PATCH(
   else if (typeof body.tags === "string")
     patch.tags = body.tags.split(",").map((t) => t.trim()).filter(Boolean);
 
+  // Capture pre-update status so we can detect a Draft → Published flip
+  // and fire the newsletter blast exactly once. notify helper dedupes by
+  // post id, so repeated PATCHes after publish don't re-blast.
+  const before = await getPostById(id);
   const post = await updatePost(id, patch);
   if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const justPublished =
+    post.status === "Published" && (!before || before.status !== "Published");
+  if (justPublished) {
+    try {
+      const sent = await notifySubscribersOfNewPost({
+        id: post.id,
+        slug: post.slug,
+        title: post.title,
+        excerpt: post.excerpt,
+        category: post.category,
+        author: post.author,
+        imageUrl: post.imageUrl,
+      });
+      if (sent > 0) log.info("blog.notify.sent", { postId: post.id, recipients: sent });
+    } catch (err) {
+      log.error("blog.notify.patch_hook_failed", err, { postId: post.id });
+    }
+  }
+
   return NextResponse.json({ post });
 }
 

@@ -26,7 +26,26 @@ export default function AdminSubscribers() {
   const [search, setSearch] = useState("");
   const [sendOpen, setSendOpen] = useState(false);
   const [importBusy, setImportBusy] = useState(false);
+  const [purgeBusy, setPurgeBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const hasDemoData = subscribers.some((s) => /@example\.(com|org|net)$/i.test(s.email));
+
+  const purgeDemo = async () => {
+    if (!confirm("Remove ALL demo data (every @example.com address and the legacy seed rows)? Real subscribers added via signup or the newsletter form will not be touched.")) return;
+    setPurgeBusy(true);
+    try {
+      const res = await fetch("/api/admin/subscribers/purge-demo", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Purge failed");
+      alert(`Removed ${data.removed} demo subscriber${data.removed === 1 ? "" : "s"}.`);
+      load();
+    } catch (err) {
+      alert((err as Error).message);
+    } finally {
+      setPurgeBusy(false);
+    }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -121,6 +140,17 @@ export default function AdminSubscribers() {
         </div>
         <div className="flex flex-wrap gap-2">
           <input ref={fileRef} type="file" accept=".csv,text/csv,text/plain" className="hidden" onChange={onImportFile} />
+          {hasDemoData && (
+            <button
+              onClick={purgeDemo}
+              disabled={purgeBusy}
+              className="inline-flex items-center gap-2 rounded-lg border border-red-300 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700 hover:bg-red-100 disabled:opacity-60"
+              title="Remove every @example.com row and the legacy seed subscribers"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              {purgeBusy ? "Removing…" : "Remove demo data"}
+            </button>
+          )}
           <button
             onClick={() => fileRef.current?.click()}
             disabled={importBusy}

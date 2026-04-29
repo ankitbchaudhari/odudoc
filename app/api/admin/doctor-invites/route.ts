@@ -84,6 +84,11 @@ export async function POST(req: NextRequest) {
     name?: string;
     specialty?: string;
     country?: string;
+    /** Optional phone (with country code) — when single-recipient
+     *  + provided, the resulting invite gets a WhatsApp link in
+     *  the history. Bulk-paste flows can't use this since one
+     *  phone per batch only makes sense for single sends. */
+    phone?: string;
     note?: string;
   };
   try {
@@ -135,11 +140,17 @@ export async function POST(req: NextRequest) {
         });
         continue;
       }
+      // Phone goes on the invite row only when there's a single
+      // recipient — bulk-paste flows would otherwise stamp every
+      // row with the same number, which is wrong.
+      const phoneForRow =
+        unique.length === 1 ? body.phone : undefined;
       const invite = await createDoctorInvite({
         email,
         name: body.name,
         specialty: body.specialty,
         country: body.country,
+        phone: phoneForRow,
         sentBy: adminEmail || "admin",
         note: body.note,
       });

@@ -27,6 +27,19 @@ export interface DoctorInvite {
   /** Optional country (ISO alpha-2) to drop India-only language
    *  about the IMC telemedicine rule on the apply form. */
   country?: string;
+  /** Optional phone number in international format (with country
+   *  code, e.g. +919876543210). When set, the admin UI offers a
+   *  "Open WhatsApp" button that fires a wa.me click-to-chat link
+   *  with a pre-filled invitation message. The platform never
+   *  sends WhatsApp on the admin's behalf — they click Send in
+   *  the WhatsApp app/web themselves. Keeps us cleanly outside
+   *  Meta's bulk-messaging terms. */
+  phone?: string;
+  /** True once the admin has clicked the WhatsApp send link from
+   *  the invite history. Heuristic — we can't actually verify
+   *  Meta delivered the message, only that the admin took the
+   *  action of opening the chat with our pre-filled text. */
+  whatsappSentAt?: string;
   sentBy: string;
   sentAt: string;
   status: DoctorInviteStatus;
@@ -60,6 +73,7 @@ export interface CreateInviteInput {
   name?: string;
   specialty?: string;
   country?: string;
+  phone?: string;
   sentBy: string;
   note?: string;
 }
@@ -74,6 +88,7 @@ export async function createDoctorInvite(
     name: input.name?.trim() || undefined,
     specialty: input.specialty?.trim() || undefined,
     country: input.country?.trim().toUpperCase() || undefined,
+    phone: input.phone?.replace(/[^\d+]/g, "") || undefined,
     sentBy: input.sentBy.toLowerCase(),
     sentAt: nowIso(),
     status: "sent",
@@ -81,6 +96,24 @@ export async function createDoctorInvite(
   };
   invites.push(row);
   return row;
+}
+
+/** Stamp the WhatsApp-send action against an invite. Called from
+ *  the admin UI when the admin clicks "Open WhatsApp". We can't
+ *  observe the actual send but we record the moment they
+ *  initiated it so the history shows two channels of outreach. */
+export async function markInviteWhatsappSent(
+  id: string,
+): Promise<DoctorInvite | undefined> {
+  await hydrateInvites();
+  const idx = invites.findIndex((i) => i.id === id);
+  if (idx === -1) return undefined;
+  const next: DoctorInvite = {
+    ...invites[idx],
+    whatsappSentAt: nowIso(),
+  };
+  invites.splice(idx, 1, next);
+  return next;
 }
 
 export async function listDoctorInvites(): Promise<DoctorInvite[]> {

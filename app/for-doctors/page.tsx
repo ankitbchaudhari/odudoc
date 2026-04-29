@@ -272,6 +272,127 @@ export default function ForDoctorsPage() {
         </div>
       </section>
 
+      {/* Free EMR — clinic-in-a-box */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-cyan-50 to-indigo-50 py-20">
+        <div className="pointer-events-none absolute inset-0 -z-0">
+          <div className="absolute -top-40 left-1/2 h-[420px] w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-br from-emerald-200/40 via-cyan-200/40 to-indigo-200/40 blur-3xl" />
+        </div>
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-100 backdrop-blur">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              Now included · No extra cost
+            </span>
+            <h2 className="mt-3 text-3xl font-bold text-gray-900 md:text-4xl">
+              Run your whole clinic on OduDoc
+            </h2>
+            <p className="mt-4 text-lg text-gray-600">
+              The platform just upgraded into a full small-clinic EMR. Patients,
+              SOAP notes, prescriptions, lab files, invoices, payments, staff —
+              all in your dashboard. <b>50 patients/month free</b>, then $50 to
+              unlock unlimited for that month. Cancel anytime.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {[
+              { title: "Patients & SOAP notes", icon: "🩺", desc: "Build a real medical record per patient with chronic conditions, allergies, vitals and dated SOAP notes — searchable, exportable.", tone: "from-emerald-50 to-emerald-100/40" },
+              { title: "Lab reports & scans", icon: "🧪", desc: "Upload PDFs, X-rays and reports straight to a patient's chart. 10 MB per file, hosted on the same private VPS as your prescriptions.", tone: "from-cyan-50 to-cyan-100/40" },
+              { title: "Invoices + online payment", icon: "💳", desc: "Raise multi-line invoices in your local currency. Send the patient a one-click pay link — Stripe Checkout marks it paid automatically.", tone: "from-amber-50 to-amber-100/40" },
+              { title: "Staff with roles", icon: "👥", desc: "Add your nurse and front desk by email. Granular permissions: front desk registers patients, nurse logs visits, you sign off everything.", tone: "from-violet-50 to-violet-100/40" },
+              { title: "FHIR + HL7 export", icon: "📤", desc: "Click once and download a patient as a FHIR R4 bundle or an HL7 v2 message. Migrate to or from any modern hospital system.", tone: "from-indigo-50 to-indigo-100/40" },
+              { title: "Audit log + AI tools", icon: "📋", desc: "Every action timestamped + attributed. AI prescription assistant, voice prescription, prescription templates — all included.", tone: "from-fuchsia-50 to-fuchsia-100/40" },
+            ].map((f) => (
+              <div
+                key={f.title}
+                className={`rounded-2xl border border-white/60 bg-gradient-to-br ${f.tone} p-6 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-md`}
+              >
+                <div className="mb-3 text-3xl">{f.icon}</div>
+                <h3 className="mb-1.5 font-bold text-gray-900">{f.title}</h3>
+                <p className="text-sm leading-relaxed text-gray-600">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Pricing card */}
+          <div className="mt-14 grid gap-5 lg:grid-cols-2">
+            <div className="rounded-3xl border border-gray-100 bg-white p-7 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">
+                Free forever
+              </p>
+              <h3 className="mt-1 text-2xl font-bold text-gray-900">
+                Solo doctor + 50 patients / month
+              </h3>
+              <p className="mt-2 text-sm text-gray-600">
+                Perfect for solo practitioners. Everything works — no asterisks,
+                no demo data, no time limit.
+              </p>
+              <ul className="mt-5 space-y-2 text-sm text-gray-700">
+                {[
+                  "Unlimited visits, files, invoices, prescriptions",
+                  "AI prescription assistant + voice dictation",
+                  "FHIR + HL7 export",
+                  "Patient online payments via Stripe",
+                  "Audit log + GDPR data export",
+                ].map((line) => (
+                  <li key={line} className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-5 text-3xl font-bold text-gray-900">
+                $0 <span className="text-base font-normal text-gray-500">/ month</span>
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 p-7 text-white shadow-lg shadow-emerald-500/30">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-100">
+                Busy month? Pay only when you cross the line.
+              </p>
+              <h3 className="mt-1 text-2xl font-bold">
+                Unlimited unlock — $50 / month
+              </h3>
+              <p className="mt-2 text-sm text-emerald-50">
+                Hit the 51st new patient and a one-time $50 unlocks the rest of
+                the calendar month. No subscription, no auto-renew, no card on
+                file unless you choose to pay.
+              </p>
+              <ul className="mt-5 space-y-2 text-sm text-emerald-50">
+                {[
+                  "Unlimited new patients for that month",
+                  "Reset back to 50/mo free at month start",
+                  "Pay via Stripe — issued by your existing OduDoc account",
+                  "Cancel anytime by simply not paying next time",
+                ].map((line) => (
+                  <li key={line} className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-5 text-3xl font-bold">
+                $50 <span className="text-base font-normal text-emerald-100">/ unlock</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-10 text-center">
+            <Link
+              href="/for-doctors/register"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:shadow-xl"
+            >
+              Get your free clinic dashboard
+              <span>→</span>
+            </Link>
+            <p className="mt-3 text-xs text-gray-500">
+              Already on OduDoc? It&apos;s already in your dashboard under{" "}
+              <b>Clinic EMR</b>.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
       <section className="bg-gray-50 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

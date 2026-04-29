@@ -258,6 +258,16 @@ export default function PatientDetailPage({
     window.open(`/api/emr/patients/${id}/hl7`, "_blank");
   }
 
+  function downloadGdprExport() {
+    if (
+      !confirm(
+        "Issue a full GDPR portability export for this patient? Verify the patient's identity in person before sharing the resulting file."
+      )
+    )
+      return;
+    window.open(`/api/emr/patients/${id}/export`, "_blank");
+  }
+
   async function copyPaymentLink(inv: Invoice) {
     let token = inv.publicToken;
     // Lazy-generate for legacy invoices created before publicToken
@@ -1063,6 +1073,18 @@ export default function PatientDetailPage({
                   <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
                 </svg>
                 Export FHIR
+              </button>
+              <button
+                onClick={downloadGdprExport}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 shadow-sm hover:bg-emerald-100"
+                title="GDPR Article 20 portability — full patient record as JSON. Verify identity before sharing."
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M22 11l-3 3m0 0l-3-3m3 3V3" />
+                </svg>
+                GDPR export
               </button>
             </div>
           </div>

@@ -153,7 +153,11 @@ export async function POST(req: NextRequest) {
         userPrompt,
         schema: DIAGNOSIS_SCHEMA,
         temperature: 0.4,
-        maxOutputTokens: 2048,
+        // 800 tokens easily fits 5 short differentials with rationales —
+        // empirically the old 2048 was finishing around 600 tokens anyway,
+        // and JSON-schema mode bills/runs against the cap, not the actual
+        // length. Cutting this is the single biggest latency win.
+        maxOutputTokens: 800,
         tag: "ai-prescription.diagnosis",
       });
       return NextResponse.json({ ok: true, ...(result as object) });
@@ -165,13 +169,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "diagnosis is required" }, { status: 400 });
     }
     const userPrompt =
-      `Patient details:\n${patientBlock || "(not provided)"}\n\nWorking diagnosis: ${diagnosis}\n\nSuggest: (a) investigations to confirm or monitor this diagnosis with a brief reason for each; (b) first-line medications with typical adult dose, frequency, duration, and patient instructions (mark any you're uncertain about); (c) lifestyle and self-care advice; (d) follow-up interval; (e) red-flag symptoms the patient should return for urgently.`;
+      `Patient details:\n${patientBlock || "(not provided)"}\n\nWorking diagnosis: ${diagnosis}\n\nSuggest concisely: (a) up to 4 investigations with one-line reason; (b) up to 4 first-line medications with adult dose, frequency, duration, brief instructions; (c) up to 4 advice bullets; (d) one-line follow-up; (e) up to 4 red-flag symptoms.`;
     const result = await generateJson({
       systemPrompt: SYSTEM_PROMPT,
       userPrompt,
       schema: TREATMENT_SCHEMA,
       temperature: 0.4,
-      maxOutputTokens: 2048,
+      // Treatment output is richer (meds + investigations + advice) but
+      // capping at 4 items each keeps it well under 1500 tokens.
+      maxOutputTokens: 1500,
       tag: "ai-prescription.treatment",
     });
     return NextResponse.json({ ok: true, ...(result as object) });

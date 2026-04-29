@@ -73,6 +73,18 @@ export interface User {
    *  fills the gap. */
   country?: string;
 
+  /** ABHA (Ayushman Bharat Health Account) number. 14-digit national
+   *  health ID issued by NHA. Set when an Indian patient links their
+   *  ABHA via /api/abdm/abha/connect. Drives the ABDM integration
+   *  surface — care-context linking, PHR push, etc. India-only. */
+  abhaId?: string;
+  /** Human-readable ABHA address (e.g. "ankit.chaudhari@abdm"). */
+  abhaAddress?: string;
+  /** Timestamp the ABHA link was last verified against the NHA
+   *  authenticator. Drives the "verified ABHA" badge on the patient
+   *  profile. */
+  abhaLinkedAt?: string;
+
   // ------------------------------------------------------------------
   // Referral program
   //
@@ -462,6 +474,34 @@ export function addReferralCredit(userId: string, cents: number): number {
   u.referralCreditCents = (u.referralCreditCents || 0) + Math.max(0, Math.floor(cents));
   flush();
   return u.referralCreditCents;
+}
+
+/** Link an ABHA Health ID to an existing user. Idempotent — calling
+ *  again with the same ABHA replaces the linkage timestamp. Caller
+ *  must have already validated the ABHA via NHA's authenticator
+ *  (or via the Phase-1 stub). India-only by upstream gating; we
+ *  don't re-check country here. */
+export function linkAbhaToUser(
+  userId: string,
+  patch: { abhaId: string; abhaAddress?: string },
+): User | null {
+  const u = users.find((x) => x.id === userId);
+  if (!u) return null;
+  u.abhaId = patch.abhaId.replace(/\s+/g, "");
+  u.abhaAddress = patch.abhaAddress;
+  u.abhaLinkedAt = new Date().toISOString();
+  flush();
+  return u;
+}
+
+export function unlinkAbhaFromUser(userId: string): User | null {
+  const u = users.find((x) => x.id === userId);
+  if (!u) return null;
+  u.abhaId = undefined;
+  u.abhaAddress = undefined;
+  u.abhaLinkedAt = undefined;
+  flush();
+  return u;
 }
 
 /** Spend up to `cents` from a user's referral wallet. Returns the

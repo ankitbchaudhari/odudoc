@@ -141,6 +141,20 @@ export interface Doctor {
   licenseExpiry?: string;
 
   // -------------------------------------------------------------------
+  // ABDM (India only — Ayushman Bharat Digital Mission)
+  // -------------------------------------------------------------------
+  /** Healthcare Professionals Registry id (HPRID). 14-digit
+   *  identifier issued by NHA after the doctor's license is verified
+   *  in the national registry. Optional — only set after the doctor
+   *  goes through the "Verify with HPR" flow on the admin
+   *  verification queue. India-only. */
+  hprId?: string;
+  hprVerifiedAt?: string;
+  /** Health Facility Registry id (HFRID) for the doctor's primary
+   *  clinic. Required for HIP record-sharing under ABDM. India-only. */
+  hfrId?: string;
+
+  // -------------------------------------------------------------------
   // Stripe Connect (direct — doctors are not vendors)
   // -------------------------------------------------------------------
   /** Stripe Connect account id (acct_…). Set at first /onboard call. */
@@ -513,6 +527,34 @@ export function submitDoctorVerification(
   if (patch.licenseExpiry !== undefined) {
     d.licenseExpiry = patch.licenseExpiry;
   }
+  d.updatedAt = now();
+  flush();
+  return d;
+}
+
+/** Stamp an HPR (Healthcare Professionals Registry) id on a doctor
+ *  after the admin verifies it against NHA's registry. India-only;
+ *  caller is responsible for the country gate. */
+export function setDoctorHprId(
+  id: string,
+  hprId: string,
+): Doctor | null {
+  const d = doctors.find((x) => x.id === id);
+  if (!d) return null;
+  d.hprId = hprId.replace(/\s+/g, "");
+  d.hprVerifiedAt = now();
+  d.updatedAt = now();
+  flush();
+  return d;
+}
+
+export function setDoctorHfrId(
+  id: string,
+  hfrId: string,
+): Doctor | null {
+  const d = doctors.find((x) => x.id === id);
+  if (!d) return null;
+  d.hfrId = hfrId.replace(/\s+/g, "");
   d.updatedAt = now();
   flush();
   return d;

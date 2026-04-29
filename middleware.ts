@@ -86,6 +86,7 @@ const SUPER_ONLY_PREFIXES = [
   "/admin/careers",
   "/admin/customize",
   "/admin/settings",
+  "/admin/abdm",
 ];
 
 // Env-driven super-admin list, mirrored from lib/tenant.ts so middleware

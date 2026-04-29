@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRef, useState } from "react";
 import IdentityVerificationCard from "@/components/IdentityVerificationCard";
+import AbhaCard from "@/components/AbhaCard";
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
@@ -156,6 +157,11 @@ export default function ProfilePage() {
         {/* Identity & Medical ID — permanent account identity + gov-ID upload */}
         <div className="mb-6">
           <IdentityVerificationCard />
+        </div>
+
+        {/* ABDM ABHA Health ID link — only renders for India-based users */}
+        <div className="mb-6">
+          <AbhaCard />
         </div>
 
         {/* Profile Header */}

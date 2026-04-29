@@ -61,6 +61,9 @@ export async function GET(req: NextRequest) {
       licenseCountry: d.licenseCountry,
       licenseNumber: d.licenseNumber,
       licenseExpiry: d.licenseExpiry,
+      hprId: d.hprId,
+      hprVerifiedAt: d.hprVerifiedAt,
+      hfrId: d.hfrId,
       joinedAt: d.joinedAt,
     }))
     .sort((a, b) => {

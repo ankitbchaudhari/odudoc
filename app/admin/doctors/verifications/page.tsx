@@ -29,6 +29,9 @@ interface DoctorRow {
   licenseCountry?: string;
   licenseNumber?: string;
   licenseExpiry?: string;
+  hprId?: string;
+  hprVerifiedAt?: string;
+  hfrId?: string;
   joinedAt: string;
 }
 
@@ -427,8 +430,118 @@ function DoctorCard({
             <Field label="Expiry" value={d.licenseExpiry || "—"} />
           </div>
         )}
+
+        {isIndianDoctor(d) && <AbdmRow doctor={d} />}
       </div>
     </li>
+  );
+}
+
+function isIndianDoctor(d: DoctorRow): boolean {
+  const c = (d.country || d.licenseCountry || "").toLowerCase();
+  return c === "india" || c === "in" || c === "ind";
+}
+
+function AbdmRow({ doctor }: { doctor: DoctorRow }) {
+  const [hpr, setHpr] = useState(doctor.hprId || "");
+  const [hfr, setHfr] = useState(doctor.hfrId || "");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<
+    { kind: "ok" | "err"; text: string; sandbox?: boolean } | null
+  >(null);
+
+  async function save() {
+    setBusy(true);
+    setMsg(null);
+    try {
+      const res = await fetch(`/api/admin/doctors/${doctor.id}/verify-hpr`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ hprId: hpr.trim() || undefined, hfrId: hfr.trim() || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Save failed");
+      setMsg({
+        kind: "ok",
+        text: data.message || "Saved.",
+        sandbox: data.sandboxMode,
+      });
+    } catch (err) {
+      setMsg({ kind: "err", text: err instanceof Error ? err.message : "Save failed" });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-4 rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 via-amber-50 to-rose-50 p-4">
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        <span className="text-base">🇮🇳</span>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-orange-700">
+          ABDM (India) — HPR + HFR
+        </p>
+        {doctor.hprVerifiedAt && (
+          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+            ✓ Saved {new Date(doctor.hprVerifiedAt).toLocaleDateString()}
+          </span>
+        )}
+      </div>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-0.5 block text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+            HPR id (Healthcare Professionals Registry)
+          </span>
+          <input
+            value={hpr}
+            onChange={(e) => setHpr(e.target.value)}
+            placeholder="14-digit, e.g. 12-3456-7890-1234"
+            className="w-full rounded-lg border border-orange-200 bg-white px-2.5 py-1.5 font-mono text-xs outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/15"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-0.5 block text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+            HFR id (Health Facility Registry)
+          </span>
+          <input
+            value={hfr}
+            onChange={(e) => setHfr(e.target.value)}
+            placeholder="Optional — clinic id"
+            className="w-full rounded-lg border border-orange-200 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/15"
+          />
+        </label>
+      </div>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <button
+          onClick={save}
+          disabled={busy}
+          className="rounded-lg bg-gradient-to-r from-orange-600 to-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow disabled:opacity-50"
+        >
+          {busy ? "Saving…" : "Save HPR / HFR"}
+        </button>
+        <a
+          href="https://hpr.abdm.gov.in/"
+          target="_blank"
+          rel="noreferrer"
+          className="text-[11px] font-semibold text-orange-700 hover:underline"
+        >
+          Open HPR registry ↗
+        </a>
+        {msg && (
+          <span
+            className={`text-[11px] ${
+              msg.kind === "ok" ? "text-emerald-700" : "text-rose-700"
+            }`}
+          >
+            {msg.text}
+            {msg.sandbox && (
+              <span className="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                Sandbox
+              </span>
+            )}
+          </span>
+        )}
+      </div>
+    </div>
   );
 }
 

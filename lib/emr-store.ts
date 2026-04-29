@@ -897,8 +897,45 @@ export async function deleteStaff(
 export const FREE_PATIENTS_PER_MONTH = 50;
 export const QUOTA_UNLOCK_AMOUNT = 50; // USD
 
+/** Staff seats included on each plan. The clinic owner (the doctor
+ *  using the dashboard) is automatic and not counted; these caps
+ *  apply only to *added* staff members.
+ *
+ *  Free          → 1 nurse + 1 front desk + 0 staff doctors
+ *  $50 unlock    → 3 nurse + 3 front desk + 3 staff doctors
+ *  Beyond 3+3+3  → /corporate (multi-clinic / hospital tier)
+ */
+export interface StaffLimits {
+  nurse: number;
+  frontdesk: number;
+  doctor: number;
+}
+export const FREE_STAFF_LIMITS: StaffLimits = { nurse: 1, frontdesk: 1, doctor: 0 };
+export const UNLOCKED_STAFF_LIMITS: StaffLimits = { nurse: 3, frontdesk: 3, doctor: 3 };
+
+export function getStaffLimits(unlocked: boolean): StaffLimits {
+  return unlocked ? UNLOCKED_STAFF_LIMITS : FREE_STAFF_LIMITS;
+}
+
 function currentMonthKey(): string {
   return new Date().toISOString().slice(0, 7); // "2026-04"
+}
+
+export interface StaffUsage {
+  nurse: number;
+  frontdesk: number;
+  doctor: number;
+}
+
+export async function getStaffUsage(ownerEmail: string): Promise<StaffUsage> {
+  await hydrateStaff();
+  const owner = ownerEmail.toLowerCase();
+  const mine = staff.filter((s) => s.ownerEmail.toLowerCase() === owner);
+  return {
+    nurse: mine.filter((s) => s.role === "nurse").length,
+    frontdesk: mine.filter((s) => s.role === "frontdesk").length,
+    doctor: mine.filter((s) => s.role === "doctor").length,
+  };
 }
 
 export interface QuotaState {
@@ -911,6 +948,10 @@ export interface QuotaState {
   /** True once `used >= limit` AND no unlock for the month. */
   blocked: boolean;
   remaining: number;
+  /** Staff seat caps under the current plan tier. */
+  staffLimits: StaffLimits;
+  /** Current staff seat usage for the clinic. */
+  staffUsage: StaffUsage;
 }
 
 export async function getQuotaState(ownerEmail: string): Promise<QuotaState> {
@@ -925,6 +966,8 @@ export async function getQuotaState(ownerEmail: string): Promise<QuotaState> {
     (u) => u.ownerEmail.toLowerCase() === owner && u.month === month
   );
   const blocked = !unlocked && used >= FREE_PATIENTS_PER_MONTH;
+  const staffLimits = getStaffLimits(unlocked);
+  const staffUsage = await getStaffUsage(owner);
   return {
     month,
     used,
@@ -934,6 +977,8 @@ export async function getQuotaState(ownerEmail: string): Promise<QuotaState> {
     unlockCurrency: "USD",
     blocked,
     remaining: Math.max(0, FREE_PATIENTS_PER_MONTH - used),
+    staffLimits,
+    staffUsage,
   };
 }
 

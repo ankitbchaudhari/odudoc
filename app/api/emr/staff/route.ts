@@ -13,6 +13,7 @@ import {
   reloadStaff,
   resolveClinic,
   writeAudit,
+  getQuotaState,
   type StaffRole,
 } from "@/lib/emr-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
@@ -37,7 +38,8 @@ export async function GET() {
   await reloadStaff();
   const ownerEmail = clinic.role === "admin" ? clinic.userEmail : clinic.ownerEmail;
   const staff = await listStaffForOwner(ownerEmail);
-  return NextResponse.json({ staff });
+  const quota = await getQuotaState(ownerEmail);
+  return NextResponse.json({ staff, quota });
 }
 
 export async function POST(req: NextRequest) {
@@ -74,6 +76,42 @@ export async function POST(req: NextRequest) {
       { error: "You're already the clinic owner — no need to add yourself as staff." },
       { status: 400 }
     );
+  }
+
+  // Idempotent re-add of an existing staff member (same email, role
+  // change) doesn't increment usage, so check whether this email is
+  // already in the clinic's staff list before applying the cap.
+  await reloadStaff();
+  const existing = await listStaffForOwner(ownerEmail);
+  const alreadyOnClinic = existing.find(
+    (s) => s.staffEmail.toLowerCase() === staffEmail
+  );
+  if (!alreadyOnClinic) {
+    const quota = await getQuotaState(ownerEmail);
+    const used = quota.staffUsage[role];
+    const limit = quota.staffLimits[role];
+    if (used >= limit) {
+      const roleLabel =
+        role === "frontdesk" ? "front desk" : role;
+      const baseMsg =
+        limit === 0
+          ? `Adding a staff ${roleLabel} requires the $50 unlock or the Corporate plan.`
+          : `You've reached the ${limit}-${roleLabel} limit for your current plan.`;
+      const upgrade = quota.unlocked
+        ? "You're already on the unlocked plan — bigger teams need /corporate."
+        : "Buy the $50 unlock to add 3 nurses, 3 front desk and 3 doctors. Beyond that, /corporate.";
+      return NextResponse.json(
+        {
+          error: `${baseMsg} ${upgrade}`,
+          quota,
+          upgradePaths: {
+            unlock: quota.unlocked ? null : "/dashboard/doctor/emr?paywall=staff",
+            corporate: "/corporate",
+          },
+        },
+        { status: 402 }
+      );
+    }
   }
 
   const staff = await createStaff({

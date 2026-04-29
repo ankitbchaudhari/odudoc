@@ -299,7 +299,7 @@ export default function ForDoctorsPage() {
               { title: "Patients & SOAP notes", icon: "🩺", desc: "Build a real medical record per patient with chronic conditions, allergies, vitals and dated SOAP notes — searchable, exportable.", tone: "from-emerald-50 to-emerald-100/40" },
               { title: "Lab reports & scans", icon: "🧪", desc: "Upload PDFs, X-rays and reports straight to a patient's chart. 10 MB per file, hosted on the same private VPS as your prescriptions.", tone: "from-cyan-50 to-cyan-100/40" },
               { title: "Invoices + online payment", icon: "💳", desc: "Raise multi-line invoices in your local currency. Send the patient a one-click pay link — Stripe Checkout marks it paid automatically.", tone: "from-amber-50 to-amber-100/40" },
-              { title: "Staff with roles", icon: "👥", desc: "Add your nurse and front desk by email. Granular permissions: front desk registers patients, nurse logs visits, you sign off everything.", tone: "from-violet-50 to-violet-100/40" },
+              { title: "Staff with roles", icon: "👥", desc: "Add 1 nurse + 1 front desk on free, or 3+3+3 (with extra doctors) on the unlock. Front desk registers patients, nurse logs visits, you sign certificates.", tone: "from-violet-50 to-violet-100/40" },
               { title: "FHIR + HL7 export", icon: "📤", desc: "Click once and download a patient as a FHIR R4 bundle or an HL7 v2 message. Migrate to or from any modern hospital system.", tone: "from-indigo-50 to-indigo-100/40" },
               { title: "Audit log + AI tools", icon: "📋", desc: "Every action timestamped + attributed. AI prescription assistant, voice prescription, prescription templates — all included.", tone: "from-fuchsia-50 to-fuchsia-100/40" },
             ].map((f) => (
@@ -329,11 +329,12 @@ export default function ForDoctorsPage() {
               </p>
               <ul className="mt-5 space-y-2 text-sm text-gray-700">
                 {[
-                  "Unlimited visits, files, invoices, prescriptions",
+                  "50 new patients / month",
+                  "1 nurse + 1 front desk seat (you don't count)",
+                  "Unlimited visits, files, invoices, prescriptions, certificates",
                   "AI prescription assistant + voice dictation",
-                  "FHIR + HL7 export",
+                  "FHIR + HL7 export · GDPR portability",
                   "Patient online payments via Stripe",
-                  "Audit log + GDPR data export",
                 ].map((line) => (
                   <li key={line} className="flex items-start gap-2">
                     <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
@@ -348,20 +349,20 @@ export default function ForDoctorsPage() {
 
             <div className="rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 p-7 text-white shadow-lg shadow-emerald-500/30">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-100">
-                Busy month? Pay only when you cross the line.
+                Growing practice? One $50 unlocks the whole month.
               </p>
               <h3 className="mt-1 text-2xl font-bold">
-                Unlimited unlock — $50 / month
+                Practice unlock — $50 / month
               </h3>
               <p className="mt-2 text-sm text-emerald-50">
-                Hit the 51st new patient and a one-time $50 unlocks the rest of
-                the calendar month. No subscription, no auto-renew, no card on
-                file unless you choose to pay.
+                Lifts both caps for the rest of the calendar month — patients
+                AND staff seats. Single one-time payment per month, no
+                auto-renew.
               </p>
               <ul className="mt-5 space-y-2 text-sm text-emerald-50">
                 {[
-                  "Unlimited new patients for that month",
-                  "Reset back to 50/mo free at month start",
+                  "Unlimited new patients",
+                  "3 nurses + 3 front desk + 3 staff doctors",
                   "Pay via Stripe — issued by your existing OduDoc account",
                   "Cancel anytime by simply not paying next time",
                 ].map((line) => (
@@ -372,8 +373,33 @@ export default function ForDoctorsPage() {
                 ))}
               </ul>
               <p className="mt-5 text-3xl font-bold">
-                $50 <span className="text-base font-normal text-emerald-100">/ unlock</span>
+                $50 <span className="text-base font-normal text-emerald-100">/ month</span>
               </p>
+            </div>
+          </div>
+
+          {/* Corporate strip */}
+          <div className="mt-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  Multi-clinic / hospital
+                </p>
+                <h3 className="mt-1 text-lg font-bold text-slate-900">
+                  Bigger team than 3+3+3? OduDoc Corporate.
+                </h3>
+                <p className="mt-1 text-sm text-gray-600">
+                  Unlimited staff &amp; roles, multi-clinic admin, BAA / DPA
+                  available, custom SLA. Talk to us.
+                </p>
+              </div>
+              <Link
+                href="/corporate"
+                className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-indigo-600"
+              >
+                Visit /corporate
+                <span>→</span>
+              </Link>
             </div>
           </div>
 

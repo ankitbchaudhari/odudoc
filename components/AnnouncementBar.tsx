@@ -2,33 +2,41 @@
 
 import { useState, useEffect, useMemo } from "react";
 
-// Edit this list to control the promo bar.
-//
-// If an item has `expires`, it's auto-hidden on/after that date (UTC).
-// Format: YYYY-MM-DD. Dateless items are evergreen.
-// The bar disappears entirely when every item has expired.
-interface Announcement {
-  text: string;
-  expires?: string; // YYYY-MM-DD
-}
+// The promo bar is now driven entirely by /api/offers/active. To run an
+// announcement, create an offer in /admin/special-offers with the banner
+// text — and stop it by toggling the offer off or letting its endsAt
+// pass. When no offers are active, the bar disappears completely.
 
-const announcements: Announcement[] = [
-  { text: "20% off on all supplements — use code HEALTH20" },
-  { text: "New 24/7 telemedicine service now available" },
-];
-
-function isExpired(a: Announcement): boolean {
-  if (!a.expires) return false;
-  // Treat the expiry date as "end of that day UTC" so an event "on April 20th"
-  // stays visible through 23:59:59 UTC on April 20th.
-  const cutoff = new Date(`${a.expires}T23:59:59Z`).getTime();
-  return Number.isFinite(cutoff) && Date.now() > cutoff;
+interface ActiveOffer {
+  id: string;
+  bannerText: string;
 }
 
 export default function AnnouncementBar() {
-  const live = useMemo(() => announcements.filter((a) => !isExpired(a)), []);
+  const [offers, setOffers] = useState<ActiveOffer[] | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/offers/active", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        const active = Array.isArray(data?.active)
+          ? (data.active as Array<{ id: string; bannerText: string }>).filter((o) => o.bannerText)
+          : [];
+        setOffers(active);
+      })
+      .catch(() => {
+        if (!cancelled) setOffers([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const live = useMemo(() => offers || [], [offers]);
 
   useEffect(() => {
     if (live.length <= 1) return;
@@ -38,7 +46,9 @@ export default function AnnouncementBar() {
     return () => clearInterval(interval);
   }, [live.length]);
 
-  if (dismissed || live.length === 0) return null;
+  // While we're fetching, render nothing (avoids a flash of stale content
+  // for repeat visitors). Once loaded with no active offers, also nothing.
+  if (offers === null || dismissed || live.length === 0) return null;
 
   return (
     <div className="relative overflow-hidden bg-gradient-to-r from-primary-600 via-teal-600 to-emerald-600 py-2 text-center">
@@ -47,7 +57,7 @@ export default function AnnouncementBar() {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <p className="flex items-center justify-center gap-2 text-sm font-semibold text-white transition-opacity duration-500">
           <span className="text-base">✨</span>
-          <span>{live[currentIndex]?.text}</span>
+          <span>{live[currentIndex]?.bannerText}</span>
         </p>
       </div>
       <button

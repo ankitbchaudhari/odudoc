@@ -10,6 +10,7 @@ import {
   reloadInvoices,
   resolveClinic,
   canWrite,
+  writeAudit,
   type EmrInvoiceLineItem,
   type InvoiceStatus,
 } from "@/lib/emr-store";
@@ -94,6 +95,20 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+
+  await writeAudit({
+    ownerEmail,
+    actorEmail: clinic.userEmail,
+    action: "invoice.create",
+    resource: "invoice",
+    resourceId: invoice.id,
+    meta: {
+      patientId,
+      number: invoice.number,
+      total: invoice.total,
+      currency: invoice.currency,
+    },
+  });
 
   try {
     await awaitAllFlushesStrict();

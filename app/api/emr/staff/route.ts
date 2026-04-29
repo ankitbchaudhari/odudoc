@@ -12,6 +12,7 @@ import {
   deleteStaff,
   reloadStaff,
   resolveClinic,
+  writeAudit,
   type StaffRole,
 } from "@/lib/emr-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
@@ -83,6 +84,18 @@ export async function POST(req: NextRequest) {
     invitedBy: clinic.userEmail,
   });
 
+  await writeAudit({
+    ownerEmail,
+    actorEmail: clinic.userEmail,
+    action: "staff.add",
+    resource: "staff",
+    resourceId: staff.id,
+    meta: {
+      staffEmail: staff.staffEmail,
+      role: staff.role,
+    },
+  });
+
   try {
     await awaitAllFlushesStrict();
   } catch (err) {
@@ -108,5 +121,12 @@ export async function DELETE(req: NextRequest) {
   const ownerEmail = clinic.role === "admin" ? clinic.userEmail : clinic.ownerEmail;
   const ok = await deleteStaff(id, ownerEmail);
   if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  await writeAudit({
+    ownerEmail,
+    actorEmail: clinic.userEmail,
+    action: "staff.remove",
+    resource: "staff",
+    resourceId: id,
+  });
   return NextResponse.json({ ok: true });
 }

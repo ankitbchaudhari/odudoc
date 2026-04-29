@@ -102,8 +102,50 @@ export interface EmrInvoice {
   notes?: string;
   paidAt?: string;
   paymentMethod?: string;       // "cash" | "card" | "upi" | "bank" | "other"
+  /** Random unguessable token for the public-facing payment page.
+   *  Anyone with this token can view + pay the invoice, so it serves
+   *  as a capability URL. Stays constant for the life of the invoice. */
+  publicToken: string;
+  /** Stripe session id of the most recent online payment attempt;
+   *  used by the public confirm endpoint to validate idempotently. */
+  stripeSessionId?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+/* ---------- Audit log ---------- */
+
+export type AuditAction =
+  | "patient.create"
+  | "patient.update"
+  | "patient.delete"
+  | "visit.create"
+  | "visit.delete"
+  | "file.upload"
+  | "file.delete"
+  | "invoice.create"
+  | "invoice.update"
+  | "invoice.delete"
+  | "invoice.paid_online"
+  | "staff.add"
+  | "staff.remove"
+  | "quota.unlock";
+
+export interface EmrAuditEntry {
+  id: string;
+  /** Clinic-owner email — every audit row is scoped to a clinic. */
+  ownerEmail: string;
+  /** Who performed the action. May equal ownerEmail (owner did it),
+   *  another staff member's email, or "patient:<token>" for a public
+   *  payment flow. */
+  actorEmail: string;
+  action: AuditAction;
+  resource: string;
+  resourceId: string;
+  /** Free-form structured metadata — search-friendly bag for things
+   *  like "patientId of the invoice we just touched", "amount", etc. */
+  meta?: Record<string, string | number | boolean | null | undefined>;
+  createdAt: string;
 }
 
 export type StaffRole = "doctor" | "nurse" | "frontdesk";
@@ -177,12 +219,19 @@ const {
   reload: reloadUnlocksInternal,
 } = bindPersistentArray<EmrQuotaUnlock>("emr-quota-unlocks", quotaUnlocks, () => []);
 
+const auditLog: EmrAuditEntry[] = [];
+const {
+  hydrate: hydrateAudit,
+  reload: reloadAuditInternal,
+} = bindPersistentArray<EmrAuditEntry>("emr-audit", auditLog, () => []);
+
 export async function reloadPatients() { await reloadPatientsInternal(); }
 export async function reloadVisits() { await reloadVisitsInternal(); }
 export async function reloadFiles() { await reloadFilesInternal(); }
 export async function reloadInvoices() { await reloadInvoicesInternal(); }
 export async function reloadStaff() { await reloadStaffInternal(); }
 export async function reloadUnlocks() { await reloadUnlocksInternal(); }
+export async function reloadAudit() { await reloadAuditInternal(); }
 
 function nowIso(): string { return new Date().toISOString(); }
 function uid(prefix: string): string {
@@ -628,6 +677,10 @@ export async function createInvoice(input: CreateInvoiceInput): Promise<EmrInvoi
     currency: (input.currency || "USD").toUpperCase(),
     status: "draft",
     notes: input.notes?.trim() || undefined,
+    // Capability URL token — long enough to resist enumeration. We keep
+    // it on the invoice so the doctor can copy/share the same link
+    // multiple times without rotating it.
+    publicToken: `pay-${Math.random().toString(36).slice(2, 10)}${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`,
     createdAt: now,
     updatedAt: now,
   };
@@ -963,4 +1016,308 @@ export function buildFhirBundle(patient: EmrPatient, patientVisits: EmrVisit[]):
     timestamp: new Date().toISOString(),
     entry: entries,
   };
+}
+
+/* ============================================================ */
+/*  Public-token invoice lookup (patient payment portal)        */
+/* ============================================================ */
+
+export async function getInvoiceByPublicToken(
+  token: string
+): Promise<EmrInvoice | undefined> {
+  await hydrateInvoices();
+  return invoices.find((i) => i.publicToken === token);
+}
+
+export async function setInvoiceCheckoutSession(
+  id: string,
+  sessionId: string
+): Promise<EmrInvoice | undefined> {
+  await hydrateInvoices();
+  const idx = invoices.findIndex((i) => i.id === id);
+  if (idx === -1) return undefined;
+  const next: EmrInvoice = {
+    ...invoices[idx],
+    stripeSessionId: sessionId,
+    updatedAt: nowIso(),
+  };
+  invoices.splice(idx, 1, next);
+  return next;
+}
+
+export async function markInvoicePaidOnline(input: {
+  invoiceId: string;
+  stripeSessionId: string;
+  paymentMethod?: string;
+}): Promise<EmrInvoice | undefined> {
+  await hydrateInvoices();
+  const idx = invoices.findIndex((i) => i.id === input.invoiceId);
+  if (idx === -1) return undefined;
+  const current = invoices[idx];
+  // Idempotent — a Stripe redirect refresh shouldn't double-stamp.
+  if (current.status === "paid") return current;
+  const next: EmrInvoice = {
+    ...current,
+    status: "paid",
+    paidAt: nowIso(),
+    paymentMethod: input.paymentMethod || "card",
+    stripeSessionId: input.stripeSessionId,
+    updatedAt: nowIso(),
+  };
+  invoices.splice(idx, 1, next);
+  return next;
+}
+
+/* ============================================================ */
+/*  Audit log                                                   */
+/* ============================================================ */
+
+export interface AuditWriteInput {
+  ownerEmail: string;
+  actorEmail: string;
+  action: AuditAction;
+  resource: string;
+  resourceId: string;
+  meta?: EmrAuditEntry["meta"];
+}
+
+/** Append a single audit row. Fire-and-forget — callers should not
+ *  block their response on this. We don't return the row because
+ *  nothing reads it back. */
+export async function writeAudit(input: AuditWriteInput): Promise<void> {
+  await hydrateAudit();
+  const row: EmrAuditEntry = {
+    id: uid("au"),
+    ownerEmail: input.ownerEmail.toLowerCase(),
+    actorEmail: (input.actorEmail || "").toLowerCase(),
+    action: input.action,
+    resource: input.resource,
+    resourceId: input.resourceId,
+    meta: input.meta,
+    createdAt: nowIso(),
+  };
+  auditLog.push(row);
+}
+
+export interface ListAuditOptions {
+  ownerEmail: string;
+  /** Filter by actor (e.g. show only what one staff member did). */
+  actorEmail?: string;
+  /** Filter by resource type. */
+  resource?: string;
+  /** ISO date "2026-04-29" — only entries on or after. */
+  since?: string;
+  limit?: number;
+}
+
+export async function listAudit(opts: ListAuditOptions): Promise<EmrAuditEntry[]> {
+  await hydrateAudit();
+  const owner = opts.ownerEmail.toLowerCase();
+  const actor = opts.actorEmail?.toLowerCase();
+  return auditLog
+    .filter((a) => a.ownerEmail === owner)
+    .filter((a) => (actor ? a.actorEmail === actor : true))
+    .filter((a) => (opts.resource ? a.resource === opts.resource : true))
+    .filter((a) => (opts.since ? a.createdAt.slice(0, 10) >= opts.since : true))
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, opts.limit ?? 200);
+}
+
+/* ============================================================ */
+/*  HL7 v2 export                                               */
+/* ============================================================ */
+
+/** Escape characters that have special meaning in HL7 v2 field encoding. */
+function hl7Escape(s: string): string {
+  if (!s) return "";
+  return s
+    .replace(/\\/g, "\\E\\")
+    .replace(/\|/g, "\\F\\")
+    .replace(/\^/g, "\\S\\")
+    .replace(/&/g, "\\T\\")
+    .replace(/~/g, "\\R\\")
+    .replace(/\r?\n/g, " ");
+}
+
+function hl7Date(iso: string): string {
+  // HL7 v2 timestamps: YYYYMMDDHHMMSS or YYYYMMDD.
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return (
+    d.getUTCFullYear() +
+    pad(d.getUTCMonth() + 1) +
+    pad(d.getUTCDate()) +
+    pad(d.getUTCHours()) +
+    pad(d.getUTCMinutes()) +
+    pad(d.getUTCSeconds())
+  );
+}
+
+/** Build a small HL7 v2.5.1 ADT^A08 + visit OBX message stream for
+ *  the given patient + their visits. Returns the message as a single
+ *  string with \r segment terminators (per HL7 spec). Not certified,
+ *  but parses cleanly in HAPI v2 and Mirth. */
+export function buildHl7v2(patient: EmrPatient, patientVisits: EmrVisit[]): string {
+  const sendingApp = "OduDocEMR";
+  const sendingFacility = "OduDoc";
+  const receivingApp = "RECEIVER";
+  const receivingFacility = "FACILITY";
+  const messageId = `MSG-${patient.id}-${Date.now()}`;
+  const timestamp = hl7Date(new Date().toISOString());
+
+  const fhirSex =
+    patient.sex === "Male" ? "M" : patient.sex === "Female" ? "F" : "U";
+
+  const segments: string[] = [];
+
+  // MSH — message header. Field 1 is the field separator |, field 2
+  // declares the encoding characters ^~\&.
+  segments.push(
+    [
+      "MSH",
+      "^~\\&",
+      sendingApp,
+      sendingFacility,
+      receivingApp,
+      receivingFacility,
+      timestamp,
+      "",
+      "ADT^A08",
+      messageId,
+      "P",
+      "2.5.1",
+    ].join("|")
+  );
+
+  // EVN — event type.
+  segments.push(["EVN", "A08", timestamp].join("|"));
+
+  // PID — patient identifier + demographics.
+  segments.push(
+    [
+      "PID",
+      "1",
+      "",
+      `${patient.id}^^^${sendingFacility}^MR`,
+      "",
+      `${hl7Escape(patient.lastName)}^${hl7Escape(patient.firstName)}`,
+      "",
+      "", // DOB — we only store age, leave blank
+      fhirSex,
+      "",
+      "",
+      hl7Escape(patient.address || ""),
+      "",
+      hl7Escape(patient.phone || ""),
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+    ].join("|")
+  );
+
+  // AL1 — allergies.
+  if (patient.allergies) {
+    segments.push(["AL1", "1", "DA", hl7Escape(patient.allergies)].join("|"));
+  }
+
+  // DG1 — chronic diagnoses, one per condition.
+  (patient.chronicConditions || "")
+    .split(/[,;]+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .forEach((cond, i) => {
+      segments.push(["DG1", String(i + 1), "", hl7Escape(cond), "", "", "F"].join("|"));
+    });
+
+  // PV1 + OBX per visit — visit + SOAP encoded as observations.
+  patientVisits.forEach((v, vi) => {
+    const visitTs = hl7Date(v.visitDate + "T00:00:00Z");
+    segments.push(
+      [
+        "PV1",
+        String(vi + 1),
+        "O", // outpatient
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        visitTs,
+      ].join("|")
+    );
+    let obxIdx = 1;
+    const addObx = (label: string, text: string) => {
+      if (!text) return;
+      segments.push(
+        [
+          "OBX",
+          String(obxIdx++),
+          "TX",
+          `${label}^${label}^L`,
+          "",
+          hl7Escape(text),
+          "",
+          "",
+          "",
+          "",
+          "F",
+          "",
+          "",
+          visitTs,
+        ].join("|")
+      );
+    };
+    addObx("CC", v.chiefComplaint);
+    addObx("S", v.subjective);
+    addObx("O", v.objective);
+    addObx("A", v.assessment);
+    addObx("P", v.plan);
+    if (v.vitals) addObx("VITALS", v.vitals);
+  });
+
+  // HL7 spec uses \r between segments. Most parsers also accept \n;
+  // some are strict, so we emit canonical \r.
+  return segments.join("\r") + "\r";
 }

@@ -192,12 +192,20 @@ export default function EmrLandingPage() {
                 ← Dashboard
               </Link>
               {(role === "owner" || role === "admin") && (
-                <Link
-                  href="/dashboard/doctor/emr/staff"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-indigo-300 hover:bg-white hover:text-indigo-700"
-                >
-                  Staff
-                </Link>
+                <>
+                  <Link
+                    href="/dashboard/doctor/emr/staff"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-indigo-300 hover:bg-white hover:text-indigo-700"
+                  >
+                    Staff
+                  </Link>
+                  <Link
+                    href="/dashboard/doctor/emr/audit"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-violet-300 hover:bg-white hover:text-violet-700"
+                  >
+                    Audit log
+                  </Link>
+                </>
               )}
               <button
                 onClick={() => {

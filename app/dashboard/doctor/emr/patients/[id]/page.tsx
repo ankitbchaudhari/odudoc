@@ -69,6 +69,7 @@ interface Invoice {
   notes?: string;
   paidAt?: string;
   paymentMethod?: string;
+  publicToken?: string;
   createdAt: string;
 }
 
@@ -118,6 +119,7 @@ export default function PatientDetailPage({
   const [invoiceForm, setInvoiceForm] = useState(EMPTY_INVOICE_FORM);
   const [invoiceFormOpen, setInvoiceFormOpen] = useState(false);
   const [savingInvoice, setSavingInvoice] = useState(false);
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -250,6 +252,24 @@ export default function PatientDetailPage({
 
   function downloadFhir() {
     window.open(`/api/emr/patients/${id}/fhir`, "_blank");
+  }
+
+  function downloadHl7() {
+    window.open(`/api/emr/patients/${id}/hl7`, "_blank");
+  }
+
+  async function copyPaymentLink(inv: Invoice) {
+    if (!inv.publicToken) return;
+    const url = `${window.location.origin}/pay/${inv.publicToken}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setError(null);
+      setCopiedToken(inv.publicToken);
+      setTimeout(() => setCopiedToken(null), 2000);
+    } catch {
+      // Fallback: just show the URL so the doctor can copy by hand.
+      window.prompt("Copy this payment link:", url);
+    }
   }
 
   function updateLine(idx: number, field: keyof InvoiceLine, value: string | number) {
@@ -890,6 +910,19 @@ export default function PatientDetailPage({
                         {inv.currency} {inv.total.toFixed(2)}
                       </p>
                       <div className="mt-1 flex flex-wrap justify-end gap-1">
+                        {inv.publicToken && inv.status !== "paid" && inv.status !== "void" && (
+                          <button
+                            onClick={() => copyPaymentLink(inv)}
+                            className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition ${
+                              copiedToken === inv.publicToken
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                            }`}
+                            title="Copy patient-facing payment link"
+                          >
+                            {copiedToken === inv.publicToken ? "✓ Link copied" : "Copy pay link"}
+                          </button>
+                        )}
                         {inv.status !== "paid" && (
                           <button
                             onClick={() => setInvoiceStatus(inv.id, "paid")}
@@ -923,7 +956,7 @@ export default function PatientDetailPage({
           )}
         </div>
 
-        {/* FHIR export */}
+        {/* Interop / export */}
         <div className="mt-6 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-indigo-50/60 via-violet-50/60 to-fuchsia-50/60 p-5 shadow-sm backdrop-blur-xl">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -931,23 +964,34 @@ export default function PatientDetailPage({
                 Interoperability
               </p>
               <h2 className="mt-1 text-base font-bold text-slate-900">
-                Export FHIR R4 bundle
+                Export this patient&apos;s record
               </h2>
               <p className="mt-1 text-xs text-slate-600">
-                Download this patient&apos;s record (demographics, allergies,
-                conditions, encounters) as a FHIR JSON bundle for migration to
-                another EMR.
+                Download a copy in either format for migration to another EMR
+                or for the patient&apos;s personal records.
               </p>
             </div>
-            <button
-              onClick={downloadFhir}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-indigo-600"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
-              </svg>
-              Export FHIR
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={downloadHl7}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:border-indigo-400 hover:bg-indigo-50"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                  <path d="M14 2v6h6" />
+                </svg>
+                Export HL7 v2
+              </button>
+              <button
+                onClick={downloadFhir}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-indigo-600"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                </svg>
+                Export FHIR
+              </button>
+            </div>
           </div>
         </div>
       </div>

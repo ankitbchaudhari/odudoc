@@ -10,6 +10,7 @@ import {
   reloadPatients,
   resolveClinic,
   canWrite,
+  writeAudit,
   type Sex,
 } from "@/lib/emr-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
@@ -94,6 +95,18 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   const patient = await updatePatient(id, patch, ownerScope(clinic));
   if (!patient) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  await writeAudit({
+    ownerEmail: patient.doctorEmail,
+    actorEmail: clinic.userEmail,
+    action: "patient.update",
+    resource: "patient",
+    resourceId: patient.id,
+    meta: {
+      fields: Object.keys(patch).join(",") || "(none)",
+      archived: body.archive ? true : body.unarchive ? false : undefined,
+    },
+  });
+
   try {
     await awaitAllFlushesStrict();
   } catch (err) {
@@ -115,7 +128,21 @@ export async function DELETE(_req: NextRequest, ctx: RouteContext) {
   }
   const { id } = await ctx.params;
   await reloadPatients();
+  // Capture name BEFORE deletion so the audit row has it.
+  const existing = await getPatientById(id, ownerScope(clinic));
   const ok = await deletePatient(id, ownerScope(clinic));
   if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (existing) {
+    await writeAudit({
+      ownerEmail: existing.doctorEmail,
+      actorEmail: clinic.userEmail,
+      action: "patient.delete",
+      resource: "patient",
+      resourceId: id,
+      meta: {
+        name: `${existing.firstName} ${existing.lastName}`.trim(),
+      },
+    });
+  }
   return NextResponse.json({ ok: true });
 }

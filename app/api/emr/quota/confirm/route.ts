@@ -10,6 +10,7 @@ import {
   resolveClinic,
   recordQuotaUnlock,
   reloadUnlocks,
+  writeAudit,
   QUOTA_UNLOCK_AMOUNT,
 } from "@/lib/emr-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
@@ -65,6 +66,20 @@ export async function GET(req: NextRequest) {
         typeof checkout.payment_intent === "string"
           ? checkout.payment_intent
           : checkout.payment_intent?.id,
+    });
+
+    await writeAudit({
+      ownerEmail,
+      actorEmail: clinic.userEmail,
+      action: "quota.unlock",
+      resource: "quota",
+      resourceId: unlock.id,
+      meta: {
+        month: unlock.month,
+        amount: unlock.amount,
+        currency: unlock.currency,
+        stripeSessionId: sessionId,
+      },
     });
 
     try {

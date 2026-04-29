@@ -10,6 +10,7 @@ import {
   reloadVisits,
   resolveClinic,
   canWrite,
+  writeAudit,
 } from "@/lib/emr-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
@@ -97,6 +98,19 @@ export async function POST(req: NextRequest) {
     plan,
     vitals: body.vitals,
     prescriptionId: body.prescriptionId,
+  });
+
+  await writeAudit({
+    ownerEmail,
+    actorEmail: clinic.userEmail,
+    action: "visit.create",
+    resource: "visit",
+    resourceId: visit.id,
+    meta: {
+      patientId,
+      visitDate: visit.visitDate,
+      chiefComplaint: visit.chiefComplaint.slice(0, 80),
+    },
   });
 
   try {

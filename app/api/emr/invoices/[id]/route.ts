@@ -10,6 +10,7 @@ import {
   reloadInvoices,
   resolveClinic,
   canWrite,
+  writeAudit,
   type InvoiceStatus,
 } from "@/lib/emr-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
@@ -71,6 +72,19 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   const invoice = await updateInvoice(id, patch, scope);
   if (!invoice) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  await writeAudit({
+    ownerEmail: invoice.doctorEmail,
+    actorEmail: clinic.userEmail,
+    action: "invoice.update",
+    resource: "invoice",
+    resourceId: invoice.id,
+    meta: {
+      number: invoice.number,
+      newStatus: patch.status,
+      paymentMethod: patch.paymentMethod,
+    },
+  });
+
   try {
     await awaitAllFlushesStrict();
   } catch (err) {
@@ -94,7 +108,18 @@ export async function DELETE(_req: NextRequest, ctx: RouteContext) {
   const { id } = await ctx.params;
   await reloadInvoices();
   const scope = clinic.role === "admin" ? undefined : clinic.ownerEmail;
+  const existing = await getInvoiceById(id, scope);
   const ok = await deleteInvoice(id, scope);
   if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (existing) {
+    await writeAudit({
+      ownerEmail: existing.doctorEmail,
+      actorEmail: clinic.userEmail,
+      action: "invoice.delete",
+      resource: "invoice",
+      resourceId: id,
+      meta: { number: existing.number, total: existing.total },
+    });
+  }
   return NextResponse.json({ ok: true });
 }

@@ -14,6 +14,7 @@ import {
   reloadFiles,
   resolveClinic,
   canWrite,
+  writeAudit,
   type EmrFile,
 } from "@/lib/emr-store";
 import { uploadFile, deleteFile } from "@/lib/files-service";
@@ -106,6 +107,20 @@ export async function POST(req: NextRequest) {
     contentType: file.type || "application/octet-stream",
   });
 
+  await writeAudit({
+    ownerEmail,
+    actorEmail: clinic.userEmail,
+    action: "file.upload",
+    resource: "file",
+    resourceId: row.id,
+    meta: {
+      patientId,
+      category,
+      label: row.label,
+      size: row.size,
+    },
+  });
+
   try {
     await awaitAllFlushesStrict();
   } catch (err) {
@@ -151,5 +166,13 @@ export async function DELETE(req: NextRequest) {
   }
   const removed = await deleteEmrFileRow(id, scope);
   if (!removed) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  await writeAudit({
+    ownerEmail: removed.doctorEmail,
+    actorEmail: clinic.userEmail,
+    action: "file.delete",
+    resource: "file",
+    resourceId: removed.id,
+    meta: { patientId: removed.patientId, label: removed.label },
+  });
   return NextResponse.json({ ok: true });
 }

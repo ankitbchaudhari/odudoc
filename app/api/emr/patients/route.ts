@@ -12,6 +12,7 @@ import {
   resolveClinic,
   canWrite,
   getQuotaState,
+  writeAudit,
   type Sex,
 } from "@/lib/emr-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
@@ -111,6 +112,18 @@ export async function POST(req: NextRequest) {
     allergies: body.allergies,
     chronicConditions: body.chronicConditions,
     notes: body.notes,
+  });
+
+  await writeAudit({
+    ownerEmail,
+    actorEmail: clinic.userEmail,
+    action: "patient.create",
+    resource: "patient",
+    resourceId: patient.id,
+    meta: {
+      name: `${patient.firstName} ${patient.lastName}`.trim(),
+      phone: patient.phone,
+    },
   });
 
   try {

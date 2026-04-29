@@ -155,6 +155,30 @@ function Signature({ data, color }: { data: PrescriptionData; color: string }) {
   );
 }
 
+/** Tests Advised block — used by every template that renders one or
+ *  more recommended investigations. Kept minimal so it slots into
+ *  every layout (table-row, two-column, full-width) without forcing
+ *  per-template styling. Templates that already had a custom tests
+ *  block (e.g. DoubleColumn) keep theirs. */
+function TestsBlock({ data, color }: { data: PrescriptionData; color: string }) {
+  if (!data.tests || data.tests.length === 0) return null;
+  return (
+    <div className="mt-4">
+      <p
+        className="mb-1.5 text-xs font-semibold uppercase tracking-wider"
+        style={{ color }}
+      >
+        Tests Advised
+      </p>
+      <ul className="list-disc space-y-0.5 pl-5 text-sm">
+        {data.tests.map((t, i) => (
+          <li key={i}>{t}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 // ============ 1. Classic Blue ============
 function ClassicBlue({ color, data }: Props) {
   return (
@@ -187,6 +211,7 @@ function ClassicBlue({ color, data }: Props) {
           {data.followUp && <p className="mt-2 text-sm"><span className="font-bold">Follow-up:</span> {data.followUp}</p>}
         </div>
       </div>
+      <TestsBlock data={data} color={color} />
       <Signature data={data} color={color} />
     </div>
   );
@@ -217,6 +242,7 @@ function ModernMinimal({ color, data }: Props) {
       </div>
       {data.advice && <p className="mb-2 text-sm"><span className="font-semibold">Advice: </span>{data.advice}</p>}
       {data.followUp && <p className="text-sm"><span className="font-semibold">Follow-up: </span>{data.followUp}</p>}
+      <TestsBlock data={data} color={color} />
       <Signature data={data} color={color} />
     </div>
   );
@@ -246,7 +272,8 @@ function TealGradient({ color, data }: Props) {
         {data.diagnosis && <p className="mb-4 rounded-lg bg-teal-50 p-3 text-sm"><b>Dx: </b>{data.diagnosis}</p>}
         <MedTable data={data} color={color} />
         {data.advice && <p className="mt-4 text-sm italic text-gray-600">{data.advice}</p>}
-        <Signature data={data} color={color} />
+        <TestsBlock data={data} color={color} />
+      <Signature data={data} color={color} />
       </div>
     </div>
   );
@@ -276,7 +303,8 @@ function CorporateNavy({ color, data }: Props) {
         {data.diagnosis && <p className="mb-4 text-sm"><b>Diagnosis: </b>{data.diagnosis}</p>}
         <MedTable data={data} color={color} />
         {data.advice && <p className="mt-4 text-sm"><b>Advice: </b>{data.advice}</p>}
-        <Signature data={data} color={color} />
+        <TestsBlock data={data} color={color} />
+      <Signature data={data} color={color} />
       </div>
     </div>
   );
@@ -301,6 +329,7 @@ function EmeraldFresh({ color, data }: Props) {
       {data.diagnosis && <p className="mb-3 text-sm"><b>Diagnosis: </b>{data.diagnosis}</p>}
       <MedList data={data} color={color} />
       {data.advice && <p className="mt-5 rounded-lg bg-green-50 p-3 text-sm italic">{data.advice}</p>}
+      <TestsBlock data={data} color={color} />
       <Signature data={data} color={color} />
     </div>
   );
@@ -324,6 +353,7 @@ function RoseElegance({ color, data }: Props) {
       {data.diagnosis && <p className="mb-4 text-sm"><b style={{ color }}>Diagnosis: </b>{data.diagnosis}</p>}
       <MedTable data={data} color={color} />
       {data.advice && <p className="mt-5 border-l-4 pl-4 text-sm italic" style={{ borderColor: color }}>{data.advice}</p>}
+      <TestsBlock data={data} color={color} />
       <Signature data={data} color={color} />
     </div>
   );
@@ -353,7 +383,8 @@ function PurpleRoyal({ color, data }: Props) {
         {data.diagnosis && <p className="mb-4 text-sm"><b>Dx: </b>{data.diagnosis}</p>}
         <MedTable data={data} color={color} />
         {data.advice && <p className="mt-4 text-sm italic text-gray-600">{data.advice}</p>}
-        <Signature data={data} color={color} />
+        <TestsBlock data={data} color={color} />
+      <Signature data={data} color={color} />
       </div>
     </div>
   );
@@ -375,6 +406,7 @@ function OrangeSunshine({ color, data }: Props) {
       {data.diagnosis && <p className="mb-3 text-sm"><b>Diagnosis: </b>{data.diagnosis}</p>}
       <MedList data={data} color={color} />
       {data.advice && <p className="mt-4 text-sm"><b>Advice: </b>{data.advice}</p>}
+      <TestsBlock data={data} color={color} />
       <Signature data={data} color={color} />
     </div>
   );
@@ -414,6 +446,7 @@ function DarkElegant({ color, data }: Props) {
           ))}
         </tbody>
       </table>
+      <TestsBlock data={data} color={color} />
       {data.advice && <p className="mt-4 text-sm italic text-slate-300">{data.advice}</p>}
       <div className="mt-8 text-right text-sm">
         <p className="text-2xl italic" style={{ color: "#60A5FA" }}>{data.signature || data.doctorName}</p>
@@ -438,7 +471,8 @@ function WatermarkRx({ color, data }: Props) {
         {data.diagnosis && <p className="mb-4 text-sm"><b>Diagnosis: </b>{data.diagnosis}</p>}
         <MedTable data={data} color={color} />
         {data.advice && <p className="mt-4 text-sm"><b>Advice: </b>{data.advice}</p>}
-        <Signature data={data} color={color} />
+        <TestsBlock data={data} color={color} />
+      <Signature data={data} color={color} />
       </div>
     </div>
   );
@@ -465,14 +499,7 @@ function DoubleColumn({ color, data }: Props) {
         <main className="col-span-2">
           <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color }}>℞ Medications</p>
           <MedList data={data} color={color} />
-          {data.tests && data.tests.length > 0 && (
-            <div className="mt-5">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color }}>Tests Advised</p>
-              <ul className="list-disc space-y-1 pl-5 text-sm">
-                {data.tests.map((t, i) => <li key={i}>{t}</li>)}
-              </ul>
-            </div>
-          )}
+          <TestsBlock data={data} color={color} />
           {data.advice && <p className="mt-4 text-sm"><b>Advice: </b>{data.advice}</p>}
           <Signature data={data} color={color} />
         </main>
@@ -499,7 +526,8 @@ function BorderedFormal({ color, data }: Props) {
           {data.diagnosis && <p className="mb-3 text-sm"><b>Diagnosis: </b>{data.diagnosis}</p>}
           <MedTable data={data} color={color} />
           {data.advice && <p className="mt-4 text-sm italic">{data.advice}</p>}
-          <Signature data={data} color={color} />
+          <TestsBlock data={data} color={color} />
+      <Signature data={data} color={color} />
         </div>
       </div>
     </div>
@@ -527,7 +555,8 @@ function PediatricPlayful({ color, data }: Props) {
         {data.diagnosis && <p className="mb-3 text-sm"><b>Diagnosis: </b>{data.diagnosis}</p>}
         <MedList data={data} color={color} />
         {data.advice && <p className="mt-4 rounded-2xl p-3 text-sm italic" style={{ background: "#FFEDD5" }}>💡 {data.advice}</p>}
-        <Signature data={data} color={color} />
+        <TestsBlock data={data} color={color} />
+      <Signature data={data} color={color} />
       </div>
     </div>
   );
@@ -552,6 +581,7 @@ function DentalClean({ color, data }: Props) {
       {data.diagnosis && <p className="mb-3 text-sm"><b>Diagnosis: </b>{data.diagnosis}</p>}
       <MedTable data={data} color={color} />
       {data.advice && <p className="mt-4 text-sm"><b>Aftercare: </b>{data.advice}</p>}
+      <TestsBlock data={data} color={color} />
       <Signature data={data} color={color} />
     </div>
   );
@@ -589,6 +619,7 @@ function TelehealthDigital({ color, data }: Props) {
         </div>
         {data.diagnosis && <p className="mb-3 rounded-lg bg-blue-50 p-3 text-sm"><b>Dx: </b>{data.diagnosis}</p>}
         <MedTable data={data} color={color} />
+        <TestsBlock data={data} color={color} />
         {data.advice && <p className="mt-4 text-sm"><b>Advice: </b>{data.advice}</p>}
         <div className="mt-6 flex items-end justify-between">
           <div className="text-xs text-gray-500">
@@ -631,7 +662,8 @@ function SunsetGradient({ color, data }: Props) {
         {data.diagnosis && <p className="my-4 rounded-lg border-l-4 p-3 text-sm" style={{ borderColor: color, background: "#FFF7ED" }}><b>Dx: </b>{data.diagnosis}</p>}
         <MedTable data={data} color={color} />
         {data.advice && <p className="mt-4 text-sm text-gray-700"><b>Advice: </b>{data.advice}</p>}
-        <Signature data={data} color={color} />
+        <TestsBlock data={data} color={color} />
+      <Signature data={data} color={color} />
       </div>
     </div>
   );
@@ -666,7 +698,8 @@ function MidnightNavy({ color, data }: Props) {
         <MedTable data={data} color={color} />
         {data.advice && <p className="mt-4 text-sm"><b style={{ color }}>Advice:</b> {data.advice}</p>}
         {data.followUp && <p className="mt-2 text-sm"><b style={{ color }}>Follow-up:</b> {data.followUp}</p>}
-        <Signature data={data} color={color} />
+        <TestsBlock data={data} color={color} />
+      <Signature data={data} color={color} />
       </div>
     </div>
   );
@@ -696,6 +729,7 @@ function SoftPastel({ color, data }: Props) {
       {data.diagnosis && <p className="mb-4 rounded-xl bg-purple-50 p-3 text-sm"><b style={{ color }}>Diagnosis:</b> {data.diagnosis}</p>}
       <MedTable data={data} color={color} />
       {data.advice && <p className="mt-4 text-sm text-gray-700">{data.advice}</p>}
+      <TestsBlock data={data} color={color} />
       <Signature data={data} color={color} />
     </div>
   );
@@ -735,6 +769,7 @@ function ClinicalGrid({ color, data }: Props) {
       </div>
       {data.advice && <p className="mt-3 text-xs"><b>ADVICE:</b> {data.advice}</p>}
       {data.followUp && <p className="mt-1 text-xs"><b>FOLLOW-UP:</b> {data.followUp}</p>}
+      <TestsBlock data={data} color={color} />
       <Signature data={data} color={color} />
     </div>
   );
@@ -773,6 +808,7 @@ function BoldContrast({ color, data }: Props) {
         <MedTable data={data} color={color} />
       </div>
       {data.advice && <p className="mt-4 text-sm" style={{ fontFamily: "Arial, sans-serif" }}>{data.advice}</p>}
+      <TestsBlock data={data} color={color} />
       <Signature data={data} color={color} />
     </div>
   );
@@ -805,7 +841,8 @@ function EcoGreen({ color, data }: Props) {
         {data.diagnosis && <p className="mb-4 text-sm"><b style={{ color }}>Diagnosis:</b> {data.diagnosis}</p>}
         <MedTable data={data} color={color} />
         {data.advice && <p className="mt-4 text-sm italic">🍃 {data.advice}</p>}
-        <Signature data={data} color={color} />
+        <TestsBlock data={data} color={color} />
+      <Signature data={data} color={color} />
       </div>
     </div>
   );
@@ -838,7 +875,8 @@ function CrimsonRed({ color, data }: Props) {
         {data.diagnosis && <p className="mb-4 text-sm"><b style={{ color }}>Diagnosis:</b> {data.diagnosis}</p>}
         <MedTable data={data} color={color} />
         {data.advice && <p className="mt-4 text-sm">{data.advice}</p>}
-        <Signature data={data} color={color} />
+        <TestsBlock data={data} color={color} />
+      <Signature data={data} color={color} />
       </div>
     </div>
   );
@@ -870,6 +908,7 @@ function SkyBreeze({ color, data }: Props) {
       {data.diagnosis && <p className="mb-4 rounded-xl border-l-4 bg-sky-50 p-3 text-sm" style={{ borderColor: color }}><b>Diagnosis:</b> {data.diagnosis}</p>}
       <MedTable data={data} color={color} />
       {data.advice && <p className="mt-4 text-sm text-gray-700">{data.advice}</p>}
+      <TestsBlock data={data} color={color} />
       <Signature data={data} color={color} />
     </div>
   );

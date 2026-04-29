@@ -7,9 +7,10 @@ import {
   deleteDoctor,
   setDoctorVerified,
   setDoctorLicense,
+  rejectDoctorVerification,
   type DoctorStatus,
 } from "@/lib/doctors-store";
-import { sendDoctorRemovedEmail } from "@/lib/email";
+import { sendDoctorRemovedEmail, sendEmail } from "@/lib/email";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -83,6 +84,52 @@ export async function PATCH(
   if (typeof body.verified === "boolean") {
     const adminEmail = (session?.user as { email?: string } | undefined)?.email || "admin";
     doctor = setDoctorVerified(id, body.verified, adminEmail) || doctor;
+    // Notify the doctor that their account is now active.
+    if (body.verified && doctor?.email) {
+      try {
+        await sendEmail({
+          from: "notifications",
+          to: doctor.email,
+          subject: "Your OduDoc account is verified",
+          html: `<p>Hi ${doctor.name},</p><p>Your verification documents have been approved. Your dashboard is now active — sign in at <a href="https://www.odudoc.com/dashboard/doctor">odudoc.com/dashboard/doctor</a> to start consulting.</p><p>Thanks,<br/>OduDoc</p>`,
+        });
+      } catch (mailErr) {
+        log.error("admin_doctor_verify.email_failed", mailErr);
+      }
+    }
+  }
+
+  // Request re-verification with a reason. Clears the submitted-at
+  // stamp + sets a rejection reason so the doctor sees the upload
+  // form again on their gate, with the admin's note explaining
+  // what wasn't acceptable.
+  if (body.rejectVerification && typeof body.rejectVerification === "object") {
+    const reason =
+      (body.rejectVerification as { reason?: unknown }).reason;
+    if (typeof reason !== "string" || reason.trim().length < 3) {
+      return NextResponse.json(
+        { error: "rejectVerification.reason is required (min 3 chars)" },
+        { status: 400 }
+      );
+    }
+    doctor = rejectDoctorVerification(id, reason) || doctor;
+    // Email the doctor — they're not on the dashboard right now, so
+    // they need a push to know there's something to fix.
+    if (doctor?.email) {
+      try {
+        await sendEmail({
+          from: "notifications",
+          to: doctor.email,
+          subject: "OduDoc verification needs another look",
+          html: `<p>Hi ${doctor.name},</p><p>Our team reviewed your verification documents and asked for an updated submission.</p><p><b>Reason:</b> ${reason
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")}</p><p>Please sign in at <a href="https://www.odudoc.com/dashboard/doctor">odudoc.com/dashboard/doctor</a> and resubmit. Your dashboard activates as soon as we approve the new documents.</p><p>Thanks,<br/>OduDoc</p>`,
+        });
+      } catch (mailErr) {
+        log.error("admin_doctor_reject.email_failed", mailErr);
+      }
+    }
   }
 
   // License fields go through the dedicated helper so country gets

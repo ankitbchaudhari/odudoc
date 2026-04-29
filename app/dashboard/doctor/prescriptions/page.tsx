@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
@@ -58,42 +58,69 @@ const STYLE_LABELS: Record<string, string> = {
 function WritePrescriptionModal({
   templateId,
   onClose,
+  initialData,
 }: {
   templateId: string;
   onClose: () => void;
+  /** When the doctor reaches this modal via AI assistant or voice
+   *  prescription, those flows hand off a pre-filled draft via
+   *  sessionStorage. We merge it over the empty defaults so the
+   *  doctor can review + tweak instead of re-typing everything. */
+  initialData?: Partial<PrescriptionData>;
 }) {
   const { data: session } = useSession();
   const printRef = useRef<HTMLDivElement>(null);
   const template = getTemplateById(templateId) || PRESCRIPTION_TEMPLATES[0];
 
-  const [form, setForm] = useState<PrescriptionData>({
-    doctorName: session?.user?.name || "Dr. ",
-    doctorQualification: "",
-    doctorRegistration: "",
-    doctorSpecialty: "",
-    clinicName: "OduDoc E Medical Center",
-    clinicAddress: "8 The Green, Suite A, Dover, DE 19901, United States",
-    clinicPhone: "+1 (302) 899-2625",
-    clinicEmail: session?.user?.email || "support@odudoc.com",
-    patientName: "",
-    patientAge: "",
-    patientGender: "Male",
-    patientId: "",
-    patientPhone: "",
-    date: new Date().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    }),
-    diagnosis: "",
-    symptoms: "",
-    medications: [
-      { name: "", dose: "", frequency: "", duration: "", instructions: "" },
-    ],
-    tests: [],
-    advice: "",
-    followUp: "",
-    signature: session?.user?.name || "",
+  const [form, setForm] = useState<PrescriptionData>(() => {
+    const base: PrescriptionData = {
+      doctorName: session?.user?.name || "Dr. ",
+      doctorQualification: "",
+      doctorRegistration: "",
+      doctorSpecialty: "",
+      clinicName: "OduDoc E Medical Center",
+      clinicAddress: "8 The Green, Suite A, Dover, DE 19901, United States",
+      clinicPhone: "+1 (302) 899-2625",
+      clinicEmail: session?.user?.email || "support@odudoc.com",
+      patientName: "",
+      patientAge: "",
+      patientGender: "Male",
+      patientId: "",
+      patientPhone: "",
+      date: new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+      diagnosis: "",
+      symptoms: "",
+      medications: [
+        { name: "", dose: "", frequency: "", duration: "", instructions: "" },
+      ],
+      tests: [],
+      advice: "",
+      followUp: "",
+      signature: session?.user?.name || "",
+    };
+    if (!initialData) return base;
+    // Only overlay non-empty values so the AI/voice draft can't blank
+    // out doctor identity defaults.
+    const merged = { ...base };
+    (Object.keys(initialData) as Array<keyof PrescriptionData>).forEach((k) => {
+      const v = initialData[k];
+      if (v === undefined || v === null) return;
+      if (Array.isArray(v) && v.length === 0) return;
+      if (typeof v === "string" && v.trim() === "") return;
+      // @ts-expect-error -- generic key/value assignment
+      merged[k] = v;
+    });
+    // Medications: only override if the draft actually has at least one
+    // named drug; otherwise keep the empty starter row.
+    if (Array.isArray(initialData.medications)) {
+      const real = initialData.medications.filter((m) => m && m.name && m.name.trim());
+      if (real.length > 0) merged.medications = real;
+    }
+    return merged;
   });
 
   const [testInput, setTestInput] = useState("");
@@ -786,6 +813,31 @@ export default function DoctorPrescriptionsPage() {
   const [filterStyle, setFilterStyle] = useState<string>("all");
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [writing, setWriting] = useState(false);
+  const [draft, setDraft] = useState<Partial<PrescriptionData> | null>(null);
+  const [draftSource, setDraftSource] = useState<"ai" | "voice" | null>(null);
+
+  // On mount, pick up any draft handed off from /ai-prescription or
+  // /voice-prescription. Both flows write to sessionStorage and
+  // navigate here with a marker query param. Auto-open the editor so
+  // the doctor's next click is "Finish", not "now where do I go?".
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const fromAi = params.get("ai") === "1";
+    const fromVoice = params.get("voice") === "1";
+    if (!fromAi && !fromVoice) return;
+    const key = fromAi ? "ai-rx-draft" : "voice-rx-draft";
+    try {
+      const raw = sessionStorage.getItem(key);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Partial<PrescriptionData>;
+      setDraft(parsed);
+      setDraftSource(fromAi ? "ai" : "voice");
+      sessionStorage.removeItem(key); // single-use
+    } catch {
+      // ignore — corrupted draft just means we render the empty form
+    }
+  }, []);
 
   const filtered =
     filterStyle === "all"
@@ -834,6 +886,38 @@ export default function DoctorPrescriptionsPage() {
           </div>
         </div>
 
+        {/* Draft handoff banner — only shows when the doctor arrived
+            here via AI assistant or voice prescription. Acts as a
+            visual confirmation that their work carried over. */}
+        {draft && draftSource && (
+          <div className="mb-6 overflow-hidden rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-violet-50 to-fuchsia-50 p-4 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-md">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12h6M9 16h6" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                    {draftSource === "ai" ? "AI assistant draft ready" : "Voice dictation ready"}
+                  </p>
+                  <p className="mt-0.5 text-sm text-gray-700">
+                    Pick a template below, then click <b>Finish &amp; Open Editor</b> to review and send.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setWriting(true)}
+                className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-xl hover:shadow-indigo-500/40"
+              >
+                Finish &amp; Open Editor
+                <span>→</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Active template banner */}
         {(() => {
           const active = PRESCRIPTION_TEMPLATES.find((t) => t.id === selectedId) || PRESCRIPTION_TEMPLATES[0];
@@ -856,9 +940,22 @@ export default function DoctorPrescriptionsPage() {
                   <p className="text-base font-bold text-gray-900">{active.name}</p>
                 </div>
               </div>
-              <span className="rounded-full bg-gradient-to-r from-emerald-100 to-teal-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                {PRESCRIPTION_TEMPLATES.length} designs available
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="hidden rounded-full bg-gradient-to-r from-emerald-100 to-teal-100 px-3 py-1 text-xs font-semibold text-emerald-700 sm:inline-block">
+                  {PRESCRIPTION_TEMPLATES.length} designs available
+                </span>
+                <button
+                  onClick={() => setWriting(true)}
+                  className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
+                  style={{ background: active.accentColor }}
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Finish &amp; Open Editor
+                  <span>→</span>
+                </button>
+              </div>
             </div>
           );
         })()}
@@ -986,7 +1083,14 @@ export default function DoctorPrescriptionsPage() {
       {writing && (
         <WritePrescriptionModal
           templateId={selectedId}
-          onClose={() => setWriting(false)}
+          onClose={() => {
+            setWriting(false);
+            // Drop the draft once the modal closes so re-opening
+            // /prescriptions later starts clean.
+            setDraft(null);
+            setDraftSource(null);
+          }}
+          initialData={draft || undefined}
         />
       )}
     </div>

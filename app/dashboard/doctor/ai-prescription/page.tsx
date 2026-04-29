@@ -218,6 +218,67 @@ export default function AiPrescriptionPage() {
     inflightPrefetch.current.clear();
   }
 
+  // Hand the AI-generated content over to /prescriptions in a shape
+  // the WritePrescriptionModal can merge over its empty defaults. We
+  // serialise via sessionStorage instead of URL params because the
+  // payload (patient + meds + advice) is far too big for a query
+  // string and would also leak into server logs.
+  function finishToPrescriptions() {
+    if (!treatment) return;
+    const sex = (patient.sex || "").trim().toLowerCase();
+    const gender =
+      sex === "male" || sex === "m"
+        ? "Male"
+        : sex === "female" || sex === "f"
+        ? "Female"
+        : sex
+        ? sex.charAt(0).toUpperCase() + sex.slice(1)
+        : "";
+
+    // Symptoms in the form expect a single string; AI output already is.
+    // Advice combines bullet list + red-flag warnings into one block so
+    // the doctor sees both without needing two fields.
+    const adviceBlock = [
+      ...(treatment.advice || []),
+      ...((treatment.redFlags || []).length > 0
+        ? [
+            "",
+            "Return urgently if you experience: " +
+              (treatment.redFlags || []).join("; ") +
+              ".",
+          ]
+        : []),
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const draft = {
+      patientName: patient.name || "",
+      patientAge: patient.age || "",
+      patientGender: gender || undefined,
+      symptoms: patient.symptoms || "",
+      diagnosis: selectedDx || "",
+      medications: (treatment.medications || []).map((m) => ({
+        name: m.name || "",
+        dose: m.dose || "",
+        frequency: m.frequency || "",
+        duration: m.duration || "",
+        instructions: m.instructions || "",
+      })),
+      tests: (treatment.investigations || [])
+        .map((iv) => iv.name)
+        .filter(Boolean),
+      advice: adviceBlock,
+      followUp: treatment.followUp || "",
+    };
+    try {
+      sessionStorage.setItem("ai-rx-draft", JSON.stringify(draft));
+    } catch {
+      // sessionStorage blocked — modal will just open empty.
+    }
+    window.location.href = "/dashboard/doctor/prescriptions?ai=1";
+  }
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-50 py-10">
       {/* Decorative gradient background */}
@@ -960,15 +1021,15 @@ export default function AiPrescriptionPage() {
                   >
                     Start over
                   </button>
-                  <Link
-                    href="/dashboard/doctor/prescriptions"
+                  <button
+                    onClick={finishToPrescriptions}
                     className="group inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-xl hover:shadow-indigo-500/40"
                   >
-                    Write prescription
+                    Finish &amp; write prescription
                     <span className="transition group-hover:translate-x-0.5">
                       →
                     </span>
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>

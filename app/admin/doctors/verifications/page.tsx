@@ -362,13 +362,18 @@ function DoctorCard({
           </p>
         </div>
         <div className="flex flex-wrap justify-end gap-2">
-          {(isPending || isRejected || (!d.verified && submitted)) && (
+          {!d.verified && (
             <button
               onClick={onApprove}
               disabled={busy}
               className="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2 text-xs font-semibold text-white shadow disabled:opacity-50"
+              title={
+                submitted
+                  ? "Approve this submission"
+                  : "Manually verify without a submission (owner / admin override)"
+              }
             >
-              {busy ? "…" : "✓ Approve"}
+              {busy ? "…" : submitted ? "✓ Approve" : "✓ Manual verify"}
             </button>
           )}
           {(isPending || d.verified) && (

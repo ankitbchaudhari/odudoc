@@ -254,10 +254,31 @@ export function getConsultationByRoomId(roomId: string): Consultation | null {
 export function markPaid(id: string, paymentIntentId: string): Consultation | null {
   const c = consultations.find((x) => x.id === id);
   if (!c) return null;
+  const wasAlreadyPaid = c.paymentStatus === "paid";
   c.paymentStatus = "paid";
   c.paymentIntentId = paymentIntentId || c.paymentIntentId;
   c.status = "awaiting_doctor";
   touch(c);
+  // First-time paid → fire the referral-program qualification for
+  // this patient. Fire-and-forget: the referral side-effect must
+  // never block / fail the payment confirmation. Imported lazily
+  // to avoid a circular dependency between consultations-store
+  // and referral-program-store (which depends on users-store).
+  if (!wasAlreadyPaid && c.patientEmail) {
+    import("./referral-program-store")
+      .then((m) =>
+        m.qualifyReferralsForReferee({
+          refereeEmail: c.patientEmail,
+          consultationId: c.id,
+        })
+      )
+      .catch((err) => {
+        // Swallowed — referral qualification is non-critical.
+        // Logged via console so we still see it in the platform's
+        // captureConsoleIntegrations sink.
+        console.error("[consultations.markPaid] referral qualification failed", err);
+      });
+  }
   return c;
 }
 

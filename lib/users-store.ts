@@ -63,6 +63,20 @@ export interface User {
   // onboarding) may hard-gate later.
   medicalId?: string;
   identity?: UserIdentity;
+
+  // ------------------------------------------------------------------
+  // Referral program
+  //
+  // Every user gets a unique 8-char alphanumeric code on first read
+  // (lazy-migrated for old rows). Sharing a link
+  // odudoc.com/?ref=ABCD1234 sends signups through the referral
+  // attribution flow — see lib/referrals-store.ts. Credit is in USD
+  // cents and applied to the next consultation booking.
+  referralCode?: string;
+  /** Referral credit balance in USD cents. Earned when referrals
+   *  qualify (referee's first paid consultation). Spent at booking
+   *  time as a discount on the consultation fee. */
+  referralCreditCents?: number;
 }
 
 export interface UserIdentity {
@@ -343,6 +357,7 @@ export function createUser(
 ): User {
   const hashedPassword = bcrypt.hashSync(data.password, 10);
   const taken = new Set(users.map((u) => u.medicalId).filter(Boolean) as string[]);
+  const codes = new Set(users.map((u) => u.referralCode).filter(Boolean) as string[]);
   const newUser: User = {
     id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     name: data.name,
@@ -357,10 +372,69 @@ export function createUser(
     warnings: [],
     medicalId: generateUniqueMedicalId((c) => taken.has(c)),
     identity: { status: "unverified" },
+    referralCode: generateReferralCode((c) => codes.has(c)),
+    referralCreditCents: 0,
   };
   users.push(newUser);
   flush();
   return newUser;
+}
+
+/** Generate a short, friendly referral code. 8 alphanumeric chars
+ *  (no I/O/0/1 — too easy to mistype). Caller passes in a
+ *  uniqueness predicate so we never collide with an existing code. */
+export function generateReferralCode(taken: (c: string) => boolean): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  for (let attempt = 0; attempt < 50; attempt++) {
+    let code = "";
+    for (let i = 0; i < 8; i++) {
+      code += alphabet[Math.floor(Math.random() * alphabet.length)];
+    }
+    if (!taken(code)) return code;
+  }
+  // Pathological fallback — append timestamp suffix to escape collisions.
+  return `R${Date.now().toString(36).toUpperCase().slice(-7)}`;
+}
+
+/** Lazy-migrate: ensure a user has a referralCode. Pre-existing
+ *  rows from before the referral feature shipped don't have one,
+ *  so we mint one on first read and persist immediately. */
+export function ensureReferralCode(user: User): string {
+  if (user.referralCode) return user.referralCode;
+  const codes = new Set(
+    users.map((u) => u.referralCode).filter(Boolean) as string[]
+  );
+  user.referralCode = generateReferralCode((c) => codes.has(c));
+  if (user.referralCreditCents === undefined) user.referralCreditCents = 0;
+  flush();
+  return user.referralCode;
+}
+
+export function findUserByReferralCode(code: string): User | undefined {
+  if (!code) return undefined;
+  const upper = code.trim().toUpperCase();
+  return users.find((u) => u.referralCode === upper);
+}
+
+/** Add credit to a user's referral wallet. Returns the new balance. */
+export function addReferralCredit(userId: string, cents: number): number {
+  const u = users.find((x) => x.id === userId);
+  if (!u) return 0;
+  u.referralCreditCents = (u.referralCreditCents || 0) + Math.max(0, Math.floor(cents));
+  flush();
+  return u.referralCreditCents;
+}
+
+/** Spend up to `cents` from a user's referral wallet. Returns the
+ *  amount actually deducted (clamped to available balance). */
+export function spendReferralCredit(userId: string, cents: number): number {
+  const u = users.find((x) => x.id === userId);
+  if (!u) return 0;
+  const available = u.referralCreditCents || 0;
+  const spend = Math.max(0, Math.min(available, Math.floor(cents)));
+  u.referralCreditCents = available - spend;
+  flush();
+  return spend;
 }
 
 // ---------- Identity verification helpers ----------

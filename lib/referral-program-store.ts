@@ -1,0 +1,249 @@
+// Referral program store — sign-up referrals with a $10 + $10
+// reward when the referee completes their first paid consultation.
+//
+// NOTE: this is a different feature from lib/referrals-store.ts,
+// which is a client-side store for doctor-to-doctor patient
+// referrals (one doctor sending a patient to a colleague). The
+// "referral program" here is a marketing growth loop — anyone with
+// an OduDoc account gets a code, sharing it earns both sides
+// credit when the referee converts.
+//
+// Reward economics:
+//   Referrer side  $10 credit on referee's first paid consultation
+//   Referee side   $10 credit on the same event
+//   Cap            One row per (referrer, referee) email pair.
+//                  Self-referrals rejected.
+//
+// Lifecycle:
+//   1. New user signs up. Client passes refCode (read from ?ref=…
+//      cookie or query param) to /api/referral-program/apply.
+//   2. We validate the code, look up referrer, check uniqueness,
+//      insert with status="pending".
+//   3. Referee books + pays for a consultation. Consultation flow
+//      calls qualifyReferralsForReferee() which transitions every
+//      pending row keyed by this email to "qualified" and posts
+//      the $10 + $10 credits.
+//   4. Both sides see the credit on /dashboard/referrals and it
+//      auto-applies on their next consultation booking.
+
+import { bindPersistentArray } from "./persistent-array";
+import {
+  addReferralCredit,
+  findUserByEmail,
+  findUserByReferralCode,
+} from "./users-store";
+
+export type ReferralProgramStatus = "pending" | "qualified" | "void";
+
+export type ReferralProgramKind =
+  | "patient_to_patient"
+  | "patient_to_doctor"
+  | "doctor_to_patient"
+  | "doctor_to_doctor"
+  | "other";
+
+export interface ReferralProgramRow {
+  id: string;
+  referrerEmail: string;
+  referrerUserId: string;
+  refereeEmail: string;
+  /** Set when the referee actually signs up — same email may sign
+   *  up later than the referral was claimed. */
+  refereeUserId?: string;
+  kind: ReferralProgramKind;
+  status: ReferralProgramStatus;
+  /** Cents of credit promised to each side at qualification time.
+   *  We snapshot the amount on the row so changing the program
+   *  later doesn't retroactively bump pending rows. */
+  rewardEachCents: number;
+  currency: string; // "USD"
+  /** Free-text source — "signup_form", "share_link", etc. */
+  source?: string;
+  createdAt: string;
+  qualifiedAt?: string;
+  qualifyingConsultationId?: string;
+}
+
+export const REFERRAL_REWARD_CENTS = 1000; // $10
+const DEFAULT_CURRENCY = "USD";
+
+const program: ReferralProgramRow[] = [];
+const {
+  hydrate: hydrateProgram,
+  reload: reloadProgramInternal,
+} = bindPersistentArray<ReferralProgramRow>(
+  "referral-program",
+  program,
+  () => []
+);
+
+export async function reloadReferralProgram(): Promise<void> {
+  await reloadProgramInternal();
+}
+
+function nowIso(): string {
+  return new Date().toISOString();
+}
+function uid(prefix: string): string {
+  return `${prefix}-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36).slice(-4)}`;
+}
+
+function inferKind(
+  referrerRole: string,
+  refereeRole: string
+): ReferralProgramKind {
+  const r = referrerRole.toLowerCase();
+  const e = refereeRole.toLowerCase();
+  if (r === "patient" && e === "patient") return "patient_to_patient";
+  if (r === "patient" && e === "doctor") return "patient_to_doctor";
+  if (r === "doctor" && e === "patient") return "doctor_to_patient";
+  if (r === "doctor" && e === "doctor") return "doctor_to_doctor";
+  return "other";
+}
+
+/* ============================================================ */
+/*  Apply a code (claim the referral)                           */
+/* ============================================================ */
+
+export interface ApplyReferralResult {
+  ok: boolean;
+  reason?:
+    | "invalid_code"
+    | "self_referral"
+    | "already_referred";
+  referral?: ReferralProgramRow;
+}
+
+export async function applyReferralCode(input: {
+  refereeEmail: string;
+  code: string;
+  source?: string;
+}): Promise<ApplyReferralResult> {
+  await hydrateProgram();
+  const refereeEmail = input.refereeEmail.trim().toLowerCase();
+  const referrer = findUserByReferralCode(input.code);
+  if (!referrer) return { ok: false, reason: "invalid_code" };
+  if (referrer.email.toLowerCase() === refereeEmail) {
+    return { ok: false, reason: "self_referral" };
+  }
+  const existing = program.find(
+    (r) =>
+      r.referrerEmail.toLowerCase() === referrer.email.toLowerCase() &&
+      r.refereeEmail.toLowerCase() === refereeEmail
+  );
+  if (existing) {
+    return { ok: false, reason: "already_referred", referral: existing };
+  }
+  // Reject if the referee already has any other pending or qualified
+  // referral pointing at them — first attribution wins, can't farm
+  // the program by re-claiming codes.
+  const otherClaim = program.find(
+    (r) =>
+      r.refereeEmail.toLowerCase() === refereeEmail &&
+      (r.status === "pending" || r.status === "qualified")
+  );
+  if (otherClaim) {
+    return { ok: false, reason: "already_referred", referral: otherClaim };
+  }
+  const referee = findUserByEmail(refereeEmail);
+  const kind = inferKind(referrer.role, referee?.role || "patient");
+  const row: ReferralProgramRow = {
+    id: uid("rp"),
+    referrerEmail: referrer.email.toLowerCase(),
+    referrerUserId: referrer.id,
+    refereeEmail,
+    refereeUserId: referee?.id,
+    kind,
+    status: "pending",
+    rewardEachCents: REFERRAL_REWARD_CENTS,
+    currency: DEFAULT_CURRENCY,
+    source: input.source,
+    createdAt: nowIso(),
+  };
+  program.push(row);
+  return { ok: true, referral: row };
+}
+
+/* ============================================================ */
+/*  Qualify on first paid consultation                          */
+/* ============================================================ */
+
+/** Mark every pending program row whose referee email matches
+ *  `refereeEmail` as qualified, post the $10 credits, and stamp
+ *  the consultation that triggered it. Idempotent — once a row is
+ *  qualified, calling again is a no-op for that row.
+ *
+ *  Caller is the consultations flow when status flips to
+ *  "completed" (or "paid"). Returns the rows that transitioned. */
+export async function qualifyReferralsForReferee(input: {
+  refereeEmail: string;
+  consultationId?: string;
+}): Promise<ReferralProgramRow[]> {
+  await hydrateProgram();
+  const email = input.refereeEmail.trim().toLowerCase();
+  const refereeUser = findUserByEmail(email);
+  const promoted: ReferralProgramRow[] = [];
+  for (let i = 0; i < program.length; i++) {
+    const r = program[i];
+    if (r.refereeEmail !== email) continue;
+    if (r.status !== "pending") continue;
+    const next: ReferralProgramRow = {
+      ...r,
+      status: "qualified",
+      qualifiedAt: nowIso(),
+      qualifyingConsultationId: input.consultationId,
+      refereeUserId: refereeUser?.id || r.refereeUserId,
+    };
+    program.splice(i, 1, next);
+    addReferralCredit(r.referrerUserId, r.rewardEachCents);
+    if (refereeUser) addReferralCredit(refereeUser.id, r.rewardEachCents);
+    promoted.push(next);
+  }
+  return promoted;
+}
+
+/* ============================================================ */
+/*  Reads                                                       */
+/* ============================================================ */
+
+export interface ReferralProgramStats {
+  pending: number;
+  qualified: number;
+  totalEarnedCents: number;
+  recent: ReferralProgramRow[];
+}
+
+export async function getReferralStatsForUser(
+  userId: string,
+  email: string
+): Promise<ReferralProgramStats> {
+  await hydrateProgram();
+  const mine = program
+    .filter(
+      (r) =>
+        r.referrerUserId === userId ||
+        r.referrerEmail.toLowerCase() === email.toLowerCase()
+    )
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const pending = mine.filter((r) => r.status === "pending").length;
+  const qualified = mine.filter((r) => r.status === "qualified").length;
+  const totalEarnedCents = mine
+    .filter((r) => r.status === "qualified")
+    .reduce((sum, r) => sum + r.rewardEachCents, 0);
+  return {
+    pending,
+    qualified,
+    totalEarnedCents,
+    recent: mine.slice(0, 20),
+  };
+}
+
+export async function hasPendingReferralAsReferee(
+  email: string
+): Promise<boolean> {
+  await hydrateProgram();
+  const e = email.toLowerCase();
+  return program.some(
+    (r) => r.refereeEmail === e && r.status === "pending"
+  );
+}

@@ -12,6 +12,7 @@ import GoogleTranslate from "@/components/GoogleTranslate";
 import ExperimentBootstrap from "@/components/ExperimentBootstrap";
 import Analytics from "@/components/Analytics";
 import LoadingBar from "@/components/LoadingBar";
+import ReferralAttribution from "@/components/ReferralAttribution";
 import { OrganizationLd, WebsiteLd } from "@/components/StructuredData";
 
 // AIChatbot is a 500+ line client component that ships on every page
@@ -148,6 +149,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CartProvider>
             <LanguageProvider>
               <LoadingBar />
+              <ReferralAttribution />
               <ConditionalLayout>{children}</ConditionalLayout>
               <CookieConsent />
               <AIChatbot />

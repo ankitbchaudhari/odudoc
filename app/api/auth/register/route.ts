@@ -13,6 +13,11 @@ const RegisterSchema = z.object({
   email: emailSchema,
   phone: phoneSchema,
   password: z.string().min(6).max(200),
+  /** Optional referral code carried over from a `?ref=…` URL or a
+   *  cookie set by the marketing site. We attribute the referral
+   *  immediately on signup so the referee's first-paid-consultation
+   *  can later qualify both sides for the $10 + $10 credit. */
+  referralCode: z.string().trim().min(4).max(16).optional(),
 });
 
 export const runtime = "nodejs";
@@ -36,7 +41,7 @@ export async function POST(request: NextRequest) {
   try {
     const parsed = await parseJson(request, RegisterSchema);
     if (parsed instanceof NextResponse) return parsed;
-    const { name, email, phone, password } = parsed;
+    const { name, email, phone, password, referralCode } = parsed;
 
     // Public signup is for patients only. Doctors are onboarded by admin
     // after applying through /for-doctors/register.
@@ -54,6 +59,24 @@ export async function POST(request: NextRequest) {
     // Create the user in "unverified" state — they must click the link in
     // the verification email before they can sign in.
     const user = createUser({ name, email, phone, password, role });
+
+    // Apply referral attribution if a code came through. Best-effort:
+    // bad / self / duplicate codes are silently skipped (no point
+    // failing the signup over a referral mishap). The pending row
+    // is what links this account to the referrer for the
+    // qualify-on-first-consultation flow.
+    if (referralCode) {
+      try {
+        const { applyReferralCode } = await import("@/lib/referral-program-store");
+        await applyReferralCode({
+          refereeEmail: user.email,
+          code: referralCode,
+          source: "signup",
+        });
+      } catch (err) {
+        log.error("register.referral_apply_failed", err, { code: referralCode });
+      }
+    }
 
     // Drain all pending Postgres writes BEFORE we send the verification
     // email or return. If the Lambda freezes on response-flush, the

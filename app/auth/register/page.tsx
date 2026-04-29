@@ -93,6 +93,16 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
+      // If a referral code is in the URL or saved in localStorage from
+      // an earlier visit, carry it through so the referrer gets credit
+      // when this user completes their first paid consultation.
+      let referralCode: string | undefined;
+      if (typeof window !== "undefined") {
+        const fromUrl = new URLSearchParams(window.location.search).get("ref");
+        const fromStorage = window.localStorage.getItem("odudoc_ref");
+        const code = (fromUrl || fromStorage || "").trim().toUpperCase();
+        if (code.length >= 4 && code.length <= 16) referralCode = code;
+      }
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -103,6 +113,7 @@ export default function RegisterPage() {
           password: form.password,
           role: "patient",
           country: form.country,
+          ...(referralCode ? { referralCode } : {}),
         }),
       });
 

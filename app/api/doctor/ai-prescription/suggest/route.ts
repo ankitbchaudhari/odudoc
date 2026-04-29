@@ -147,17 +147,19 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Symptoms are required" }, { status: 400 });
       }
       const userPrompt =
-        `Given the following patient details, suggest up to 5 most likely differential diagnoses, ranked by probability. For each, include a one-line clinical rationale, a confidence label (Low/Medium/High), and any red flags specific to that diagnosis the doctor should rule out.\n\n${patientBlock}`;
+        `Given the following patient details, suggest up to 5 most likely differential diagnoses, ranked by probability. For each: name, a confidence label (Low/Medium/High), one short sentence (under 25 words) of clinical rationale, and up to 3 red-flag symptoms specific to that diagnosis. Keep each diagnosis terse — the doctor reviews quickly.\n\n${patientBlock}`;
       const result = await generateJson({
         systemPrompt: SYSTEM_PROMPT,
         userPrompt,
         schema: DIAGNOSIS_SCHEMA,
         temperature: 0.4,
-        // 800 tokens easily fits 5 short differentials with rationales —
-        // empirically the old 2048 was finishing around 600 tokens anyway,
-        // and JSON-schema mode bills/runs against the cap, not the actual
-        // length. Cutting this is the single biggest latency win.
-        maxOutputTokens: 800,
+        // 1500 tokens. Earlier we tried 800 as a latency optimisation
+        // but Gemini's schema mode regularly hits MAX_TOKENS at that
+        // ceiling — the model produces verbose rationales that don't
+        // truncate cleanly back into valid JSON. 1500 still trims a
+        // big slice off the original 2048 cap; the rest of the speedup
+        // comes from prompt tightening + client-side prefetch.
+        maxOutputTokens: 1500,
         tag: "ai-prescription.diagnosis",
       });
       return NextResponse.json({ ok: true, ...(result as object) });

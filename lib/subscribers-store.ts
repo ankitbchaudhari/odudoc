@@ -1,6 +1,7 @@
 // Newsletter subscribers store — Postgres-backed via bindPersistentArray.
 
-import { bindPersistentArray } from "./persistent-array";
+import { bindPersistentArray, saveJson } from "./persistent-array";
+import { sql } from "./db";
 
 export interface Subscriber {
   id: string;
@@ -28,31 +29,72 @@ await hydrate();
 // user@example.com rows + 8 named seeds) from prod databases that
 // hydrated before we emptied the seed function. Idempotent — once
 // clean, this is a no-op.
-(function cleanupLegacyDemoRows(): void {
-  const legacyEmails = new Set([
-    "sridhari.lk@gmail.com",
-    "neerajjan1995@gmail.com",
-    "keyur.p@gmail.com",
-    "bpantlee@gmail.com",
-    "priya@example.com",
-    "sajib.malik96@gmail.com",
-    "junaedchaddara@gmail.com",
-  ]);
+//
+// We do it two ways for belt-and-suspenders: (1) mutate the in-memory
+// array so this very request sees clean data, and (2) await a direct
+// `saveJson` write so Postgres has it before the Lambda can freeze.
+// A previous version called the wrapped `flush()` fire-and-forget,
+// which lost the write whenever Vercel froze the function on response.
+const LEGACY_SEED_EMAILS = new Set([
+  "sridhari.lk@gmail.com",
+  "neerajjan1995@gmail.com",
+  "keyur.p@gmail.com",
+  "bpantlee@gmail.com",
+  "priya@example.com",
+  "sajib.malik96@gmail.com",
+  "junaedchaddara@gmail.com",
+]);
+
+function isLegacyDemoRow(s: Subscriber): boolean {
+  return (
+    /@example\.(com|org|net)$/i.test(s.email) ||
+    s.id.startsWith("s-seed-") ||
+    /^s[1-8]$/.test(s.id) ||
+    LEGACY_SEED_EMAILS.has(s.email)
+  );
+}
+
+{
   let removed = 0;
   for (let i = subscribers.length - 1; i >= 0; i--) {
-    const s = subscribers[i];
-    if (
-      /@example\.(com|org|net)$/i.test(s.email) ||
-      s.id.startsWith("s-seed-") ||
-      /^s[1-8]$/.test(s.id) ||
-      legacyEmails.has(s.email)
-    ) {
+    if (isLegacyDemoRow(subscribers[i])) {
       subscribers.splice(i, 1);
       removed++;
     }
   }
-  if (removed) flush();
-})();
+  if (removed) {
+    // Awaitable, durable write. Failures are swallowed — the next cold
+    // start will retry, and the in-memory copy is already clean for
+    // this Lambda's lifetime.
+    try {
+      await saveJson("subscribers", subscribers);
+    } catch {
+      // best-effort
+    }
+    // Also delete by JSONB filter directly, in case the in-memory
+    // array drifted from what's on disk (e.g. another Lambda wrote
+    // between our hydrate and our save). Idempotent.
+    try {
+      await sql`
+        UPDATE app_kv
+        SET data = (
+          SELECT COALESCE(jsonb_agg(item), '[]'::jsonb)
+          FROM jsonb_array_elements(data) AS item
+          WHERE NOT (
+            (item->>'email') ~* '@example\\.(com|org|net)$'
+            OR (item->>'id') LIKE 's-seed-%'
+            OR (item->>'id') ~ '^s[1-8]$'
+            OR (item->>'email') = ANY(${Array.from(LEGACY_SEED_EMAILS)}::text[])
+          )
+        ),
+        updated_at = now()
+        WHERE key = 'subscribers'
+      `;
+    } catch {
+      // best-effort
+    }
+  }
+}
 
 export function listSubscribers(opts: { activeOnly?: boolean; limit?: number } = {}): Subscriber[] {
   let list = [...subscribers].sort((a, b) => (a.subscribedAt < b.subscribedAt ? 1 : -1));

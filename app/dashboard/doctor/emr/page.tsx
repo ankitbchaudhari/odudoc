@@ -996,83 +996,243 @@ function NewPatientModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl"
+        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/5"
       >
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-          <h3 className="text-lg font-bold text-slate-900">Add patient</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100"
-          >
-            ✕
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-6">
-          {error && (
-            <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
-              {error}
+        {/* Header with gradient + icon */}
+        <div className="relative overflow-hidden border-b border-slate-100 bg-gradient-to-br from-emerald-50 via-cyan-50 to-indigo-50 px-7 py-5">
+          <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-emerald-400/20 to-cyan-400/20 blur-2xl" />
+          <div className="relative flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 text-white shadow-md shadow-emerald-500/30">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                  <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M22 11h-6M19 8v6" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">
+                  New patient · Clinic record
+                </p>
+                <h3 className="mt-0.5 text-xl font-bold text-slate-900">
+                  Add a patient to your clinic
+                </h3>
+                <p className="mt-0.5 text-xs text-slate-600">
+                  Required fields are marked <span className="font-bold text-rose-500">*</span>. Everything else is optional and editable later.
+                </p>
+              </div>
             </div>
-          )}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Input label="First name" required value={form.firstName} onChange={(v) => set("firstName", v)} />
-            <Input label="Last name" required value={form.lastName} onChange={(v) => set("lastName", v)} />
-            <Input label="Age" value={form.age} onChange={(v) => set("age", v)} placeholder="e.g. 42" />
-            <Select
-              label="Sex"
-              value={form.sex}
-              onChange={(v) => set("sex", v as "" | "Male" | "Female" | "Other")}
-              options={[
-                { value: "", label: "Select…" },
-                { value: "Male", label: "Male" },
-                { value: "Female", label: "Female" },
-                { value: "Other", label: "Other" },
-              ]}
-            />
-            <Input label="Phone" required value={form.phone} onChange={(v) => set("phone", v)} placeholder="+91 98765 43210" />
-            <Input label="Email" type="email" value={form.email} onChange={(v) => set("email", v)} />
-            <Input label="Address" wide value={form.address} onChange={(v) => set("address", v)} />
-            <Input label="Blood group" value={form.bloodGroup} onChange={(v) => set("bloodGroup", v)} placeholder="e.g. O+" />
-            <Input label="Allergies" value={form.allergies} onChange={(v) => set("allergies", v)} placeholder="Penicillin, peanuts…" />
-            <Input
-              label="Chronic conditions"
-              wide
-              value={form.chronicConditions}
-              onChange={(v) => set("chronicConditions", v)}
-              placeholder="Diabetes, hypertension…"
-            />
-            <Textarea
-              label="Notes"
-              wide
-              value={form.notes}
-              onChange={(v) => set("notes", v)}
-              placeholder="Anything you want to remember about this patient."
-            />
+            <button
+              type="button"
+              onClick={onClose}
+              className="-mr-2 -mt-1 shrink-0 rounded-xl p-2 text-slate-400 transition hover:bg-white/70 hover:text-slate-700"
+              aria-label="Close"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
           </div>
         </div>
-        <div className="flex items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-6 py-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+
+        <div className="flex-1 overflow-y-auto bg-slate-50/40 px-7 py-6">
+          {error && (
+            <div className="mb-5 flex items-start gap-2.5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 shadow-sm">
+              <svg viewBox="0 0 20 20" fill="currentColor" className="mt-0.5 h-4 w-4 shrink-0 text-rose-500">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <div className="flex-1">{error}</div>
+            </div>
+          )}
+
+          {/* Section: Identity */}
+          <Section
+            title="Identity"
+            description="Patient's name, age and biological sex."
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            }
           >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={saving}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:shadow-xl disabled:opacity-50"
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Input label="First name" required value={form.firstName} onChange={(v) => set("firstName", v)} placeholder="e.g. Maria" />
+              <Input label="Last name" required value={form.lastName} onChange={(v) => set("lastName", v)} placeholder="e.g. González" />
+              <Input label="Age" value={form.age} onChange={(v) => set("age", v)} placeholder="e.g. 42" />
+              <Select
+                label="Sex"
+                value={form.sex}
+                onChange={(v) => set("sex", v as "" | "Male" | "Female" | "Other")}
+                options={[
+                  { value: "", label: "Select…" },
+                  { value: "Male", label: "Male" },
+                  { value: "Female", label: "Female" },
+                  { value: "Other", label: "Other" },
+                ]}
+              />
+            </div>
+          </Section>
+
+          {/* Section: Contact */}
+          <Section
+            title="Contact"
+            description="How to reach the patient. Phone is required so they receive appointment reminders."
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
+              </svg>
+            }
           >
-            {saving ? "Saving…" : "Save patient"}
-          </button>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Input
+                label="Phone"
+                required
+                value={form.phone}
+                onChange={(v) => set("phone", v)}
+                placeholder="+1 555 123 4567"
+              />
+              <Input
+                label="Email"
+                type="email"
+                value={form.email}
+                onChange={(v) => set("email", v)}
+                placeholder="patient@example.com"
+              />
+              <Input
+                label="Address"
+                wide
+                value={form.address}
+                onChange={(v) => set("address", v)}
+                placeholder="Street, city, country"
+              />
+            </div>
+          </Section>
+
+          {/* Section: Clinical */}
+          <Section
+            title="Clinical"
+            description="Quick-glance medical context — surfaced on every visit."
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+              </svg>
+            }
+          >
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Input
+                label="Blood group"
+                value={form.bloodGroup}
+                onChange={(v) => set("bloodGroup", v)}
+                placeholder="e.g. O+"
+              />
+              <Input
+                label="Allergies"
+                value={form.allergies}
+                onChange={(v) => set("allergies", v)}
+                placeholder="e.g. Penicillin, peanuts"
+              />
+              <Input
+                label="Chronic conditions"
+                wide
+                value={form.chronicConditions}
+                onChange={(v) => set("chronicConditions", v)}
+                placeholder="e.g. Type 2 diabetes, hypertension"
+              />
+              <Textarea
+                label="Notes"
+                wide
+                value={form.notes}
+                onChange={(v) => set("notes", v)}
+                placeholder="Private clinical notes, preferences, anything you want to remember."
+              />
+            </div>
+          </Section>
+
+          <p className="mt-2 flex items-start gap-2 text-[11px] text-slate-500">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-3.5 w-3.5 shrink-0">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0110 0v4" />
+            </svg>
+            Patient data lives in your clinic only — separate from other clinics on OduDoc. You can export or delete the record at any time.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 bg-white px-7 py-4">
+          <p className="text-[11px] text-slate-500">
+            <span className="font-semibold text-slate-700">Tip:</span> have lots of patients already? Use the <span className="font-semibold">Import CSV</span> button instead.
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:shadow-xl hover:shadow-emerald-500/40 disabled:opacity-50"
+            >
+              {saving ? (
+                <>
+                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.25" />
+                    <path d="M22 12a10 10 0 00-10-10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                  </svg>
+                  Saving…
+                </>
+              ) : (
+                <>
+                  Save patient
+                  <span>→</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </form>
+    </div>
+  );
+}
+
+function Section({
+  title,
+  description,
+  icon,
+  children,
+}: {
+  title: string;
+  description?: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mb-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex items-start gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-3">
+        {icon && (
+          <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+            {icon}
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
+            {title}
+          </p>
+          {description && (
+            <p className="mt-0.5 text-[11px] text-slate-500">{description}</p>
+          )}
+        </div>
+      </div>
+      <div className="p-5">{children}</div>
     </div>
   );
 }

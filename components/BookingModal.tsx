@@ -545,7 +545,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                   pattern="^[\d\s\-\+\(\)]{7,}$"
                   title="Please enter a valid phone number (at least 7 digits)"
                   className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                  placeholder="e.g. +91 98765 43210"
+                  placeholder="e.g. +1 555 123 4567"
                   inputMode="tel"
                   autoComplete="tel"
                 />

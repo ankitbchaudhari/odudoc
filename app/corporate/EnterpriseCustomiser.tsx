@@ -205,7 +205,7 @@ export default function EnterpriseCustomiser({ groups }: Props) {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-            placeholder="+91 98765 43210"
+            placeholder="+1 555 123 4567"
           />
         </label>
         <label className="block sm:col-span-2">

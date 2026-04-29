@@ -235,7 +235,7 @@ export default function RegisterPage() {
                       required
                       value={form.phone}
                       onChange={handleChange}
-                      placeholder="+91 98765 43210"
+                      placeholder="+1 555 123 4567"
                       className={inputCls}
                     />
                   </div>

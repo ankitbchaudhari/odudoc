@@ -1403,7 +1403,7 @@ export default function PatientDetailPage({
                     label="Medical-council reg. no."
                     value={certForm.doctorRegistration}
                     onChange={(v) => setCertForm((p) => ({ ...p, doctorRegistration: v }))}
-                    placeholder="MCI 12345"
+                    placeholder="e.g. MCI / NPI / GMC number"
                   />
                   <Field
                     label="Clinic name"

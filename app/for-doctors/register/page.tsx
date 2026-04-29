@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { COUNTRIES } from "@/lib/countries";
 import { listLicenseCountries, licenseMetaFor } from "@/lib/medical-licenses";
+import PhoneInput from "@/components/PhoneInput";
 
 const SPECIALTIES = [
   "Cardiology",
@@ -738,11 +739,10 @@ function Step1({
           />
         </Field>
         <Field label="Phone" error={errors.phone} required icon={ICONS.phone}>
-          <input
-            className={inputClass}
+          <PhoneInput
             value={form.phone}
-            onChange={(e) => update("phone", e.target.value)}
-            placeholder="+1 555 0100"
+            onChange={(next) => update("phone", next)}
+            defaultIso="IN"
           />
         </Field>
         <Field

@@ -40,6 +40,11 @@ export interface EmrPatient {
   allergies?: string;
   chronicConditions?: string;
   notes?: string;
+  /** ISO timestamp set when a patient was bulk-imported from a CSV
+   *  (existing patients the doctor brought with them). Imported
+   *  rows do NOT count against the monthly quota — the cap is for
+   *  net-new patients seen in OduDoc, not for migration backlog. */
+  importedAt?: string;
   createdAt: string;
   updatedAt: string;
   archivedAt?: string | null;
@@ -429,6 +434,84 @@ export async function createPatient(input: CreatePatientInput): Promise<EmrPatie
   };
   patients.push(record);
   return record;
+}
+
+export interface BulkImportRowInput {
+  firstName?: string;
+  lastName?: string;
+  age?: string;
+  sex?: Sex;
+  phone?: string;
+  email?: string;
+  address?: string;
+  bloodGroup?: string;
+  allergies?: string;
+  chronicConditions?: string;
+  notes?: string;
+}
+
+export interface BulkImportResult {
+  imported: number;
+  skipped: number;
+  errors: Array<{ row: number; reason: string }>;
+  patients: EmrPatient[];
+}
+
+/** Bulk-insert a batch of patients tagged as imported. Each row is
+ *  validated independently; rows missing required fields are
+ *  reported back via `errors` so the doctor can fix and reupload.
+ *  All successfully-validated rows are pushed in one go and a
+ *  single Postgres flush covers the whole batch. */
+export async function bulkImportPatients(
+  ownerEmail: string,
+  rows: BulkImportRowInput[],
+): Promise<BulkImportResult> {
+  await hydratePatients();
+  const owner = ownerEmail.toLowerCase();
+  const errors: Array<{ row: number; reason: string }> = [];
+  const created: EmrPatient[] = [];
+  const now = nowIso();
+  rows.forEach((raw, idx) => {
+    const firstName = (raw.firstName || "").trim();
+    const lastName = (raw.lastName || "").trim();
+    const phone = (raw.phone || "").trim();
+    if (!firstName || !lastName) {
+      errors.push({ row: idx + 1, reason: "Missing firstName or lastName" });
+      return;
+    }
+    if (!phone) {
+      errors.push({ row: idx + 1, reason: "Missing phone" });
+      return;
+    }
+    const sex = (raw.sex || "") as Sex;
+    const record: EmrPatient = {
+      id: uid("pt"),
+      doctorEmail: owner,
+      firstName,
+      lastName,
+      age: (raw.age || "").toString().trim(),
+      sex,
+      phone,
+      email: raw.email?.trim() || undefined,
+      address: raw.address?.trim() || undefined,
+      bloodGroup: raw.bloodGroup?.trim() || undefined,
+      allergies: raw.allergies?.trim() || undefined,
+      chronicConditions: raw.chronicConditions?.trim() || undefined,
+      notes: raw.notes?.trim() || undefined,
+      importedAt: now,
+      createdAt: now,
+      updatedAt: now,
+      archivedAt: null,
+    };
+    patients.push(record);
+    created.push(record);
+  });
+  return {
+    imported: created.length,
+    skipped: errors.length,
+    errors,
+    patients: created,
+  };
 }
 
 export interface ListPatientsOptions {
@@ -963,8 +1046,15 @@ export async function getQuotaState(ownerEmail: string): Promise<QuotaState> {
   await hydrateUnlocks();
   const owner = ownerEmail.toLowerCase();
   const month = currentMonthKey();
+  // Imported patients (CSV bulk-uploads of pre-existing records) do
+  // NOT count against the monthly quota — the cap is meant to limit
+  // net-new patients the clinic sees on OduDoc, not their migration
+  // backlog.
   const used = patients.filter(
-    (p) => p.doctorEmail === owner && p.createdAt.startsWith(month)
+    (p) =>
+      p.doctorEmail === owner &&
+      p.createdAt.startsWith(month) &&
+      !p.importedAt
   ).length;
   const unlocked = quotaUnlocks.some(
     (u) => u.ownerEmail.toLowerCase() === owner && u.month === month

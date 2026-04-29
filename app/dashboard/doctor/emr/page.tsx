@@ -61,6 +61,7 @@ export default function EmrLandingPage() {
   const [paywall, setPaywall] = useState(false);
   const [unlocking, setUnlocking] = useState(false);
   const [unlockToast, setUnlockToast] = useState<string | null>(null);
+  const [showImport, setShowImport] = useState(false);
 
   const refresh = useCallback(async (q = "") => {
     setLoading(true);
@@ -207,6 +208,16 @@ export default function EmrLandingPage() {
                   </Link>
                 </>
               )}
+              <button
+                onClick={() => setShowImport(true)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/80 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-300 hover:bg-white hover:text-emerald-700"
+                title="Bulk-import existing patients from a CSV — doesn't count toward the monthly cap"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                </svg>
+                Import CSV
+              </button>
               <button
                 onClick={() => {
                   if (quota?.blocked) {
@@ -447,6 +458,209 @@ export default function EmrLandingPage() {
           onUnlock={startUnlock}
         />
       )}
+
+      {showImport && (
+        <ImportPatientsModal
+          onClose={() => setShowImport(false)}
+          onDone={() => {
+            setShowImport(false);
+            refresh();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function ImportPatientsModal({
+  onClose,
+  onDone,
+}: {
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const [file, setFile] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<{
+    imported: number;
+    skipped: number;
+    errors: Array<{ row: number; reason: string }>;
+    totalRows: number;
+  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    if (!file) {
+      setError("Pick a CSV file first.");
+      return;
+    }
+    setSubmitting(true);
+    setError(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/emr/patients/import", {
+        method: "POST",
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Import failed");
+      setResult({
+        imported: data.imported || 0,
+        skipped: data.skipped || 0,
+        errors: data.errors || [],
+        totalRows: data.totalRows || 0,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Import failed");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-xl overflow-hidden rounded-3xl bg-white shadow-2xl"
+      >
+        <div className="bg-gradient-to-br from-emerald-50 via-cyan-50 to-indigo-50 px-6 py-5">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">
+            Bulk import · CSV
+          </p>
+          <h3 className="mt-1 text-lg font-bold text-slate-900">
+            Import your existing patients
+          </h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Migrating from another EMR or a spreadsheet? Upload a CSV and we&apos;ll
+            create the records in one go. <b>Imported patients don&apos;t count
+            toward the monthly cap</b> — only net-new patients you add via
+            OduDoc do.
+          </p>
+        </div>
+        <div className="px-6 py-5">
+          {!result ? (
+            <>
+              <a
+                href="/api/emr/patients/import"
+                className="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:underline"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-3.5 w-3.5"
+                >
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                </svg>
+                Download sample CSV template
+              </a>
+
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-slate-700">
+                  CSV file (max 5 MB · 10,000 rows)
+                </span>
+                <input
+                  type="file"
+                  accept=".csv,text/csv"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-emerald-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-emerald-700 hover:file:bg-emerald-200"
+                />
+              </label>
+
+              <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3 text-xs text-slate-600">
+                <p className="font-bold text-slate-800">Required columns:</p>
+                <p>
+                  <code className="font-mono">firstName</code>{" "}
+                  · <code className="font-mono">lastName</code>{" "}
+                  · <code className="font-mono">phone</code>
+                </p>
+                <p className="mt-1 font-bold text-slate-800">Optional columns:</p>
+                <p>
+                  age · sex · email · address · bloodGroup · allergies ·
+                  chronicConditions · notes
+                </p>
+                <p className="mt-2 text-[11px] text-slate-500">
+                  Headers are matched case-insensitively. &quot;First Name&quot;,
+                  &quot;Mobile&quot;, &quot;Medical history&quot; etc. work too.
+                </p>
+              </div>
+
+              {error && (
+                <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
+                  {error}
+                </div>
+              )}
+
+              <div className="mt-5 flex items-center justify-end gap-2">
+                <button
+                  onClick={onClose}
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={submit}
+                  disabled={submitting || !file}
+                  className="rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 disabled:opacity-50"
+                >
+                  {submitting ? "Importing…" : "Import patients"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div>
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                <p className="font-bold">
+                  Imported {result.imported} of {result.totalRows} rows.
+                </p>
+                {result.skipped > 0 && (
+                  <p className="mt-0.5 text-xs">
+                    {result.skipped} row{result.skipped === 1 ? "" : "s"} skipped — see details below.
+                  </p>
+                )}
+              </div>
+              {result.errors.length > 0 && (
+                <div className="mt-3 max-h-48 overflow-y-auto rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">
+                  <p className="mb-1 font-bold uppercase tracking-wide">
+                    Skipped rows
+                  </p>
+                  <ul className="space-y-0.5">
+                    {result.errors.map((e, i) => (
+                      <li key={i}>
+                        Row {e.row}: {e.reason}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className="mt-5 flex items-center justify-end gap-2">
+                <button
+                  onClick={() => {
+                    setResult(null);
+                    setFile(null);
+                  }}
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Import another file
+                </button>
+                <button
+                  onClick={onDone}
+                  className="rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

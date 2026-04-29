@@ -435,6 +435,7 @@ export function setDoctorVerified(
 ): Doctor | null {
   const d = doctors.find((x) => x.id === id);
   if (!d) return null;
+  const wasVerified = !!d.verified;
   d.verified = verified;
   if (verified) {
     d.verifiedAt = now();
@@ -445,6 +446,19 @@ export function setDoctorVerified(
   }
   d.updatedAt = now();
   flush();
+  // First-time verified → fire any pending doctor-to-doctor
+  // referrals that point at this doctor's email. Fire-and-forget;
+  // referral logic must never block the admin's verify action.
+  // Lazy import to dodge a circular dep on referral-program-store.
+  if (verified && !wasVerified && d.email) {
+    import("./referral-program-store")
+      .then((m) =>
+        m.qualifyReferralsForReferee({ refereeEmail: d.email })
+      )
+      .catch((err) => {
+        console.error("[doctors.setDoctorVerified] referral qualification failed", err);
+      });
+  }
   return d;
 }
 

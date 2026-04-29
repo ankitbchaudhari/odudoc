@@ -64,8 +64,22 @@ export interface ReferralProgramRow {
   qualifyingConsultationId?: string;
 }
 
+/** Reward per side for a patient-flavoured referral (referee is a
+ *  patient, regardless of who referred them). Triggered by the
+ *  referee's first paid consultation. */
 export const REFERRAL_REWARD_CENTS = 1000; // $10
+/** Reward per side when a doctor refers another doctor onto the
+ *  platform. Acquiring a doctor is materially more valuable than
+ *  a patient, and the cycle is longer (admin verification + first
+ *  consultation), so the payout is bigger. */
+export const DOCTOR_REFERRAL_REWARD_CENTS = 5000; // $50
 const DEFAULT_CURRENCY = "USD";
+
+function rewardForKind(kind: ReferralProgramKind): number {
+  return kind === "doctor_to_doctor"
+    ? DOCTOR_REFERRAL_REWARD_CENTS
+    : REFERRAL_REWARD_CENTS;
+}
 
 const program: ReferralProgramRow[] = [];
 const {
@@ -118,6 +132,13 @@ export async function applyReferralCode(input: {
   refereeEmail: string;
   code: string;
   source?: string;
+  /** Hint about what role the referee will become if they aren't
+   *  in the system yet. Used by the /for-doctors/register flow,
+   *  where the application creates a DoctorApplication row but
+   *  not a User row until admin approval — without this hint the
+   *  kind would default to patient_to_* and the doctor referral
+   *  would be paid out at the lower rate. */
+  inviteAs?: "doctor" | "patient";
 }): Promise<ApplyReferralResult> {
   await hydrateProgram();
   const refereeEmail = input.refereeEmail.trim().toLowerCase();
@@ -146,7 +167,15 @@ export async function applyReferralCode(input: {
     return { ok: false, reason: "already_referred", referral: otherClaim };
   }
   const referee = findUserByEmail(refereeEmail);
-  const kind = inferKind(referrer.role, referee?.role || "patient");
+  // Resolution order for the referee's role:
+  //   1. Existing User record on file
+  //   2. Caller-supplied inviteAs hint (e.g. /for-doctors/register
+  //      flow knows the referee is going to be a doctor before
+  //      admin approves the application)
+  //   3. Default to patient (most common signup path)
+  const refereeRole =
+    referee?.role || input.inviteAs || "patient";
+  const kind = inferKind(referrer.role, refereeRole);
   const row: ReferralProgramRow = {
     id: uid("rp"),
     referrerEmail: referrer.email.toLowerCase(),
@@ -155,7 +184,7 @@ export async function applyReferralCode(input: {
     refereeUserId: referee?.id,
     kind,
     status: "pending",
-    rewardEachCents: REFERRAL_REWARD_CENTS,
+    rewardEachCents: rewardForKind(kind),
     currency: DEFAULT_CURRENCY,
     source: input.source,
     createdAt: nowIso(),

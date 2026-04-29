@@ -21,9 +21,11 @@ interface ReferralRow {
 interface MeResponse {
   code: string;
   shareUrl: string;
+  doctorShareUrl: string;
   creditCents: number;
   currency: string;
   rewardEachCents: number;
+  doctorRewardEachCents: number;
   role: string;
   stats: {
     pending: number;
@@ -180,6 +182,29 @@ export default function ReferralsPage() {
   }
 
   const reward = formatMoney(me.rewardEachCents, me.currency);
+  const doctorReward = formatMoney(me.doctorRewardEachCents, me.currency);
+
+  async function copyDoctorLink() {
+    if (!me) return;
+    await copyText(me.doctorShareUrl, "url");
+  }
+
+  async function shareDoctorLink() {
+    if (!me) return;
+    if (typeof navigator !== "undefined" && "share" in navigator) {
+      try {
+        await (navigator as Navigator & { share: (d: ShareData) => Promise<void> }).share({
+          title: `OduDoc — refer a doctor, earn ${doctorReward}`,
+          text: `Hey, I'm on OduDoc and they're paying ${doctorReward} when a doctor I refer joins and gets verified. Sign up here:`,
+          url: me.doctorShareUrl,
+        });
+      } catch {
+        // user cancelled
+      }
+    } else {
+      copyDoctorLink();
+    }
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-50 py-10">
@@ -296,6 +321,68 @@ export default function ReferralsPage() {
               Share with WhatsApp / email / SMS
             </button>
           </div>
+        </div>
+
+        {/* Refer a doctor — bigger reward, separate share link */}
+        <div className="mb-6 overflow-hidden rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 p-6 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 text-white shadow-md shadow-emerald-500/30">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                  <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M22 11h-6M19 8v6" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">
+                  Refer a doctor · {doctorReward} bonus
+                </p>
+                <h3 className="mt-1 text-lg font-bold text-slate-900">
+                  Know another doctor? Both of you earn {doctorReward} when they join.
+                </h3>
+                <p className="mt-1 max-w-xl text-sm text-slate-700">
+                  Send this link to a colleague. They apply via{" "}
+                  <code className="rounded bg-white/70 px-1.5 py-0.5 text-xs">/for-doctors</code>,
+                  and the moment our team verifies their account,{" "}
+                  <b>{doctorReward} lands in your wallet</b> and{" "}
+                  <b>{doctorReward}</b> in theirs.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <code className="min-w-0 flex-1 truncate rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs text-slate-700">
+              {me.doctorShareUrl}
+            </code>
+            <button
+              onClick={copyDoctorLink}
+              className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${
+                copied === "url"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-white text-slate-700 ring-1 ring-emerald-200 hover:bg-emerald-50"
+              }`}
+            >
+              {copied === "url" ? "✓ Copied" : "Copy link"}
+            </button>
+            <button
+              onClick={shareDoctorLink}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-emerald-500/30 hover:shadow-lg"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                <circle cx="18" cy="5" r="3" />
+                <circle cx="6" cy="12" r="3" />
+                <circle cx="18" cy="19" r="3" />
+                <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" />
+              </svg>
+              Share with a colleague
+            </button>
+          </div>
+          <p className="mt-3 text-[11px] text-emerald-700">
+            Doctor referrals pay <b>{doctorReward}</b> per side · patient
+            referrals pay <b>{reward}</b>. Same code works for both — the
+            reward amount is decided by who signs up.
+          </p>
         </div>
 
         {/* Claim a code (if you have one) */}

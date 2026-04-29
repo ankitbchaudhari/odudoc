@@ -171,6 +171,26 @@ export async function POST(req: NextRequest) {
       log.error("doctor_register.baa_record_failed", err);
     }
 
+    // Apply doctor-referral attribution if the applicant was sent here
+    // by another doctor's share link. Stamping inviteAs="doctor" so
+    // the eventual qualifying event (admin verification) pays the
+    // larger doctor-to-doctor reward ($50 / $50). Best-effort: bad /
+    // self / duplicate codes are silently dropped — we don't fail the
+    // application over a referral mishap.
+    if (typeof body.referralCode === "string" && body.referralCode.trim()) {
+      try {
+        const { applyReferralCode } = await import("@/lib/referral-program-store");
+        await applyReferralCode({
+          refereeEmail: body.email,
+          code: body.referralCode.trim(),
+          source: "doctor_application",
+          inviteAs: "doctor",
+        });
+      } catch (err) {
+        log.error("doctor_register.referral_apply_failed", err);
+      }
+    }
+
     // Confirm the application + BAA acceptance actually persisted to
     // Postgres. Without this drain, an unreachable DB silently drops
     // both records and the applicant sees a confirmation email with

@@ -13,6 +13,7 @@ import {
   getReferralStatsForUser,
   reloadReferralProgram,
   REFERRAL_REWARD_CENTS,
+  DOCTOR_REFERRAL_REWARD_CENTS,
 } from "@/lib/referral-program-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
@@ -49,9 +50,14 @@ export async function GET() {
   return NextResponse.json({
     code,
     shareUrl: `${base}/?ref=${code}`,
+    /** Direct link the user can paste in the Apply-as-doctor flow.
+     *  Lands on /for-doctors with the ?ref pre-attached so the code
+     *  is captured even before the candidate clicks Apply. */
+    doctorShareUrl: `${base}/for-doctors?ref=${code}`,
     creditCents: user.referralCreditCents || 0,
     currency: "USD",
     rewardEachCents: REFERRAL_REWARD_CENTS,
+    doctorRewardEachCents: DOCTOR_REFERRAL_REWARD_CENTS,
     role: user.role,
     stats,
   });

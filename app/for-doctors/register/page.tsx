@@ -407,6 +407,37 @@ function DoctorRegisterForm() {
         plan: form.plan,
         fee: parseFloat(form.fee),
       };
+      // Carry through the referral code if one was captured during the
+      // applicant's earlier browsing (URL ?ref or 30-day localStorage).
+      // Server applies it with inviteAs="doctor" so the eventual
+      // qualify event pays out at the doctor-to-doctor rate.
+      if (typeof window !== "undefined") {
+        try {
+          const fromUrl = new URLSearchParams(window.location.search).get("ref");
+          let stored: string | undefined;
+          const raw = window.localStorage.getItem("odudoc_ref");
+          if (raw) {
+            try {
+              const parsed = JSON.parse(raw) as { code?: string; expiresAt?: string };
+              if (
+                parsed.code &&
+                (!parsed.expiresAt || new Date(parsed.expiresAt).getTime() > Date.now())
+              ) {
+                stored = parsed.code;
+              }
+            } catch {
+              // Older format (raw string) — accept it directly.
+              stored = raw;
+            }
+          }
+          const code = (fromUrl || stored || "").trim().toUpperCase();
+          if (code.length >= 4 && code.length <= 16) {
+            (payload as Record<string, unknown>).referralCode = code;
+          }
+        } catch {
+          // localStorage blocked / parsing failed — proceed without code.
+        }
+      }
       const res = await fetch("/api/doctors/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

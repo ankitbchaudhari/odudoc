@@ -42,6 +42,32 @@ export interface SendEmailInput {
   subject: string;
   html: string;
   replyTo?: string;
+  /** Optional plain-text version. When omitted we strip tags from the HTML
+   *  so Gmail / Outlook always see a multipart body — single-part HTML is
+   *  a strong spam signal. */
+  text?: string;
+  /** Set false on transactional 1:1 mails (verification, password reset)
+   *  so we don't add List-Unsubscribe headers, which Gmail uses to flag
+   *  bulk-style mail. Defaults to true (treat as marketing/notification). */
+  bulk?: boolean;
+}
+
+function htmlToText(html: string): string {
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|h[1-6]|li|tr)>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, "\"")
+    .replace(/&#39;/g, "'")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 export interface SendEmailResult {
@@ -59,6 +85,32 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   }
 
   try {
+    // List-Unsubscribe + List-Unsubscribe-Post are required by Gmail/Yahoo
+    // for any high-volume sender (Feb 2024 rules) and recommended for
+    // everyone else — they're a strong "this isn't phishing" signal that
+    // pulls mail out of the spam folder. We point them at our public
+    // unsubscribe endpoint, which flips the active flag on click.
+    //
+    // The mailto: variant is the legacy fallback for clients that don't
+    // do One-Click; both being present is the spec-correct combo.
+    const recipients = Array.isArray(input.to) ? input.to : [input.to];
+    // Default bulk-ness from the sender mailbox: only "promotion" is bulk
+    // (newsletters, blog blasts, marketing). Everything else is transactional
+    // — verification codes, appointment confirmations, withdrawal decisions
+    // — and shouldn't carry unsubscribe headers (Gmail treats them as bulk
+    // signals and the mail will land in Promotions / Spam).
+    const isBulk = input.bulk ?? input.from === "promotion";
+    const headers: Record<string, string> = {};
+    if (isBulk) {
+      const unsubUrl = `${SITE_URL}/api/newsletter/unsubscribe?email=${encodeURIComponent(recipients[0] || "")}`;
+      const unsubMailto = `unsubscribe@${DOMAIN}?subject=unsubscribe`;
+      headers["List-Unsubscribe"] = `<${unsubUrl}>, <mailto:${unsubMailto}>`;
+      headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click";
+      headers["Precedence"] = "bulk";
+    }
+
+    const text = input.text ?? htmlToText(input.html);
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -67,10 +119,12 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
       },
       body: JSON.stringify({
         from: FROM[input.from],
-        to: Array.isArray(input.to) ? input.to : [input.to],
+        to: recipients,
         subject: input.subject,
         html: input.html,
-        reply_to: input.replyTo,
+        text,
+        reply_to: input.replyTo || `support@${DOMAIN}`,
+        headers: Object.keys(headers).length ? headers : undefined,
       }),
     });
 

@@ -4,13 +4,20 @@
 // lever for AI-anything in 2026 — visitors who watch the demo are
 // 5-10x more likely to sign up than visitors who only read.
 //
-// We support two modes: a real <video> tag pointing at a self-hosted
-// MP4 (drop the file into /public/demo/odudoc-ai-emr-demo.mp4) OR an
-// embedded YouTube/Vimeo iframe via NEXT_PUBLIC_DEMO_VIDEO_URL.
-// Until either is wired, we render a tasteful placeholder card with
-// the same "click to play" affordance so the section never feels broken.
+// Three modes (in order of preference):
+//   1. NEXT_PUBLIC_DEMO_VIDEO_URL set → embedded YouTube/Vimeo iframe
+//   2. /public/demo/odudoc-ai-emr-demo.mp4 exists + flag is set →
+//      self-hosted <video> tag
+//   3. Otherwise → AnimatedDemoPlayer (browser-rendered animated mock
+//      that cycles through all 5 chapters in 60s and loops)
+//
+// We don't probe the filesystem for the MP4 — Vercel renders this as
+// a Server Component candidate and HEAD requests at render time would
+// hurt cold-start. Instead we expose NEXT_PUBLIC_DEMO_VIDEO_SELF_HOSTED
+// as a flag the operator flips once they've uploaded a real file.
 
 import { useState } from "react";
+import AnimatedDemoPlayer from "./AnimatedDemoPlayer";
 
 const SELF_HOSTED_PATH = "/demo/odudoc-ai-emr-demo.mp4";
 const POSTER_PATH = "/demo/odudoc-ai-emr-poster.jpg";
@@ -30,6 +37,10 @@ const HIGHLIGHTS: Highlight[] = [
 
 export default function DemoVideoSection() {
   const embedUrl = process.env.NEXT_PUBLIC_DEMO_VIDEO_URL?.trim();
+  // Flip this env var to "1" once you've uploaded a real MP4 to
+  // /public/demo/odudoc-ai-emr-demo.mp4 — until then we render the
+  // animated mock so the section is fully populated on day one.
+  const hasSelfHosted = process.env.NEXT_PUBLIC_DEMO_VIDEO_SELF_HOSTED === "1";
   const [playing, setPlaying] = useState(false);
 
   return (
@@ -62,7 +73,7 @@ export default function DemoVideoSection() {
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
-              ) : playing ? (
+              ) : hasSelfHosted && playing ? (
                 <video
                   src={SELF_HOSTED_PATH}
                   poster={POSTER_PATH}
@@ -71,33 +82,35 @@ export default function DemoVideoSection() {
                   className="absolute inset-0 h-full w-full bg-black"
                 />
               ) : (
-                <button
-                  type="button"
-                  onClick={() => setPlaying(true)}
-                  className="group absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900/60 via-violet-950/60 to-indigo-950/60"
-                  aria-label="Play OduDoc demo video"
-                >
-                  {/* Faux UI mock so the section reads like real product
-                      shots even before the video file is uploaded. */}
-                  <div className="absolute inset-0 grid grid-cols-3 gap-2 p-6 opacity-30">
-                    <div className="rounded-xl bg-white/10" />
-                    <div className="col-span-2 rounded-xl bg-white/10" />
-                    <div className="col-span-3 h-16 rounded-xl bg-white/5" />
-                    <div className="col-span-2 rounded-xl bg-white/5" />
-                    <div className="rounded-xl bg-white/10" />
-                  </div>
-                  <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-white/95 shadow-2xl transition-transform group-hover:scale-110">
-                    <svg className="ml-1 h-10 w-10 text-violet-700" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
-                </button>
+                <>
+                  {/* Animated browser-rendered mock — auto-plays and
+                      loops once user clicks. Used until a real MP4 is
+                      uploaded; visually indistinguishable from a real
+                      screencast for first-time visitors. */}
+                  <AnimatedDemoPlayer playing={playing} />
+                  {!playing && (
+                    <button
+                      type="button"
+                      onClick={() => setPlaying(true)}
+                      className="group absolute inset-0 z-20 flex items-center justify-center bg-gradient-to-br from-slate-900/40 via-violet-950/30 to-indigo-950/40"
+                      aria-label="Play OduDoc demo"
+                    >
+                      <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-white/95 shadow-2xl transition-transform group-hover:scale-110">
+                        <svg className="ml-1 h-10 w-10 text-violet-700" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </button>
+                  )}
+                </>
               )}
             </div>
             <p className="mt-3 text-center text-xs text-white/50">
               {embedUrl
                 ? "Streaming via embedded player"
-                : "Self-hosted from /public/demo — no third-party trackers"}
+                : hasSelfHosted
+                  ? "Self-hosted from /public/demo — no third-party trackers"
+                  : "Live UI walkthrough · drop a real recording at /public/demo to upgrade"}
             </p>
           </div>
 

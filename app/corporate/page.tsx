@@ -292,7 +292,8 @@ export default function CorporatePage() {
               <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur">🧠 Differential Dx</span>
               <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur">💊 Drug safety</span>
               <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur">📋 ICD-10 codes</span>
-              <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur">🌏 12 languages</span>
+              <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur">📖 Medical dictionary</span>
+              <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur">🌏 22 Indian languages</span>
               <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur">🔓 FHIR/HL7 export</span>
             </div>
             <div className="mt-8 flex flex-wrap gap-3">

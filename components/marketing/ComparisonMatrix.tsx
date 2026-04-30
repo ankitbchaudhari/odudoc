@@ -81,6 +81,24 @@ const ROWS: Row[] = [
     cells: [{ state: "yes" }, { state: "no" }, { state: "no" }, { state: "no" }],
   },
   {
+    feature: "Medical dictionary + Indian drug catalog",
+    cells: [
+      { state: "yes", note: "AI · infinite" },
+      { state: "no" },
+      { state: "yes", note: "300k static" },
+      { state: "no" },
+    ],
+  },
+  {
+    feature: "Prescriptions in 22 Indian + 60 global languages",
+    cells: [
+      { state: "yes" },
+      { state: "no" },
+      { state: "yes", note: "14 only" },
+      { state: "no" },
+    ],
+  },
+  {
     feature: "Post-visit Q&A chatbot for patients",
     cells: [{ state: "yes" }, { state: "no" }, { state: "no" }, { state: "no" }],
   },

@@ -166,7 +166,9 @@ export default function ForDoctorsPage() {
               <span>·</span>
               <span>🧠 Differential diagnosis</span>
               <span>·</span>
-              <span>🌏 12 Indian languages</span>
+              <span>📖 Medical dictionary + Indian drug catalog</span>
+              <span>·</span>
+              <span>🌏 22 Indian languages</span>
             </div>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link

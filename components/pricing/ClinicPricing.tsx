@@ -40,6 +40,8 @@ const TIERS: Tier[] = [
       { text: "AI differential diagnosis", included: true, emphasise: true },
       { text: "AI pre-visit intake briefing", included: true, emphasise: true },
       { text: "AI post-visit Q&A for patients", included: true, emphasise: true },
+      { text: "AI medical dictionary + Indian drug catalog", included: true, emphasise: true },
+      { text: "Prescriptions in 22 Indian + 60 global languages", included: true, emphasise: true },
       { text: "Voice dictation in 90+ languages", included: true },
       { text: "FHIR R4 + HL7 v2.5.1 export", included: true },
       { text: "Stripe Connect weekly payouts", included: true },

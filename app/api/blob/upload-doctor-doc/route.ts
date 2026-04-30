@@ -1,8 +1,9 @@
 // Server-side upload for doctor application documents.
 //
 // The browser POSTs the file as multipart form-data; we forward it to
-// the VPS file service via uploadBlob(). 4 MB cap because Vercel's
-// serverless limits the request body we can relay.
+// the VPS file service via uploadBlob(). 10 MB cap matches the rest
+// of the platform (consultation file shares); 4 MB was tripping
+// phone-camera photos which are routinely 5-8 MB and silently failing.
 
 import { uploadBlob } from "@/lib/blob";
 import { NextResponse } from "next/server";
@@ -11,7 +12,7 @@ import { log } from "@/lib/log";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const MAX_BYTES = 4 * 1024 * 1024; // 4 MB
+const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 const ALLOWED = new Set([
   "application/pdf",
   "image/png",
@@ -35,7 +36,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
     if (file.size > MAX_BYTES) {
       return NextResponse.json(
-        { error: "File exceeds 4MB limit" },
+        { error: "File exceeds 10MB limit" },
         { status: 413 }
       );
     }

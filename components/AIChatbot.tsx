@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface Action {
   label: string;
@@ -233,7 +234,21 @@ const MENU_SHORTCUTS: Action[] = [
   { label: "💬 Contact support", href: "/contact" },
 ];
 
+// Routes where the patient-facing chatbot must never render. The
+// floating widget covers action buttons (Approve/Reject on admin
+// pages, Save Visit in the EMR, Send in the doctor notes panel) and
+// is irrelevant to logged-in clinicians anyway. Path prefixes — any
+// page underneath these is suppressed.
+const SUPPRESS_PREFIXES = [
+  "/admin",
+  "/dashboard",
+  "/consult/room",       // active video calls
+  "/auth",               // sign-in / register
+  "/for-doctors/register",
+];
+
 export default function AIChatbot() {
+  const pathname = usePathname() || "";
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -246,6 +261,13 @@ export default function AIChatbot() {
   const idCounter = useRef(0);
 
   useEffect(() => { setMounted(true); }, []);
+
+  // Hide on suppressed routes BEFORE any render so the bubble never
+  // flashes onto the screen during navigation.
+  const suppressed = SUPPRESS_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`)
+  );
+  if (suppressed) return null;
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

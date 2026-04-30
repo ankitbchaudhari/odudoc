@@ -398,9 +398,14 @@ function DocLink({
           </button>
         </div>
       ) : (
-        <span className="truncate text-gray-500" title={value}>
-          {value}
-        </span>
+        <div className="flex min-w-0 flex-col items-end gap-0.5">
+          <span className="truncate text-gray-500" title={value}>
+            {value}
+          </span>
+          <span className="rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700" title="The doctor's upload didn't complete — only the filename was stored. The file isn't viewable. Ask them to re-upload (most common cause: file over the size cap).">
+            ⚠ Filename only — not viewable
+          </span>
+        </div>
       )}
     </div>
   );

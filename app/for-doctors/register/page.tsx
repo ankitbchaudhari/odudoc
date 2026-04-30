@@ -1311,9 +1311,11 @@ function Step3({
                   ...form.documents.specialtyCertifications,
                   ...placeholders,
                 ]);
+                const failed: string[] = [];
                 const uploaded = await Promise.all(
                   picked.map(async (f) => {
-                    if (f.size > 4 * 1024 * 1024) {
+                    if (f.size > 10 * 1024 * 1024) {
+                      failed.push(`${f.name}: file is over 10 MB. Compress or shrink before uploading.`);
                       return { name: f.name, size: f.size, url: "" };
                     }
                     try {
@@ -1327,13 +1329,24 @@ function Step3({
                         url?: string;
                         error?: string;
                       };
-                      if (!res.ok || !data.url) throw new Error(data.error);
+                      if (!res.ok || !data.url) {
+                        throw new Error(data.error || `HTTP ${res.status}`);
+                      }
                       return { name: f.name, size: f.size, url: data.url };
-                    } catch {
+                    } catch (err) {
+                      failed.push(`${f.name}: ${(err as Error).message || "upload failed"}`);
                       return { name: f.name, size: f.size, url: "" };
                     }
                   })
                 );
+                // Surface failures clearly — silent failures were producing
+                // application records with filenames-only that the admin
+                // couldn't open. Better to make the doctor re-upload now.
+                if (failed.length > 0) {
+                  alert(
+                    `Some certifications didn't upload:\n\n${failed.join("\n")}\n\nThese rows will appear unresolved — re-upload them before submitting the application.`
+                  );
+                }
                 // Swap placeholders for fully-uploaded rows
                 setForm((fs) => ({
                   ...fs,

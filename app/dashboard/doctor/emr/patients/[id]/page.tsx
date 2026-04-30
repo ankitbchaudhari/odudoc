@@ -8,6 +8,17 @@
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import AiPatientSummaryCard from "@/components/AiPatientSummaryCard";
+import Icd10Suggester from "@/components/Icd10Suggester";
+import AmbientScribe from "@/components/AmbientScribe";
+
+// Helper used by the AmbientScribe onResult handler — preserve any text
+// the doctor already typed by appending the AI output, rather than
+// overwriting work in progress.
+function appendOrSet(existing: string, incoming?: string): string {
+  if (!incoming) return existing;
+  if (!existing.trim()) return incoming;
+  return `${existing.trim()}\n\n${incoming}`;
+}
 
 interface Patient {
   id: string;
@@ -896,6 +907,44 @@ export default function PatientDetailPage({
                   onChange={(v) => setVisitForm((p) => ({ ...p, assessment: v }))}
                   placeholder="Working diagnosis / clinical impression."
                 />
+                <div className="sm:col-span-2 -mt-2 flex flex-wrap items-center gap-2">
+                  <Icd10Suggester
+                    chiefComplaint={visitForm.chiefComplaint}
+                    subjective={visitForm.subjective}
+                    objective={visitForm.objective}
+                    assessment={visitForm.assessment}
+                    plan={visitForm.plan}
+                    vitals={visitForm.vitals}
+                    patientAge={patient.age}
+                    patientSex={patient.sex}
+                    onAccept={(formatted) => {
+                      // Append to assessment with a leading newline so
+                      // multiple codes stack cleanly. Doctor can edit
+                      // freely after.
+                      setVisitForm((p) => ({
+                        ...p,
+                        assessment: p.assessment.trim()
+                          ? `${p.assessment.trim()}\n${formatted}`
+                          : formatted,
+                      }));
+                    }}
+                  />
+                  <AmbientScribe
+                    onResult={(soap) => {
+                      // Merge — we overwrite empty fields, append to non-
+                      // empty ones so a doctor mid-typing doesn't lose work.
+                      setVisitForm((p) => ({
+                        ...p,
+                        chiefComplaint: p.chiefComplaint.trim() || soap.chiefComplaint || p.chiefComplaint,
+                        subjective: appendOrSet(p.subjective, soap.subjective),
+                        objective: appendOrSet(p.objective, soap.objective),
+                        assessment: appendOrSet(p.assessment, soap.assessment),
+                        plan: appendOrSet(p.plan, soap.plan),
+                        vitals: p.vitals.trim() || soap.vitals || p.vitals,
+                      }));
+                    }}
+                  />
+                </div>
                 <FieldArea
                   wide
                   required

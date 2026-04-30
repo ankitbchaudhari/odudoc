@@ -12,6 +12,7 @@
 // localStorage write for a POST.
 
 import { useEffect, useState } from "react";
+import DrugInteractionAlert from "./DrugInteractionAlert";
 
 export interface MedicineRow {
   name: string;
@@ -524,6 +525,13 @@ export default function DoctorNotesPanel({
               + Add
             </button>
           </div>
+          {/* AI safety check — fires automatically as the doctor types
+              drugs into the table; shows a coloured banner only when
+              there's something worth flagging. */}
+          <DrugInteractionAlert
+            medicines={medicines}
+            className="mb-3"
+          />
           <div className="space-y-3">
             {medicines.map((m, i) => (
               <div key={i} className="rounded-lg border border-gray-200 p-3">

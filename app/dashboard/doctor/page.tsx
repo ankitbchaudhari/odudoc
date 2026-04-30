@@ -377,6 +377,7 @@ export default function DoctorDashboardPage() {
                   { label: "Prescriptions", href: "/dashboard/doctor/prescriptions", icon: "💊", bg: "from-rose-100 to-orange-100" },
                   { label: "AI Prescription", href: "/dashboard/doctor/ai-prescription", icon: "🤖", bg: "from-indigo-100 to-purple-100" },
                   { label: "Voice Prescription", href: "/dashboard/doctor/voice-prescription", icon: "🎤", bg: "from-rose-100 to-pink-100" },
+                  { label: "Medical Dictionary", href: "/dashboard/doctor/dictionary", icon: "📖", bg: "from-violet-100 to-indigo-100" },
                   { label: "Bookings", href: "/dashboard/doctor/appointments", icon: "📅", bg: "from-emerald-100 to-teal-100" },
                   { label: "Patient Referrals", href: "/dashboard/doctor/referrals", icon: "↗️", bg: "from-violet-100 to-fuchsia-100" },
                   { label: "Refer & earn", href: "/dashboard/referrals", icon: "🎁", bg: "from-indigo-100 to-fuchsia-100" },

@@ -7,6 +7,7 @@
 
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import AiPatientSummaryCard from "@/components/AiPatientSummaryCard";
 
 interface Patient {
   id: string;
@@ -733,6 +734,15 @@ export default function PatientDetailPage({
             {error}
           </div>
         )}
+
+        {/* AI chart summary — Phase 1 of the AI-powered EMR roadmap. Sits
+             above the demographics card so the doctor reads it first. The
+             staleKey ties the summary to visits.length + files.length +
+             patient.updatedAt so it auto-refreshes when the chart changes. */}
+        <AiPatientSummaryCard
+          patientId={patient.id}
+          staleKey={`${visits.length}|${(visits[0]?.id) || ""}|${patient.updatedAt}`}
+        />
 
         {/* Patient header card */}
         <div className="mb-6 overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-6 shadow-xl shadow-emerald-500/5 backdrop-blur-xl">

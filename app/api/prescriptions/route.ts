@@ -8,6 +8,7 @@ import {
 } from "@/lib/prescriptions-store";
 import type { PrescriptionData } from "@/lib/prescription-templates";
 import { sendEmail } from "@/lib/email";
+import { sendPush } from "@/lib/push";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -97,6 +98,21 @@ export async function POST(req: NextRequest) {
       log.error("prescriptions.notify_patient_failed", err);
     }
   }
+
+  // Patient-app push notification — fire-and-forget. Doctor doesn't
+  // need to wait for this; failure is logged but never bubbles up.
+  void sendPush({
+    toEmail: patientEmail,
+    app: "patient",
+    title: "New prescription from your doctor",
+    body: data.diagnosis
+      ? `${data.doctorName || "Your doctor"}: ${data.diagnosis.slice(0, 80)}`
+      : `${data.doctorName || "Your doctor"} has issued a new prescription.`,
+    data: {
+      type: "prescription",
+      prescriptionId: rx.id,
+    },
+  }).catch((err) => log.warn("prescriptions.push_failed", { err: String(err) }));
 
   return NextResponse.json({ prescription: rx, emailed }, { status: 201 });
 }

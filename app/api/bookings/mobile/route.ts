@@ -19,6 +19,7 @@ import { findUserByEmail, reloadUsers } from "@/lib/users-store";
 import { notifyAppointmentBooked } from "@/lib/notifications";
 import { requireMobileUser } from "@/lib/mobile-auth";
 import { sendToUser, sendToEmail } from "@/lib/fcm";
+import { sendPush } from "@/lib/push";
 import { parseJson, z } from "@/lib/validate";
 import { log } from "@/lib/log";
 
@@ -105,7 +106,10 @@ export async function POST(request: NextRequest) {
       log.error("mobile-booking notify threw", err);
     }
 
-    // FCM push to both sides so they see the booking instantly. Best-effort.
+    // FCM push (legacy native tokens) — kept for any user with a raw
+    // FCM token registered via the older device-tokens-store. Expo
+    // push tokens go through sendPush() below; the two coexist so we
+    // never miss a device.
     void sendToUser(patient.id, {
       title: "Appointment booked",
       body: `${doctor.name} on ${body.date} at ${body.timeSlot}`,
@@ -119,6 +123,24 @@ export async function POST(request: NextRequest) {
         deepLink: `consult/${booking.id}`,
         channel: "appointments",
       });
+    }
+
+    // Expo push (mobile apps registered via /api/mobile/push/register).
+    void sendPush({
+      toEmail: patient.email,
+      app: "patient",
+      title: "Appointment booked",
+      body: `${doctor.name} on ${body.date} at ${body.timeSlot}`,
+      data: { type: "booking", bookingId: booking.id },
+    }).catch((err) => log.warn("mobile-booking.patient_push_failed", { err: String(err) }));
+    if (doctor.email) {
+      void sendPush({
+        toEmail: doctor.email,
+        app: "doctor",
+        title: "New booking",
+        body: `${patient.name} on ${body.date} at ${body.timeSlot}`,
+        data: { type: "booking", bookingId: booking.id },
+      }).catch((err) => log.warn("mobile-booking.doctor_push_failed", { err: String(err) }));
     }
 
     return NextResponse.json({ booking }, { status: 201 });

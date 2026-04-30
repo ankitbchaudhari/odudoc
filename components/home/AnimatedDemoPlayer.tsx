@@ -46,20 +46,35 @@ interface Props {
    *  parent player to show a Play button overlay. Once the user
    *  clicks, parent flips to true. */
   playing: boolean;
+  /** Seek the animation to this millisecond offset. Bumping this
+   *  prop (e.g. via a counter incremented by the parent on chapter-
+   *  marker click) triggers a re-anchor of the start timestamp so
+   *  the loop continues from the new offset. */
+  seekToMs?: number;
+  /** Generation counter — change it to force a seek even when
+   *  seekToMs equals the previously-applied value (e.g. clicking
+   *  the same chapter twice). */
+  seekToken?: number;
 }
 
-export default function AnimatedDemoPlayer({ playing }: Props) {
+export default function AnimatedDemoPlayer({ playing, seekToMs, seekToken }: Props) {
   const [elapsed, setElapsed] = useState(0);
   const startedAt = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
 
+  // Restart the RAF loop when `playing` flips OR when seekToken
+  // changes (chapter-marker click).
   useEffect(() => {
     if (!playing) {
       startedAt.current = null;
       setElapsed(0);
       return;
     }
-    startedAt.current = performance.now();
+    const offset = Math.max(0, Math.min(TOTAL_MS - 1, seekToMs || 0));
+    // Anchor start so that performance.now() - start === offset
+    // immediately, then RAF advances from there.
+    startedAt.current = performance.now() - offset;
+    setElapsed(offset);
     const tick = (t: number) => {
       const start = startedAt.current ?? t;
       const e = (t - start) % TOTAL_MS;
@@ -70,7 +85,8 @@ export default function AnimatedDemoPlayer({ playing }: Props) {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [playing]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playing, seekToken]);
 
   // Resolve the current phase from elapsed time.
   const { phase, phaseElapsed } = useMemo(() => {

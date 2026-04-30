@@ -11,7 +11,6 @@ import AiFeaturesShowcase from "@/components/home/AiFeaturesShowcase";
 import ThreeAudiences from "@/components/home/ThreeAudiences";
 import DemoVideoSection from "@/components/home/DemoVideoSection";
 import HowAiScribeWorks from "@/components/home/HowAiScribeWorks";
-import DoctorTestimonialVideo from "@/components/marketing/DoctorTestimonialVideo";
 import Link from "next/link";
 import { faqs } from "@/lib/data";
 import { getPublicDoctorsFresh } from "@/lib/public-doctors";
@@ -60,11 +59,6 @@ export default async function Home() {
       <HowAiScribeWorks />
 
       <ThreeAudiences />
-
-      {/* Doctor testimonial slot — placeholder until first paying clinic
-          records one. Auto-upgrades when NEXT_PUBLIC_TESTIMONIAL_VIDEO_URL
-          is set or /public/testimonials/dr-testimonial.mp4 exists. */}
-      <DoctorTestimonialVideo />
 
       <ServicesGrid />
 

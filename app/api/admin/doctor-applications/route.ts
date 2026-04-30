@@ -21,6 +21,7 @@ import {
 } from "@/lib/doctors-store";
 import { sendDoctorApplicationStatusEmail } from "@/lib/email";
 import { inviteDoctor } from "@/lib/doctor-invite";
+import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -60,49 +61,85 @@ export async function PATCH(req: NextRequest) {
   // On approval, materialise the application into a real Doctor record so
   // the doctor appears on /consult. Idempotent — only creates on the
   // pending→approved transition and only if no doctor with that email exists.
-  if (
-    body.status === "approved" &&
-    prev?.status !== "approved" &&
-    !findDoctorByEmail(updated.email)
-  ) {
-    const specialty = DOCTOR_SPECIALTIES.includes(updated.specialty as any)
-      ? updated.specialty
-      : "General Physician";
-    try {
-      const created = createDoctor({
-        name: updated.fullName,
-        specialty,
-        email: updated.email,
-        phone: updated.phone,
-        status: "Active",
-        qualifications: updated.qualifications,
-        experience: updated.yearsExperience,
-        fee: updated.fee,
-        gender:
-          updated.gender?.toLowerCase() === "female" ? "Female"
-          : updated.gender?.toLowerCase() === "male" ? "Male"
-          : undefined,
-      });
-      // Carry the license fields + verification onto the Doctor record.
-      // Admin approval IS the verification step, so flip the verified
-      // badge on at the same time.
-      setDoctorLicense(created.id, {
-        country: updated.licenseCountry || updated.country,
-        number: updated.licenseNumber,
-        expiry: updated.licenseExpiry,
-      });
-      setDoctorVerified(created.id, true, adminEmail);
-      // Provision the doctor's login (7-day temp password) and send the
-      // welcome email + SMS. Failures are logged but non-fatal — the
-      // approval still stands.
-      await inviteDoctor({
-        name: updated.fullName,
-        email: updated.email,
-        phone: updated.phone,
-      });
-    } catch (err) {
-      log.error("doctor_applications.create_doctor_failed", err);
+  // We track the outcome so the response can tell the admin UI whether
+  // the sync actually succeeded (previously failures were swallowed and
+  // the admin only found out later when /admin/doctors was empty).
+  let doctorCreated = false;
+  let userInvited = false;
+  let syncError: string | undefined;
+
+  if (body.status === "approved" && prev?.status !== "approved") {
+    const alreadyExists = !!findDoctorByEmail(updated.email);
+    if (alreadyExists) {
+      doctorCreated = true; // already there, treat as success
+      userInvited = true;
+    } else {
+      const specialty = DOCTOR_SPECIALTIES.includes(updated.specialty as any)
+        ? updated.specialty
+        : "General Physician";
+      try {
+        const created = createDoctor({
+          name: updated.fullName,
+          specialty,
+          email: updated.email,
+          phone: updated.phone,
+          status: "Active",
+          qualifications: updated.qualifications,
+          experience: updated.yearsExperience,
+          fee: updated.fee,
+          gender:
+            updated.gender?.toLowerCase() === "female" ? "Female"
+            : updated.gender?.toLowerCase() === "male" ? "Male"
+            : undefined,
+        });
+        setDoctorLicense(created.id, {
+          country: updated.licenseCountry || updated.country,
+          number: updated.licenseNumber,
+          expiry: updated.licenseExpiry,
+        });
+        setDoctorVerified(created.id, true, adminEmail);
+        doctorCreated = true;
+
+        try {
+          const inv = await inviteDoctor({
+            name: updated.fullName,
+            email: updated.email,
+            phone: updated.phone,
+          });
+          userInvited = !!inv;
+        } catch (inviteErr) {
+          // Doctor row exists; user provisioning failed. Surface but
+          // don't roll back the doctor row.
+          log.error("doctor_applications.invite_failed", inviteErr);
+          syncError = `Doctor created, but user account provisioning failed: ${
+            (inviteErr as Error).message || "unknown error"
+          }`;
+        }
+      } catch (err) {
+        log.error("doctor_applications.create_doctor_failed", err);
+        syncError = `Failed to create doctor row: ${
+          (err as Error).message || "unknown error"
+        }`;
+      }
     }
+  }
+
+  // Drain pending Postgres writes BEFORE we respond. Previously the
+  // PATCH returned 200 the moment in-memory state was updated; the
+  // Lambda would freeze on response and the doctor row never made it
+  // to the persistent JSONB. The admin would approve the application
+  // and find /admin/doctors still showing zero doctors.
+  try {
+    await awaitAllFlushesStrict();
+  } catch (err) {
+    log.error("doctor_applications.persist_failed", err);
+    return NextResponse.json(
+      {
+        error:
+          "Approval saved in memory but didn't persist to the database. Refresh and try the Sync button.",
+      },
+      { status: 500 },
+    );
   }
 
   // Notify the applicant of the decision. Awaited so the Lambda doesn't
@@ -126,7 +163,10 @@ export async function PATCH(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ application: updated });
+  return NextResponse.json({
+    application: updated,
+    sync: { doctorCreated, userInvited, error: syncError },
+  });
 }
 
 // DELETE ?id=<applicationId> — permanently removes the application record.

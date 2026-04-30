@@ -47,11 +47,61 @@ export default function AdminApplicationsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status, adminNotes }),
       });
-      if (r.ok) await load();
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        alert(data.error || `Approval failed (${r.status})`);
+        return;
+      }
+      // Surface what actually happened on approval — was the doctor row
+      // created? Was their user account provisioned? Previously failures
+      // were silent and the admin only found out later.
+      if (status === "approved" && data.sync) {
+        const s = data.sync as { doctorCreated: boolean; userInvited: boolean; error?: string };
+        if (s.error) {
+          alert(
+            `Approval saved, but the doctor sync had an issue:\n\n${s.error}\n\nUse the "Sync to Doctor Management" button on the application row to retry.`
+          );
+        } else if (s.doctorCreated && s.userInvited) {
+          // happy path — silent
+        } else if (s.doctorCreated && !s.userInvited) {
+          alert(
+            "Doctor added to Doctor Management, but user account provisioning didn't return a result. Check Users & Roles before sharing the welcome email."
+          );
+        }
+      }
+      await load();
+    } catch (err) {
+      alert((err as Error).message);
     } finally {
       setBusyId(null);
       setNotesFor(null);
       setNotesText("");
+    }
+  }
+
+  async function syncToDoctor(id: string) {
+    setBusyId(id);
+    try {
+      const r = await fetch(
+        `/api/admin/applications/${encodeURIComponent(id)}/sync-doctor`,
+        { method: "POST" },
+      );
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        alert(data.error || `Sync failed (${r.status})`);
+        return;
+      }
+      const parts: string[] = [];
+      if (data.alreadyHadDoctor) parts.push("Doctor already in Doctor Management");
+      else if (data.doctorCreated) parts.push("✓ Doctor added to Doctor Management");
+      if (data.alreadyHadUser) parts.push("User already in Users & Roles");
+      else if (data.userInvited) parts.push("✓ User account provisioned + welcome email sent");
+      alert(parts.length ? parts.join("\n") : "Sync completed.");
+      await load();
+    } catch (err) {
+      alert((err as Error).message);
+    } finally {
+      setBusyId(null);
     }
   }
 
@@ -144,6 +194,7 @@ export default function AdminApplicationsPage() {
                 }}
                 onDelete={() => remove(app.id, app.fullName)}
                 onUploaded={load}
+                onSync={() => syncToDoctor(app.id)}
               />
             ))
           )}
@@ -196,6 +247,7 @@ function ApplicationCard({
   onRejectClick,
   onDelete,
   onUploaded,
+  onSync,
 }: {
   app: DoctorApplication;
   busy: boolean;
@@ -203,6 +255,7 @@ function ApplicationCard({
   onRejectClick: () => void;
   onDelete: () => void;
   onUploaded: () => void;
+  onSync: () => void;
 }) {
   const statusColors: Record<string, string> = {
     pending: "from-amber-500 to-orange-500",
@@ -324,6 +377,16 @@ function ApplicationCard({
           </svg>
           Delete
         </button>
+        {app.status === "approved" && (
+          <button
+            onClick={onSync}
+            disabled={busy}
+            title="Re-run the post-approval sync — creates the doctor row and provisions the user account if either is missing. Idempotent and safe to click multiple times."
+            className="rounded-xl border-2 border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-100 disabled:opacity-50"
+          >
+            {busy ? "Syncing…" : "↻ Sync to Doctor Management"}
+          </button>
+        )}
         {app.status === "pending" && (
           <>
             <button

@@ -10,8 +10,12 @@ import OfferBanner from "@/components/OfferBanner";
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
+  // /pilot is a single-purpose landing page for cold-outreach
+  // prospects — no nav, no banners, no distractions. Keeps focus
+  // on the value prop and the calendar booking CTA.
+  const isPilot = pathname === "/pilot" || pathname.startsWith("/pilot/");
 
-  if (isAdmin) {
+  if (isAdmin || isPilot) {
     // Admin pages render their own chrome in app/admin/layout.tsx. Wrap
     // the body in <main> so screen readers still see the document
     // landmark structure they expect.

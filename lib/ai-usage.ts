@@ -159,6 +159,60 @@ export async function summariseByCaller(days = 30, limit = 100): Promise<DoctorU
   }));
 }
 
+/** Per-route breakdown scoped to a single caller. Used by the
+ *  clinic-facing /dashboard/doctor/ai-usage page so each doctor sees
+ *  their own AI consumption. */
+export async function summariseForCaller(
+  email: string,
+  days = 30,
+): Promise<{
+  totals: { calls: number; tokens: number; errors: number };
+  byRoute: UsageSummaryRow[];
+}> {
+  await whenReady();
+  const e = email.trim().toLowerCase();
+  if (!e) return { totals: { calls: 0, tokens: 0, errors: 0 }, byRoute: [] };
+  const totalsRow = (await sql`
+    SELECT
+      COUNT(*)::int AS calls,
+      COALESCE(SUM(total_tokens), 0)::int AS tokens,
+      COUNT(*) FILTER (WHERE NOT ok)::int AS errors
+    FROM ai_usage
+    WHERE LOWER(caller_email) = ${e}
+      AND created_at > now() - (${days} || ' days')::interval
+  `) as Array<{ calls: number; tokens: number; errors: number }>;
+
+  const rows = (await sql`
+    SELECT route,
+           COUNT(*)::int AS calls,
+           COALESCE(SUM(total_tokens), 0)::int AS tokens,
+           COUNT(*) FILTER (WHERE NOT ok)::int AS errors,
+           COALESCE(AVG(latency_ms)::int, 0)::int AS avg_latency
+    FROM ai_usage
+    WHERE LOWER(caller_email) = ${e}
+      AND created_at > now() - (${days} || ' days')::interval
+    GROUP BY route
+    ORDER BY calls DESC
+  `) as Array<{
+    route: string;
+    calls: number;
+    tokens: number;
+    errors: number;
+    avg_latency: number;
+  }>;
+
+  return {
+    totals: totalsRow[0] || { calls: 0, tokens: 0, errors: 0 },
+    byRoute: rows.map((r) => ({
+      route: r.route,
+      calls: r.calls,
+      tokens: r.tokens,
+      errors: r.errors,
+      avgLatencyMs: r.avg_latency,
+    })),
+  };
+}
+
 /** Total token spend over the last N days. Used for the dashboard
  *  hero number. */
 export async function totalTokens(days = 30): Promise<{ tokens: number; calls: number; errors: number }> {

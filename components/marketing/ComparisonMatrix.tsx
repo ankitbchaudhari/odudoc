@@ -90,6 +90,33 @@ const ROWS: Row[] = [
     ],
   },
   {
+    feature: "Dictionary returns ICD-10 codes inline",
+    cells: [
+      { state: "yes" },
+      { state: "no" },
+      { state: "no" },
+      { state: "no" },
+    ],
+  },
+  {
+    feature: "Drug lookup with Indian D&CR Schedule (H/H1/X)",
+    cells: [
+      { state: "yes" },
+      { state: "no" },
+      { state: "manual" },
+      { state: "no" },
+    ],
+  },
+  {
+    feature: "Per-doctor AI usage + cost dashboard",
+    cells: [
+      { state: "yes" },
+      { state: "no" },
+      { state: "no" },
+      { state: "no" },
+    ],
+  },
+  {
     feature: "Prescriptions in 22 Indian + 60 global languages",
     cells: [
       { state: "yes" },

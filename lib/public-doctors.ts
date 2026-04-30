@@ -57,10 +57,25 @@ export function getPublicDoctors(): PublicDoctor[] {
 }
 
 /** Re-read the admin store from Postgres before returning — use on public
- *  read paths so new doctors added by admin show up immediately across Lambdas. */
+ *  read paths so new doctors added by admin show up immediately across
+ *  Lambdas. Safe-by-default: a Postgres outage / auth failure no longer
+ *  bubbles up and crashes the whole homepage tree. We log and fall back
+ *  to whatever's in the in-memory doctors array (possibly empty on a
+ *  cold start, but better than a 500 page). */
 export async function getPublicDoctorsFresh(): Promise<PublicDoctor[]> {
-  await reloadDoctors();
-  return getPublicDoctors();
+  try {
+    await reloadDoctors();
+  } catch (err) {
+    const { log } = await import("./log");
+    log.error("public_doctors.reload_failed", err);
+  }
+  try {
+    return getPublicDoctors();
+  } catch (err) {
+    const { log } = await import("./log");
+    log.error("public_doctors.list_failed", err);
+    return [];
+  }
 }
 
 export function getPublicDoctorById(id: string): PublicDoctor | null {

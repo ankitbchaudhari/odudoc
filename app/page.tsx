@@ -24,8 +24,13 @@ import { ItemListLd } from "@/components/StructuredData";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const doctors = await getPublicDoctorsFresh();
-  const session = await getServerSession(authOptions);
+  // Both calls hit Postgres / NextAuth and a transient outage on
+  // either should NOT take down the entire marketing homepage.
+  // Render with empty fallbacks; the rest of the page is static.
+  const [doctors, session] = await Promise.all([
+    getPublicDoctorsFresh().catch(() => [] as Awaited<ReturnType<typeof getPublicDoctorsFresh>>),
+    getServerSession(authOptions).catch(() => null),
+  ]);
   const isSignedIn = !!session?.user;
   return (
     <>

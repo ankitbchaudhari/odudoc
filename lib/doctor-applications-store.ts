@@ -145,3 +145,45 @@ export function updateApplicationStatus(
   flush();
   return app;
 }
+
+/** Patch one document URL on an application. Used by admin recovery
+ *  when a doctor's upload silently failed and they emailed/whatsapp'd
+ *  the file directly — admin uploads via the route handler, which
+ *  calls this to stamp the new URL.
+ *
+ *  `key` is one of the document fields. For `specialtyCertifications`
+ *  pass `index` to replace a specific cert slot; omit `index` to
+ *  append a new one. Returns the updated application or null if the
+ *  id is unknown. */
+export type DocumentKey =
+  | "medicalLicense"
+  | "governmentId"
+  | "medicalDegree"
+  | "professionalPhoto"
+  | "hospitalAffiliationLetter"
+  | "specialtyCertifications";
+
+export function updateApplicationDocument(
+  id: string,
+  key: DocumentKey,
+  url: string,
+  index?: number,
+): DoctorApplication | null {
+  const app = applications.find((a) => a.id === id);
+  if (!app) return null;
+  if (key === "specialtyCertifications") {
+    const list = Array.isArray(app.documents.specialtyCertifications)
+      ? [...app.documents.specialtyCertifications]
+      : [];
+    if (typeof index === "number" && index >= 0 && index < list.length) {
+      list[index] = url;
+    } else {
+      list.push(url);
+    }
+    app.documents.specialtyCertifications = list;
+  } else {
+    app.documents[key] = url;
+  }
+  flush();
+  return app;
+}

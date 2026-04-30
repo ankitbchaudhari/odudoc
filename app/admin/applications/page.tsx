@@ -5,7 +5,7 @@
 // so the admin can open the medical license, photo ID, and degree in a
 // new tab before approving or rejecting.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DoctorApplication } from "@/lib/doctor-applications-store";
 
 type Tab = "pending" | "approved" | "rejected" | "all";
@@ -143,6 +143,7 @@ export default function AdminApplicationsPage() {
                   setNotesText(app.adminNotes || "");
                 }}
                 onDelete={() => remove(app.id, app.fullName)}
+                onUploaded={load}
               />
             ))
           )}
@@ -194,12 +195,14 @@ function ApplicationCard({
   onApprove,
   onRejectClick,
   onDelete,
+  onUploaded,
 }: {
   app: DoctorApplication;
   busy: boolean;
   onApprove: () => void;
   onRejectClick: () => void;
   onDelete: () => void;
+  onUploaded: () => void;
 }) {
   const statusColors: Record<string, string> = {
     pending: "from-amber-500 to-orange-500",
@@ -207,14 +210,24 @@ function ApplicationCard({
     rejected: "from-rose-500 to-red-500",
   };
 
-  const docs: { label: string; value?: string }[] = [
-    { label: "Medical License", value: app.documents.medicalLicense },
-    { label: "Government ID", value: app.documents.governmentId },
-    { label: "Medical Degree", value: app.documents.medicalDegree },
-    { label: "Professional Photo", value: app.documents.professionalPhoto },
+  const docs: {
+    label: string;
+    value?: string;
+    documentKey:
+      | "medicalLicense"
+      | "governmentId"
+      | "medicalDegree"
+      | "professionalPhoto"
+      | "hospitalAffiliationLetter";
+  }[] = [
+    { label: "Medical License", value: app.documents.medicalLicense, documentKey: "medicalLicense" },
+    { label: "Government ID", value: app.documents.governmentId, documentKey: "governmentId" },
+    { label: "Medical Degree", value: app.documents.medicalDegree, documentKey: "medicalDegree" },
+    { label: "Professional Photo", value: app.documents.professionalPhoto, documentKey: "professionalPhoto" },
     {
       label: "Hospital Affiliation",
       value: app.documents.hospitalAffiliationLetter,
+      documentKey: "hospitalAffiliationLetter",
     },
   ];
 
@@ -267,7 +280,14 @@ function ApplicationCard({
           </p>
           <div className="space-y-2">
             {docs.map((d) => (
-              <DocLink key={d.label} label={d.label} value={d.value} applicationId={app.id} />
+              <DocLink
+                key={d.label}
+                label={d.label}
+                value={d.value}
+                applicationId={app.id}
+                documentKey={d.documentKey}
+                onUploaded={onUploaded}
+              />
             ))}
             {app.documents.specialtyCertifications &&
               app.documents.specialtyCertifications.length > 0 && (
@@ -276,7 +296,15 @@ function ApplicationCard({
                     Specialty Certifications
                   </p>
                   {app.documents.specialtyCertifications.map((v, i) => (
-                    <DocLink key={i} label={`Cert ${i + 1}`} value={v} applicationId={app.id} />
+                    <DocLink
+                      key={i}
+                      label={`Cert ${i + 1}`}
+                      value={v}
+                      applicationId={app.id}
+                      documentKey="specialtyCertifications"
+                      documentIndex={i}
+                      onUploaded={onUploaded}
+                    />
                   ))}
                 </div>
               )}
@@ -342,10 +370,25 @@ function DocLink({
   label,
   value,
   applicationId,
+  documentKey,
+  documentIndex,
+  onUploaded,
 }: {
   label: string;
   value?: string;
   applicationId?: string;
+  /** When provided, broken / missing rows render an "Upload on doctor's
+   *  behalf" button that POSTs to /api/admin/applications/[id]
+   *  /upload-document. */
+  documentKey?:
+    | "medicalLicense"
+    | "governmentId"
+    | "medicalDegree"
+    | "professionalPhoto"
+    | "hospitalAffiliationLetter"
+    | "specialtyCertifications";
+  documentIndex?: number;
+  onUploaded?: () => void;
 }) {
   if (!value) {
     return (
@@ -398,14 +441,98 @@ function DocLink({
           </button>
         </div>
       ) : (
-        <div className="flex min-w-0 flex-col items-end gap-0.5">
-          <span className="truncate text-gray-500" title={value}>
-            {value}
-          </span>
-          <span className="rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700" title="The doctor's upload didn't complete — only the filename was stored. The file isn't viewable. Ask them to re-upload (most common cause: file over the size cap).">
-            ⚠ Filename only — not viewable
-          </span>
-        </div>
+        <BrokenDocRescue
+          value={value}
+          applicationId={applicationId}
+          documentKey={documentKey}
+          documentIndex={documentIndex}
+          onUploaded={onUploaded}
+        />
+      )}
+    </div>
+  );
+}
+
+/** Inline rescue control for documents whose original upload failed.
+ *  Lets the admin upload the file on the doctor's behalf (the doctor
+ *  emails / WhatsApps it directly) and patches the application record
+ *  so the View button works as normal. */
+function BrokenDocRescue({
+  value,
+  applicationId,
+  documentKey,
+  documentIndex,
+  onUploaded,
+}: {
+  value: string;
+  applicationId?: string;
+  documentKey?: string;
+  documentIndex?: number;
+  onUploaded?: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const canRescue = !!(applicationId && documentKey);
+
+  async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !applicationId || !documentKey) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("key", documentKey);
+      if (typeof documentIndex === "number") fd.append("index", String(documentIndex));
+      const res = await fetch(
+        `/api/admin/applications/${encodeURIComponent(applicationId)}/upload-document`,
+        { method: "POST", body: fd },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      onUploaded?.();
+    } catch (e2) {
+      setErr((e2 as Error).message);
+    } finally {
+      setBusy(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  }
+
+  return (
+    <div className="flex min-w-0 flex-col items-end gap-1">
+      <span className="truncate text-[11px] text-gray-500" title={value}>
+        {value}
+      </span>
+      {canRescue ? (
+        <>
+          <input
+            ref={inputRef}
+            type="file"
+            accept=".pdf,image/png,image/jpeg,image/webp"
+            className="hidden"
+            onChange={onPick}
+          />
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => inputRef.current?.click()}
+            className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-1 text-[10px] font-bold text-amber-800 hover:bg-amber-200 disabled:opacity-60"
+            title="The doctor's original upload failed (likely over the size cap). Upload the file here on their behalf."
+          >
+            {busy ? "Uploading…" : "⬆ Upload on doctor's behalf"}
+          </button>
+          {err && (
+            <span className="text-[10px] text-rose-600" title={err}>
+              {err.length > 40 ? err.slice(0, 40) + "…" : err}
+            </span>
+          )}
+        </>
+      ) : (
+        <span className="rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+          ⚠ Filename only — not viewable
+        </span>
       )}
     </div>
   );

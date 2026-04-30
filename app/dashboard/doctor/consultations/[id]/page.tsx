@@ -113,7 +113,11 @@ export default function DoctorConsultationDetail() {
 
   if (!c) return <div className="p-12 text-center text-gray-500">Loading…</div>;
 
-  const mh = c.medicalHistory;
+  // Legacy / partial records may have an undefined medicalHistory or
+  // documents array. Coerce to safe shapes so destructuring + array
+  // access below doesn't throw and trip the global error boundary.
+  const mh = c.medicalHistory || ({} as NonNullable<typeof c.medicalHistory>);
+  const docs = Array.isArray(c.documents) ? c.documents : [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -173,7 +177,7 @@ export default function DoctorConsultationDetail() {
         {!!c.medicalHistory?.chiefComplaint?.trim() && c.status !== "rejected" && c.status !== "refunded" && (
           <div className="mb-6">
             <AiPreVisitIntakeCard
-              history={c.medicalHistory}
+              history={mh}
               specialty={c.specialty}
             />
           </div>
@@ -314,7 +318,7 @@ export default function DoctorConsultationDetail() {
                 tab === t ? "border-b-2 border-primary-600 text-primary-700" : "text-gray-500 hover:text-gray-700"
               }`}>
               {t[0].toUpperCase() + t.slice(1)}
-              {t === "documents" && ` (${c.documents.length})`}
+              {t === "documents" && ` (${docs.length})`}
             </button>
           ))}
         </div>
@@ -343,11 +347,11 @@ export default function DoctorConsultationDetail() {
         {tab === "documents" && (
           <div className="rounded-2xl bg-white p-6 shadow-sm">
             <h3 className="mb-4 text-sm font-bold text-gray-900">Shared documents</h3>
-            {c.documents.length === 0 ? (
+            {docs.length === 0 ? (
               <p className="text-sm text-gray-500">No documents shared yet.</p>
             ) : (
               <ul className="space-y-2">
-                {c.documents.map((d) => (
+                {docs.map((d) => (
                   <li key={d.id} className="flex items-center justify-between rounded-lg border border-gray-100 p-3">
                     <div>
                       <p className="text-sm font-medium text-gray-900">{d.name}</p>

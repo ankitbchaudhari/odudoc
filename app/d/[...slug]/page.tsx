@@ -54,9 +54,3 @@ export default async function DoctorShortlinkPage({ params }: Params) {
 // Always rendered dynamically since `redirect()` is called on every
 // request. We don't want Next caching the redirect target.
 export const dynamic = "force-dynamic";
-
-// Used by the install-prompt fallback when we couldn't open the app
-// (user agent suggests the app isn't installed). Currently this just
-// redirects; future iteration could render an interstitial with
-// "Open in app" + "Continue on web" buttons.
-export const PLAY_STORE_URL = PLAY_STORE;

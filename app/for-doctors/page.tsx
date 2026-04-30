@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ComparisonMatrix from "@/components/marketing/ComparisonMatrix";
 
 export const metadata = {
   title: "For Doctors - Grow Your Practice with OduDoc",
@@ -184,6 +185,11 @@ export default function ForDoctorsPage() {
           </div>
         </div>
       </section>
+
+      {/* Comparison matrix — drops in right after the hero so the
+          differentiator vs Abridge / eka.doc / Practo lands before
+          the visitor scrolls into the commission/perks block. */}
+      <ComparisonMatrix />
 
       {/* Stats */}
       <section className="border-b border-gray-100 bg-gray-50 py-12">

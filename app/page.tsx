@@ -9,6 +9,9 @@ import ServicesGrid from "@/components/home/ServicesGrid";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
 import AiFeaturesShowcase from "@/components/home/AiFeaturesShowcase";
 import ThreeAudiences from "@/components/home/ThreeAudiences";
+import DemoVideoSection from "@/components/home/DemoVideoSection";
+import HowAiScribeWorks from "@/components/home/HowAiScribeWorks";
+import DoctorTestimonialVideo from "@/components/marketing/DoctorTestimonialVideo";
 import Link from "next/link";
 import { faqs } from "@/lib/data";
 import { getPublicDoctorsFresh } from "@/lib/public-doctors";
@@ -49,7 +52,19 @@ export default async function Home() {
           which we also have but don't differentiate on. */}
       <AiFeaturesShowcase />
 
+      {/* Product demo — single biggest conversion lever for AI features */}
+      <DemoVideoSection />
+
+      {/* How the scribe actually works — defuses the "is this magic?"
+          objection without forcing visitors to watch the full demo. */}
+      <HowAiScribeWorks />
+
       <ThreeAudiences />
+
+      {/* Doctor testimonial slot — placeholder until first paying clinic
+          records one. Auto-upgrades when NEXT_PUBLIC_TESTIMONIAL_VIDEO_URL
+          is set or /public/testimonials/dr-testimonial.mp4 exists. */}
+      <DoctorTestimonialVideo />
 
       <ServicesGrid />
 

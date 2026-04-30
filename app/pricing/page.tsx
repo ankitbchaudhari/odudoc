@@ -3,10 +3,16 @@
 import Link from "next/link";
 import { useState } from "react";
 import { pricingPlans, pricingFAQs } from "@/lib/data";
+import ClinicPricing from "@/components/pricing/ClinicPricing";
+
+type Audience = "patients" | "clinics";
 
 export default function PricingPage() {
   const [annual, setAnnual] = useState(false);
   const [openFaq, setOpenFaq] = useState<string | null>(null);
+  // Default to clinics — most pricing-page traffic from /for-doctors
+  // and /corporate is shopping for the clinic SaaS, not patient plans.
+  const [audience, setAudience] = useState<Audience>("clinics");
 
   return (
     <>
@@ -14,39 +20,71 @@ export default function PricingPage() {
       <section className="bg-gradient-to-br from-primary-50 via-white to-teal-50 py-16 md:py-20">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h1 className="text-4xl font-extrabold text-gray-900 md:text-5xl">
-            Choose Your <span className="text-primary-600">Healthcare Plan</span>
+            Pricing for{" "}
+            <span className="bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-600 bg-clip-text text-transparent">
+              every kind of user
+            </span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-500">
-            Affordable healthcare plans designed to keep you and your family healthy.
-            Choose the plan that fits your needs.
+            One platform, two audiences. Pick yours.
           </p>
 
-          {/* Toggle */}
-          <div className="mt-8 flex items-center justify-center gap-4">
-            <span className={`text-sm font-medium ${!annual ? "text-gray-900" : "text-gray-500"}`}>
-              Monthly
-            </span>
+          {/* Audience tabs */}
+          <div className="mt-8 inline-flex items-center gap-1 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
             <button
-              onClick={() => setAnnual(!annual)}
-              className={`relative h-7 w-12 rounded-full transition-colors ${annual ? "bg-primary-600" : "bg-gray-300"}`}
-              aria-label="Toggle annual pricing"
+              onClick={() => setAudience("clinics")}
+              className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all ${
+                audience === "clinics"
+                  ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md"
+                  : "text-slate-600 hover:bg-slate-50"
+              }`}
             >
-              <span
-                className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow-sm transition-transform ${annual ? "translate-x-5" : ""}`}
-              />
+              For clinics &amp; doctors
             </button>
-            <span className={`text-sm font-medium ${annual ? "text-gray-900" : "text-gray-500"}`}>
-              Annual
-            </span>
-            {annual && (
-              <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-700">
-                Save up to 16%
-              </span>
-            )}
+            <button
+              onClick={() => setAudience("patients")}
+              className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all ${
+                audience === "patients"
+                  ? "bg-gradient-to-r from-sky-600 to-blue-600 text-white shadow-md"
+                  : "text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              For patients
+            </button>
           </div>
+
+          {/* Annual toggle — only relevant for the patients tab. */}
+          {audience === "patients" && (
+            <div className="mt-6 flex items-center justify-center gap-4">
+              <span className={`text-sm font-medium ${!annual ? "text-gray-900" : "text-gray-500"}`}>
+                Monthly
+              </span>
+              <button
+                onClick={() => setAnnual(!annual)}
+                className={`relative h-7 w-12 rounded-full transition-colors ${annual ? "bg-primary-600" : "bg-gray-300"}`}
+                aria-label="Toggle annual pricing"
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow-sm transition-transform ${annual ? "translate-x-5" : ""}`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${annual ? "text-gray-900" : "text-gray-500"}`}>
+                Annual
+              </span>
+              {annual && (
+                <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-700">
+                  Save up to 16%
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
+      {audience === "clinics" && <ClinicPricing />}
+
+      {audience === "patients" && (
+      <>
       {/* Pricing Cards */}
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -181,6 +219,8 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
+      </>
+      )}
 
       {/* FAQ */}
       <section className="py-16">

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import type { Consultation, MedicalHistory } from "@/lib/consultations-store";
+import PostVisitChat from "@/components/PostVisitChat";
 
 const EMPTY_MH: MedicalHistory = {
   chiefComplaint: "",
@@ -272,6 +273,16 @@ export default function PatientConsultationDetail() {
               </Link>
             </div>
             <p className="mt-3 text-xs text-gray-500">You can also take this prescription to any pharmacy offline.</p>
+          </div>
+        )}
+
+        {/* Post-visit Q&A — only shown once a prescription has been
+            issued (so the assistant has real context to answer from).
+            For pre-prescription consultations this would just confuse
+            the patient with empty replies. */}
+        {c.prescriptionId && (
+          <div className="mb-6">
+            <PostVisitChat consultationId={c.id} />
           </div>
         )}
 

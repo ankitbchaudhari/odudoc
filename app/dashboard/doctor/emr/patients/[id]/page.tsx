@@ -10,6 +10,7 @@ import Link from "next/link";
 import AiPatientSummaryCard from "@/components/AiPatientSummaryCard";
 import Icd10Suggester from "@/components/Icd10Suggester";
 import AmbientScribe from "@/components/AmbientScribe";
+import DifferentialDxButton from "@/components/DifferentialDxButton";
 
 // Helper used by the AmbientScribe onResult handler — preserve any text
 // the doctor already typed by appending the AI output, rather than
@@ -908,6 +909,24 @@ export default function PatientDetailPage({
                   placeholder="Working diagnosis / clinical impression."
                 />
                 <div className="sm:col-span-2 -mt-2 flex flex-wrap items-center gap-2">
+                  <DifferentialDxButton
+                    chiefComplaint={visitForm.chiefComplaint}
+                    subjective={visitForm.subjective}
+                    objective={visitForm.objective}
+                    vitals={visitForm.vitals}
+                    patientAge={patient.age}
+                    patientSex={patient.sex}
+                    patientAllergies={patient.allergies}
+                    patientChronicConditions={patient.chronicConditions}
+                    onAccept={(dx) => {
+                      setVisitForm((p) => ({
+                        ...p,
+                        assessment: p.assessment.trim()
+                          ? `${p.assessment.trim()}\n${dx}`
+                          : dx,
+                      }));
+                    }}
+                  />
                   <Icd10Suggester
                     chiefComplaint={visitForm.chiefComplaint}
                     subjective={visitForm.subjective}

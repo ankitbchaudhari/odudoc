@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Consultation } from "@/lib/consultations-store";
 import { PRESCRIPTION_TEMPLATES } from "@/lib/prescription-templates";
+import AiPreVisitIntakeCard from "@/components/AiPreVisitIntakeCard";
 import ReferralModal from "@/components/ReferralModal";
 import { useReferrals, statusStyle, urgencyStyle } from "@/lib/referrals-store";
 
@@ -162,6 +163,19 @@ export default function DoctorConsultationDetail() {
               </button>
             </div>
             {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+          </div>
+        )}
+
+        {/* AI pre-visit intake — only renders once the patient has
+            actually submitted their history. Saves the doctor 30s of
+            scrolling through the raw form by surfacing a clinical
+            headline + red flags + suggested questions. */}
+        {!!c.medicalHistory?.chiefComplaint?.trim() && c.status !== "rejected" && c.status !== "refunded" && (
+          <div className="mb-6">
+            <AiPreVisitIntakeCard
+              history={c.medicalHistory}
+              specialty={c.specialty}
+            />
           </div>
         )}
 

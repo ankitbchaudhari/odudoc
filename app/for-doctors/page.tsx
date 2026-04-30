@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ComparisonMatrix from "@/components/marketing/ComparisonMatrix";
+import AppDownloadBadges from "@/components/AppDownloadBadges";
 import { getPublicStats } from "@/lib/public-stats";
 
 export const metadata = {
@@ -578,6 +579,13 @@ export default async function ForDoctorsPage() {
               </details>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* OduDoc for Doctors — mobile app */}
+      <section className="bg-white py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <AppDownloadBadges variant="doctor" tone="indigo" />
         </div>
       </section>
 

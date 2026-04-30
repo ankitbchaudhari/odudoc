@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { COUNTRIES } from "@/lib/countries";
 import PhoneInput from "@/components/PhoneInput";
+import AppDownloadBadges from "@/components/AppDownloadBadges";
 
 // Tiny inline icon helpers to keep JSX readable.
 const Icon = {
@@ -395,6 +396,10 @@ export default function RegisterPage() {
               Sign in
             </Link>
           </p>
+
+          <div className="mt-8">
+            <AppDownloadBadges variant="patient" tone="indigo" />
+          </div>
         </div>
 
         {/* Marketing column */}

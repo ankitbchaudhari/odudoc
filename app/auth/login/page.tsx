@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import AppDownloadBadges from "@/components/AppDownloadBadges";
 
 function LoginForm() {
   const router = useRouter();
@@ -298,6 +299,10 @@ function LoginForm() {
             Create one now
           </Link>
         </p>
+
+        <div className="mt-8">
+          <AppDownloadBadges variant="patient" tone="indigo" />
+        </div>
       </div>
     </div>
   );

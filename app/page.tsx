@@ -19,6 +19,7 @@ import { authOptions } from "@/lib/auth";
 import { SPECIALTIES } from "@/lib/seo/specialties";
 import { CITIES } from "@/lib/seo/cities";
 import { ItemListLd } from "@/components/StructuredData";
+import AppDownloadBadges from "@/components/AppDownloadBadges";
 
 // Always read the live admin-managed doctor list — don't cache the homepage.
 export const dynamic = "force-dynamic";
@@ -229,6 +230,14 @@ export default async function Home() {
         buttonText="Book Consultation"
         buttonHref="/consult"
       />
+
+      {/* App download — patient app on iOS/Android. Universal links
+          back to /p/* keep the experience continuous from web → app. */}
+      <section className="bg-white py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <AppDownloadBadges variant="patient" tone="primary" />
+        </div>
+      </section>
 
       <section className="relative overflow-hidden bg-gradient-to-br from-white via-indigo-50/40 to-primary-50/40 py-20">
         <div className="pointer-events-none absolute -right-40 top-20 h-96 w-96 rounded-full bg-gradient-to-br from-indigo-200/30 to-purple-200/30 blur-3xl" />

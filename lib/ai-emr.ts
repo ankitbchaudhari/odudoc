@@ -27,10 +27,20 @@
 import { generateJson } from "./gemini";
 import type { EmrPatient, EmrVisit, EmrFile } from "./emr-store";
 
+/** A claim made by the AI summary plus the visit date it came from
+ *  (or "demographics" when the source is the chart header rather than
+ *  a specific visit). The UI shows the source as a tiny chip next to
+ *  each bullet so the doctor can verify quickly. */
+export interface SourcedPoint {
+  text: string;
+  /** "YYYY-MM-DD" of the visit, or "demographics" / "files". */
+  source?: string;
+}
+
 export interface PatientSummary {
   headline: string;
-  keyPoints: string[];
-  redFlags: string[];
+  keyPoints: SourcedPoint[];
+  redFlags: SourcedPoint[];
   suggestedFocus: string;
   /** ISO timestamp of when this summary was generated. The UI shows
    *  "Generated X min ago" so the doctor knows it's not stale. */
@@ -44,7 +54,22 @@ const SYSTEM_PROMPT = `You are a clinical assistant helping a licensed doctor qu
 - Stay strictly within the data provided. NEVER invent diagnoses, lab values, medications, or history that isn't in the input.
 - Flag genuine safety concerns (drug allergies, dangerous interactions, missed follow-ups) in redFlags.
 - If the patient has very little history, say so plainly — don't pad keyPoints with filler like "no allergies recorded".
-- This is decision support, not diagnosis. The doctor decides; you summarise.`;
+- This is decision support, not diagnosis. The doctor decides; you summarise.
+
+CITING SOURCES:
+- Each keyPoint and redFlag MUST include a "source" field that says where in the chart the claim came from.
+- Allowed source values: a visit date in "YYYY-MM-DD" format (matching one of the visits provided), "demographics" (for facts pulled from the chart header — allergies, chronic conditions, blood group, free-text notes), or "files" (for things inferred from uploaded labs/scans).
+- If a claim spans multiple visits, pick the most recent supporting one.
+- Doctors use this to fact-check you in seconds — wrong sources are worse than no sources.`;
+
+const POINT_ITEM_SCHEMA = {
+  type: "object" as const,
+  properties: {
+    text: { type: "string" },
+    source: { type: "string", description: "Visit date YYYY-MM-DD, or 'demographics' / 'files'." },
+  },
+  required: ["text", "source"],
+};
 
 const SCHEMA = {
   type: "object" as const,
@@ -52,12 +77,12 @@ const SCHEMA = {
     headline: { type: "string", description: "One sentence — the single most important clinical fact about this patient." },
     keyPoints: {
       type: "array",
-      items: { type: "string" },
+      items: POINT_ITEM_SCHEMA,
       description: "3-5 short bullet points covering active conditions, recent findings, ongoing therapies.",
     },
     redFlags: {
       type: "array",
-      items: { type: "string" },
+      items: POINT_ITEM_SCHEMA,
       description: "Safety-relevant concerns. Empty array if none.",
     },
     suggestedFocus: { type: "string", description: "1-2 sentences on what the doctor should focus on today." },
@@ -140,12 +165,13 @@ export async function summarisePatientChart(input: {
   patient: EmrPatient;
   visits: EmrVisit[];
   files: EmrFile[];
+  callerEmail?: string;
 }): Promise<PatientSummary> {
   const userPrompt = buildPrompt(input);
   const result = await generateJson<{
     headline: string;
-    keyPoints: string[];
-    redFlags: string[];
+    keyPoints: SourcedPoint[];
+    redFlags: SourcedPoint[];
     suggestedFocus: string;
   }>({
     systemPrompt: SYSTEM_PROMPT,
@@ -154,12 +180,22 @@ export async function summarisePatientChart(input: {
     temperature: 0.3,           // low-temp — we want consistent clinical summaries, not creative writing
     maxOutputTokens: 1024,
     tag: "ai-emr.patient-summary",
+    callerEmail: input.callerEmail,
+    patientEmail: input.patient.email,
   });
+
+  const cleanPoints = (arr: SourcedPoint[] | undefined): SourcedPoint[] =>
+    (arr || [])
+      .map((p) => ({
+        text: (p?.text || "").trim(),
+        source: (p?.source || "").trim() || undefined,
+      }))
+      .filter((p) => p.text);
 
   return {
     headline: result.headline?.trim() || "No summary available.",
-    keyPoints: (result.keyPoints || []).map((p) => p.trim()).filter(Boolean),
-    redFlags: (result.redFlags || []).map((p) => p.trim()).filter(Boolean),
+    keyPoints: cleanPoints(result.keyPoints),
+    redFlags: cleanPoints(result.redFlags),
     suggestedFocus: result.suggestedFocus?.trim() || "",
     generatedAt: new Date().toISOString(),
   };

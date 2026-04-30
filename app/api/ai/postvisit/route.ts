@@ -81,6 +81,8 @@ export async function POST(req: NextRequest) {
   try {
     const result = await answerPostVisitQuestion({
       question,
+      callerEmail: user.email,
+      patientEmail: consultation.patientEmail,
       context: {
         chiefComplaint: consultation.medicalHistory?.chiefComplaint,
         diagnosis: consultation.medicalHistory?.symptoms || undefined,

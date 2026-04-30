@@ -9,6 +9,7 @@
 // a thrown error — callers decide what to do with it.
 
 import { log } from "./log";
+import { recordAiUsage } from "./ai-usage";
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
 const GEMINI_FALLBACKS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
@@ -75,8 +76,13 @@ export interface GenerateJsonOptions {
   schema: JsonSchema;
   temperature?: number;
   maxOutputTokens?: number;
-  /** Tag for log lines (e.g. "ai-prescription"). */
+  /** Tag for log lines + ai_usage row (e.g. "ai-prescription"). */
   tag?: string;
+  /** Doctor / clinician email — written to ai_usage so admins can
+   *  show clinics who used how much. Optional but strongly preferred. */
+  callerEmail?: string;
+  /** Patient email when relevant (post-visit Q&A, scribe). */
+  patientEmail?: string;
 }
 
 export async function generateJson<T = unknown>(
@@ -110,6 +116,8 @@ export async function generateJson<T = unknown>(
   let res: Response | null = null;
   let lastErrBody = "";
   let lastStatus = 0;
+  let chosenModel = "";
+  const startedAt = Date.now();
 
   outer: for (const model of modelsToTry) {
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -123,6 +131,7 @@ export async function generateJson<T = unknown>(
       );
       if (r.ok) {
         res = r;
+        chosenModel = model;
         break outer;
       }
       lastStatus = r.status;
@@ -136,6 +145,14 @@ export async function generateJson<T = unknown>(
   }
 
   if (!res) {
+    void recordAiUsage({
+      route: tag,
+      callerEmail: opts.callerEmail,
+      patientEmail: opts.patientEmail,
+      latencyMs: Date.now() - startedAt,
+      ok: false,
+      errorTag: `http_${lastStatus}`,
+    });
     throw new Error(
       `Gemini API error ${lastStatus} (all models exhausted). ${lastErrBody.slice(0, 200)}`
     );
@@ -146,7 +163,13 @@ export async function generateJson<T = unknown>(
       content?: { parts?: Array<{ text?: string }> };
       finishReason?: string;
     }>;
+    usageMetadata?: {
+      promptTokenCount?: number;
+      candidatesTokenCount?: number;
+      totalTokenCount?: number;
+    };
   };
+  const usage = data.usageMetadata;
   const candidate = data.candidates?.[0];
   const raw = candidate?.content?.parts?.[0]?.text?.trim();
   const finishReason = candidate?.finishReason;
@@ -157,23 +180,57 @@ export async function generateJson<T = unknown>(
   }
 
   const cleaned = stripJsonFence(raw);
+  const recordSuccess = () =>
+    void recordAiUsage({
+      route: tag,
+      callerEmail: opts.callerEmail,
+      patientEmail: opts.patientEmail,
+      model: chosenModel,
+      promptTokens: usage?.promptTokenCount,
+      outputTokens: usage?.candidatesTokenCount,
+      totalTokens: usage?.totalTokenCount,
+      latencyMs: Date.now() - startedAt,
+      ok: true,
+    });
   try {
-    return JSON.parse(cleaned) as T;
+    const parsed = JSON.parse(cleaned) as T;
+    recordSuccess();
+    return parsed;
   } catch {
     const repaired = tryRepairTruncatedJson(cleaned);
-    if (repaired) return repaired as T;
+    if (repaired) {
+      recordSuccess();
+      return repaired as T;
+    }
     const match = cleaned.match(/\{[\s\S]*\}/);
     if (match) {
       try {
-        return JSON.parse(match[0]) as T;
+        const parsed = JSON.parse(match[0]) as T;
+        recordSuccess();
+        return parsed;
       } catch {
         const r2 = tryRepairTruncatedJson(match[0]);
-        if (r2) return r2 as T;
+        if (r2) {
+          recordSuccess();
+          return r2 as T;
+        }
       }
     }
     log.error(`${tag}.non_json`, undefined, {
       preview: raw.slice(0, 500),
       finishReason,
+    });
+    void recordAiUsage({
+      route: tag,
+      callerEmail: opts.callerEmail,
+      patientEmail: opts.patientEmail,
+      model: chosenModel,
+      promptTokens: usage?.promptTokenCount,
+      outputTokens: usage?.candidatesTokenCount,
+      totalTokens: usage?.totalTokenCount,
+      latencyMs: Date.now() - startedAt,
+      ok: false,
+      errorTag: "non_json",
     });
     throw new Error(
       `Model output was not JSON (finishReason: ${finishReason || "unknown"})`

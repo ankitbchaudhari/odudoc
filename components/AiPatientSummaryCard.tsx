@@ -6,12 +6,33 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+interface SourcedPoint {
+  text: string;
+  source?: string;
+}
+
 interface PatientSummary {
   headline: string;
-  keyPoints: string[];
-  redFlags: string[];
+  keyPoints: SourcedPoint[];
+  redFlags: SourcedPoint[];
   suggestedFocus: string;
   generatedAt: string;
+}
+
+function sourceLabel(s?: string): string | null {
+  if (!s) return null;
+  if (s === "demographics") return "Chart header";
+  if (s === "files") return "Uploaded files";
+  // ISO date — shorten to "Apr 12"
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if (m) {
+    try {
+      return new Date(s).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    } catch {
+      return s;
+    }
+  }
+  return s;
 }
 
 interface Props {
@@ -119,12 +140,22 @@ export default function AiPatientSummaryCard({ patientId, staleKey }: Props) {
                 Key points
               </p>
               <ul className="space-y-1.5">
-                {summary.keyPoints.map((p, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-slate-700">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-500" />
-                    <span>{p}</span>
-                  </li>
-                ))}
+                {summary.keyPoints.map((p, i) => {
+                  const src = sourceLabel(p.source);
+                  return (
+                    <li key={i} className="flex gap-2 text-sm text-slate-700">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-500" />
+                      <span className="flex-1">
+                        {p.text}
+                        {src && (
+                          <span className="ml-1.5 inline-block rounded bg-violet-100 px-1.5 py-0.5 align-middle text-[10px] font-semibold text-violet-700">
+                            {src}
+                          </span>
+                        )}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
@@ -135,12 +166,22 @@ export default function AiPatientSummaryCard({ patientId, staleKey }: Props) {
                 ⚠ Red flags
               </p>
               <ul className="space-y-1.5">
-                {summary.redFlags.map((p, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-amber-900">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
-                    <span>{p}</span>
-                  </li>
-                ))}
+                {summary.redFlags.map((p, i) => {
+                  const src = sourceLabel(p.source);
+                  return (
+                    <li key={i} className="flex gap-2 text-sm text-amber-900">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+                      <span className="flex-1">
+                        {p.text}
+                        {src && (
+                          <span className="ml-1.5 inline-block rounded bg-amber-100 px-1.5 py-0.5 align-middle text-[10px] font-semibold text-amber-800">
+                            {src}
+                          </span>
+                        )}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}

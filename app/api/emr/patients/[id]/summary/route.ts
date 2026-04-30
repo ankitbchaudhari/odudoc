@@ -63,7 +63,12 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
   ]);
 
   try {
-    const summary = await summarisePatientChart({ patient, visits, files });
+    const summary = await summarisePatientChart({
+      patient,
+      visits,
+      files,
+      callerEmail: user?.email,
+    });
     return NextResponse.json({ summary });
   } catch (err) {
     log.error("ai-emr.summary_failed", err, { patientId: id });

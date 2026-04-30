@@ -819,6 +819,17 @@ const navSections: NavSection[] = [
     ],
   },
   {
+    title: "AI",
+    requires: "super",
+    items: [
+      {
+        href: "/admin/ai-usage",
+        label: "AI Usage & Cost",
+        icon: "M13 10V3L4 14h7v7l9-11h-7z",
+      },
+    ],
+  },
+  {
     title: "System",
     items: [
       {

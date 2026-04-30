@@ -52,6 +52,7 @@ export interface IntakeInput {
   patientAge?: string;
   patientSex?: string;
   specialty?: string;
+  callerEmail?: string;
 }
 
 const SYSTEM_PROMPT = `You are a clinical triage assistant. A patient has filled in a pre-visit history form before their telemedicine appointment. The doctor will read your output 30 seconds before the call starts. Your job:
@@ -133,6 +134,7 @@ export async function buildPreVisitIntake(input: IntakeInput): Promise<PreVisitI
     temperature: 0.3,
     maxOutputTokens: 1024,
     tag: "ai-intake",
+    callerEmail: input.callerEmail,
   });
 
   return {

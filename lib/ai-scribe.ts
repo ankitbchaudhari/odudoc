@@ -22,6 +22,7 @@
 // consultations can be split client-side.
 
 import { log } from "./log";
+import { recordAiUsage } from "./ai-usage";
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
 const FALLBACKS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
@@ -65,6 +66,14 @@ export interface ScribeInput {
   audio: ArrayBuffer | Buffer;
   /** MIME type of the audio. Default "audio/webm". */
   mimeType?: string;
+  /** Optional language hint, e.g. "Hindi", "Marathi-English code-switch",
+   *  "Tamil". Pinned into the system prompt so Gemini locks onto the
+   *  right phonemes — especially helpful for Indian-language consults
+   *  with English medical terms mixed in. */
+  languageHint?: string;
+  /** Forwarded to ai_usage so admins can attribute the call. */
+  callerEmail?: string;
+  patientEmail?: string;
 }
 
 function toBase64(buf: ArrayBuffer | Buffer): string {
@@ -80,9 +89,14 @@ export async function transcribeToSoap(input: ScribeInput): Promise<ScribeSoap> 
 
   const mime = input.mimeType || "audio/webm";
   const dataB64 = toBase64(input.audio);
+  const startedAt = Date.now();
+
+  const systemPromptWithHint = input.languageHint
+    ? `${SYSTEM_PROMPT}\n\nLANGUAGE HINT: This consultation is primarily in ${input.languageHint}. Transcribe in the same language(s) the speakers used; medical terms in English are common in Indian consultations and should stay in English.`
+    : SYSTEM_PROMPT;
 
   const requestBody = JSON.stringify({
-    systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    systemInstruction: { parts: [{ text: systemPromptWithHint }] },
     contents: [
       {
         role: "user",
@@ -140,14 +154,36 @@ export async function transcribeToSoap(input: ScribeInput): Promise<ScribeSoap> 
   }
 
   if (!res) {
+    void recordAiUsage({
+      route: "ai-scribe",
+      callerEmail: input.callerEmail,
+      patientEmail: input.patientEmail,
+      latencyMs: Date.now() - startedAt,
+      ok: false,
+      errorTag: "all_models_exhausted",
+    });
     throw new Error(`All Gemini models exhausted. ${lastErr.slice(0, 200)}`);
   }
 
   const data = (await res.json()) as {
     candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    usageMetadata?: {
+      promptTokenCount?: number;
+      candidatesTokenCount?: number;
+      totalTokenCount?: number;
+    };
   };
+  const usage = data.usageMetadata;
   const raw = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   if (!raw) {
+    void recordAiUsage({
+      route: "ai-scribe",
+      callerEmail: input.callerEmail,
+      patientEmail: input.patientEmail,
+      latencyMs: Date.now() - startedAt,
+      ok: false,
+      errorTag: "empty_response",
+    });
     throw new Error("Gemini returned no text content");
   }
 
@@ -156,9 +192,216 @@ export async function transcribeToSoap(input: ScribeInput): Promise<ScribeSoap> 
     parsed = JSON.parse(raw);
   } catch {
     log.error("ai_scribe.invalid_json", undefined, { snippet: raw.slice(0, 200) });
+    void recordAiUsage({
+      route: "ai-scribe",
+      callerEmail: input.callerEmail,
+      patientEmail: input.patientEmail,
+      latencyMs: Date.now() - startedAt,
+      ok: false,
+      errorTag: "invalid_json",
+    });
     throw new Error("Gemini response was not valid JSON");
   }
 
+  void recordAiUsage({
+    route: "ai-scribe",
+    callerEmail: input.callerEmail,
+    patientEmail: input.patientEmail,
+    promptTokens: usage?.promptTokenCount,
+    outputTokens: usage?.candidatesTokenCount,
+    totalTokens: usage?.totalTokenCount,
+    latencyMs: Date.now() - startedAt,
+    ok: true,
+  });
+
+  return {
+    chiefComplaint: (parsed.chiefComplaint || "").trim(),
+    subjective: (parsed.subjective || "").trim(),
+    objective: (parsed.objective || "").trim(),
+    assessment: (parsed.assessment || "").trim(),
+    plan: (parsed.plan || "").trim(),
+    vitals: (parsed.vitals || "").trim() || undefined,
+    transcript: (parsed.transcript || "").trim() || undefined,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Long-recording / chunked flow                                      */
+/* ------------------------------------------------------------------ */
+
+const TRANSCRIBE_ONLY_PROMPT = `You are a literal transcriber. Output ONLY a faithful text transcript of the provided audio segment. Do not summarise. Do not interpret. Preserve spoken words including non-clinical chatter. Use [doctor]: and [patient]: speaker labels when speakers are clearly distinguishable, otherwise prepend nothing. Do not output JSON, markdown, or commentary — just the transcript text.`;
+
+/** Transcribe one audio chunk to plain text. Used by the long-recording
+ *  flow which records 4-min slices, transcribes each, then concatenates
+ *  + structures the full transcript. Avoids holding a single Lambda
+ *  open for 60+ seconds on Vercel. */
+export async function transcribeOnly(input: ScribeInput): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY environment variable is not set");
+
+  const mime = input.mimeType || "audio/webm";
+  const dataB64 = toBase64(input.audio);
+  const startedAt = Date.now();
+
+  const requestBody = JSON.stringify({
+    systemInstruction: { parts: [{ text: TRANSCRIBE_ONLY_PROMPT }] },
+    contents: [
+      {
+        role: "user",
+        parts: [
+          { inlineData: { mimeType: mime, data: dataB64 } },
+          { text: input.languageHint
+              ? `Transcribe this audio. Primary language: ${input.languageHint}. Output ONLY the transcript text.`
+              : "Transcribe this audio. Output ONLY the transcript text." },
+        ],
+      },
+    ],
+    generationConfig: { temperature: 0.0, maxOutputTokens: 8192 },
+  });
+
+  const modelsToTry = [GEMINI_MODEL, ...FALLBACKS.filter((m) => m !== GEMINI_MODEL)];
+  let res: Response | null = null;
+  let lastErr = "";
+  for (const model of modelsToTry) {
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,
+      { method: "POST", headers: { "content-type": "application/json" }, body: requestBody }
+    );
+    if (r.ok) { res = r; break; }
+    lastErr = await r.text().catch(() => "");
+  }
+  if (!res) {
+    void recordAiUsage({
+      route: "ai-scribe.chunk",
+      callerEmail: input.callerEmail,
+      patientEmail: input.patientEmail,
+      latencyMs: Date.now() - startedAt,
+      ok: false,
+      errorTag: "all_models_exhausted",
+    });
+    throw new Error(`Chunk transcription failed. ${lastErr.slice(0, 200)}`);
+  }
+
+  const data = (await res.json()) as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number; totalTokenCount?: number };
+  };
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+  void recordAiUsage({
+    route: "ai-scribe.chunk",
+    callerEmail: input.callerEmail,
+    patientEmail: input.patientEmail,
+    promptTokens: data.usageMetadata?.promptTokenCount,
+    outputTokens: data.usageMetadata?.candidatesTokenCount,
+    totalTokens: data.usageMetadata?.totalTokenCount,
+    latencyMs: Date.now() - startedAt,
+    ok: !!text,
+    errorTag: text ? undefined : "empty_response",
+  });
+  return text;
+}
+
+/** Take a full concatenated transcript (from N transcribed chunks) and
+ *  produce the structured SOAP. Single text-mode Gemini call so it
+ *  finishes well within the Vercel timeout regardless of recording
+ *  length. */
+export async function finalizeFromTranscript(input: {
+  transcript: string;
+  languageHint?: string;
+  callerEmail?: string;
+  patientEmail?: string;
+}): Promise<ScribeSoap> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY environment variable is not set");
+
+  const text = (input.transcript || "").trim();
+  if (!text) {
+    return {
+      chiefComplaint: "",
+      subjective: "",
+      objective: "",
+      assessment: "",
+      plan: "",
+    };
+  }
+
+  const startedAt = Date.now();
+  const userPrompt = `CONSULTATION TRANSCRIPT:\n\n${text}\n\nProduce the structured SOAP JSON now.`;
+
+  const requestBody = JSON.stringify({
+    systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+    generationConfig: {
+      temperature: 0.2,
+      maxOutputTokens: 4096,
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: "object",
+        properties: {
+          chiefComplaint: { type: "string" },
+          subjective: { type: "string" },
+          objective: { type: "string" },
+          assessment: { type: "string" },
+          plan: { type: "string" },
+          vitals: { type: "string" },
+          transcript: { type: "string" },
+        },
+        required: ["chiefComplaint", "subjective", "objective", "assessment", "plan"],
+      },
+    },
+  });
+
+  const modelsToTry = [GEMINI_MODEL, ...FALLBACKS.filter((m) => m !== GEMINI_MODEL)];
+  let res: Response | null = null;
+  let lastErr = "";
+  for (const model of modelsToTry) {
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,
+      { method: "POST", headers: { "content-type": "application/json" }, body: requestBody }
+    );
+    if (r.ok) { res = r; break; }
+    lastErr = await r.text().catch(() => "");
+  }
+  if (!res) {
+    void recordAiUsage({
+      route: "ai-scribe.finalize",
+      callerEmail: input.callerEmail,
+      patientEmail: input.patientEmail,
+      latencyMs: Date.now() - startedAt,
+      ok: false,
+      errorTag: "all_models_exhausted",
+    });
+    throw new Error(`Transcript SOAP failed. ${lastErr.slice(0, 200)}`);
+  }
+  const data = (await res.json()) as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number; totalTokenCount?: number };
+  };
+  const raw = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+  let parsed: Partial<ScribeSoap>;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    void recordAiUsage({
+      route: "ai-scribe.finalize",
+      callerEmail: input.callerEmail,
+      patientEmail: input.patientEmail,
+      latencyMs: Date.now() - startedAt,
+      ok: false,
+      errorTag: "invalid_json",
+    });
+    throw new Error("SOAP finalize did not return JSON");
+  }
+  void recordAiUsage({
+    route: "ai-scribe.finalize",
+    callerEmail: input.callerEmail,
+    patientEmail: input.patientEmail,
+    promptTokens: data.usageMetadata?.promptTokenCount,
+    outputTokens: data.usageMetadata?.candidatesTokenCount,
+    totalTokens: data.usageMetadata?.totalTokenCount,
+    latencyMs: Date.now() - startedAt,
+    ok: true,
+  });
   return {
     chiefComplaint: (parsed.chiefComplaint || "").trim(),
     subjective: (parsed.subjective || "").trim(),

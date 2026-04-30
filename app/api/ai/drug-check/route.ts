@@ -26,7 +26,8 @@ export async function POST(req: NextRequest) {
   if (blocked) return blocked;
 
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
+  const user = session?.user as { email?: string; role?: string } | undefined;
+  const role = user?.role;
   if (!isClinician(role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
       chronicConditions: body.chronicConditions,
       age: body.age,
       sex: body.sex,
+      callerEmail: user?.email,
     });
     return NextResponse.json({ result });
   } catch (err) {

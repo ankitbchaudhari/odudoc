@@ -949,6 +949,7 @@ export default function PatientDetailPage({
                     }}
                   />
                   <AmbientScribe
+                    patientId={patient.id}
                     onResult={(soap) => {
                       // Merge — we overwrite empty fields, append to non-
                       // empty ones so a doctor mid-typing doesn't lose work.

@@ -39,6 +39,7 @@ export interface IcdInput {
   vitals?: string;
   patientAge?: string;
   patientSex?: string;
+  callerEmail?: string;
 }
 
 const SYSTEM_PROMPT = `You are a clinical coder helping a doctor pick the best ICD-10-CM codes for a SOAP note. The doctor will review and accept; you suggest.
@@ -105,6 +106,7 @@ export async function suggestIcd10(input: IcdInput): Promise<IcdResult> {
     temperature: 0.2,
     maxOutputTokens: 1024,
     tag: "ai-icd10",
+    callerEmail: input.callerEmail,
   });
 
   return {

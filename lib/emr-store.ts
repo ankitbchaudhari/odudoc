@@ -188,7 +188,13 @@ export type AuditAction =
   | "certificate.verified"
   | "staff.add"
   | "staff.remove"
-  | "quota.unlock";
+  | "quota.unlock"
+  // AI scribe lifecycle — required by DPDP / IMC for any clinic
+  // deployment. The recording itself is never persisted on OduDoc; we
+  // only stamp the fact-of-recording with the patient + doctor + length.
+  | "scribe.recording_started"
+  | "scribe.recording_completed"
+  | "scribe.consent_acknowledged";
 
 export interface EmrAuditEntry {
   id: string;

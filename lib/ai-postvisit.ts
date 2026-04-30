@@ -102,6 +102,8 @@ function describeContext(ctx: PostVisitContext): string {
 export async function answerPostVisitQuestion(input: {
   question: string;
   context: PostVisitContext;
+  callerEmail?: string;
+  patientEmail?: string;
 }): Promise<PostVisitAnswer> {
   const q = input.question?.trim() || "";
   if (!q) {
@@ -135,6 +137,8 @@ export async function answerPostVisitQuestion(input: {
     temperature: 0.3,
     maxOutputTokens: 1024,
     tag: "ai-postvisit",
+    callerEmail: input.callerEmail,
+    patientEmail: input.patientEmail,
   });
 
   return {

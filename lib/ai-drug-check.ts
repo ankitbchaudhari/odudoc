@@ -44,6 +44,7 @@ export interface DrugCheckInput {
   chronicConditions?: string;
   age?: string;
   sex?: string;
+  callerEmail?: string;
 }
 
 const SYSTEM_PROMPT = `You are a clinical pharmacology assistant supporting a licensed doctor before they finalise a prescription. The doctor is the decision-maker; you flag concerns.
@@ -132,6 +133,7 @@ export async function checkDrugInteractions(
     temperature: 0.2,
     maxOutputTokens: 1024,
     tag: "ai-drug-check",
+    callerEmail: input.callerEmail,
   });
 
   return {

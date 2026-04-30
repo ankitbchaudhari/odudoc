@@ -44,6 +44,7 @@ export interface DifferentialInput {
   patientSex?: string;
   patientAllergies?: string;
   patientChronicConditions?: string;
+  callerEmail?: string;
 }
 
 const SYSTEM_PROMPT = `You are a clinical reasoning assistant supporting a licensed physician at the assessment stage of a SOAP note. The doctor will look at your differential, decide what to test/treat, and document their own assessment.
@@ -119,6 +120,7 @@ export async function suggestDifferentials(
     temperature: 0.3,
     maxOutputTokens: 1500,
     tag: "ai-differential",
+    callerEmail: input.callerEmail,
   });
 
   const cleaned = (result.differentials || [])

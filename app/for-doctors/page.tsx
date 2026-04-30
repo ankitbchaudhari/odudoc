@@ -1,18 +1,18 @@
 import Link from "next/link";
 import ComparisonMatrix from "@/components/marketing/ComparisonMatrix";
+import { getPublicStats } from "@/lib/public-stats";
 
 export const metadata = {
-  title: "For Doctors - Grow Your Practice with OduDoc",
+  title: "For Doctors — AI EMR + telemedicine, free for India's doctors",
   description:
-    "Join 1000+ doctors on OduDoc. Zero monthly fees — we only earn when you do. Pay just 30% commission per successful consultation.",
+    "AI ambient scribe, drug-interaction safety, ICD-10 auto-coder, prescriptions in 22 Indian languages. Zero monthly fees — we only earn when you do.",
 };
 
-const stats = [
-  { value: "1000+", label: "Doctors Joined" },
-  { value: "50K+", label: "Patients Monthly" },
-  { value: "4.9", label: "Average Rating" },
-  { value: "98%", label: "Doctor Satisfaction" },
-];
+// Stats are pulled live from getPublicStats() at render time. The
+// page is async so it fetches on every request (no stale numbers
+// even right after a new doctor signs up). Re-export dynamic so
+// Vercel doesn't try to statically pre-render this with empty data.
+export const dynamic = "force-dynamic";
 
 const steps = [
   {
@@ -137,7 +137,25 @@ const faqs = [
   },
 ];
 
-export default function ForDoctorsPage() {
+export default async function ForDoctorsPage() {
+  const liveStats = await getPublicStats();
+  // Build the four cards from real data. In pilot mode (small doctor
+  // count) we frame honestly — "Founder-led pilot · doctor #N+1
+  // could be you" — instead of inflating with a "+" sign.
+  const stats = liveStats.pilotMode
+    ? [
+        { value: `#${liveStats.doctors + 1}`,        label: "Be the next doctor onboard" },
+        { value: "0%",                                 label: "Monthly fee · ever" },
+        { value: "30%",                                label: "Commission per paid consult" },
+        { value: "90 days",                            label: "Free pilot · founder support" },
+      ]
+    : [
+        { value: `${liveStats.doctors}+`,             label: "Doctors on the platform" },
+        { value: `${liveStats.patients}+`,            label: "Patients onboard" },
+        { value: `${liveStats.specialties}`,          label: "Specialties covered" },
+        { value: `${liveStats.cities}+`,              label: "Cities served" },
+      ];
+
   return (
     <div className="bg-white">
       {/* Hero */}
@@ -567,7 +585,9 @@ export default function ForDoctorsPage() {
       <section className="bg-primary-700 py-16 text-white">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold md:text-4xl">
-            Join 1000+ Doctors on OduDoc
+            {liveStats.pilotMode
+              ? "Be one of the first doctors on OduDoc"
+              : `Join ${liveStats.doctors}+ doctors on OduDoc`}
           </h2>
           <p className="mt-4 text-white/90">
             Zero monthly fees. No risk. Start earning in under 48 hours.

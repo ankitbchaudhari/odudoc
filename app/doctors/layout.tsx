@@ -28,7 +28,10 @@ export default async function DoctorsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  // Don't 500 the whole page on a transient NextAuth/DB outage —
+  // treat any failure as "no session" and route to the login page,
+  // which is the same outcome an unauthenticated user gets.
+  const session = await getServerSession(authOptions).catch(() => null);
   if (!session?.user) {
     redirect("/auth/login?callbackUrl=/doctors");
   }

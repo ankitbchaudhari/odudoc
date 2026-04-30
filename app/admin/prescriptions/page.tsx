@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PrescriptionRenderer from "@/components/PrescriptionRenderer";
 import {
   PRESCRIPTION_TEMPLATES,
@@ -8,26 +8,63 @@ import {
 } from "@/lib/prescription-templates";
 import type { PrescriptionRecord } from "@/lib/prescriptions-store";
 
+interface DoctorRow {
+  id: string;
+  name: string;
+  email?: string;
+  specialty: string;
+  status: string;
+  experience?: number;
+}
+
 // Admin prescriptions audit page.
-// Lists every prescription doctors have written, lets admin open a full
-// render of any record or soft-cancel it (DELETE → status: "cancelled").
+// Top: active-doctors panel showing each doctor + the number of
+// prescriptions they've written + a click-to-filter affordance.
+// Bottom: every prescription written across the platform, with
+// patient + doctor + diagnosis + meds + status. Search filters
+// across all fields. Click a row → modal with a full PDF-quality
+// render of the prescription.
 export default function AdminPrescriptionsPage() {
   const [items, setItems] = useState<PrescriptionRecord[]>([]);
+  const [doctors, setDoctors] = useState<DoctorRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState<PrescriptionRecord | null>(null);
   const [q, setQ] = useState("");
+  /** When set, the table filters to only this doctor's prescriptions.
+   *  Hex into the patient/doctor/diagnosis search box AND this filter
+   *  combine (both must match) so admins can drill from the doctor
+   *  cards then refine. */
+  const [filterDoctorEmail, setFilterDoctorEmail] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
-    const res = await fetch("/api/prescriptions");
-    const j = await res.json().catch(() => ({ prescriptions: [] }));
-    setItems(j.prescriptions || []);
+    const [rxRes, drRes] = await Promise.all([
+      fetch("/api/prescriptions").then((r) => r.json()).catch(() => ({ prescriptions: [] })),
+      fetch("/api/admin/doctors").then((r) => r.json()).catch(() => ({ doctors: [] })),
+    ]);
+    setItems(rxRes.prescriptions || []);
+    setDoctors(drRes.doctors || []);
     setLoading(false);
   };
 
   useEffect(() => {
     load();
   }, []);
+
+  /** Per-doctor counts so the top panel can show "Dr X · 12 active /
+   *  3 cancelled" without an extra round-trip. */
+  const countsByDoctor = useMemo(() => {
+    const map = new Map<string, { active: number; cancelled: number; total: number }>();
+    for (const p of items) {
+      const k = (p.doctorEmail || "").toLowerCase();
+      const cur = map.get(k) || { active: 0, cancelled: 0, total: 0 };
+      cur.total += 1;
+      if (p.status === "active") cur.active += 1;
+      else cur.cancelled += 1;
+      map.set(k, cur);
+    }
+    return map;
+  }, [items]);
 
   const cancel = async (id: string) => {
     if (!confirm("Mark this prescription as cancelled? The record is kept for audit.")) return;
@@ -39,12 +76,14 @@ export default function AdminPrescriptionsPage() {
     load();
   };
 
-  const filtered = q.trim()
-    ? items.filter((p) => {
-        const hay = `${p.doctorEmail} ${p.patientEmail} ${p.data.patientName} ${p.data.diagnosis}`.toLowerCase();
-        return hay.includes(q.trim().toLowerCase());
-      })
-    : items;
+  const filtered = items.filter((p) => {
+    if (filterDoctorEmail && (p.doctorEmail || "").toLowerCase() !== filterDoctorEmail) {
+      return false;
+    }
+    if (!q.trim()) return true;
+    const hay = `${p.doctorEmail} ${p.patientEmail} ${p.data.patientName} ${p.data.diagnosis}`.toLowerCase();
+    return hay.includes(q.trim().toLowerCase());
+  });
 
   const activeCount = items.filter((p) => p.status === "active").length;
   const cancelledCount = items.filter((p) => p.status !== "active").length;
@@ -83,13 +122,127 @@ export default function AdminPrescriptionsPage() {
         </div>
       </div>
 
+      {/* Doctors activity panel — every active doctor on the
+          platform with their lifetime prescription count. Click a
+          card to filter the table below to only that doctor. */}
+      {!loading && doctors.length > 0 && (
+        <div className="mb-6 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-3">
+            <div>
+              <p className="text-sm font-bold text-slate-900">
+                Doctors on the platform · {doctors.length}
+              </p>
+              <p className="text-[11px] text-slate-500">
+                Click a card to filter the prescription log to only that doctor.
+              </p>
+            </div>
+            {filterDoctorEmail && (
+              <button
+                onClick={() => setFilterDoctorEmail(null)}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                ✕ Clear doctor filter
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+            {doctors.map((d, i) => {
+              const palettes = [
+                "from-emerald-500 to-teal-500",
+                "from-sky-500 to-indigo-500",
+                "from-violet-500 to-fuchsia-500",
+                "from-amber-500 to-orange-500",
+                "from-rose-500 to-pink-500",
+                "from-cyan-500 to-blue-500",
+              ];
+              const grad = palettes[i % palettes.length];
+              const initials = (d.name || "?")
+                .split(" ")
+                .map((s) => s[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase();
+              const stats = countsByDoctor.get((d.email || "").toLowerCase()) || {
+                active: 0,
+                cancelled: 0,
+                total: 0,
+              };
+              const selected = filterDoctorEmail === (d.email || "").toLowerCase();
+              return (
+                <button
+                  key={d.id}
+                  onClick={() =>
+                    setFilterDoctorEmail(
+                      selected ? null : (d.email || "").toLowerCase() || null,
+                    )
+                  }
+                  disabled={!d.email}
+                  className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-all ${
+                    selected
+                      ? "border-emerald-400 bg-emerald-50 shadow-md ring-2 ring-emerald-300/50"
+                      : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md"
+                  }`}
+                >
+                  <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${grad} text-sm font-bold text-white shadow ring-2 ring-white`}>
+                    {initials}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold text-slate-900">{d.name}</p>
+                    <p className="truncate text-[11px] text-slate-500">
+                      {d.specialty}
+                      {d.experience ? ` · ${d.experience}y exp` : ""}
+                    </p>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${stats.total > 0 ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-500"}`}>
+                        {stats.total} total
+                      </span>
+                      {stats.active > 0 && (
+                        <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+                          {stats.active} active
+                        </span>
+                      )}
+                      {stats.cancelled > 0 && (
+                        <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-semibold text-rose-700">
+                          {stats.cancelled} cancelled
+                        </span>
+                      )}
+                      {d.status !== "Active" && (
+                        <span className="rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                          {d.status}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="rounded-xl border border-gray-100 bg-white p-12 text-center text-sm text-gray-400">
           Loading…
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-200 bg-white p-12 text-center text-sm text-gray-400">
-          No prescriptions {q ? "match this search" : "yet"}.
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 text-2xl">
+            💊
+          </div>
+          <p className="text-sm font-semibold text-slate-700">
+            {q
+              ? "No prescriptions match this search."
+              : filterDoctorEmail
+                ? "This doctor hasn't written any prescriptions yet."
+                : doctors.length === 0
+                  ? "No doctors on the platform yet."
+                  : "No prescriptions written yet."}
+          </p>
+          <p className="mt-1 text-xs text-slate-400">
+            {doctors.length > 0 && !q && !filterDoctorEmail
+              ? "Once any doctor writes a prescription via the EMR or a video consult, it'll appear here."
+              : "When prescriptions exist, each one is listed with its doctor, patient, diagnosis, and meds for full audit."}
+          </p>
         </div>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">

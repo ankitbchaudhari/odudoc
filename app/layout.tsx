@@ -126,7 +126,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    // suppressHydrationWarning on <html> and <body> tolerates the
+    // attributes that browser extensions (Grammarly, ColorZilla, Honey,
+    // share-modal extensions, etc.) inject between SSR and client
+    // hydration. Without it, those injected attrs trigger React error
+    // #418/#423 → which trips global-error.tsx → users see a snag page
+    // instead of the homepage even though our server response is fine.
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Speed up handshake for origins we hit on almost every page load.
             preconnect opens the TCP/TLS connection eagerly; dns-prefetch is
@@ -144,7 +150,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="/feed.xml"
         />
       </head>
-      <body className={`${inter.className} flex min-h-screen flex-col`}>
+      <body className={`${inter.className} flex min-h-screen flex-col`} suppressHydrationWarning>
         <AuthProvider>
           <CartProvider>
             <LanguageProvider>

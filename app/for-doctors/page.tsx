@@ -144,27 +144,41 @@ export default function ForDoctorsPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <span className="inline-block rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-wider">
-              For Medical Professionals
+              ✨ AI-powered EMR · Free for India&apos;s doctors
             </span>
             <h1 className="mt-4 text-4xl font-bold md:text-6xl">
-              Grow Your Practice with OduDoc
+              The AI EMR that does your{" "}
+              <span className="bg-gradient-to-r from-amber-200 via-yellow-100 to-white bg-clip-text text-transparent">
+                paperwork for you
+              </span>
             </h1>
             <p className="mt-6 text-lg text-white/90 md:text-xl">
-              Zero monthly fees. No subscription. We only earn when you do —
-              a flat 30% per successful consultation. That&apos;s it.
+              Ambient scribe writes your SOAP notes from the consultation audio. AI checks every prescription
+              for drug interactions. ICD-10 codes auto-suggested. Zero monthly fee — flat 30% only when you earn.
             </p>
+            <div className="mt-3 inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white/90 backdrop-blur">
+              <span>🎤 Ambient scribe</span>
+              <span>·</span>
+              <span>💊 Drug-interaction safety</span>
+              <span>·</span>
+              <span>📋 ICD-10 auto-coder</span>
+              <span>·</span>
+              <span>🧠 Differential diagnosis</span>
+              <span>·</span>
+              <span>🌏 12 Indian languages</span>
+            </div>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link
                 href="/for-doctors/register"
                 className="rounded-lg bg-white px-8 py-3 font-semibold text-primary-700 hover:bg-gray-100"
               >
-                Join as a Doctor
+                Join as a Doctor →
               </Link>
               <a
                 href="#how-we-earn"
                 className="rounded-lg border-2 border-white px-8 py-3 font-semibold text-white hover:bg-white/10"
               >
-                How We Earn
+                How the pricing works
               </a>
             </div>
           </div>

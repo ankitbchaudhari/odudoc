@@ -7,6 +7,8 @@ import DoctorCard from "@/components/DoctorCard";
 import BannerWithCTA from "@/components/banner/BannerWithCTA";
 import ServicesGrid from "@/components/home/ServicesGrid";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
+import AiFeaturesShowcase from "@/components/home/AiFeaturesShowcase";
+import ThreeAudiences from "@/components/home/ThreeAudiences";
 import Link from "next/link";
 import { faqs } from "@/lib/data";
 import { getPublicDoctorsFresh } from "@/lib/public-doctors";
@@ -40,6 +42,14 @@ export default async function Home() {
         }))}
       />
       <HeroWithTextSlider />
+
+      {/* Differentiator first — visitors land on the homepage and see
+          the AI features within one scroll. Other clinic-management
+          apps lead with "online appointments + digital prescriptions"
+          which we also have but don't differentiate on. */}
+      <AiFeaturesShowcase />
+
+      <ThreeAudiences />
 
       <ServicesGrid />
 

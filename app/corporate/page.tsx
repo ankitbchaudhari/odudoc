@@ -274,18 +274,27 @@ export default function CorporatePage() {
         <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-wider backdrop-blur-sm">
-              For Hospitals &amp; Clinics
+              For Hospitals · Clinics · HR Benefits
             </span>
             <h1 className="mt-5 text-4xl font-extrabold leading-tight sm:text-5xl md:text-6xl">
-              An intuitive healthcare solution —{" "}
+              The AI hospital OS that replaces{" "}
               <span className="bg-gradient-to-r from-teal-300 via-sky-300 to-indigo-300 bg-clip-text text-transparent">
-                ERP + EMR + AI
+                six disconnected tools
               </span>
             </h1>
             <p className="mt-5 max-w-xl text-lg text-slate-300">
-              Replace 6 disconnected tools with one platform. Patient records, OPD/IPD,
-              pharmacy, lab, billing, telemedicine and AI — unified and modular.
+              Patient records, OPD/IPD, pharmacy, lab, billing, telemedicine + a full AI EMR — unified
+              and modular. Ambient scribe, drug-interaction safety, ICD-10 auto-coding, differential Dx,
+              FHIR/HL7 export. What Abridge charges $400/doctor for, included by default.
             </p>
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-300">
+              <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur">🎤 Ambient scribe</span>
+              <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur">🧠 Differential Dx</span>
+              <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur">💊 Drug safety</span>
+              <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur">📋 ICD-10 codes</span>
+              <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur">🌏 12 languages</span>
+              <span className="rounded-full bg-white/10 px-2.5 py-1 backdrop-blur">🔓 FHIR/HL7 export</span>
+            </div>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/contact"

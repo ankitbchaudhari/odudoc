@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface LabTest {
   id: string;
@@ -15,9 +15,29 @@ interface LabTest {
   active: boolean;
 }
 
+interface DoctorRow {
+  id: string;
+  name: string;
+  email?: string;
+  specialty: string;
+  status: string;
+}
+
+interface RxLite {
+  id: string;
+  doctorEmail: string;
+  patientEmail: string;
+  data?: { patientName?: string; tests?: string[] };
+  status: string;
+  createdAt: string;
+}
+
 export default function AdminLabTests() {
   const [tests, setTests] = useState<LabTest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [doctors, setDoctors] = useState<DoctorRow[]>([]);
+  const [prescriptions, setPrescriptions] = useState<RxLite[]>([]);
+  const [filterDoctorEmail, setFilterDoctorEmail] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -36,15 +56,93 @@ export default function AdminLabTests() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await fetch("/api/lab-tests?view=admin", { cache: "no-store" });
-      if (r.ok) {
-        const data = await r.json();
-        setTests(data.tests || []);
-      }
+      // Catalogue + doctors + prescriptions are loaded together. The
+      // doctor activity panel below the catalogue mines the
+      // prescription store for `data.tests` arrays so we can show
+      // which doctors are actually ordering lab tests for patients —
+      // independent of who's curating the diagnostic catalogue.
+      const [catRes, drRes, rxRes] = await Promise.all([
+        fetch("/api/lab-tests?view=admin", { cache: "no-store" }).then((r) =>
+          r.ok ? r.json() : { tests: [] }
+        ),
+        fetch("/api/admin/doctors", { cache: "no-store" }).then((r) =>
+          r.ok ? r.json() : { doctors: [] }
+        ),
+        fetch("/api/prescriptions", { cache: "no-store" }).then((r) =>
+          r.ok ? r.json() : { prescriptions: [] }
+        ),
+      ]);
+      setTests(catRes.tests || []);
+      setDoctors(drRes.doctors || []);
+      setPrescriptions(rxRes.prescriptions || []);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  /** Per-doctor lab-test counts. We treat any prescription whose
+   *  data.tests array is non-empty as "doctor ordered tests" and
+   *  count individual test entries as well so admins can see both
+   *  "5 prescriptions with tests" and "12 tests ordered total". */
+  const labStatsByDoctor = useMemo(() => {
+    const map = new Map<
+      string,
+      { prescriptionsWithTests: number; testsOrdered: number; lastOrderedAt?: string }
+    >();
+    for (const p of prescriptions) {
+      const tests = p.data?.tests || [];
+      if (!Array.isArray(tests) || tests.length === 0) continue;
+      const k = (p.doctorEmail || "").toLowerCase();
+      const cur = map.get(k) || { prescriptionsWithTests: 0, testsOrdered: 0 };
+      cur.prescriptionsWithTests += 1;
+      cur.testsOrdered += tests.length;
+      if (!cur.lastOrderedAt || p.createdAt > cur.lastOrderedAt) {
+        cur.lastOrderedAt = p.createdAt;
+      }
+      map.set(k, cur);
+    }
+    return map;
+  }, [prescriptions]);
+
+  /** Flat list of "lab order rows" — one per (prescription, test).
+   *  This is what we show in the bottom table when an admin wants to
+   *  audit specific tests rather than per-doctor totals. */
+  const labOrderRows = useMemo(() => {
+    const rows: Array<{
+      key: string;
+      doctorEmail: string;
+      patientName: string;
+      patientEmail: string;
+      testName: string;
+      orderedAt: string;
+      prescriptionId: string;
+      prescriptionStatus: string;
+    }> = [];
+    for (const p of prescriptions) {
+      const tests = p.data?.tests || [];
+      if (!Array.isArray(tests)) continue;
+      tests.forEach((t, idx) => {
+        if (!t?.trim()) return;
+        rows.push({
+          key: `${p.id}-${idx}`,
+          doctorEmail: p.doctorEmail || "",
+          patientName: p.data?.patientName || "—",
+          patientEmail: p.patientEmail,
+          testName: t,
+          orderedAt: p.createdAt,
+          prescriptionId: p.id,
+          prescriptionStatus: p.status,
+        });
+      });
+    }
+    return rows
+      .filter((r) =>
+        filterDoctorEmail
+          ? r.doctorEmail.toLowerCase() === filterDoctorEmail
+          : true,
+      )
+      .sort((a, b) => (a.orderedAt < b.orderedAt ? 1 : -1));
+  }, [prescriptions, filterDoctorEmail]);
 
   useEffect(() => {
     load();
@@ -157,6 +255,160 @@ export default function AdminLabTests() {
           </button>
         </div>
       </div>
+
+      {/* Doctor activity panel — every doctor on the platform with
+          their lab-test ordering activity, sourced from prescriptions
+          that include a tests/investigations array. Click a card to
+          filter the orders table below. */}
+      {!loading && doctors.length > 0 && (
+        <div className="mb-6 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-3">
+            <div>
+              <p className="text-sm font-bold text-slate-900">
+                Doctors &amp; their lab-test orders · {doctors.length} doctor{doctors.length === 1 ? "" : "s"}
+              </p>
+              <p className="text-[11px] text-slate-500">
+                Counts come from prescriptions that include investigations.
+                Click a card to filter the orders table.
+              </p>
+            </div>
+            {filterDoctorEmail && (
+              <button
+                onClick={() => setFilterDoctorEmail(null)}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                ✕ Clear doctor filter
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+            {doctors.map((d, i) => {
+              const palettes = [
+                "from-violet-500 to-fuchsia-500",
+                "from-cyan-500 to-blue-500",
+                "from-emerald-500 to-teal-500",
+                "from-amber-500 to-orange-500",
+                "from-rose-500 to-pink-500",
+                "from-indigo-500 to-purple-500",
+              ];
+              const grad = palettes[i % palettes.length];
+              const initials = (d.name || "?")
+                .split(" ")
+                .map((s) => s[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase();
+              const stats = labStatsByDoctor.get((d.email || "").toLowerCase()) || {
+                prescriptionsWithTests: 0,
+                testsOrdered: 0,
+              };
+              const selected = filterDoctorEmail === (d.email || "").toLowerCase();
+              return (
+                <button
+                  key={d.id}
+                  onClick={() =>
+                    setFilterDoctorEmail(
+                      selected ? null : (d.email || "").toLowerCase() || null,
+                    )
+                  }
+                  disabled={!d.email}
+                  className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-all ${
+                    selected
+                      ? "border-violet-400 bg-violet-50 shadow-md ring-2 ring-violet-300/50"
+                      : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md"
+                  }`}
+                >
+                  <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${grad} text-sm font-bold text-white shadow ring-2 ring-white`}>
+                    {initials}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold text-slate-900">{d.name}</p>
+                    <p className="truncate text-[11px] text-slate-500">{d.specialty}</p>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${stats.testsOrdered > 0 ? "bg-violet-100 text-violet-800" : "bg-slate-100 text-slate-500"}`}>
+                        {stats.testsOrdered} tests ordered
+                      </span>
+                      {stats.prescriptionsWithTests > 0 && (
+                        <span className="rounded-full bg-violet-50 px-1.5 py-0.5 text-[10px] font-semibold text-violet-700">
+                          {stats.prescriptionsWithTests} Rx
+                        </span>
+                      )}
+                      {d.status !== "Active" && (
+                        <span className="rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                          {d.status}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Flat orders table — every doctor-ordered test, one row
+              per test entry. Filtered by the selected doctor. */}
+          <div className="border-t border-slate-100 bg-slate-50/30 px-5 py-3">
+            <p className="text-sm font-bold text-slate-900">
+              Recent lab tests ordered · {labOrderRows.length}
+              {filterDoctorEmail ? " (filtered)" : ""}
+            </p>
+          </div>
+          {labOrderRows.length === 0 ? (
+            <div className="px-5 py-10 text-center">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-100 to-fuchsia-100 text-2xl">
+                🧪
+              </div>
+              <p className="text-sm font-semibold text-slate-700">
+                {filterDoctorEmail
+                  ? "This doctor hasn't ordered any lab tests yet."
+                  : "No lab tests ordered by any doctor yet."}
+              </p>
+              <p className="mt-1 text-xs text-slate-400">
+                Tests appear here automatically when a doctor adds investigations to a prescription.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <tr>
+                    <th className="px-5 py-2">Ordered</th>
+                    <th className="px-5 py-2">Patient</th>
+                    <th className="px-5 py-2">Doctor</th>
+                    <th className="px-5 py-2">Test</th>
+                    <th className="px-5 py-2">Rx status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {labOrderRows.slice(0, 100).map((r) => (
+                    <tr key={r.key} className="transition hover:bg-violet-50/40">
+                      <td className="px-5 py-2 text-slate-600 whitespace-nowrap">
+                        {new Date(r.orderedAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-5 py-2">
+                        <div className="font-medium text-slate-900">{r.patientName}</div>
+                        <div className="text-[11px] text-slate-500">{r.patientEmail}</div>
+                      </td>
+                      <td className="px-5 py-2 text-slate-600">{r.doctorEmail}</td>
+                      <td className="px-5 py-2 font-medium text-violet-700">{r.testName}</td>
+                      <td className="px-5 py-2">
+                        <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${r.prescriptionStatus === "active" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600"}`}>
+                          {r.prescriptionStatus}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {labOrderRows.length > 100 && (
+                <p className="px-5 py-3 text-center text-xs text-slate-400">
+                  Showing the most recent 100 of {labOrderRows.length}.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {showForm && (
         <div className="mb-6 rounded-xl bg-white p-6 shadow-sm">

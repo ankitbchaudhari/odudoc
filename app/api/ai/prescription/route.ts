@@ -78,6 +78,8 @@ export async function POST(req: NextRequest) {
   const age = typeof body.age === "number" ? body.age : undefined;
   const sex = typeof body.sex === "string" ? body.sex : undefined;
   const allergies = typeof body.allergies === "string" ? body.allergies : undefined;
+  const language = typeof body.language === "string" ? body.language.trim() : "";
+  const wantsTranslation = !!language && !/^en(glish)?$/i.test(language);
 
   if (!symptoms && !diagnosis) {
     return NextResponse.json(
@@ -92,6 +94,9 @@ export async function POST(req: NextRequest) {
     age && `Age: ${age}`,
     sex && `Sex: ${sex}`,
     allergies && `Known allergies: ${allergies}`,
+    wantsTranslation
+      ? `Output language: ${language}. Write the "treatment" and "warning" fields in ${language} using its native script. Investigations may stay in English where standard (e.g. "CBC", "TSH"). Medicine NAMES must stay in English / Latin script — pharmacists need them that way and transliteration is unsafe; only the dose/frequency/duration text may be localised.`
+      : "",
     "",
     "Respond with a single JSON object: { \"treatment\": string, \"investigations\": string[], \"medicines\": [{\"name\": string, \"dose\": string, \"frequency\": string, \"duration\": string}], \"warning\": string | null }",
   ]

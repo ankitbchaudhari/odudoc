@@ -13,6 +13,15 @@
 
 import { useEffect, useState } from "react";
 import DrugInteractionAlert from "./DrugInteractionAlert";
+import { ALL_LANGUAGES } from "@/lib/languages-catalogue";
+
+// 8th Schedule of the Indian Constitution — the 22 official languages.
+// Codes match `lib/languages-catalogue.ts`. Used to bucket the picker
+// so doctors see Indian languages first without scrolling past German.
+const INDIAN_LANG_CODES = new Set([
+  "hi", "bn", "ur", "pa", "gu", "ta", "te", "kn", "ml", "mr", "ne",
+  "as", "or", "mai", "ks", "sd", "kok", "doi", "brx", "mni", "sat", "sa",
+]);
 
 export interface MedicineRow {
   name: string;
@@ -189,6 +198,12 @@ export default function DoctorNotesPanel({
   const [notes, setNotes] = useState("");
   const [medicines, setMedicines] = useState<MedicineRow[]>([{ ...EMPTY_MED }]);
   const [sending, setSending] = useState(false);
+  /** Patient's preferred language for the prescription text. Defaults
+   *  to English ("") which is the existing behaviour. When set, the AI
+   *  suggest call asks Gemini to write in the chosen language, and
+   *  the "Translate" button re-renders any already-filled fields. */
+  const [rxLanguage, setRxLanguage] = useState<string>("");
+  const [translating, setTranslating] = useState(false);
 
   // Phase C: when a dictation result lands, merge it into the form so
   // the doctor can review + tweak before sending. We overwrite rather
@@ -255,7 +270,11 @@ export default function DoctorNotesPanel({
       const r = await fetch("/api/ai/prescription", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ symptoms: symptoms.trim(), diagnosis: diagnosis.trim() }),
+        body: JSON.stringify({
+          symptoms: symptoms.trim(),
+          diagnosis: diagnosis.trim(),
+          language: rxLanguage,
+        }),
       });
       if (r.ok) {
         const { suggestion } = (await r.json()) as { suggestion: AiSuggestion & { warning?: string } };
@@ -284,6 +303,68 @@ export default function DoctorNotesPanel({
       }
     } finally {
       setAiBusy(false);
+    }
+  };
+
+  /** Translate the already-filled prescription into rxLanguage. Drug
+   *  names are guaranteed by the server to come from the source by
+   *  index — never a Gemini-translated rename. */
+  const translateRx = async () => {
+    if (!rxLanguage) {
+      setAiMsg("Pick a language first.");
+      return;
+    }
+    setTranslating(true);
+    setAiMsg("");
+    try {
+      const cleanMeds = medicines.filter((m) => m.name.trim());
+      const r = await fetch("/api/ai/translate-rx", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          language: rxLanguage,
+          treatment: treatment.trim(),
+          investigations: investigations
+            .split(/\n|,/)
+            .map((s) => s.trim())
+            .filter(Boolean),
+          medicines: cleanMeds,
+          warning: aiWarning,
+        }),
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        setAiMsg(data.error || `Translation failed (${r.status})`);
+        return;
+      }
+      const out = data.result as {
+        treatment: string;
+        investigations: string[];
+        medicines: MedicineRow[];
+        warning?: string;
+      };
+      if (out.treatment) setTreatment(out.treatment);
+      if (out.investigations?.length)
+        setInvestigations(out.investigations.join("\n"));
+      if (out.medicines?.length) {
+        // Replace by index — drug names from the source are preserved
+        // server-side; we only swap dose/frequency/duration locally.
+        setMedicines((prev) =>
+          prev.map((m, i) => {
+            if (!m.name.trim()) return m;
+            const filledIndex = prev
+              .slice(0, i + 1)
+              .filter((p) => p.name.trim()).length - 1;
+            const t = out.medicines[filledIndex];
+            return t ? { ...m, dose: t.dose, frequency: t.frequency, duration: t.duration } : m;
+          })
+        );
+      }
+      if (out.warning) setAiWarning(out.warning);
+    } catch (err) {
+      setAiMsg((err as Error).message);
+    } finally {
+      setTranslating(false);
     }
   };
 
@@ -453,24 +534,66 @@ export default function DoctorNotesPanel({
         </div>
 
         {/* AI suggest — one click fills treatment, investigations,
-            and starter medicines based on the diagnosis/symptoms. */}
+            and starter medicines based on the diagnosis/symptoms.
+            The language picker pins the output language so the patient
+            reads their prescription in their own script. Drug names
+            stay in Latin script regardless (pharmacy + safety). */}
         <div className="rounded-lg border border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50 p-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="text-lg">🤖</span>
               <div>
                 <p className="text-sm font-semibold text-indigo-900">AI Prescription Helper</p>
-                <p className="text-[11px] text-indigo-700/80">Auto-fill treatment + meds from the diagnosis.</p>
+                <p className="text-[11px] text-indigo-700/80">Auto-fill + write in patient&rsquo;s language.</p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={runAiSuggest}
-              disabled={aiBusy}
-              className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-60"
-            >
-              {aiBusy ? "Thinking…" : "Suggest"}
-            </button>
+            <div className="flex items-center gap-1.5">
+              <select
+                value={rxLanguage}
+                onChange={(e) => setRxLanguage(e.target.value)}
+                title="Patient's preferred language for the prescription text. Drug names always stay in English."
+                className="rounded-md border border-indigo-200 bg-white px-2 py-1 text-[11px] text-indigo-900 focus:border-indigo-400 focus:outline-none"
+              >
+                <option value="">English (default)</option>
+                <optgroup label="Indian languages">
+                  {ALL_LANGUAGES
+                    .filter((l) => INDIAN_LANG_CODES.has(l.code))
+                    .map((l) => (
+                      <option key={l.code} value={l.name}>
+                        {l.name} · {l.native}
+                      </option>
+                    ))}
+                </optgroup>
+                <optgroup label="All languages">
+                  {ALL_LANGUAGES
+                    .filter((l) => !INDIAN_LANG_CODES.has(l.code))
+                    .map((l) => (
+                      <option key={l.code} value={l.name}>
+                        {l.name}
+                      </option>
+                    ))}
+                </optgroup>
+              </select>
+              <button
+                type="button"
+                onClick={runAiSuggest}
+                disabled={aiBusy || translating}
+                className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-60"
+              >
+                {aiBusy ? "Thinking…" : "Suggest"}
+              </button>
+              {rxLanguage && (
+                <button
+                  type="button"
+                  onClick={translateRx}
+                  disabled={translating || aiBusy}
+                  title={`Translate the already-filled fields into ${rxLanguage} (drug names stay in English)`}
+                  className="rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 disabled:opacity-60"
+                >
+                  {translating ? "Translating…" : `↻ Translate`}
+                </button>
+              )}
+            </div>
           </div>
           {aiMsg && (
             <p className="mt-2 text-[11px] text-indigo-700">{aiMsg}</p>

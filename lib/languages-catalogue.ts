@@ -38,6 +38,22 @@ export const ALL_LANGUAGES: LanguageDef[] = [
   { code: "gu", name: "Gujarati", native: "ગુજરાતી", rtl: false, countries: [] },
   { code: "ta", name: "Tamil", native: "தமிழ்", rtl: false, countries: ["LK"] },
   { code: "te", name: "Telugu", native: "తెలుగు", rtl: false, countries: [] },
+  // --- Indian Constitution 8th Schedule additions ---
+  // Schedule 8 lists 22 official languages; the 11 here complete the
+  // set when combined with hi/bn/ur/pa/gu/ta/te/kn/ml/mr/ne already
+  // present above. Order is rough population-share so the autosuggest
+  // picker surfaces the highest-demand options first.
+  { code: "as",  name: "Assamese",  native: "অসমীয়া",     rtl: false, countries: [] },
+  { code: "or",  name: "Odia",      native: "ଓଡ଼ିଆ",       rtl: false, countries: [] },
+  { code: "mai", name: "Maithili",  native: "मैथिली",      rtl: false, countries: [] },
+  { code: "ks",  name: "Kashmiri",  native: "कॉशुर",       rtl: false, countries: [] },
+  { code: "sd",  name: "Sindhi",    native: "سنڌي",        rtl: true,  countries: [] },
+  { code: "kok", name: "Konkani",   native: "कोंकणी",      rtl: false, countries: [] },
+  { code: "doi", name: "Dogri",     native: "डोगरी",       rtl: false, countries: [] },
+  { code: "brx", name: "Bodo",      native: "बड़ो",         rtl: false, countries: [] },
+  { code: "mni", name: "Manipuri",  native: "ꯃꯅꯤꯄꯨꯔꯤ",  rtl: false, countries: [] },
+  { code: "sat", name: "Santali",   native: "ᱥᱟᱱᱛᱟᱲᱤ",     rtl: false, countries: [] },
+  { code: "sa",  name: "Sanskrit",  native: "संस्कृतम्",   rtl: false, countries: [] },
   { code: "kn", name: "Kannada", native: "ಕನ್ನಡ", rtl: false, countries: [] },
   { code: "ml", name: "Malayalam", native: "മലയാളം", rtl: false, countries: [] },
   { code: "mr", name: "Marathi", native: "मराठी", rtl: false, countries: [] },

@@ -27,6 +27,14 @@ export interface SuggestInput {
   age?: number;
   sex?: string;
   allergies?: string;
+  /** Patient's preferred language — when set, the natural-language
+   *  fields (treatment, warning) are written in that language so the
+   *  patient can read their own prescription. Drug names stay in
+   *  English/Latin script because pharmacists need them that way and
+   *  transliteration of generics is unsafe. Pass either an ISO code
+   *  ("hi", "ta") or a human name ("Hindi", "Tamil") — Gemini handles
+   *  both. Empty / missing = English (existing behaviour). */
+  language?: string;
 }
 
 export type SuggestResult =
@@ -66,12 +74,18 @@ export async function suggestPrescription(input: SuggestInput): Promise<SuggestR
     };
   }
 
+  const language = (input.language || "").trim();
+  const wantsTranslation = !!language && !/^en(glish)?$/i.test(language);
+
   const userPrompt = [
     diagnosis && `Working diagnosis: ${diagnosis}`,
     symptoms && `Symptoms: ${symptoms}`,
     input.age && `Age: ${input.age}`,
     input.sex && `Sex: ${input.sex}`,
     input.allergies && `Known allergies: ${input.allergies}`,
+    wantsTranslation
+      ? `Output language: ${language}. Write the "treatment" and "warning" fields in ${language} using the language's own script. Investigations may stay in English where standard (e.g. "CBC", "TSH"). Medicine NAMES must stay in English / Latin script (generic names) — pharmacists need them that way and transliteration is unsafe; only the dose/frequency/duration text may be localised.`
+      : "",
     "",
     'Respond with a single JSON object: { "treatment": string, "investigations": string[], "medicines": [{"name": string, "dose": string, "frequency": string, "duration": string}], "warning": string | null }',
   ]

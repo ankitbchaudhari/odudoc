@@ -57,7 +57,11 @@ const ASSET_LINKS = [
       namespace: "android_app",
       package_name: "com.odudoc.patient",
       sha256_cert_fingerprints: [
-        // Replace with patient-app upload-key + Play signing fingerprints
+        // EAS-managed upload keystore zPRVramS3I (default), generated
+        // 2026-05-01 during the patient app's first preview build.
+        "E9:63:FF:A1:E5:29:10:20:D2:D7:B2:2A:B4:32:B8:5A:D5:96:DD:CF:1D:FE:A4:81:47:4F:22:74:6D:4A:90:DA",
+        // TODO: Add Play App Signing fingerprint after first Play Store
+        // upload — Play Console → Setup → App integrity → SHA-256.
       ],
     },
   },

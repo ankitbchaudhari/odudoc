@@ -41,15 +41,12 @@ const ASSET_LINKS = [
       namespace: "android_app",
       package_name: "com.saluent.doctor",
       sha256_cert_fingerprints: [
-        // EAS-managed upload keystore (build profile: preview/production).
-        // Renamed from com.odudoc.doctor → com.saluent.doctor on
-        // 2026-05-01 because the original package name had a stale
-        // signing-key claim from a defunct prior build that we couldn't
-        // recover. Signing keystore (and SHA-256) is unchanged because
-        // EAS keystores are tied to the Expo project, not the package
-        // name. If you ever rotate the keystore, add the new fingerprint
-        // alongside this one.
-        "F6:3D:E3:16:9E:D5:A7:11:2E:1D:B9:56:3D:52:5A:E6:2E:90:37:7F:38:A6:EC:F9:B6:1F:32:31:FB:88:63:D6",
+        // EAS-managed upload keystore MXgiyiAy6g (default), generated
+        // 2026-05-02 specifically for the com.saluent.doctor package
+        // (EAS keys a keystore by [project, package_name], so the
+        // package rename triggered a fresh keystore rather than reusing
+        // the old com.odudoc.doctor one).
+        "1E:AE:1C:6A:E6:C6:DC:7A:29:5B:70:A6:BE:ED:13:03:42:B1:CD:9D:FA:DF:C1:90:FC:C0:30:54:4F:9F:94:EA",
         // TODO: After first Play Store upload, add the Play App Signing
         // fingerprint here too — find it in Play Console → Setup → App
         // integrity → "App signing key certificate" → SHA-256.

@@ -14,6 +14,7 @@ import Analytics from "@/components/Analytics";
 import LoadingBar from "@/components/LoadingBar";
 import ReferralAttribution from "@/components/ReferralAttribution";
 import { OrganizationLd, WebsiteLd } from "@/components/StructuredData";
+import ClientErrorBoundary from "@/components/ClientErrorBoundary";
 
 // AIChatbot is a 500+ line client component that ships on every page
 // load but is only ever rendered as a floating bubble until a user
@@ -154,15 +155,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <CartProvider>
             <LanguageProvider>
-              <LoadingBar />
-              <ReferralAttribution />
+              <ClientErrorBoundary label="LoadingBar"><LoadingBar /></ClientErrorBoundary>
+              <ClientErrorBoundary label="ReferralAttribution"><ReferralAttribution /></ClientErrorBoundary>
               <ConditionalLayout>{children}</ConditionalLayout>
-              <CookieConsent />
-              <AIChatbot />
-              <BackToTop />
-              <GoogleTranslate />
-              <ExperimentBootstrap />
-              <Analytics />
+              <ClientErrorBoundary label="CookieConsent"><CookieConsent /></ClientErrorBoundary>
+              <ClientErrorBoundary label="AIChatbot"><AIChatbot /></ClientErrorBoundary>
+              <ClientErrorBoundary label="BackToTop"><BackToTop /></ClientErrorBoundary>
+              <ClientErrorBoundary label="GoogleTranslate"><GoogleTranslate /></ClientErrorBoundary>
+              <ClientErrorBoundary label="ExperimentBootstrap"><ExperimentBootstrap /></ClientErrorBoundary>
+              <ClientErrorBoundary label="Analytics"><Analytics /></ClientErrorBoundary>
             </LanguageProvider>
           </CartProvider>
         </AuthProvider>

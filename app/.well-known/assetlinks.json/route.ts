@@ -39,11 +39,16 @@ const ASSET_LINKS = [
     relation: ["delegate_permission/common.handle_all_urls"],
     target: {
       namespace: "android_app",
-      package_name: "com.odudoc.doctor",
+      package_name: "com.saluent.doctor",
       sha256_cert_fingerprints: [
         // EAS-managed upload keystore (build profile: preview/production).
-        // This is the keystore EAS generated on 2026-04-30. If you ever
-        // rotate it, update this and add the new fingerprint alongside.
+        // Renamed from com.odudoc.doctor → com.saluent.doctor on
+        // 2026-05-01 because the original package name had a stale
+        // signing-key claim from a defunct prior build that we couldn't
+        // recover. Signing keystore (and SHA-256) is unchanged because
+        // EAS keystores are tied to the Expo project, not the package
+        // name. If you ever rotate the keystore, add the new fingerprint
+        // alongside this one.
         "F6:3D:E3:16:9E:D5:A7:11:2E:1D:B9:56:3D:52:5A:E6:2E:90:37:7F:38:A6:EC:F9:B6:1F:32:31:FB:88:63:D6",
         // TODO: After first Play Store upload, add the Play App Signing
         // fingerprint here too — find it in Play Console → Setup → App

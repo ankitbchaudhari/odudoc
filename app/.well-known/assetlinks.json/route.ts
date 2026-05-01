@@ -41,10 +41,13 @@ const ASSET_LINKS = [
       namespace: "android_app",
       package_name: "com.odudoc.doctor",
       sha256_cert_fingerprints: [
-        // Replace with the upload-key fingerprint:
-        // "AA:BB:CC:DD:...",
-        // And the Play App Signing fingerprint:
-        // "11:22:33:44:...",
+        // EAS-managed upload keystore (build profile: preview/production).
+        // This is the keystore EAS generated on 2026-04-30. If you ever
+        // rotate it, update this and add the new fingerprint alongside.
+        "F6:3D:E3:16:9E:D5:A7:11:2E:1D:B9:56:3D:52:5A:E6:2E:90:37:7F:38:A6:EC:F9:B6:1F:32:31:FB:88:63:D6",
+        // TODO: After first Play Store upload, add the Play App Signing
+        // fingerprint here too — find it in Play Console → Setup → App
+        // integrity → "App signing key certificate" → SHA-256.
       ],
     },
   },

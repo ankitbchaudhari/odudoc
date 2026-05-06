@@ -240,6 +240,16 @@ export const authOptions: NextAuthOptions = {
         if (fresh) {
           token.id = fresh.id;
           token.role = fresh.role;
+
+          // Backfill: if the user is still tagged "patient" but a doctor
+          // profile exists for this email, promote them. Catches users
+          // who signed in via Google before the signIn callback gained
+          // its doctor-profile lookup, and avoids forcing them to sign
+          // out + back in to pick up the right role.
+          if (fresh.role === "patient" && findDoctorByEmail(fresh.email)) {
+            const promoted = changeUserRole(fresh.id, "doctor");
+            if (promoted) token.role = promoted.role;
+          }
         }
       }
       return token;

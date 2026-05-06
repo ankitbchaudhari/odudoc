@@ -69,7 +69,7 @@ export default function DoctorVerificationGate({
 
   // Loading: render nothing visible to avoid flashing the dashboard
   // before the gate can decide whether to show.
-  if (loading || !status) {
+  if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <svg
@@ -93,6 +93,14 @@ export default function DoctorVerificationGate({
         </svg>
       </div>
     );
+  }
+
+  // API failed (401/403/404, or transient network/DB error). The
+  // dashboard's own session check will surface the right message —
+  // don't keep spinning forever, and don't block the page when the
+  // verification probe times out for any reason.
+  if (!status) {
+    return <>{children}</>;
   }
 
   // Verified: pass through to the real dashboard.

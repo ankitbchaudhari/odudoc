@@ -8,7 +8,9 @@ import {
   createUser,
   markEmailVerified,
   reloadUsers,
+  changeUserRole,
 } from "./users-store";
+import { findDoctorByEmail, reloadDoctors } from "./doctors-store";
 import { getMembershipsForUser } from "./memberships-store";
 import { getOrganizationById } from "./organizations-store";
 import { getServerSession } from "next-auth";
@@ -171,7 +173,7 @@ export const authOptions: NextAuthOptions = {
       if (!user.email) return false;
 
       // Same staleness concern as the credentials flow — refresh before lookup.
-      await reloadUsers();
+      await Promise.all([reloadUsers(), reloadDoctors()]);
 
       const existing = findUserByEmail(user.email);
 
@@ -180,8 +182,19 @@ export const authOptions: NextAuthOptions = {
         return "/auth/login?error=banned";
       }
 
+      // Auto-elevate role for existing doctor profiles. The /for-doctors
+      // signup flow creates the User row with role "patient" + a separate
+      // doctor profile; until this hook ran, Google sign-ins were stuck
+      // at "patient" even when a matching doctor profile existed, which
+      // caused /api/prescriptions and /api/doctor/instant to silently
+      // 401 / return empty results on the doctor dashboard.
+      const matchingDoctor = findDoctorByEmail(user.email);
+      const roleFromDoctor: "doctor" | null = matchingDoctor ? "doctor" : null;
+
       // New Google user — create as already-verified (Google vouches for the
-      // address) and let sign-in proceed.
+      // address) and let sign-in proceed. If a doctor profile exists with the
+      // same email, create the user record as "doctor" directly so the role
+      // is right on first JWT issue, not after a second sign-in.
       if (!existing) {
         const created = createUser({
           name: user.name || user.email.split("@")[0],
@@ -189,7 +202,7 @@ export const authOptions: NextAuthOptions = {
           phone: "",
           // Random password they never use — they sign in via Google.
           password: `google-${Math.random().toString(36).slice(2)}-${Date.now()}`,
-          role: "patient",
+          role: roleFromDoctor ?? "patient",
         });
         markEmailVerified(created.email);
         return true;
@@ -199,6 +212,13 @@ export const authOptions: NextAuthOptions = {
       // confirmed ownership) instead of emailing a link.
       if (!existing.emailVerified) {
         markEmailVerified(existing.email);
+      }
+
+      // If the user was created as "patient" but we now find a doctor
+      // profile with the same email, promote them. Idempotent — no-op
+      // when they're already a doctor / admin / staff / etc.
+      if (roleFromDoctor && existing.role === "patient") {
+        changeUserRole(existing.id, roleFromDoctor);
       }
 
       // Bump lastLoginAt so the inactivity gate doesn't fire on the next

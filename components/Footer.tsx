@@ -50,6 +50,7 @@ export default function Footer() {
         { label: t("footer.help"), href: "/help" },
         { label: t("footer.privacy"), href: "/privacy" },
         { label: t("footer.terms"), href: "/terms" },
+        { label: "Legal & Compliance", href: "/legal" },
         { label: t("footer.directory"), href: "/directory" },
         { label: t("footer.wiki"), href: "/wiki" },
       ],
@@ -166,6 +167,26 @@ export default function Footer() {
 
           <p className="text-sm text-gray-500">
             &copy; {new Date().getFullYear()} OduDoc. {t("footer.rights")}
+          </p>
+        </div>
+
+        {/* Merchant disclosure — required by Indian payment gateways
+            (Razorpay / IndusPays / PayU / Cashfree) for KYC sign-off.
+            Keep this visible site-wide; the /legal page has the full
+            statutory listing. */}
+        <div className="mt-8 border-t border-gray-800 pt-6 text-center text-xs leading-5 text-gray-500">
+          <p>
+            Payments processed by{" "}
+            <span className="font-medium text-gray-300">
+              SARJUDAS DIGITAL TRADING AND ESCROW SERVICES PRIVATE LIMITED
+            </span>
+            {" "}· CIN U52520GJ2019PTC109503 · GSTIN 24ABCCS4962M1ZY
+          </p>
+          <p className="mt-1">
+            Registered office: A-1002, 10th Floor, Aakash Pruthhvi, Vadod, Majura, Pandesara, Surat, Gujarat 394221, India ·{" "}
+            <Link href="/legal" className="text-primary-400 hover:underline">
+              Full legal details
+            </Link>
           </p>
         </div>
       </div>

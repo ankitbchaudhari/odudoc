@@ -26,6 +26,8 @@ interface DoctorRow {
     licenseUrl?: string;
   };
   verificationRejectionReason?: string;
+  verificationRequestedAt?: string;
+  verificationRequestedBy?: string;
   licenseCountry?: string;
   licenseNumber?: string;
   licenseExpiry?: string;
@@ -125,6 +127,35 @@ export default function AdminVerificationsPage() {
       load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Update failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function requestVerification(d: DoctorRow) {
+    const note = window.prompt(
+      `Send a verification reminder to ${d.name} at ${d.email}?\n\n` +
+        `Optional note for the doctor (e.g. "We need a clearer scan of your license"). Leave blank to send the standard email.`,
+      "",
+    );
+    if (note === null) return; // cancelled
+    setBusyId(d.id);
+    try {
+      const res = await fetch(
+        `/api/admin/doctors/${d.id}/request-verification`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ note: note.trim() || undefined }),
+        },
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Could not send the email");
+      }
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Request failed");
     } finally {
       setBusyId(null);
     }
@@ -238,6 +269,7 @@ export default function AdminVerificationsPage() {
               onApprove={() => approve(d)}
               onReject={() => setRejectFor(d)}
               onUnverify={() => unverify(d)}
+              onRequest={() => requestVerification(d)}
             />
           ))}
         </ul>
@@ -301,18 +333,34 @@ export default function AdminVerificationsPage() {
   );
 }
 
+function relativeTime(iso?: string): string | null {
+  if (!iso) return null;
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return null;
+  const diff = Date.now() - t;
+  if (diff < 60_000) return "just now";
+  const mins = Math.round(diff / 60_000);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.round(hours / 24);
+  return `${days}d ago`;
+}
+
 function DoctorCard({
   doctor: d,
   busy,
   onApprove,
   onReject,
   onUnverify,
+  onRequest,
 }: {
   doctor: DoctorRow;
   busy: boolean;
   onApprove: () => void;
   onReject: () => void;
   onUnverify: () => void;
+  onRequest: () => void;
 }) {
   const submitted = !!d.verificationSubmittedAt;
   const isPending = submitted && !d.verified;
@@ -363,8 +411,24 @@ function DoctorCard({
                 ? `Verified ${new Date(d.verifiedAt).toLocaleDateString()}${d.verifiedBy ? ` by ${d.verifiedBy}` : ""}`
                 : `Account created ${new Date(d.joinedAt).toLocaleDateString()}`}
           </p>
+          {!submitted && !d.verified && d.verificationRequestedAt && (
+            <p className="mt-0.5 text-[11px] font-medium text-sky-700">
+              Verification email sent {relativeTime(d.verificationRequestedAt)}
+              {d.verificationRequestedBy ? ` by ${d.verificationRequestedBy}` : ""}
+            </p>
+          )}
         </div>
         <div className="flex flex-wrap justify-end gap-2">
+          {!submitted && !d.verified && (
+            <button
+              onClick={onRequest}
+              disabled={busy}
+              className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-2 text-xs font-semibold text-sky-700 hover:bg-sky-100 disabled:opacity-50"
+              title="Email the doctor a reminder to upload their verification documents"
+            >
+              {busy ? "…" : d.verificationRequestedAt ? "↻ Resend request" : "✉ Request verification"}
+            </button>
+          )}
           {!d.verified && (
             <button
               onClick={onApprove}

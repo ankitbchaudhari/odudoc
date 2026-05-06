@@ -58,6 +58,8 @@ export async function GET(req: NextRequest) {
       verificationSubmittedAt: d.verificationSubmittedAt,
       verificationDocs: d.verificationDocs,
       verificationRejectionReason: d.verificationRejectionReason,
+      verificationRequestedAt: d.verificationRequestedAt,
+      verificationRequestedBy: d.verificationRequestedBy,
       licenseCountry: d.licenseCountry,
       licenseNumber: d.licenseNumber,
       licenseExpiry: d.licenseExpiry,

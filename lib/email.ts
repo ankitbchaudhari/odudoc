@@ -441,6 +441,54 @@ export async function sendDoctorApplicationStatusEmail(params: {
   });
 }
 
+export async function sendDoctorVerificationRequestEmail(params: {
+  to: string;
+  name?: string;
+  /** Free-text note from the admin (optional) — e.g. "We need a clearer
+   *  scan of the back of your medical license." Rendered verbatim if
+   *  provided. */
+  adminNote?: string;
+}): Promise<SendEmailResult> {
+  const greeting = params.name
+    ? `Dear Dr. ${escapeHtml(params.name.replace(/^Dr\.?\s+/i, ""))}`
+    : "Dear Doctor";
+  const noteHtml = params.adminNote
+    ? `<div style="margin:14px 0;padding:12px 14px;border-left:3px solid #0ea5e9;background:#f0f9ff;border-radius:4px;">
+         <p style="margin:0;font-size:13px;color:#0c4a6e;"><strong>Note from our team:</strong></p>
+         <p style="margin:6px 0 0 0;font-size:14px;color:#0c4a6e;white-space:pre-wrap;">${escapeHtml(params.adminNote)}</p>
+       </div>`
+    : "";
+
+  const html = renderShell({
+    preheader: "Action required — please complete your verification on OduDoc.",
+    heading: "Complete your OduDoc verification",
+    bodyHtml: `
+      <p>${greeting},</p>
+      <p>Your OduDoc account is set up, but we still need to verify your identity and credentials before patients can find and book you.</p>
+      ${noteHtml}
+      <p style="margin-top:14px;"><strong>What to upload (takes ~3 minutes):</strong></p>
+      <ul style="padding-left:20px;margin:8px 0;line-height:1.7;">
+        <li>Government-issued photo ID — front (and back if it's a card)</li>
+        <li>A selfie holding the same ID</li>
+        <li>Your medical practice license / registration certificate</li>
+      </ul>
+      <p style="margin-top:14px;">Open your dashboard, sign in, and the verification panel appears at the top with the upload fields. We review submissions within 48 hours.</p>
+    `,
+    ctaLabel: "Upload documents",
+    ctaUrl: `${SITE_URL}/dashboard/doctor`,
+    footerNote: "Replies go straight to our verification team. If you've already been verified or this looks like a mistake, just let us know.",
+  });
+
+  return sendEmail({
+    from: "admin",
+    to: params.to,
+    subject: `Action required — complete your ${BRAND} verification`,
+    html,
+    replyTo: `admin@${DOMAIN}`,
+    bulk: false,
+  });
+}
+
 export async function sendCareerApplicationReceived(params: {
   to: string;
   firstName: string;

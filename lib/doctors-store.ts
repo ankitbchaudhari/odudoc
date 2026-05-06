@@ -129,6 +129,14 @@ export interface Doctor {
    *  doctor sees this on the gate and can resubmit. Cleared on the
    *  next submission. */
   verificationRejectionReason?: string;
+  /** ISO timestamp when an admin last sent a "please upload your
+   *  documents" email via the admin verifications queue. Drives the
+   *  "Last requested 2 days ago" hint on the queue card and the
+   *  one-minute resend cooldown. */
+  verificationRequestedAt?: string;
+  /** Email of the admin who triggered the last verification request,
+   *  for the audit trail. */
+  verificationRequestedBy?: string;
 
   /** ISO 3166-1 alpha-2 country code that issued the medical license.
    *  Drives the label/regex applied at registration ("NPI" for US,
@@ -555,6 +563,23 @@ export function setDoctorHfrId(
   const d = doctors.find((x) => x.id === id);
   if (!d) return null;
   d.hfrId = hfrId.replace(/\s+/g, "");
+  d.updatedAt = now();
+  flush();
+  return d;
+}
+
+/** Admin-side: stamp the doctor row when an admin sends a
+ *  "please upload your verification documents" nudge. We don't
+ *  touch verified / verificationSubmittedAt — this is purely an
+ *  audit + cooldown marker. */
+export function markVerificationRequested(
+  id: string,
+  adminEmail: string,
+): Doctor | null {
+  const d = doctors.find((x) => x.id === id);
+  if (!d) return null;
+  d.verificationRequestedAt = now();
+  d.verificationRequestedBy = adminEmail || "admin";
   d.updatedAt = now();
   flush();
   return d;

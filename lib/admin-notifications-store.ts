@@ -10,6 +10,7 @@ export type AdminNotificationType =
   | "user_signup"
   | "doctor_application"
   | "doctor_verification_submission"
+  | "doctor_verification_requested"
   | "career_application"
   | "blog_published"
   | "withdrawal_request"

@@ -4,12 +4,14 @@ import { authOptions } from "@/lib/auth";
 import {
   listDoctors,
   createDoctor,
+  findDoctorByEmail,
   reloadDoctors,
   DOCTOR_TIERS,
   DOCTOR_SPECIALTIES,
   type DoctorStatus,
   type DoctorTier,
 } from "@/lib/doctors-store";
+import { listUsersAdmin, reloadUsers } from "@/lib/users-store";
 import { inviteDoctor } from "@/lib/doctor-invite";
 import { log } from "@/lib/log";
 
@@ -28,6 +30,36 @@ export async function GET(req: NextRequest) {
   // Refresh from Postgres so a warm Lambda started before the latest
   // approval still sees the newly-created doctor.
   await reloadDoctors();
+  await reloadUsers();
+
+  // Reconcile orphan doctor users — any user with role "doctor" who lacks
+  // a profile in doctors-store gets a stub created on the fly. Common
+  // causes: a profile was deleted but the user role wasn't downgraded,
+  // a doctor signed up via Google before the doctor-profile auto-create
+  // landed, or a verification webhook lost its persist. Without this
+  // backfill the admin Users panel says "4 doctors" while the Doctors
+  // panel only lists 2.
+  try {
+    const orphans = listUsersAdmin().filter(
+      (u) => u.role === "doctor" && !findDoctorByEmail(u.email)
+    );
+    for (const u of orphans) {
+      createDoctor({
+        name: u.name,
+        specialty: "General Physician",
+        email: u.email,
+        phone: u.phone,
+        status: "Active",
+      });
+      log.info("admin.doctors.reconciled_orphan", { email: u.email });
+    }
+    if (orphans.length > 0) {
+      await reloadDoctors();
+    }
+  } catch (err) {
+    log.error("admin.doctors.reconcile_failed", err);
+  }
+
   const { searchParams } = new URL(req.url);
   const doctors = listDoctors({
     search: searchParams.get("search") || undefined,

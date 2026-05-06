@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
             type: "subscription_activated",
             title: "Subscription activated",
             body: `Doctor ${doctorId} upgraded to premium — expires ${new Date(sub.expiresAt).toLocaleDateString()}`,
-            link: `/admin/doctors/${doctorId}`,
+            link: `/admin/doctors`,
           });
         } else {
           log.info("[induspays] payment success with unknown type", { paymentType });
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
             type: "subscription_activated",
             title: "Subscription renewed",
             body: `Doctor ${doctorId} renewed — now expires ${new Date(sub.expiresAt).toLocaleDateString()}`,
-            link: `/admin/doctors/${doctorId}`,
+            link: `/admin/doctors`,
           });
         }
         break;
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
             type: "subscription_cancelled",
             title: "Subscription cancelled",
             body: `Doctor ${doctorId} cancelled their subscription`,
-            link: `/admin/doctors/${doctorId}`,
+            link: `/admin/doctors`,
           });
         }
         break;

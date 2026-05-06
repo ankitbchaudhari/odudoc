@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
       type: "doctor_verification_submission",
       title: "New doctor verification submission",
       body: `${updated.name} submitted documents for review.`,
-      link: `/admin/doctors/${updated.id}`,
+      link: `/admin/doctors/verifications`,
     });
   } catch (err) {
     log.error("doctor.verification.admin_notification_failed", err);

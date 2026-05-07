@@ -526,6 +526,12 @@ export interface IdentityPublicView {
   submittedAt?: string;
   reviewedAt?: string;
   reviewNote?: string;
+  /** ISO 3166-1 alpha-2 country code stored on the user record.
+   *  Surfaced so the IdentityVerificationCard can show the right
+   *  document-type list (Aadhaar/PAN for IN, Driver's License/SSN
+   *  for US, Emirates ID for AE, etc.) without having to ask the
+   *  user "where are you from" again. */
+  country?: string;
 }
 
 export function getIdentity(userId: string): IdentityPublicView | null {
@@ -539,6 +545,7 @@ export function getIdentity(userId: string): IdentityPublicView | null {
     submittedAt: u.identity?.submittedAt,
     reviewedAt: u.identity?.reviewedAt,
     reviewNote: u.identity?.reviewNote,
+    country: u.country,
   };
 }
 

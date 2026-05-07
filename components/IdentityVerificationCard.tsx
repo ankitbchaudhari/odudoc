@@ -9,8 +9,12 @@
 // surfaces where a third party sees the ID (e.g. a doctor viewing a
 // patient summary).
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import IdentityBadge from "./IdentityBadge";
+import {
+  docTypesForCountry,
+  INTERNATIONAL_DOC_TYPES,
+} from "@/lib/identity-doc-types";
 
 interface IdentityState {
   medicalId: string;
@@ -20,21 +24,61 @@ interface IdentityState {
   submittedAt?: string;
   reviewedAt?: string;
   reviewNote?: string;
+  /** ISO 3166-1 alpha-2 country code from the user's profile.
+   *  Drives the document-type dropdown so an Indian user sees
+   *  Aadhaar/PAN, a US user sees Driver's License/State ID, etc. */
+  country?: string;
 }
 
-const DOC_TYPES = [
-  "Aadhaar",
-  "Passport",
-  "Driver's License",
-  "PAN Card",
-  "National ID",
-  "Other",
-];
+// Best-effort country detection for users whose profile country is
+// missing — falls back to navigator.language ("en-IN" → IN) and then
+// the IANA timezone. Unknown → undefined → INTERNATIONAL list.
+function detectClientCountry(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  const lang =
+    (typeof navigator !== "undefined" && navigator.language) || "";
+  if (lang.includes("-")) {
+    const region = lang.split("-").pop();
+    if (region && region.length === 2) return region.toUpperCase();
+  }
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const tzMap: Record<string, string> = {
+      "Asia/Kolkata": "IN",
+      "Asia/Calcutta": "IN",
+      "Asia/Karachi": "PK",
+      "Asia/Dhaka": "BD",
+      "Asia/Dubai": "AE",
+      "Asia/Riyadh": "SA",
+      "Asia/Singapore": "SG",
+      "Asia/Hong_Kong": "HK",
+      "Asia/Tokyo": "JP",
+      "Asia/Seoul": "KR",
+      "Asia/Shanghai": "CN",
+      "Europe/London": "GB",
+      "Europe/Paris": "FR",
+      "Europe/Berlin": "DE",
+      "America/New_York": "US",
+      "America/Los_Angeles": "US",
+      "America/Chicago": "US",
+      "America/Toronto": "CA",
+      "Australia/Sydney": "AU",
+    };
+    if (tz && tzMap[tz]) return tzMap[tz];
+  } catch {
+    // Intl can throw on legacy mobile browsers — fall through.
+  }
+  return undefined;
+}
 
 export default function IdentityVerificationCard() {
   const [identity, setIdentity] = useState<IdentityState | null>(null);
   const [loading, setLoading] = useState(true);
-  const [docType, setDocType] = useState(DOC_TYPES[0]);
+  // Document-type list adapts to the user's country once identity loads.
+  // Until then we render the international fallback so the form is never
+  // blank. Effect below swaps in the country-specific list and pre-selects
+  // the most common ID once the user record is known.
+  const [docType, setDocType] = useState<string>(INTERNATIONAL_DOC_TYPES[0]);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +102,24 @@ export default function IdentityVerificationCard() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Country-aware document type list. Server-provided country wins; if
+  // the user's profile doesn't have one yet, fall back to the browser's
+  // best guess so the form still adapts ("en-IN" → Aadhaar, "en-US" →
+  // Driver's License, "ar-AE" → Emirates ID, etc.).
+  const docTypeOptions = useMemo(() => {
+    const iso = identity?.country || detectClientCountry();
+    return docTypesForCountry(iso);
+  }, [identity?.country]);
+
+  // Pre-select the first option when the country list changes — but
+  // only if the current selection isn't valid for the new list. This
+  // avoids clobbering a deliberate choice the user already made.
+  useEffect(() => {
+    if (!docTypeOptions.includes(docType)) {
+      setDocType(docTypeOptions[0]);
+    }
+  }, [docTypeOptions, docType]);
 
   const copyId = async () => {
     if (!identity?.medicalId) return;
@@ -185,7 +247,7 @@ export default function IdentityVerificationCard() {
               onChange={(e) => setDocType(e.target.value)}
               className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
-              {DOC_TYPES.map((t) => (
+              {docTypeOptions.map((t) => (
                 <option key={t} value={t}>{t}</option>
               ))}
             </select>

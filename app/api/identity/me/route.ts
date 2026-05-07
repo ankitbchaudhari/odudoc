@@ -32,5 +32,7 @@ export async function GET() {
     submittedAt: identity.submittedAt,
     reviewedAt: identity.reviewedAt,
     reviewNote: identity.reviewNote,
+    // Drives the country-aware document-type list on the upload card.
+    country: identity.country,
   });
 }

@@ -20,6 +20,8 @@ export default function ProfilePage() {
     newPass: "",
     confirm: "",
   });
+  const [pwBusy, setPwBusy] = useState(false);
+  const [pwMsg, setPwMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [saved, setSaved] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
@@ -119,6 +121,45 @@ export default function ProfilePage() {
     }
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
+  };
+
+  const handleChangePassword = async () => {
+    setPwMsg(null);
+    if (!passwords.current || !passwords.newPass || !passwords.confirm) {
+      setPwMsg({ kind: "err", text: "Please fill in all three fields." });
+      return;
+    }
+    if (passwords.newPass !== passwords.confirm) {
+      setPwMsg({ kind: "err", text: "New password and confirmation don't match." });
+      return;
+    }
+    if (passwords.newPass.length < 8) {
+      setPwMsg({ kind: "err", text: "New password must be at least 8 characters." });
+      return;
+    }
+    setPwBusy(true);
+    try {
+      const res = await fetch("/api/profile/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          current: passwords.current,
+          newPass: passwords.newPass,
+          confirm: passwords.confirm,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setPwMsg({ kind: "err", text: data.error || "Password update failed." });
+        return;
+      }
+      setPwMsg({ kind: "ok", text: "Password updated. Use the new one next time you sign in." });
+      setPasswords({ current: "", newPass: "", confirm: "" });
+    } catch (err) {
+      setPwMsg({ kind: "err", text: (err as Error).message || "Network error — try again." });
+    } finally {
+      setPwBusy(false);
+    }
   };
 
   const addHistoryEntry = () => {
@@ -407,9 +448,25 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
+            {pwMsg && (
+              <div
+                className={`rounded-lg px-3 py-2 text-sm ${
+                  pwMsg.kind === "ok"
+                    ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200"
+                    : "bg-rose-50 text-rose-800 ring-1 ring-rose-200"
+                }`}
+              >
+                {pwMsg.text}
+              </div>
+            )}
             <div className="flex justify-end">
-              <button type="button" className="btn-outline !py-2 !text-sm">
-                Update Password
+              <button
+                type="button"
+                onClick={handleChangePassword}
+                disabled={pwBusy}
+                className="btn-outline !py-2 !text-sm disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {pwBusy ? "Updating…" : "Update Password"}
               </button>
             </div>
           </div>

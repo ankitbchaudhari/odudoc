@@ -60,6 +60,15 @@ export default function DoctorComplianceTile() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const refreshStripe = async () => {
+    try {
+      const r = await fetch("/api/doctors/me/stripe/status", { cache: "no-store" });
+      if (r.ok) setStripe(await r.json());
+    } catch {
+      // Network blip — leave the existing state alone.
+    }
+  };
+
   useEffect(() => {
     let cancelled = false;
     Promise.all([
@@ -73,6 +82,24 @@ export default function DoctorComplianceTile() {
       })
       .catch(() => {});
     return () => { cancelled = true; };
+  }, []);
+
+  // When the doctor returns from the Stripe-hosted form via
+  // /dashboard/doctor?stripe=return, Stripe sometimes hasn't yet
+  // flipped account.details_submitted to true — there's a 30-90s
+  // sync delay. Re-fetch status a few times after a return so the
+  // tile reflects reality without forcing the doctor to F5.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("stripe") !== "return") return;
+    let attempts = 0;
+    const id = window.setInterval(() => {
+      attempts++;
+      refreshStripe();
+      if (attempts >= 6) window.clearInterval(id);
+    }, 5000);
+    return () => window.clearInterval(id);
   }, []);
 
   const startStripe = async (kind: "onboard" | "refresh") => {
@@ -181,7 +208,7 @@ export default function DoctorComplianceTile() {
               </span>
             </div>
             {!stripeReady && (
-              <div className="mt-2.5 flex flex-wrap gap-2">
+              <div className="mt-2.5 flex flex-wrap items-center gap-2">
                 <button
                   onClick={() => startStripe(stripeMissing ? "onboard" : "refresh")}
                   disabled={busy}
@@ -193,7 +220,23 @@ export default function DoctorComplianceTile() {
                       ? "Connect Stripe →"
                       : "Resume onboarding →"}
                 </button>
-                {error && <p className="text-xs text-rose-600">{error}</p>}
+                {/* Manual re-check — covers the case where a doctor
+                    finished the Stripe form in another tab and the
+                    auto-poll on ?stripe=return didn't fire. Cheap;
+                    one /v1/accounts retrieve per click. */}
+                <button
+                  onClick={refreshStripe}
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  title="Re-check Stripe — useful if you finished the form in another window."
+                >
+                  ↻ Refresh status
+                </button>
+                {stripeMissing && (
+                  <span className="text-[11px] text-slate-500">
+                    Just finished Stripe? Click <b>Refresh status</b> — it can take up to a minute to sync.
+                  </span>
+                )}
+                {error && <p className="basis-full text-xs text-rose-600">{error}</p>}
               </div>
             )}
           </li>

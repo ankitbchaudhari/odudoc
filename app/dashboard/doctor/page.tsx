@@ -171,6 +171,12 @@ export default function DoctorDashboardPage() {
               >
                 Consultations
               </Link>
+              <Link
+                href="/dashboard/doctor/profile"
+                className="rounded-xl bg-white/15 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/25"
+              >
+                My profile
+              </Link>
             </div>
           </div>
         </div>

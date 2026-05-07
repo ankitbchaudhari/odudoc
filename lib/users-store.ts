@@ -648,6 +648,29 @@ export function validatePassword(
   return bcrypt.compareSync(plainPassword, hashedPassword);
 }
 
+/** Self-service password change. Validates the current password,
+ *  hashes and stores the new one, and clears any
+ *  must-change-password / temporary-password expiry flags so the
+ *  user isn't asked to re-rotate on the very next login.
+ *  Returns null if the user doesn't exist, "wrong_current" if the
+ *  current-password check fails, or the updated User on success. */
+export function changeUserPassword(
+  email: string,
+  currentPassword: string,
+  newPassword: string,
+): "wrong_current" | User | null {
+  const u = findUserByEmail(email);
+  if (!u) return null;
+  if (!validatePassword(currentPassword, u.password)) {
+    return "wrong_current";
+  }
+  u.password = bcrypt.hashSync(newPassword, 10);
+  u.mustChangePassword = false;
+  u.tempPasswordExpiresAt = undefined;
+  flush();
+  return u;
+}
+
 export function markEmailVerified(email: string): User | null {
   const u = findUserByEmail(email);
   if (!u) return null;

@@ -252,12 +252,29 @@ export default function AdminVerificationsPage() {
           ))}
         </div>
       ) : doctors.length === 0 ? (
-        <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-white p-16 text-center">
-          <p className="text-sm font-semibold text-slate-700">
+        <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-white p-12 text-center">
+          <p className="text-base font-semibold text-slate-800">
             {state === "pending"
               ? "Inbox zero — no doctors waiting for review."
               : `No doctors in the ${state} state.`}
           </p>
+          {state === "pending" && counts.all > counts.verified && (
+            <>
+              <p className="mt-2 text-sm text-slate-600">
+                {counts.all - counts.verified} doctor
+                {counts.all - counts.verified === 1 ? "" : "s"} on the platform
+                {" "}haven&apos;t uploaded documents yet. You can{" "}
+                <b>Manual-verify</b> them for demo / staff use, or{" "}
+                <b>Request verification</b> to email them an upload link.
+              </p>
+              <button
+                onClick={() => setState("all")}
+                className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-primary-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-primary-700"
+              >
+                Show all {counts.all} doctors →
+              </button>
+            </>
+          )}
         </div>
       ) : (
         <ul className="space-y-4">

@@ -43,18 +43,30 @@ export async function GET(req: NextRequest) {
     const orphans = listUsersAdmin().filter(
       (u) => u.role === "doctor" && !findDoctorByEmail(u.email)
     );
+    let reconciled = 0;
     for (const u of orphans) {
-      createDoctor({
-        name: u.name,
-        specialty: "General Physician",
-        email: u.email,
-        phone: u.phone,
-        status: "Active",
-      });
-      log.info("admin.doctors.reconciled_orphan", { email: u.email });
+      // Per-row try so a single bad row (e.g. blank email, weird
+      // unicode in name) doesn't abort the whole reconciliation
+      // loop and 500 the admin doctors page for everyone.
+      try {
+        createDoctor({
+          name: u.name,
+          specialty: "General Physician",
+          email: u.email,
+          phone: u.phone,
+          status: "Active",
+        });
+        reconciled++;
+      } catch (innerErr) {
+        log.warn("admin.doctors.reconcile_orphan_failed", {
+          email: u.email,
+          message: innerErr instanceof Error ? innerErr.message : String(innerErr),
+        });
+      }
     }
-    if (orphans.length > 0) {
+    if (reconciled > 0) {
       await reloadDoctors();
+      log.info("admin.doctors.reconciled_orphans", { count: reconciled });
     }
   } catch (err) {
     log.error("admin.doctors.reconcile_failed", err);

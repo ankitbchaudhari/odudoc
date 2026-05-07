@@ -47,7 +47,28 @@ export async function GET() {
       requirements: account.requirements ?? null,
     });
   } catch (err) {
-    log.error("doctors.stripe.status_failed", err);
-    return NextResponse.json({ error: "Stripe status check failed" }, { status: 502 });
+    // Don't 502 the dashboard for a transient Stripe API hiccup. Two
+    // common cases:
+    //   1. The stripeAccountId on file was deleted/rejected on Stripe's
+    //      side — treat as "not connected" so the doctor can re-onboard.
+    //   2. Stripe's rate limit kicked in — still degrade gracefully so
+    //      the dashboard renders instead of throwing 502 on every poll.
+    // Logged at warn so we still see the pattern in observability.
+    const errCode = (err as { code?: string; statusCode?: number } | null)?.code;
+    const status = (err as { statusCode?: number } | null)?.statusCode;
+    log.warn("doctors.stripe.status_degraded", {
+      doctorId: doctor.id,
+      errCode,
+      status,
+      message: err instanceof Error ? err.message : String(err),
+    });
+    return NextResponse.json({
+      connected: false,
+      detailsSubmitted: false,
+      payoutsEnabled: false,
+      chargesEnabled: false,
+      degraded: true,
+      reason: "stripe_unavailable",
+    });
   }
 }

@@ -358,7 +358,7 @@ export default function AdminDashboard() {
           <KpiCard
             label="Form Responses"
             value={stats?.formResponses ?? "—"}
-            href="/admin/appointments"
+            href="/admin/careers?tab=applications"
             tint="from-violet-50 to-purple-100/40 text-violet-900"
             iconBg="bg-gradient-to-br from-violet-500 to-purple-600 shadow-violet-500/30"
             icon={

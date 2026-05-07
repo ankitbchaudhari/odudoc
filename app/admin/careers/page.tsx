@@ -5,8 +5,17 @@ import type { JobVacancy, JobApplication, EmploymentType } from "@/lib/careers-s
 
 type AppView = "active" | "archived";
 
+// Read ?tab=applications once on mount so deep-links from the
+// admin dashboard's "Form Responses" tile land on the right tab
+// instead of the default "Jobs" view.
+function initialTab(): "jobs" | "applications" {
+  if (typeof window === "undefined") return "jobs";
+  const t = new URLSearchParams(window.location.search).get("tab");
+  return t === "applications" ? "applications" : "jobs";
+}
+
 export default function AdminCareersPage() {
-  const [tab, setTab] = useState<"jobs" | "applications">("jobs");
+  const [tab, setTab] = useState<"jobs" | "applications">(initialTab);
   const [jobs, setJobs] = useState<JobVacancy[]>([]);
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [editing, setEditing] = useState<JobVacancy | null>(null);

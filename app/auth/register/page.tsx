@@ -242,7 +242,6 @@ export default function RegisterPage() {
                   <PhoneInput
                     value={form.phone}
                     onChange={(next) => setForm((f) => ({ ...f, phone: next }))}
-                    defaultIso="IN"
                   />
                 </div>
               </div>

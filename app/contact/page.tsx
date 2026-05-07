@@ -290,7 +290,6 @@ export default function ContactPage() {
                         <PhoneInput
                           value={phone}
                           onChange={(next) => setPhone(next)}
-                          defaultIso="IN"
                         />
                       </div>
                       <div>

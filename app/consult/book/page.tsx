@@ -607,7 +607,6 @@ export default function BookConsultationPage() {
                 <PhoneInput
                   value={patientPhone}
                   onChange={(next) => setPatientPhone(next)}
-                  defaultIso="IN"
                 />
               </div>
               <div className="sm:col-span-2">

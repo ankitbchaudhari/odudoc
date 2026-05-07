@@ -276,7 +276,7 @@ export default function PharmacyOrderConfirm({ draft, onCancel }: Props) {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-            placeholder="+91 …"
+            placeholder="Phone (with country code, e.g. +1 …)"
           />
         </div>
       </div>

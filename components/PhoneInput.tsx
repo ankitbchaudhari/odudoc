@@ -3,14 +3,16 @@
 // International phone-number input with searchable country dropdown.
 //
 // Behaviour:
-//   - The component value is a single E.164-ish string like "+919876543210"
+//   - The component value is a single E.164-ish string like "+15551234567"
 //     so consumers can pass it through to the existing form.phone field.
 //   - User picks the country from a flag/dial-code dropdown; the national
 //     portion is typed in the adjacent input. We auto-prefix the dial code
 //     when the consumer reads `value`.
-//   - The dropdown is searchable by country name or dial code. Defaults to
-//     India because OduDoc's primary market is Indian doctors and patients —
-//     change `defaultIso` to override on a per-form basis.
+//   - The dropdown is searchable by country name or dial code. The default
+//     country is auto-detected from the browser locale + timezone so US
+//     visitors land on +1, UK visitors on +44, India on +91, etc. — no
+//     India-centric default. Pass `defaultIso="XX"` to force a specific
+//     starting country.
 //
 // We use Unicode regional-indicator flag emoji rather than image sprites,
 // so there's no asset bundle and the component works offline.
@@ -24,14 +26,9 @@ interface Country {
 }
 
 // Curated list — the long tail of micro-states is omitted to keep the
-// dropdown short. Add what you need; the order here is the dropdown order
-// (alphabetical except for the four pinned at the top).
+// dropdown short. Order is fully alphabetical so no single market gets
+// the visual prominence of the top slot.
 const COUNTRIES: Country[] = [
-  { iso: "IN", name: "India",          dial: "+91" },
-  { iso: "US", name: "United States",  dial: "+1"  },
-  { iso: "GB", name: "United Kingdom", dial: "+44" },
-  { iso: "AE", name: "UAE",            dial: "+971" },
-  // --- alphabetical ---
   { iso: "AF", name: "Afghanistan",    dial: "+93"  },
   { iso: "AL", name: "Albania",        dial: "+355" },
   { iso: "DZ", name: "Algeria",        dial: "+213" },
@@ -59,6 +56,7 @@ const COUNTRIES: Country[] = [
   { iso: "HK", name: "Hong Kong",      dial: "+852" },
   { iso: "HU", name: "Hungary",        dial: "+36"  },
   { iso: "IS", name: "Iceland",        dial: "+354" },
+  { iso: "IN", name: "India",          dial: "+91"  },
   { iso: "ID", name: "Indonesia",      dial: "+62"  },
   { iso: "IR", name: "Iran",           dial: "+98"  },
   { iso: "IQ", name: "Iraq",           dial: "+964" },
@@ -99,8 +97,89 @@ const COUNTRIES: Country[] = [
   { iso: "TR", name: "Turkey",         dial: "+90"  },
   { iso: "UG", name: "Uganda",         dial: "+256" },
   { iso: "UA", name: "Ukraine",        dial: "+380" },
+  { iso: "AE", name: "UAE",            dial: "+971" },
+  { iso: "GB", name: "United Kingdom", dial: "+44"  },
+  { iso: "US", name: "United States",  dial: "+1"   },
   { iso: "VN", name: "Vietnam",        dial: "+84"  },
 ];
+
+// Best-effort detection of the visitor's country — used as the default
+// dropdown selection when consumers don't pass a `defaultIso`. We try
+// navigator.language first (most reliable; "en-IN" → IN, "en-US" → US),
+// then fall back to a small timezone map for browsers that report a
+// neutral locale ("en", "en-Latn"). Last resort is "US" — the most
+// globally-recognisable starting point on an international platform.
+const TZ_TO_ISO: Record<string, string> = {
+  "Asia/Kolkata": "IN",
+  "Asia/Calcutta": "IN",
+  "America/New_York": "US",
+  "America/Los_Angeles": "US",
+  "America/Chicago": "US",
+  "America/Denver": "US",
+  "America/Phoenix": "US",
+  "America/Toronto": "CA",
+  "America/Vancouver": "CA",
+  "Europe/London": "GB",
+  "Europe/Paris": "FR",
+  "Europe/Berlin": "DE",
+  "Europe/Madrid": "ES",
+  "Europe/Rome": "IT",
+  "Europe/Amsterdam": "NL",
+  "Europe/Stockholm": "SE",
+  "Europe/Moscow": "RU",
+  "Europe/Istanbul": "TR",
+  "Asia/Dubai": "AE",
+  "Asia/Riyadh": "SA",
+  "Asia/Karachi": "PK",
+  "Asia/Dhaka": "BD",
+  "Asia/Singapore": "SG",
+  "Asia/Hong_Kong": "HK",
+  "Asia/Tokyo": "JP",
+  "Asia/Seoul": "KR",
+  "Asia/Shanghai": "CN",
+  "Asia/Bangkok": "TH",
+  "Asia/Jakarta": "ID",
+  "Asia/Manila": "PH",
+  "Asia/Ho_Chi_Minh": "VN",
+  "Asia/Tehran": "IR",
+  "Asia/Baghdad": "IQ",
+  "Asia/Jerusalem": "IL",
+  "Africa/Cairo": "EG",
+  "Africa/Lagos": "NG",
+  "Africa/Nairobi": "KE",
+  "Africa/Johannesburg": "ZA",
+  "Australia/Sydney": "AU",
+  "Australia/Melbourne": "AU",
+  "Pacific/Auckland": "NZ",
+  "America/Mexico_City": "MX",
+  "America/Sao_Paulo": "BR",
+  "America/Argentina/Buenos_Aires": "AR",
+  "America/Bogota": "CO",
+  "America/Santiago": "CL",
+};
+
+function detectDefaultIso(): string {
+  if (typeof window === "undefined" || typeof navigator === "undefined") {
+    return "US";
+  }
+  // 1. Try navigator.language ("en-IN", "fr-FR", "ja-JP").
+  const lang = navigator.language || (navigator.languages && navigator.languages[0]);
+  if (lang && lang.includes("-")) {
+    const region = lang.split("-").pop();
+    if (region && region.length === 2) {
+      const iso = region.toUpperCase();
+      if (COUNTRIES.find((c) => c.iso === iso)) return iso;
+    }
+  }
+  // 2. Try the IANA timezone.
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz && TZ_TO_ISO[tz]) return TZ_TO_ISO[tz];
+  } catch {
+    // Intl.DateTimeFormat can throw on legacy mobile browsers — fall through.
+  }
+  return "US";
+}
 
 function flagEmoji(iso: string): string {
   // Regional Indicator Symbol Letter A starts at U+1F1E6.
@@ -123,16 +202,21 @@ function splitValue(value: string): { country: Country; national: string } {
       }
     }
   }
-  // No recognisable prefix — return the configured default + raw input
+  // No recognisable prefix — return the auto-detected default + raw input
   // (without leading + so the consumer doesn't end up with "++91...").
-  const fallback = COUNTRIES.find((c) => c.iso === "IN") || COUNTRIES[0];
+  const detected = detectDefaultIso();
+  const fallback = COUNTRIES.find((c) => c.iso === detected) || COUNTRIES[0];
   return { country: fallback, national: clean.replace(/^\+/, "") };
 }
 
 export interface PhoneInputProps {
-  value: string;                      // E.164 stored string, e.g. "+919876543210"
+  value: string;                      // E.164 stored string, e.g. "+15551234567"
   onChange: (next: string) => void;   // called with the combined E.164 string
-  defaultIso?: string;                // ISO code for the dropdown when value is empty
+  /** ISO code to force-select for the dropdown when value is empty.
+   *  Leave undefined (the default) to let the component auto-detect
+   *  from the browser locale + timezone — that's the universal path.
+   *  Only override on forms that genuinely need a fixed market. */
+  defaultIso?: string;
   placeholder?: string;
   className?: string;                 // applied to the wrapper
   disabled?: boolean;
@@ -141,16 +225,20 @@ export interface PhoneInputProps {
 export default function PhoneInput({
   value,
   onChange,
-  defaultIso = "IN",
-  placeholder = "98765 43210",
+  defaultIso,
+  placeholder = "Phone number",
   className = "",
   disabled = false,
 }: PhoneInputProps) {
+  // Server-side render: pick the first country (alphabetical) as a stable
+  // placeholder; client effect below swaps in the real auto-detected one
+  // on hydrate so server and client markup match.
+  const initialIso = defaultIso || COUNTRIES[0].iso;
   const initial = useMemo(() => {
     if (value) return splitValue(value);
-    const c = COUNTRIES.find((x) => x.iso === defaultIso) || COUNTRIES[0];
+    const c = COUNTRIES.find((x) => x.iso === initialIso) || COUNTRIES[0];
     return { country: c, national: "" };
-  }, [value, defaultIso]);
+  }, [value, initialIso]);
 
   const [country, setCountry] = useState<Country>(initial.country);
   const [national, setNational] = useState<string>(initial.national);
@@ -159,16 +247,20 @@ export default function PhoneInput({
   const wrapRef = useRef<HTMLDivElement>(null);
 
   // Keep local state in sync if the parent resets `value` (e.g. on submit).
+  // When value is empty and no defaultIso was passed, swap to the auto-
+  // detected country once we're on the client. SSR uses the alphabetical
+  // first entry so server/client markup match on hydrate.
   useEffect(() => {
-    const next = splitValue(value || "");
-    if (!value) {
-      const c = COUNTRIES.find((x) => x.iso === defaultIso) || COUNTRIES[0];
-      setCountry(c);
-      setNational("");
+    if (value) {
+      const next = splitValue(value);
+      setCountry(next.country);
+      setNational(next.national);
       return;
     }
-    setCountry(next.country);
-    setNational(next.national);
+    const targetIso = defaultIso || detectDefaultIso();
+    const c = COUNTRIES.find((x) => x.iso === targetIso) || COUNTRIES[0];
+    setCountry(c);
+    setNational("");
   }, [value, defaultIso]);
 
   // Click-outside closes the dropdown.

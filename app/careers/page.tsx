@@ -349,7 +349,6 @@ function ApplicationForm({
                 <PhoneInput
                   value={form.phone}
                   onChange={(next) => setForm({ ...form, phone: next })}
-                  defaultIso="IN"
                 />
               </div>
 

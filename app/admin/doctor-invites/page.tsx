@@ -214,7 +214,7 @@ export default function DoctorInvitesPage() {
               label="WhatsApp phone (single recipient)"
               value={phone}
               onChange={setPhone}
-              placeholder="+919876543210 (with country code)"
+              placeholder="+15551234567 (E.164, with country code)"
             />
           </div>
           <p className="mt-1 text-[11px] text-slate-500">

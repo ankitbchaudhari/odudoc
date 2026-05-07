@@ -742,7 +742,6 @@ function Step1({
           <PhoneInput
             value={form.phone}
             onChange={(next) => update("phone", next)}
-            defaultIso="IN"
           />
         </Field>
         <Field

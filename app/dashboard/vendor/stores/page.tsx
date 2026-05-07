@@ -232,7 +232,7 @@ export default function VendorStoresPage() {
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 className="input"
-                placeholder="+91 98450 00000"
+                placeholder="+1 555 123 4567"
               />
             </FormField>
             <FormField label="Address line" className="sm:col-span-2">

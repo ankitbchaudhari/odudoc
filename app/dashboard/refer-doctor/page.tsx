@@ -146,7 +146,7 @@ export default function ReferDoctorPage() {
               <input
                 value={doctorPhone}
                 onChange={(e) => setDoctorPhone(e.target.value)}
-                placeholder="+919876543210"
+                placeholder="+15551234567 (with country code)"
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             </Field>

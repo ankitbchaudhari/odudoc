@@ -11,6 +11,7 @@ import {
   type DoctorStatus,
 } from "@/lib/doctors-store";
 import { sendDoctorRemovedEmail, sendEmail } from "@/lib/email";
+import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -147,6 +148,22 @@ export async function PATCH(
     }) || doctor;
   }
 
+  // Critical: drain pending Postgres writes before returning. Vercel
+  // serverless freezes the Lambda the moment we send the response, so
+  // updateDoctor()'s fire-and-forget flush() can be killed mid-write
+  // and the change disappears on the next page load. The admin's
+  // edits looked saved (response was 200, modal closed) but the row
+  // never persisted. await fixes this.
+  try {
+    await awaitAllFlushesStrict();
+  } catch (err) {
+    log.error("admin.doctors.persist_failed", err, { id });
+    return NextResponse.json(
+      { error: "Saved temporarily but failed to persist. Try again." },
+      { status: 500 },
+    );
+  }
+
   return NextResponse.json({ doctor });
 }
 
@@ -181,6 +198,19 @@ export async function DELETE(
     } catch (err) {
       log.error("admin_doctor_delete.email_threw", err);
     }
+  }
+
+  // Same persistence story as PATCH: deleteDoctor mutates the array
+  // and triggers a fire-and-forget flush. Without awaiting, the
+  // Lambda freezes on response and the row reappears on next read.
+  try {
+    await awaitAllFlushesStrict();
+  } catch (err) {
+    log.error("admin.doctors.delete_persist_failed", err, { id });
+    return NextResponse.json(
+      { error: "Deletion failed to persist. Try again." },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json({ ok: true });

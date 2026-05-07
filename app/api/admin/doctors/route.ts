@@ -13,6 +13,7 @@ import {
 } from "@/lib/doctors-store";
 import { listUsersAdmin, reloadUsers } from "@/lib/users-store";
 import { inviteDoctor } from "@/lib/doctor-invite";
+import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -132,6 +133,20 @@ export async function POST(req: NextRequest) {
     services: Array.isArray(body.services) ? (body.services as unknown[]).filter((s): s is string => typeof s === "string") : undefined,
     timeSlots: Array.isArray(body.timeSlots) ? (body.timeSlots as unknown[]).filter((s): s is string => typeof s === "string") : undefined,
   });
+
+  // Drain createDoctor's Postgres flush before doing anything else —
+  // serverless will freeze the Lambda the moment we respond, so any
+  // pending write would be lost. The admin sees a 201 + the new row
+  // appear in the list, but on the next page load it's gone.
+  try {
+    await awaitAllFlushesStrict();
+  } catch (err) {
+    log.error("admin.doctors.create_persist_failed", err);
+    return NextResponse.json(
+      { error: "Saved temporarily but failed to persist. Try again." },
+      { status: 500 },
+    );
+  }
 
   // Provision the doctor's login + fire off the welcome email and SMS with
   // a 7-day temporary password. Non-blocking — a mail/SMS outage should not

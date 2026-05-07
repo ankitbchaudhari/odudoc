@@ -2,12 +2,14 @@
 //
 // We point at the canonical public URLs using the Android package
 // names already configured in app.json + the website's universal-link
-// short paths. Until both apps are live in the stores, the Play
-// Store URL will 404 and iOS uses /p or /d fallback. After publish:
-//   - Drop the real Apple App Store IDs into APP_STORE_IDS below.
-//   - Bump the badge state to "live".
-
-import Link from "next/link";
+// short paths. Patient app is live on Play Store; doctor app is in
+// closed testing → in review. While in closed testing, the Play Store
+// page renders but the Install button is gated to enrolled testers
+// only — the URL itself is correct, that's a Play-Store-side gate.
+//
+// Use plain <a> (not next/link) — these are external URLs and
+// Next.js's prefetch logic on <Link> can interfere with target=_blank
+// on some browsers.
 
 type Variant = "patient" | "doctor";
 
@@ -23,18 +25,19 @@ interface Props {
   className?: string;
 }
 
-const PACKAGES: Record<Variant, { android: string; ios: string }> = {
+// `ios` is `null` until each app is approved on the App Store. While
+// null, the iOS badge is hidden so visitors don't tap a placeholder
+// link that 404s. Drop the real apps.apple.com URL in once approved.
+const PACKAGES: Record<Variant, { android: string; ios: string | null }> = {
   patient: {
     android: "https://play.google.com/store/apps/details?id=com.odudoc.patient",
-    // TODO: replace with the live App Store URL once the app is approved.
-    ios: "https://apps.apple.com/app/odudoc-patient/id0000000000",
+    ios: null,
   },
   doctor: {
     // Package renamed from com.odudoc.doctor → com.saluent.doctor when
     // the original ID hit an Android Developer Verification collision.
     android: "https://play.google.com/store/apps/details?id=com.saluent.doctor",
-    // TODO: replace with the live App Store URL once the app is approved.
-    ios: "https://apps.apple.com/app/odudoc-doctor/id0000000000",
+    ios: null,
   },
 };
 
@@ -73,23 +76,25 @@ export default function AppDownloadBadges({
 
   const Badges = (
     <div className="flex flex-wrap items-center justify-center gap-3">
-      <Link
-        href={links.ios}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={`Download OduDoc ${variant} app on the App Store`}
-        className="group flex items-center gap-3 rounded-xl bg-black px-5 py-3 text-white shadow-lg shadow-black/20 transition-transform hover:scale-105"
-      >
-        <svg className="h-7 w-7" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M17.564 12.553c-.022-2.404 1.965-3.557 2.054-3.613-1.118-1.635-2.857-1.858-3.476-1.884-1.48-.15-2.886.871-3.638.871-.751 0-1.91-.849-3.139-.825-1.616.024-3.106.943-3.937 2.392-1.677 2.91-.428 7.215 1.21 9.578.802 1.156 1.76 2.453 3.013 2.407 1.21-.049 1.668-.781 3.131-.781 1.464 0 1.875.781 3.155.755 1.302-.024 2.128-1.18 2.927-2.34.92-1.345 1.299-2.65 1.323-2.717-.029-.013-2.541-.975-2.563-3.843zm-2.396-7.062c.667-.81 1.117-1.93.994-3.05-.961.04-2.124.64-2.812 1.45-.617.717-1.156 1.86-1.011 2.957 1.07.084 2.16-.547 2.829-1.357z" />
-        </svg>
-        <div className="leading-tight">
-          <p className="text-[10px] uppercase tracking-wider text-white/70">Download on the</p>
-          <p className="text-base font-semibold">App Store</p>
-        </div>
-      </Link>
+      {links.ios && (
+        <a
+          href={links.ios}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`Download OduDoc ${variant} app on the App Store`}
+          className="group flex items-center gap-3 rounded-xl bg-black px-5 py-3 text-white shadow-lg shadow-black/20 transition-transform hover:scale-105"
+        >
+          <svg className="h-7 w-7" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M17.564 12.553c-.022-2.404 1.965-3.557 2.054-3.613-1.118-1.635-2.857-1.858-3.476-1.884-1.48-.15-2.886.871-3.638.871-.751 0-1.91-.849-3.139-.825-1.616.024-3.106.943-3.937 2.392-1.677 2.91-.428 7.215 1.21 9.578.802 1.156 1.76 2.453 3.013 2.407 1.21-.049 1.668-.781 3.131-.781 1.464 0 1.875.781 3.155.755 1.302-.024 2.128-1.18 2.927-2.34.92-1.345 1.299-2.65 1.323-2.717-.029-.013-2.541-.975-2.563-3.843zm-2.396-7.062c.667-.81 1.117-1.93.994-3.05-.961.04-2.124.64-2.812 1.45-.617.717-1.156 1.86-1.011 2.957 1.07.084 2.16-.547 2.829-1.357z" />
+          </svg>
+          <div className="leading-tight">
+            <p className="text-[10px] uppercase tracking-wider text-white/70">Download on the</p>
+            <p className="text-base font-semibold">App Store</p>
+          </div>
+        </a>
+      )}
 
-      <Link
+      <a
         href={links.android}
         target="_blank"
         rel="noopener noreferrer"
@@ -124,7 +129,7 @@ export default function AppDownloadBadges({
           <p className="text-[10px] uppercase tracking-wider text-white/70">Get it on</p>
           <p className="text-base font-semibold">Google Play</p>
         </div>
-      </Link>
+      </a>
     </div>
   );
 

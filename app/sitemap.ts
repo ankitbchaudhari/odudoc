@@ -22,6 +22,7 @@ const STATIC_ROUTES: Array<{
   { path: "/doctors", changeFrequency: "daily", priority: 0.9 },
   { path: "/corporate", changeFrequency: "weekly", priority: 0.9 },
   { path: "/for-doctors", changeFrequency: "weekly", priority: 0.9 },
+  { path: "/for-doctors/guide", changeFrequency: "monthly", priority: 0.75 },
   { path: "/for-clinics", changeFrequency: "weekly", priority: 0.9 },
   { path: "/pricing", changeFrequency: "weekly", priority: 0.85 },
   { path: "/tests", changeFrequency: "weekly", priority: 0.8 },

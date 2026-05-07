@@ -29,6 +29,8 @@ interface Doctor {
   country?: string;
   services?: string[];
   timeSlots?: string[];
+  profileNudgeAt?: string;
+  profileNudgeBy?: string;
 }
 
 interface TierDef {
@@ -347,6 +349,38 @@ export default function AdminDoctors() {
         body: JSON.stringify(patch),
       });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      await refresh();
+    } catch (err) {
+      alert((err as Error).message);
+    }
+  }
+
+  // Email the doctor a precise list of what's still missing on their
+  // profile (photo, fee, time slots, etc.) and a one-click link into
+  // the editor. Optional admin note rendered in a callout.
+  async function nudgeProfile(d: Doctor) {
+    const note = window.prompt(
+      `Email ${d.name} (${d.email}) and ask them to complete their profile?\n\n` +
+        `We'll list their missing fields automatically. Optional note (e.g. "patients in Mumbai are searching for your specialty"). Leave blank to send the standard email.`,
+      "",
+    );
+    if (note === null) return;
+    try {
+      const r = await fetch(
+        `/api/admin/doctors/${d.id}/request-profile-completion`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ note: note.trim() || undefined }),
+        },
+      );
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || "Could not send the email");
+      const list =
+        Array.isArray(data.missing) && data.missing.length > 0
+          ? `\n\nFields requested:\n• ${data.missing.join("\n• ")}`
+          : "";
+      alert(`Email sent to ${d.email}.${list}`);
       await refresh();
     } catch (err) {
       alert((err as Error).message);
@@ -689,6 +723,19 @@ export default function AdminDoctors() {
                           >
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => nudgeProfile(d)}
+                            className="rounded-lg border border-sky-100 bg-sky-50 p-2 text-sky-600 transition-all hover:-translate-y-0.5 hover:bg-sky-100 hover:shadow-sm"
+                            title={
+                              d.profileNudgeAt
+                                ? `Last nudged ${new Date(d.profileNudgeAt).toLocaleString()}${d.profileNudgeBy ? ` by ${d.profileNudgeBy}` : ""}`
+                                : "Email the doctor to complete their profile (photo, fee, time slots…)"
+                            }
+                          >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                           </button>
                           <button

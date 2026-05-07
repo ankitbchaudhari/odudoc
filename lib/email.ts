@@ -441,6 +441,62 @@ export async function sendDoctorApplicationStatusEmail(params: {
   });
 }
 
+export async function sendDoctorProfileCompletionEmail(params: {
+  to: string;
+  name?: string;
+  /** Plain-language list of missing fields the admin wants the doctor
+   *  to fill in — e.g. ["a profile photo", "your fee", "weekly time
+   *  slots"]. Rendered as a bullet list. Pass an empty array to send
+   *  the generic version. */
+  missing: string[];
+  /** Free-text note from the admin (optional) — e.g. "patients have
+   *  been searching for someone in your specialty in Mumbai." */
+  adminNote?: string;
+}): Promise<SendEmailResult> {
+  const greeting = params.name
+    ? `Dear Dr. ${escapeHtml(params.name.replace(/^Dr\.?\s+/i, ""))}`
+    : "Dear Doctor";
+
+  const missingHtml =
+    params.missing.length > 0
+      ? `<p style="margin-top:14px;"><strong>What's still missing on your profile:</strong></p>
+         <ul style="padding-left:20px;margin:8px 0;line-height:1.7;">
+           ${params.missing.map((m) => `<li>${escapeHtml(m)}</li>`).join("")}
+         </ul>`
+      : `<p style="margin-top:14px;">A few fields on your profile still need filling in — your photo, fee, and weekly availability are the most important ones for patients deciding to book.</p>`;
+
+  const noteHtml = params.adminNote
+    ? `<div style="margin:14px 0;padding:12px 14px;border-left:3px solid #0ea5e9;background:#f0f9ff;border-radius:4px;">
+         <p style="margin:0;font-size:13px;color:#0c4a6e;"><strong>Note from our team:</strong></p>
+         <p style="margin:6px 0 0 0;font-size:14px;color:#0c4a6e;white-space:pre-wrap;">${escapeHtml(params.adminNote)}</p>
+       </div>`
+    : "";
+
+  const html = renderShell({
+    preheader: "Your profile is missing a few details — please complete them to start getting bookings.",
+    heading: "Complete your OduDoc profile",
+    bodyHtml: `
+      <p>${greeting},</p>
+      <p>Your account is set up, but your profile isn't fully filled in yet — and incomplete profiles get far fewer bookings. Profiles with a real headshot and an 80+ word bio get roughly <strong>3.4×</strong> more bookings than blank ones.</p>
+      ${missingHtml}
+      ${noteHtml}
+      <p style="margin-top:14px;">Open your profile editor, fill in what's missing, and save — changes go live instantly.</p>
+    `,
+    ctaLabel: "Complete my profile",
+    ctaUrl: `${SITE_URL}/dashboard/doctor/profile`,
+    footerNote: "Replies go to our support team. If you've already updated your profile and this email surprises you, just let us know.",
+  });
+
+  return sendEmail({
+    from: "admin",
+    to: params.to,
+    subject: `Action needed — complete your ${BRAND} profile`,
+    html,
+    replyTo: `admin@${DOMAIN}`,
+    bulk: false,
+  });
+}
+
 export async function sendDoctorVerificationRequestEmail(params: {
   to: string;
   name?: string;

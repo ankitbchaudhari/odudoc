@@ -11,6 +11,7 @@ export type AdminNotificationType =
   | "doctor_application"
   | "doctor_verification_submission"
   | "doctor_verification_requested"
+  | "doctor_profile_nudge"
   | "career_application"
   | "blog_published"
   | "withdrawal_request"

@@ -138,6 +138,15 @@ export interface Doctor {
    *  for the audit trail. */
   verificationRequestedBy?: string;
 
+  /** ISO timestamp when an admin last sent a "please finish filling
+   *  in your profile" email (photo, bio, fee, time slots, etc.).
+   *  Distinct from verificationRequestedAt because it's about
+   *  profile completeness, not credential review. Drives a 1-minute
+   *  resend cooldown so the admin can't accidentally double-spam. */
+  profileNudgeAt?: string;
+  /** Email of the admin who sent the last profile-completion nudge. */
+  profileNudgeBy?: string;
+
   /** ISO 3166-1 alpha-2 country code that issued the medical license.
    *  Drives the label/regex applied at registration ("NPI" for US,
    *  "MCI / State Council" for IN, "GMC" for GB, etc.). */
@@ -566,6 +575,60 @@ export function setDoctorHfrId(
   d.updatedAt = now();
   flush();
   return d;
+}
+
+/** Admin-side: stamp the doctor row when an admin sends a
+ *  "please complete your profile" nudge (photo, fee, time slots,
+ *  etc.). Audit + cooldown marker only — doesn't touch any other
+ *  doctor fields. */
+export function markProfileNudgeSent(
+  id: string,
+  adminEmail: string,
+): Doctor | null {
+  const d = doctors.find((x) => x.id === id);
+  if (!d) return null;
+  d.profileNudgeAt = now();
+  d.profileNudgeBy = adminEmail || "admin";
+  d.updatedAt = now();
+  flush();
+  return d;
+}
+
+/** Compute which profile fields are still missing for a given
+ *  doctor. The admin "request profile completion" flow uses this
+ *  to send a precise list of what to fill in instead of a
+ *  generic "your profile is incomplete" email. Order matters —
+ *  most-impactful fields first so the email doesn't bury the lede. */
+export function listMissingProfileFields(d: Doctor): string[] {
+  const missing: string[] = [];
+  if (!d.imageUrl || d.imageUrl.trim().length === 0) {
+    missing.push("a profile photo");
+  }
+  if (!d.bio || d.bio.trim().length < 60) {
+    missing.push("a short bio (at least 60 characters)");
+  }
+  if (typeof d.fee !== "number" || d.fee <= 0) {
+    missing.push("your consultation fee");
+  }
+  if (!d.timeSlots || d.timeSlots.length === 0) {
+    missing.push("weekly availability time slots");
+  }
+  if (!d.qualifications || d.qualifications.trim().length === 0) {
+    missing.push("your qualifications (e.g. MBBS, MD)");
+  }
+  if (typeof d.experience !== "number" || d.experience <= 0) {
+    missing.push("years of experience");
+  }
+  if (!d.city || d.city.trim().length === 0) {
+    missing.push("your city");
+  }
+  if (!d.country || d.country.trim().length === 0) {
+    missing.push("your country");
+  }
+  if (!d.services || d.services.length === 0) {
+    missing.push("services / treatments offered");
+  }
+  return missing;
 }
 
 /** Admin-side: stamp the doctor row when an admin sends a

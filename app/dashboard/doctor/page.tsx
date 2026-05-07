@@ -7,6 +7,7 @@ import type { Consultation } from "@/lib/consultations-store";
 import type { PrescriptionRecord } from "@/lib/prescriptions-store";
 import DoctorComplianceTile from "@/components/DoctorComplianceTile";
 import BaaReacceptancePrompt from "@/components/BaaReacceptancePrompt";
+import DoctorGuideBanner from "@/components/DoctorGuideBanner";
 import { useDoctorMoney } from "@/components/useDoctorMoney";
 
 function greeting(): string {
@@ -228,6 +229,7 @@ export default function DoctorDashboardPage() {
         <div className="mb-6 space-y-4">
           <BaaReacceptancePrompt />
           <DoctorComplianceTile />
+          <DoctorGuideBanner />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">

@@ -21,7 +21,10 @@ interface Params {
   params: Promise<{ slug: string[] }>;
 }
 
-const PLAY_STORE = "https://play.google.com/store/apps/details?id=com.odudoc.doctor";
+// EAS keystore was rotated when we renamed the package from com.odudoc.doctor
+// → com.saluent.doctor to escape an Android Developer Verification collision.
+// The new package is what Play Store actually serves.
+const PLAY_STORE = "https://play.google.com/store/apps/details?id=com.saluent.doctor";
 
 function targetFor(parts: string[]): string {
   const [head, second] = parts;

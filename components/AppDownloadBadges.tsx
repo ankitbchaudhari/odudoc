@@ -30,7 +30,9 @@ const PACKAGES: Record<Variant, { android: string; ios: string }> = {
     ios: "https://apps.apple.com/app/odudoc-patient/id0000000000",
   },
   doctor: {
-    android: "https://play.google.com/store/apps/details?id=com.odudoc.doctor",
+    // Package renamed from com.odudoc.doctor → com.saluent.doctor when
+    // the original ID hit an Android Developer Verification collision.
+    android: "https://play.google.com/store/apps/details?id=com.saluent.doctor",
     // TODO: replace with the live App Store URL once the app is approved.
     ios: "https://apps.apple.com/app/odudoc-doctor/id0000000000",
   },

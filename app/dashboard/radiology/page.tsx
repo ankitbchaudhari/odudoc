@@ -20,6 +20,8 @@ export default function RadiologyDashboard() {
         { label: "New study", href: "/dashboard/radiology/new", emoji: "➕" },
         { label: "Pending reports", href: "/dashboard/radiology?filter=pending", emoji: "⏳" },
         { label: "Critical findings", href: "/dashboard/radiology?filter=abnormal", emoji: "⚠️" },
+        { label: "DICOM viewer", href: "/dashboard/radiology/viewer", emoji: "🔍" },
+        { label: "3D MPR", href: "/dashboard/radiology/mpr", emoji: "🧊" },
       ]}
     >
       <div className="mb-6 grid gap-4 grid-cols-2 lg:grid-cols-4">

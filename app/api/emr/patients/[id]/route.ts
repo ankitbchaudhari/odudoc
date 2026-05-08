@@ -15,9 +15,11 @@ import {
 } from "@/lib/emr-store";
 import {
   aclRoleFromClinicRole,
+  aclRoleFromConsentScope,
   redactPatientForRole,
   type RedactablePatient,
 } from "@/lib/patient-acl";
+import { activeConsentScope } from "@/lib/patient-consent-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
@@ -42,24 +44,84 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
   if (!clinic) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   const { id } = await ctx.params;
   await reloadPatients();
-  const patient = await getPatientById(id, ownerScope(clinic));
+
+  // Step 1: try the patient inside the requester's own clinic. This
+  // is the common path — same-clinic reads, intra-clinic role
+  // redaction via patient-acl matrix.
+  let patient = await getPatientById(id, ownerScope(clinic));
+  let aclRole = aclRoleFromClinicRole(clinic.role);
+  let consentScopeApplied: string | null = null;
+  let sourceClinicEmail: string | null = null;
+
+  // Step 2: cross-clinic read with patient consent. If the patient
+  // isn't in our clinic and the requester is a clinical role, look
+  // up the patient anywhere and check whether the patient has
+  // granted our clinic access. activeConsentScope() returns null
+  // unless there's an active, unexpired, un-revoked consent row;
+  // ConsentScope drives a stricter AclRole than the requester's
+  // own role inside their clinic.
+  if (!patient && clinic.role !== "admin" && clinic.role !== "billing" && clinic.role !== "lab_tech") {
+    const anyClinicPatient = await getPatientById(id, undefined);
+    if (anyClinicPatient) {
+      const scope = await activeConsentScope({
+        sourceOwnerEmail: anyClinicPatient.doctorEmail,
+        grantedToOwnerEmail: clinic.ownerEmail,
+        patientId: anyClinicPatient.id,
+      });
+      if (scope) {
+        patient = anyClinicPatient;
+        // Consent dictates the redaction role, not the requester's
+        // own clinic role. So a doctor from a referral clinic with
+        // "summary" consent gets the nurse-level view, not the
+        // doctor_treating view they'd have in their own clinic.
+        aclRole = aclRoleFromConsentScope(scope);
+        consentScopeApplied = scope;
+        sourceClinicEmail = anyClinicPatient.doctorEmail;
+      }
+    }
+  }
+
   if (!patient) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   // Apply the role-based visibility matrix. Owners and admins see
   // the full record; nurses / reception / billing / lab techs get a
   // redacted view based on lib/patient-acl.ts. The optional
   // ?visit=<id> query param drives "current_visit_only" verdicts.
-  const role = aclRoleFromClinicRole(clinic.role);
   const currentVisitId = req.nextUrl.searchParams.get("visit") || undefined;
   const { patient: redacted, verdicts } = redactPatientForRole(
     patient as unknown as RedactablePatient,
-    role,
+    aclRole,
     { currentVisitId, requesterEmail: clinic.userEmail },
   );
 
+  // Audit cross-clinic access — these reads must be loud since
+  // they're privacy-sensitive. Same-clinic reads stay silent
+  // (already audited at the clinic level by other surfaces).
+  if (consentScopeApplied) {
+    await writeAudit({
+      ownerEmail: sourceClinicEmail || patient.doctorEmail,
+      actorEmail: clinic.userEmail,
+      action: "patient.update", // closest existing action; future: dedicated cross_clinic_read
+      resource: "patient",
+      resourceId: patient.id,
+      meta: {
+        crossClinicRead: true,
+        scope: consentScopeApplied,
+        viaConsent: true,
+        readerClinic: clinic.ownerEmail,
+      },
+    }).catch(() => {});
+  }
+
   return NextResponse.json({
     patient: redacted,
-    acl: { role, verdicts },
+    acl: {
+      role: aclRole,
+      verdicts,
+      ...(consentScopeApplied
+        ? { viaConsent: true, consentScope: consentScopeApplied, sourceClinic: sourceClinicEmail }
+        : {}),
+    },
   });
 }
 

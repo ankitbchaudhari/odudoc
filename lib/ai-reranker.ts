@@ -23,13 +23,29 @@ interface CacheEntry {
 const cache = new Map<string, CacheEntry>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 min — aggregates change slowly
 
+/** Time-decay window for re-ranker influence. Aggregate rows older
+ *  than this are filtered out so a doctor's preferences from years
+ *  ago stop dominating today's ranking. 90 days = one quarterly cycle,
+ *  long enough to capture seasonal patterns (flu / dengue) but short
+ *  enough that retired drugs / superseded protocols fade. */
+const RERANKER_DECAY_DAYS = 90;
+const RERANKER_DECAY_MS = RERANKER_DECAY_DAYS * 24 * 60 * 60 * 1000;
+
 async function loadAggregates(surface: string): Promise<FeedbackAggregate[]> {
   const hit = cache.get(surface);
   if (hit && Date.now() - hit.at < CACHE_TTL) return hit.rows;
   // Force the persistent-array reload so this Lambda picks up writes
   // from sibling Lambdas. Cheap; aggregates table is small.
   await reloadFeedbackAggregates();
-  const rows = await getAggregatesForSurface(surface);
+  const all = await getAggregatesForSurface(surface);
+  // Decay filter: drop rows whose last touch is older than the window.
+  // Faster + simpler than per-row exponential decay, and matches
+  // operator intuition ("only signals from the last 3 months count").
+  const cutoff = Date.now() - RERANKER_DECAY_MS;
+  const rows = all.filter((r) => {
+    const t = Date.parse(r.lastSeen);
+    return Number.isFinite(t) ? t >= cutoff : true;
+  });
   cache.set(surface, { at: Date.now(), rows });
   return rows;
 }

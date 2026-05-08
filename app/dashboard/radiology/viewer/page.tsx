@@ -154,6 +154,11 @@ function DicomViewerInner() {
   const [inverted, setInverted] = useState(false);
   const [annotationStatus, setAnnotationStatus] = useState<string | null>(null);
   const [overlayOpacity, setOverlayOpacity] = useState(60);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [history, setHistory] = useState<Array<{
+    id: string; revision: number; latest: boolean; createdBy: string;
+    createdAt: string; note?: string;
+  }>>([]);
 
   const allDicom = srcs.length > 0 && srcs.every(isDicomUrl);
 
@@ -313,21 +318,62 @@ function DicomViewerInner() {
   const saveAnnotations = useCallback(async () => {
     const ct = window.cornerstoneTools;
     if (!ct?.globalImageIdSpecificToolStateManager || !studyKey) return;
+    const note = window.prompt("Save note (optional — e.g. \"Initial read\", \"Post tumor board\"):") || undefined;
     setAnnotationStatus("Saving…");
     try {
       const state = ct.globalImageIdSpecificToolStateManager.saveToolState();
       const res = await fetch("/api/emr/dicom-annotations", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ studyKey, toolStateJson: JSON.stringify(state) }),
+        body: JSON.stringify({ studyKey, toolStateJson: JSON.stringify(state), note }),
       });
       if (!res.ok) throw new Error((await res.json()).error || `HTTP ${res.status}`);
-      setAnnotationStatus("✓ Saved");
+      const j = await res.json();
+      setAnnotationStatus(`✓ Saved · revision ${j.annotation.revision}`);
       setTimeout(() => setAnnotationStatus(null), 2500);
     } catch (err) {
       setAnnotationStatus(`Save failed: ${(err as Error).message}`);
     }
   }, [studyKey]);
+
+  /** Pull the full revision chain so the user can pick which read
+   *  to load (latest, or any earlier point in time). */
+  const openHistory = useCallback(async () => {
+    if (!studyKey) return;
+    setHistoryOpen(true);
+    try {
+      const sp = new URLSearchParams({ studyKey, history: "1" });
+      const res = await fetch(`/api/emr/dicom-annotations?${sp}`, { cache: "no-store" });
+      if (!res.ok) throw new Error((await res.json()).error || `HTTP ${res.status}`);
+      const j = await res.json();
+      setHistory(j.history || []);
+    } catch (err) {
+      setAnnotationStatus(`History failed: ${(err as Error).message}`);
+    }
+  }, [studyKey]);
+
+  /** Restore a specific revision by id. */
+  const loadRevision = useCallback(async (id: string, revision: number) => {
+    const ct = window.cornerstoneTools;
+    const cs = window.cornerstone;
+    if (!ct?.globalImageIdSpecificToolStateManager || !elRef.current) return;
+    setAnnotationStatus("Loading…");
+    try {
+      const sp = new URLSearchParams({ id });
+      const res = await fetch(`/api/emr/dicom-annotations?${sp}`, { cache: "no-store" });
+      if (!res.ok) throw new Error((await res.json()).error || `HTTP ${res.status}`);
+      const j = await res.json();
+      if (!j.annotation) throw new Error("Revision not found");
+      const state = JSON.parse(j.annotation.toolStateJson);
+      ct.globalImageIdSpecificToolStateManager.restoreToolState(state);
+      if (cs) cs.resize(elRef.current);
+      setAnnotationStatus(`✓ Loaded revision ${revision}`);
+      setHistoryOpen(false);
+      setTimeout(() => setAnnotationStatus(null), 3500);
+    } catch (err) {
+      setAnnotationStatus(`Load failed: ${(err as Error).message}`);
+    }
+  }, []);
 
   const loadAnnotations = useCallback(async () => {
     const ct = window.cornerstoneTools;
@@ -443,6 +489,9 @@ function DicomViewerInner() {
                 <button onClick={loadAnnotations} className="rounded-lg bg-cyan-500/30 px-3 py-1.5 text-xs font-semibold text-cyan-100 ring-1 ring-cyan-300/30 hover:bg-cyan-500/40">
                   📥 Load
                 </button>
+                <button onClick={openHistory} className="rounded-lg bg-violet-500/30 px-3 py-1.5 text-xs font-semibold text-violet-100 ring-1 ring-violet-300/30 hover:bg-violet-500/40">
+                  ⏱ History
+                </button>
                 {annotationStatus && (
                   <span className="ml-2 self-center text-[11px] italic text-violet-200">
                     {annotationStatus}
@@ -513,6 +562,49 @@ function DicomViewerInner() {
                     className="flex-1 accent-violet-400"
                   />
                   <span className="font-mono text-xs text-white">{frame + 1} / {totalFrames}</span>
+                </div>
+              )}
+
+              {historyOpen && (
+                <div className="mt-3 rounded-2xl border border-white/10 bg-black/40 p-4">
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-300">
+                      Annotation history
+                    </p>
+                    <button onClick={() => setHistoryOpen(false)} className="text-xs text-violet-200 hover:text-white">
+                      Close
+                    </button>
+                  </div>
+                  {history.length === 0 ? (
+                    <p className="py-4 text-center text-xs text-violet-200/70">
+                      No saves yet for this study.
+                    </p>
+                  ) : (
+                    <ul className="divide-y divide-white/10">
+                      {history.map((h) => (
+                        <li key={h.id} className="flex flex-wrap items-start justify-between gap-3 py-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-white">
+                              Revision {h.revision}
+                              {h.latest && <span className="ml-2 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-200">LATEST</span>}
+                            </p>
+                            <p className="text-[11px] text-violet-200/80">
+                              {new Date(h.createdAt).toLocaleString()} · by {h.createdBy}
+                            </p>
+                            {h.note && (
+                              <p className="mt-0.5 text-[11px] italic text-violet-200/70">&ldquo;{h.note}&rdquo;</p>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => loadRevision(h.id, h.revision)}
+                            className="rounded-md bg-violet-500/30 px-3 py-1 text-[11px] font-semibold text-violet-100 hover:bg-violet-500/40"
+                          >
+                            Load this read
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
 

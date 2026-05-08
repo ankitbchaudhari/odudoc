@@ -12,7 +12,7 @@
 // Usage: /dashboard/radiology/viewer?src=<dicom-url> for a single
 // study, or ?src=<u1>&src=<u2>&...src=<un> for a stack.
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import MedicalFileViewer from "@/components/MedicalFileViewer";
@@ -112,7 +112,28 @@ const PRESETS: Array<{ name: string; ww: number; wc: number }> = [
   { name: "Liver",       ww:  150, wc:   60 },
 ];
 
-export default function DicomViewer() {
+// useSearchParams() requires a Suspense boundary for Next.js 14
+// prerendering. We wrap the search-params reading body in
+// DicomViewerInner and have the page export a thin <Suspense>
+// shell so the build can prerender successfully without bailing
+// the whole route to client-only.
+export default function DicomViewerPage() {
+  return (
+    <Suspense fallback={<DicomViewerLoadingShell />}>
+      <DicomViewerInner />
+    </Suspense>
+  );
+}
+
+function DicomViewerLoadingShell() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-violet-950 to-slate-900 p-12 text-center text-violet-200">
+      Loading DICOM viewer…
+    </div>
+  );
+}
+
+function DicomViewerInner() {
   const sp = useSearchParams();
   // Support stacks via ?src=...&src=... .
   const srcs: string[] = sp.getAll("src").filter(Boolean);

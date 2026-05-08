@@ -11,6 +11,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import SharedBadge from "@/components/StatusBadge";
 
 type Role = "manager" | "pharmacist" | "cashier";
 type Status = "invited" | "active" | "revoked";
@@ -334,16 +335,15 @@ export default function VendorTeamPage() {
   );
 }
 
+// Maps the local invited/active/revoked staff statuses to the canonical
+// clinical-tones keys so the staff list shares the platform-wide
+// pill grammar.
 function StatusPill({ status }: { status: Status }) {
-  const map: Record<Status, { bg: string; text: string; label: string }> = {
-    invited: { bg: "bg-amber-100", text: "text-amber-800", label: "Invited" },
-    active: { bg: "bg-emerald-100", text: "text-emerald-800", label: "Active" },
-    revoked: { bg: "bg-gray-100", text: "text-gray-600", label: "Revoked" },
+  const map: Record<Status, { tone: import("@/lib/clinical-tones").ToneKey; label: string }> = {
+    invited: { tone: "pending",   label: "Invited" },
+    active:  { tone: "completed", label: "Active" },
+    revoked: { tone: "neutral",   label: "Revoked" },
   };
   const m = map[status];
-  return (
-    <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${m.bg} ${m.text}`}>
-      {m.label}
-    </span>
-  );
+  return <SharedBadge status={m.tone} label={m.label} />;
 }

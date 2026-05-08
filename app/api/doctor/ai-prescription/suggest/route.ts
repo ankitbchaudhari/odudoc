@@ -14,6 +14,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { generateJson } from "@/lib/gemini";
+import { rerankSuggestions } from "@/lib/ai-reranker";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -148,7 +149,7 @@ export async function POST(req: NextRequest) {
       }
       const userPrompt =
         `Patient:\n${patientBlock}\n\nReturn up to 4 differential diagnoses ranked by probability. For each: name, confidence (Low/Medium/High), one-line rationale (<=20 words), up to 2 red-flag symptoms. Be terse.`;
-      const result = await generateJson({
+      const result = await generateJson<{ diagnoses?: Array<{ name: string }>; generalNotes?: string }>({
         systemPrompt: SYSTEM_PROMPT,
         userPrompt,
         schema: DIAGNOSIS_SCHEMA,
@@ -159,7 +160,24 @@ export async function POST(req: NextRequest) {
         tag: "ai-prescription.diagnosis",
         callerEmail: user.email,
       });
-      return NextResponse.json({ ok: true, ...(result as object) });
+
+      // Re-rank Gemini's output by historical acceptance for this
+      // surface — tunes raw model output to OduDoc's patient
+      // population. Below the data threshold this is a no-op, so
+      // the fresh-deploy state matches Gemini's native ordering.
+      let diagnoses = Array.isArray(result.diagnoses) ? result.diagnoses : [];
+      if (diagnoses.length > 1) {
+        try {
+          diagnoses = await rerankSuggestions(
+            "ai-prescription.diagnosis",
+            diagnoses,
+            (d) => d.name,
+          );
+        } catch (err) {
+          log.warn("ai-reranker.diagnosis_failed", { message: (err as Error).message });
+        }
+      }
+      return NextResponse.json({ ok: true, diagnoses, generalNotes: result.generalNotes });
     }
 
     // mode === "treatment"
@@ -169,7 +187,13 @@ export async function POST(req: NextRequest) {
     }
     const userPrompt =
       `Patient: ${patientBlock || "(not provided)"}\nDx: ${diagnosis}\n\nSuggest tersely: up to 3 investigations (name + 1-line reason); up to 3 first-line medications (name, adult dose, frequency, duration, brief instructions); up to 3 advice bullets; 1-line follow-up; up to 3 red-flag symptoms.`;
-    const result = await generateJson({
+    const result = await generateJson<{
+      investigations?: Array<{ name: string }>;
+      medications?: Array<{ name: string }>;
+      advice?: string[];
+      followUp?: string;
+      redFlags?: string[];
+    }>({
       systemPrompt: SYSTEM_PROMPT,
       userPrompt,
       schema: TREATMENT_SCHEMA,
@@ -180,7 +204,32 @@ export async function POST(req: NextRequest) {
       tag: "ai-prescription.treatment",
       callerEmail: user.email,
     });
-    return NextResponse.json({ ok: true, ...(result as object) });
+
+    // Same re-ranker treatment for medications. Investigations and
+    // advice are short enough that ordering rarely matters; medication
+    // ranking has the biggest clinical impact when the model
+    // suggests an unfamiliar drug ahead of the doctor's usual
+    // first-line.
+    let medications = Array.isArray(result.medications) ? result.medications : [];
+    if (medications.length > 1) {
+      try {
+        medications = await rerankSuggestions(
+          "ai-prescription.treatment",
+          medications,
+          (m) => m.name,
+        );
+      } catch (err) {
+        log.warn("ai-reranker.treatment_failed", { message: (err as Error).message });
+      }
+    }
+    return NextResponse.json({
+      ok: true,
+      investigations: result.investigations || [],
+      medications,
+      advice: result.advice || [],
+      followUp: result.followUp,
+      redFlags: result.redFlags || [],
+    });
   } catch (err) {
     log.error("ai-prescription.failed", err);
     const msg = err instanceof Error ? err.message : "AI request failed";

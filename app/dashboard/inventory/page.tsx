@@ -135,13 +135,57 @@ export default function InventoryPage() {
       }
     >
       {summary && (
-        <div className="mb-6 grid gap-4 grid-cols-2 lg:grid-cols-5">
-          <StatTile label="Total SKUs" value={summary.total} emoji="📦" tone="indigo" />
-          <StatTile label="Low stock" value={summary.lowStock} emoji="⚠️" tone="amber" />
-          <StatTile label="Out of stock" value={summary.outOfStock} emoji="✕" tone="rose" />
-          <StatTile label="Expiring soon" value={summary.expiringSoon} emoji="⏱️" tone="amber" hint="< 30 days" />
-          <StatTile label="Expired" value={summary.expired} emoji="❌" tone="rose" />
-        </div>
+        <>
+          <div className="mb-6 grid gap-4 grid-cols-2 lg:grid-cols-5">
+            <StatTile label="Total SKUs" value={summary.total} emoji="📦" tone="indigo" />
+            <StatTile label="Low stock" value={summary.lowStock} emoji="⚠️" tone="amber" />
+            <StatTile label="Out of stock" value={summary.outOfStock} emoji="✕" tone="rose" />
+            <StatTile label="Expiring soon" value={summary.expiringSoon} emoji="⏱️" tone="amber" hint="< 30 days" />
+            <StatTile label="Expired" value={summary.expired} emoji="❌" tone="rose" />
+          </div>
+
+          {/* Distribution bar across scopes — quick visual of where
+              your inventory mass lives. */}
+          {summary.total > 0 && (
+            <div className="mb-6 rounded-2xl border border-white/60 bg-white p-4 shadow-sm">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">
+                SKU distribution by scope
+              </p>
+              <div className="flex h-3 overflow-hidden rounded-full bg-slate-100">
+                {SCOPES.map((s) => {
+                  const pct = (summary.byScope[s] / summary.total) * 100;
+                  if (pct === 0) return null;
+                  const colors: Record<StockScope, string> = {
+                    pharmacy: "bg-rose-400",
+                    laboratory: "bg-emerald-400",
+                    biomedical: "bg-amber-400",
+                    ward: "bg-sky-400",
+                    general: "bg-slate-400",
+                  };
+                  return (
+                    <div
+                      key={s}
+                      className={`${colors[s]} transition-all`}
+                      style={{ width: `${pct}%` }}
+                      title={`${s}: ${summary.byScope[s]} (${pct.toFixed(0)}%)`}
+                    />
+                  );
+                })}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-3 text-[11px]">
+                {SCOPES.map((s) => (
+                  <span key={s} className="inline-flex items-center gap-1 text-slate-600">
+                    <span className={`inline-block h-2 w-2 rounded-full ${{
+                      pharmacy: "bg-rose-400", laboratory: "bg-emerald-400",
+                      biomedical: "bg-amber-400", ward: "bg-sky-400", general: "bg-slate-400",
+                    }[s]}`} />
+                    {SCOPE_EMOJI[s]} {s} <b className="text-slate-900">{summary.byScope[s]}</b>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Scope filter chips */}

@@ -97,6 +97,26 @@ export default function ReceptionDashboard() {
     setBusy(false);
   };
 
+  /** Cancel an admission mid-flow. Always asks for confirmation +
+   *  an optional reason that gets appended to the row's notes so
+   *  there's an audit trail of why the patient bailed. Works from
+   *  any non-terminal state (scheduled / checked_in / in_consult /
+   *  completed not yet discharged / admitted). */
+  const cancelMidFlow = async (id: string, currentNotes?: string) => {
+    if (!confirm("Cancel this admission? This will release the slot.")) return;
+    const reason = window.prompt("Reason for cancellation (optional):") || "";
+    setBusy(true);
+    const cancelStamp = `[Cancelled ${new Date().toLocaleString()}${reason ? ` — ${reason}` : ""}]`;
+    const notes = [currentNotes, cancelStamp].filter(Boolean).join("\n");
+    await fetch(`/api/emr/admissions/${id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status: "cancelled", notes }),
+    });
+    await load();
+    setBusy(false);
+  };
+
   const setTriage = async (id: string, triage: Triage) => {
     setBusy(true);
     await fetch(`/api/emr/admissions/${id}`, {
@@ -334,8 +354,10 @@ export default function ReceptionDashboard() {
                     {a.status === "admitted" && (
                       <Btn onClick={() => flip(a.id, "discharged")}>Discharge</Btn>
                     )}
-                    {a.status !== "cancelled" && a.status !== "discharged" && a.status !== "completed" && a.status !== "no_show" && (
-                      <Btn onClick={() => flip(a.id, "cancelled")} tone="danger">Cancel</Btn>
+                    {/* Cancel works at any non-terminal state. Asks for
+                        confirmation + reason so the audit trail is rich. */}
+                    {a.status !== "cancelled" && a.status !== "discharged" && a.status !== "no_show" && (
+                      <Btn onClick={() => cancelMidFlow(a.id, a.notes)} tone="danger">Cancel</Btn>
                     )}
                   </div>
                 </div>

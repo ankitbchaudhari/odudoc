@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import StatusBadge from "@/components/StatusBadge";
 
 const STATUS_FILTERS = ["All", "Pending", "Processing", "Shipped", "Delivered", "Cancelled"] as const;
 
@@ -92,13 +93,16 @@ export default function VendorOrdersPage() {
                     <p className="text-xs text-gray-500">{o.shippingAddress}</p>
                   </div>
                   <div className="text-right">
-                    <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
-                      o.orderStatus === "Delivered" ? "bg-green-50 text-green-700"
-                        : o.orderStatus === "Shipped" ? "bg-blue-50 text-blue-700"
-                        : o.orderStatus === "Processing" ? "bg-indigo-50 text-indigo-700"
-                        : o.orderStatus === "Cancelled" ? "bg-gray-100 text-gray-600"
-                        : "bg-amber-50 text-amber-700"
-                    }`}>{o.orderStatus}</span>
+                    <StatusBadge
+                      status={
+                        o.orderStatus === "Delivered" ? "delivered"
+                        : o.orderStatus === "Shipped" ? "in_progress"
+                        : o.orderStatus === "Processing" ? "in_progress"
+                        : o.orderStatus === "Cancelled" ? "cancelled"
+                        : "pending"
+                      }
+                      label={o.orderStatus}
+                    />
                     <p className="mt-1 text-xs text-gray-400">Placed {new Date(o.createdAt).toLocaleDateString()}</p>
                     <p className="mt-0.5 text-xs text-gray-400">Payment: {o.paymentStatus}</p>
                   </div>

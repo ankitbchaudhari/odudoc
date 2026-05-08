@@ -13,6 +13,7 @@ import {
   type AiFeedbackSurface,
   type AiFeedbackVerdict,
 } from "@/lib/ai-feedback-store";
+import { invalidateRerankerCache } from "@/lib/ai-reranker";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
@@ -81,6 +82,9 @@ export async function POST(req: NextRequest) {
     log.error("ai.feedback.persist_failed", err);
     // Non-critical — feedback is advisory data.
   }
+  // New row → next rerank should reflect it. Pure in-memory bump,
+  // safe even if the persist fails.
+  invalidateRerankerCache();
 
   return NextResponse.json({ ok: true, id: row.id });
 }

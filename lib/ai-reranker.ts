@@ -9,7 +9,9 @@
 //   const ranked = rerankSuggestions("ai-prescription.diagnosis",
 //     dxList, (d) => d.name);
 
-import { reloadAiFeedback } from "./ai-feedback-store";
+import { reloadAiFeedback, getFeedbackStats } from "./ai-feedback-store";
+import { bindPersistentArray } from "./persistent-array";
+import type { AiFeedbackRow } from "./ai-feedback-store";
 
 interface FeedbackSnapshot {
   suggestionLower: string;
@@ -21,16 +23,57 @@ interface FeedbackSnapshot {
 let cache: { at: number; data: FeedbackSnapshot[] } | null = null;
 const CACHE_TTL = 5 * 60 * 1000; // 5 min — this data is stable
 
+// Mirror the same persistent-array binding so we can read raw
+// feedback rows here without a circular import. Hydration is
+// idempotent — if ai-feedback-store has already loaded the same
+// table, this just reads back the already-populated array.
+const feedbackMirror: AiFeedbackRow[] = [];
+const { hydrate: hydrateMirror } = bindPersistentArray<AiFeedbackRow>(
+  "ai-feedback",
+  feedbackMirror,
+  () => [],
+);
+
 async function loadFeedback(): Promise<FeedbackSnapshot[]> {
   if (cache && Date.now() - cache.at < CACHE_TTL) return cache.data;
   await reloadAiFeedback();
-  // Pull rows lazily to avoid circular imports — read direct from
-  // the same module's hydrate in the future. For now, fetch the
-  // store's exported array via require() at runtime would couple
-  // tightly; we keep the snapshot simple and let downstream code
-  // pre-populate via prime() if needed.
-  cache = { at: Date.now(), data: [] };
-  return cache.data;
+  await hydrateMirror();
+  // Aggregate into per-(surface, suggestion) accept/reject counts.
+  const map = new Map<string, FeedbackSnapshot>();
+  for (const r of feedbackMirror) {
+    const sLower = r.suggestion.toLowerCase().trim();
+    if (!sLower) continue;
+    const key = `${r.surface}::${sLower}`;
+    const existing = map.get(key) || {
+      suggestionLower: sLower,
+      surface: r.surface,
+      accepts: 0,
+      rejects: 0,
+    };
+    if (r.verdict === "accepted" || r.verdict === "edited") existing.accepts += 1;
+    if (r.verdict === "rejected") existing.rejects += 1;
+    map.set(key, existing);
+  }
+  const data = Array.from(map.values());
+  cache = { at: Date.now(), data };
+  return data;
+}
+
+/** Force-invalidate the cache. Call after a feedback row is recorded
+ *  if you want subsequent reranks to pick it up immediately. */
+export function invalidateRerankerCache() {
+  cache = null;
+}
+
+/** Quick health stat — exposed so the admin dashboard can show whether
+ *  the re-ranker is operating with enough data to be meaningful. */
+export async function rerankerHealth() {
+  const stats = await getFeedbackStats();
+  return {
+    totalSignals: stats.total,
+    acceptanceRate: stats.acceptanceRate,
+    enoughData: stats.total >= 50, // arbitrary minimum
+  };
 }
 
 /** Allow callers to seed the snapshot from outside (e.g. an admin

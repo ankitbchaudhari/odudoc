@@ -21,7 +21,7 @@ import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
 
-const VALID_ROLES: StaffRole[] = ["doctor", "nurse", "frontdesk"];
+const VALID_ROLES: StaffRole[] = ["doctor", "nurse", "frontdesk", "billing", "lab_tech"];
 
 function isOwnerOrAdmin(role: string): boolean {
   return role === "owner" || role === "admin";
@@ -92,7 +92,9 @@ export async function POST(req: NextRequest) {
     const limit = quota.staffLimits[role];
     if (used >= limit) {
       const roleLabel =
-        role === "frontdesk" ? "front desk" : role;
+        role === "frontdesk" ? "front desk"
+        : role === "lab_tech" ? "lab tech"
+        : role;
       const baseMsg =
         limit === 0
           ? `Adding a staff ${roleLabel} requires the $50 unlock or the Corporate plan.`

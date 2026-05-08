@@ -13,6 +13,11 @@ import {
   writeAudit,
   type Sex,
 } from "@/lib/emr-store";
+import {
+  aclRoleFromClinicRole,
+  redactPatientForRole,
+  type RedactablePatient,
+} from "@/lib/patient-acl";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
@@ -32,14 +37,30 @@ function ownerScope(clinic: { role: string; ownerEmail: string }): string | unde
   return clinic.role === "admin" ? undefined : clinic.ownerEmail;
 }
 
-export async function GET(_req: NextRequest, ctx: RouteContext) {
+export async function GET(req: NextRequest, ctx: RouteContext) {
   const clinic = await resolveOrForbid();
   if (!clinic) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   const { id } = await ctx.params;
   await reloadPatients();
   const patient = await getPatientById(id, ownerScope(clinic));
   if (!patient) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ patient });
+
+  // Apply the role-based visibility matrix. Owners and admins see
+  // the full record; nurses / reception / billing / lab techs get a
+  // redacted view based on lib/patient-acl.ts. The optional
+  // ?visit=<id> query param drives "current_visit_only" verdicts.
+  const role = aclRoleFromClinicRole(clinic.role);
+  const currentVisitId = req.nextUrl.searchParams.get("visit") || undefined;
+  const { patient: redacted, verdicts } = redactPatientForRole(
+    patient as unknown as RedactablePatient,
+    role,
+    { currentVisitId, requesterEmail: clinic.userEmail },
+  );
+
+  return NextResponse.json({
+    patient: redacted,
+    acl: { role, verdicts },
+  });
 }
 
 export async function PATCH(req: NextRequest, ctx: RouteContext) {

@@ -213,7 +213,16 @@ export interface EmrAuditEntry {
   createdAt: string;
 }
 
-export type StaffRole = "doctor" | "nurse" | "frontdesk";
+export type StaffRole =
+  | "doctor"
+  | "nurse"
+  | "frontdesk"
+  /** Reads bill/payment data full, demographics + test names only,
+   *  imaging billing-code only. See lib/patient-acl.ts. */
+  | "billing"
+  /** Reads only the labs they ordered/processed plus name + ID.
+   *  See lib/patient-acl.ts. */
+  | "lab_tech";
 
 export interface EmrStaff {
   id: string;
@@ -394,6 +403,15 @@ export function canWrite(role: ClinicAccess["role"], resource: EmrResource): boo
     // Front desk: registers patients, raises invoices, uploads files.
     // Cannot write visits (clinical notes), certificates, or staff.
     return resource === "patients" || resource === "invoices" || resource === "files";
+  }
+  if (role === "billing") {
+    // Billing: raises and adjusts invoices only. No clinical writes.
+    return resource === "invoices";
+  }
+  if (role === "lab_tech") {
+    // Lab tech: uploads lab files (the actual values are gated on
+    // the read side via patient-acl.ts). No other writes.
+    return resource === "files";
   }
   return false;
 }
@@ -1002,9 +1020,11 @@ export interface StaffLimits {
   nurse: number;
   frontdesk: number;
   doctor: number;
+  billing: number;
+  lab_tech: number;
 }
-export const FREE_STAFF_LIMITS: StaffLimits = { nurse: 1, frontdesk: 1, doctor: 0 };
-export const UNLOCKED_STAFF_LIMITS: StaffLimits = { nurse: 3, frontdesk: 3, doctor: 3 };
+export const FREE_STAFF_LIMITS: StaffLimits = { nurse: 1, frontdesk: 1, doctor: 0, billing: 0, lab_tech: 0 };
+export const UNLOCKED_STAFF_LIMITS: StaffLimits = { nurse: 3, frontdesk: 3, doctor: 3, billing: 1, lab_tech: 1 };
 
 export function getStaffLimits(unlocked: boolean): StaffLimits {
   return unlocked ? UNLOCKED_STAFF_LIMITS : FREE_STAFF_LIMITS;
@@ -1018,6 +1038,8 @@ export interface StaffUsage {
   nurse: number;
   frontdesk: number;
   doctor: number;
+  billing: number;
+  lab_tech: number;
 }
 
 export async function getStaffUsage(ownerEmail: string): Promise<StaffUsage> {
@@ -1028,6 +1050,8 @@ export async function getStaffUsage(ownerEmail: string): Promise<StaffUsage> {
     nurse: mine.filter((s) => s.role === "nurse").length,
     frontdesk: mine.filter((s) => s.role === "frontdesk").length,
     doctor: mine.filter((s) => s.role === "doctor").length,
+    billing: mine.filter((s) => s.role === "billing").length,
+    lab_tech: mine.filter((s) => s.role === "lab_tech").length,
   };
 }
 

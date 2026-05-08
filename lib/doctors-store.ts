@@ -513,19 +513,13 @@ export function setDoctorVerified(
   }
   d.updatedAt = now();
   flush();
-  // First-time verified → fire any pending doctor-to-doctor
-  // referrals that point at this doctor's email. Fire-and-forget;
-  // referral logic must never block the admin's verify action.
-  // Lazy import to dodge a circular dep on referral-program-store.
-  if (verified && !wasVerified && d.email) {
-    import("./referral-program-store")
-      .then((m) =>
-        m.qualifyReferralsForReferee({ refereeEmail: d.email })
-      )
-      .catch((err) => {
-        console.error("[doctors.setDoctorVerified] referral qualification failed", err);
-      });
-  }
+  // (We used to fire referral qualification here on first-time
+  // verification. The program now requires 10 completed paid
+  // consultations as the qualifying event, so verification alone
+  // is no longer enough — qualification fires from
+  // consultations-store.markPaid once the referee crosses the
+  // threshold. wasVerified retained for the audit log.)
+  void wasVerified;
   return d;
 }
 

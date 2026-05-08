@@ -259,19 +259,39 @@ export function markPaid(id: string, paymentIntentId: string): Consultation | nu
   c.paymentIntentId = paymentIntentId || c.paymentIntentId;
   c.status = "awaiting_doctor";
   touch(c);
-  // First-time paid → fire the referral-program qualification for
-  // this patient. Fire-and-forget: the referral side-effect must
-  // never block / fail the payment confirmation. Imported lazily
-  // to avoid a circular dependency between consultations-store
-  // and referral-program-store (which depends on users-store).
-  if (!wasAlreadyPaid && c.patientEmail) {
+  // Each newly paid consultation is a candidate qualification event
+  // for any pending referral rows tied to this patient OR this
+  // doctor. The reward only fires once the referee has
+  // REFERRAL_QUALIFICATION_THRESHOLD (10) paid consultations on
+  // file — qualifyReferralsForReferee gates internally on the count
+  // we pass. Fire-and-forget; a referral side-effect must never
+  // block / fail the payment confirmation.
+  if (!wasAlreadyPaid) {
+    const patientPaidCount = consultations.filter(
+      (x) => x.patientEmail === c.patientEmail && x.paymentStatus === "paid",
+    ).length;
+    const doctorPaidCount = c.doctorEmail
+      ? consultations.filter(
+          (x) => x.doctorEmail === c.doctorEmail && x.paymentStatus === "paid",
+        ).length
+      : 0;
     import("./referral-program-store")
-      .then((m) =>
-        m.qualifyReferralsForReferee({
-          refereeEmail: c.patientEmail,
-          consultationId: c.id,
-        })
-      )
+      .then(async (m) => {
+        if (c.patientEmail) {
+          await m.qualifyReferralsForReferee({
+            refereeEmail: c.patientEmail,
+            consultationId: c.id,
+            completedConsultationCount: patientPaidCount,
+          });
+        }
+        if (c.doctorEmail) {
+          await m.qualifyReferralsForReferee({
+            refereeEmail: c.doctorEmail,
+            consultationId: c.id,
+            completedConsultationCount: doctorPaidCount,
+          });
+        }
+      })
       .catch((err) => {
         // Swallowed — referral qualification is non-critical.
         // Logged via console so we still see it in the platform's

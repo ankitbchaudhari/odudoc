@@ -1,5 +1,5 @@
-// Referral program store — sign-up referrals with a $10 + $10
-// reward when the referee completes their first paid consultation.
+// Referral program store — sign-up referrals with a one-sided reward
+// to the referrer when the referee crosses a usage threshold.
 //
 // NOTE: this is a different feature from lib/referrals-store.ts,
 // which is a client-side store for doctor-to-doctor patient
@@ -8,11 +8,13 @@
 // an OduDoc account gets a code, sharing it earns both sides
 // credit when the referee converts.
 //
-// Reward economics:
-//   Referrer side  $10 credit on referee's first paid consultation
-//   Referee side   $10 credit on the same event
-//   Cap            One row per (referrer, referee) email pair.
-//                  Self-referrals rejected.
+// Reward economics (referrer-only — joiner gets nothing):
+//   Patient referral  $10 credit when referee completes 10 paid
+//                     video consultations
+//   Doctor referral   $50 credit when the referred doctor completes
+//                     10 paid consultations
+//   Cap               One row per (referrer, referee) email pair.
+//                     Self-referrals rejected.
 //
 // Lifecycle:
 //   1. New user signs up. Client passes refCode (read from ?ref=…
@@ -64,15 +66,21 @@ export interface ReferralProgramRow {
   qualifyingConsultationId?: string;
 }
 
-/** Reward per side for a patient-flavoured referral (referee is a
- *  patient, regardless of who referred them). Triggered by the
- *  referee's first paid consultation. */
+/** Reward to the referrer (only) for a patient-flavoured referral.
+ *  Earned when the referee completes the qualification threshold of
+ *  paid video consultations. */
 export const REFERRAL_REWARD_CENTS = 1000; // $10
-/** Reward per side when a doctor refers another doctor onto the
- *  platform. Acquiring a doctor is materially more valuable than
- *  a patient, and the cycle is longer (admin verification + first
- *  consultation), so the payout is bigger. */
+/** Reward to the referrer (only) for a doctor-to-doctor referral.
+ *  Acquiring a doctor is materially more valuable than a patient,
+ *  so the payout is bigger. */
 export const DOCTOR_REFERRAL_REWARD_CENTS = 5000; // $50
+
+/** Number of completed paid consultations the referee must complete
+ *  before any referral row tied to them transitions from "pending"
+ *  to "qualified" and the referrer gets credited. Same threshold
+ *  applies whether the referee is a patient (counts as the patient)
+ *  or a doctor (counts as the consulting doctor). */
+export const REFERRAL_QUALIFICATION_THRESHOLD = 10;
 const DEFAULT_CURRENCY = "USD";
 
 function rewardForKind(kind: ReferralProgramKind): number {
@@ -197,21 +205,34 @@ export async function applyReferralCode(input: {
 /*  Qualify on first paid consultation                          */
 /* ============================================================ */
 
-/** Mark every pending program row whose referee email matches
- *  `refereeEmail` as qualified, post the $10 credits, and stamp
- *  the consultation that triggered it. Idempotent — once a row is
- *  qualified, calling again is a no-op for that row.
+/** Try to qualify pending referral rows for a referee. The referrer
+ *  is credited only when the referee has completed
+ *  `REFERRAL_QUALIFICATION_THRESHOLD` paid consultations. The joiner
+ *  (referee) receives no credit — the bonus is one-sided.
  *
- *  Caller is the consultations flow when status flips to
- *  "completed" (or "paid"). Returns the rows that transitioned. */
+ *  Caller passes `completedConsultationCount` (paid + completed
+ *  consultations the referee has on file). Below the threshold this
+ *  is a no-op. Idempotent — once a row is qualified, repeated calls
+ *  do nothing for that row.
+ *
+ *  Returns the rows that transitioned this call. */
 export async function qualifyReferralsForReferee(input: {
   refereeEmail: string;
   consultationId?: string;
+  /** Total paid+completed consultations the referee has on this
+   *  platform. Caller computes this. */
+  completedConsultationCount?: number;
 }): Promise<ReferralProgramRow[]> {
   await hydrateProgram();
   const email = input.refereeEmail.trim().toLowerCase();
   const refereeUser = findUserByEmail(email);
   const promoted: ReferralProgramRow[] = [];
+  const count = input.completedConsultationCount ?? 0;
+  // Threshold gate — below the bar, do nothing. We don't even
+  // stamp progress on the row because the count is implicit
+  // (consultations table) and recomputed every call.
+  if (count < REFERRAL_QUALIFICATION_THRESHOLD) return promoted;
+
   for (let i = 0; i < program.length; i++) {
     const r = program[i];
     if (r.refereeEmail !== email) continue;
@@ -224,8 +245,8 @@ export async function qualifyReferralsForReferee(input: {
       refereeUserId: refereeUser?.id || r.refereeUserId,
     };
     program.splice(i, 1, next);
+    // One-sided: only the referrer is credited. Joiner gets nothing.
     addReferralCredit(r.referrerUserId, r.rewardEachCents);
-    if (refereeUser) addReferralCredit(refereeUser.id, r.rewardEachCents);
     promoted.push(next);
   }
   return promoted;

@@ -137,7 +137,7 @@ export default function ReferralsPage() {
       });
       const data = await res.json();
       if (data.ok) {
-        setClaimResult("✓ Code applied. You'll both get credit on your first paid consultation.");
+        setClaimResult("✓ Code applied. Your friend earns once you complete 10 paid consultations.");
         setClaimCode("");
         load();
       } else {
@@ -235,13 +235,11 @@ export default function ReferralsPage() {
                 OduDoc · Referral program
               </p>
               <h1 className="mt-1 bg-gradient-to-r from-slate-900 via-indigo-900 to-fuchsia-900 bg-clip-text text-2xl font-bold text-transparent sm:text-3xl">
-                Share OduDoc, earn {reward} per friend
+                Share OduDoc, earn up to {doctorReward} per friend
               </h1>
               <p className="mt-2 max-w-xl text-sm text-slate-600">
-                Share your code with patients, doctors or anyone you&apos;d like to
-                bring on the platform. <b>You both get {reward} in credit</b>{" "}
-                when they complete their first paid consultation. Credit auto-
-                applies on your next booking.
+                Share your code with patients or doctors. <b>You earn {reward} when a referred patient completes 10 paid video consultations</b>, or
+                <b> {doctorReward} when a referred doctor completes 10 paid consultations</b>. Credit auto-applies on your next booking.
               </p>
             </div>
           </div>
@@ -339,14 +337,14 @@ export default function ReferralsPage() {
                   Refer a doctor · {doctorReward} bonus
                 </p>
                 <h3 className="mt-1 text-lg font-bold text-slate-900">
-                  Know another doctor? Both of you earn {doctorReward} when they join.
+                  Know another doctor? Earn {doctorReward} when they take their first 10 consultations.
                 </h3>
                 <p className="mt-1 max-w-xl text-sm text-slate-700">
                   Send this link to a colleague. They apply via{" "}
-                  <code className="rounded bg-white/70 px-1.5 py-0.5 text-xs">/for-doctors</code>,
-                  and the moment our team verifies their account,{" "}
-                  <b>{doctorReward} lands in your wallet</b> and{" "}
-                  <b>{doctorReward}</b> in theirs.
+                  <code className="rounded bg-white/70 px-1.5 py-0.5 text-xs">/for-doctors</code>.
+                  Once they get verified <b>and complete 10 paid consultations</b>,{" "}
+                  <b>{doctorReward} lands in your wallet</b>. The doctor who joins
+                  earns through their own consultations — no referral bonus on their side.
                 </p>
               </div>
             </div>
@@ -379,9 +377,10 @@ export default function ReferralsPage() {
             </button>
           </div>
           <p className="mt-3 text-[11px] text-emerald-700">
-            Doctor referrals pay <b>{doctorReward}</b> per side · patient
-            referrals pay <b>{reward}</b>. Same code works for both — the
-            reward amount is decided by who signs up.
+            Doctor referrals pay <b>{doctorReward}</b> · patient referrals pay{" "}
+            <b>{reward}</b>. Reward is paid to the referrer only, after the
+            referee completes <b>10 paid consultations</b>. Same code works
+            for both — the amount is decided by who signs up.
           </p>
         </div>
 
@@ -391,8 +390,9 @@ export default function ReferralsPage() {
             Got a code from a friend?
           </p>
           <p className="mt-1 text-sm text-slate-600">
-            Apply it now and you&apos;ll both earn {reward} when you complete your
-            first paid consultation.
+            Apply it now. The friend who shared their code earns{" "}
+            <b>{reward}</b> after you complete 10 paid video consultations on
+            OduDoc.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <input

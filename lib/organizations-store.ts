@@ -21,18 +21,46 @@ export interface Organization {
   plan: OrgPlan;
   status: OrgStatus;
   // Feature flags — let us sell modules à la carte without forking code paths.
+  // Grouped here by use-case so the UI can render section headers; module
+  // keys themselves stay flat for easy gating: orgCtx.modules.bedManagement.
   modules: {
-    patient: boolean;
-    opd: boolean;
-    ipd: boolean;
-    lab: boolean;
-    pharmacy: boolean;
-    billing: boolean;
-    surgery: boolean;
-    inventory: boolean;
-    radiology: boolean;
-    telemedicine: boolean;
-    aiVoice: boolean;
+    // ─── Core clinical ──────────────────────────────────────────────
+    patient: boolean;            // Patient management (registration, demographics)
+    opd: boolean;                // Outpatient department
+    ipd: boolean;                // Inpatient department
+    lab: boolean;                // Laboratory orders + results
+    pharmacy: boolean;           // Dispensing + inventory link
+    billing: boolean;            // Invoicing + payment capture
+    surgery: boolean;            // Surgery / OT module (basic)
+    inventory: boolean;          // SKU registry across stocks
+    radiology: boolean;          // Imaging orders + DICOM viewer
+    telemedicine: boolean;       // Online consultations
+    aiVoice: boolean;            // AI voice scribe / dictation
+    // ─── Hospital sub-departments (corporate) ───────────────────────
+    bedManagement: boolean;      // Wards, beds, occupancy, transfers
+    otScheduling: boolean;       // OT calendar + room allocation
+    bloodBank: boolean;          // Donor registry, cross-match, units
+    ambulance: boolean;          // Ambulance dispatch + GPS tracking
+    maternity: boolean;          // Antenatal / delivery / postnatal
+    nicu: boolean;               // Neonatal ICU charts + ventilator logs
+    dialysis: boolean;           // Dialysis sessions + machine logs
+    physiotherapy: boolean;      // PT sessions + treatment plans
+    diet: boolean;               // Patient diet plans + kitchen orders
+    cssd: boolean;               // Central Sterile Supply Department
+    // ─── Back-office / Corporate ────────────────────────────────────
+    hrPayroll: boolean;          // Employee records + attendance + payroll
+    procurement: boolean;        // Vendor management + purchase orders
+    insurance: boolean;          // TPA / cashless / claim management
+    assetManagement: boolean;    // Capital asset registry (separate from inventory)
+    multiBranch: boolean;        // Multi-location / branch consolidation
+    analytics: boolean;          // Executive dashboards + custom reports
+    audit: boolean;              // Compliance audit logs + e-signature
+    // ─── Patient engagement ─────────────────────────────────────────
+    patientPortal: boolean;      // Patient self-service portal
+    whatsappEngagement: boolean; // WhatsApp + SMS broadcast / reminders
+    // ─── Platform / White-label ─────────────────────────────────────
+    apiAccess: boolean;          // REST + webhook API for integrations
+    whiteLabel: boolean;         // Custom branding, domain, app icons
   };
   // Ops metadata.
   trialEndsAt?: string;
@@ -45,6 +73,7 @@ export interface Organization {
 }
 
 const DEFAULT_MODULES: Organization["modules"] = {
+  // Core clinical
   patient: true,
   opd: true,
   ipd: false,
@@ -56,6 +85,31 @@ const DEFAULT_MODULES: Organization["modules"] = {
   radiology: false,
   telemedicine: true,
   aiVoice: false,
+  // Hospital sub-departments
+  bedManagement: false,
+  otScheduling: false,
+  bloodBank: false,
+  ambulance: false,
+  maternity: false,
+  nicu: false,
+  dialysis: false,
+  physiotherapy: false,
+  diet: false,
+  cssd: false,
+  // Back-office
+  hrPayroll: false,
+  procurement: false,
+  insurance: false,
+  assetManagement: false,
+  multiBranch: false,
+  analytics: false,
+  audit: false,
+  // Patient engagement
+  patientPortal: false,
+  whatsappEngagement: false,
+  // Platform
+  apiAccess: false,
+  whiteLabel: false,
 };
 
 // Plan → modules the plan is entitled to. Anything not in this set is
@@ -64,15 +118,42 @@ const DEFAULT_MODULES: Organization["modules"] = {
 // Trial matches starter so demos feel real; enterprise gets everything.
 type ModuleKey = keyof Organization["modules"];
 const ALL_MODULES: readonly ModuleKey[] = [
+  // Core clinical
   "patient", "opd", "ipd", "lab", "pharmacy", "billing",
   "surgery", "inventory", "radiology", "telemedicine", "aiVoice",
+  // Hospital sub-departments
+  "bedManagement", "otScheduling", "bloodBank", "ambulance",
+  "maternity", "nicu", "dialysis", "physiotherapy", "diet", "cssd",
+  // Back-office
+  "hrPayroll", "procurement", "insurance", "assetManagement",
+  "multiBranch", "analytics", "audit",
+  // Patient engagement
+  "patientPortal", "whatsappEngagement",
+  // Platform
+  "apiAccess", "whiteLabel",
 ];
 
 export const PLAN_MODULE_ENTITLEMENTS: Record<OrgPlan, readonly ModuleKey[]> = {
   trial:      ["patient", "opd", "telemedicine"],
-  starter:    ["patient", "opd", "telemedicine"],
-  clinic:     ["patient", "opd", "lab", "pharmacy", "billing", "telemedicine"],
-  hospital:   ["patient", "opd", "ipd", "lab", "pharmacy", "billing", "surgery", "inventory", "radiology", "telemedicine"],
+  starter:    ["patient", "opd", "telemedicine", "whatsappEngagement"],
+  // Single-clinic tier — billing + lab + pharmacy + patient portal,
+  // but no inpatient sub-departments.
+  clinic: [
+    "patient", "opd", "lab", "pharmacy", "billing", "telemedicine",
+    "patientPortal", "diet", "analytics", "whatsappEngagement",
+  ],
+  // Multi-bed hospital tier — inpatient + most sub-departments + the
+  // back-office set. Misses platform tier (API / white-label / multi-branch).
+  hospital: [
+    "patient", "opd", "ipd", "lab", "pharmacy", "billing", "surgery",
+    "inventory", "radiology", "telemedicine",
+    "bedManagement", "otScheduling", "bloodBank", "ambulance",
+    "maternity", "nicu", "dialysis", "physiotherapy", "diet", "cssd",
+    "hrPayroll", "procurement", "insurance", "assetManagement",
+    "analytics", "audit",
+    "patientPortal", "whatsappEngagement",
+  ],
+  // Enterprise = everything: hospital tier + AI voice + platform tier.
   enterprise: ALL_MODULES,
 };
 

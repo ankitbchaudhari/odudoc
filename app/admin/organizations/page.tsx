@@ -6,6 +6,7 @@ type OrgPlan = "trial" | "starter" | "clinic" | "hospital" | "enterprise";
 type OrgStatus = "active" | "suspended" | "cancelled";
 
 interface OrgModules {
+  // Core clinical
   patient: boolean;
   opd: boolean;
   ipd: boolean;
@@ -17,6 +18,31 @@ interface OrgModules {
   radiology: boolean;
   telemedicine: boolean;
   aiVoice: boolean;
+  // Hospital sub-departments
+  bedManagement: boolean;
+  otScheduling: boolean;
+  bloodBank: boolean;
+  ambulance: boolean;
+  maternity: boolean;
+  nicu: boolean;
+  dialysis: boolean;
+  physiotherapy: boolean;
+  diet: boolean;
+  cssd: boolean;
+  // Back-office
+  hrPayroll: boolean;
+  procurement: boolean;
+  insurance: boolean;
+  assetManagement: boolean;
+  multiBranch: boolean;
+  analytics: boolean;
+  audit: boolean;
+  // Patient engagement
+  patientPortal: boolean;
+  whatsappEngagement: boolean;
+  // Platform
+  apiAccess: boolean;
+  whiteLabel: boolean;
 }
 
 interface Organization {
@@ -41,14 +67,35 @@ const STATUSES: OrgStatus[] = ["active", "suspended", "cancelled"];
 // the operator flips the plan dropdown. Server still re-clamps on save —
 // this is a UX hint, not a security boundary.
 const PLAN_MODULES: Record<OrgPlan, (keyof OrgModules)[]> = {
-  trial:      ["patient", "opd", "telemedicine"],
-  starter:    ["patient", "opd", "telemedicine"],
-  clinic:     ["patient", "opd", "lab", "pharmacy", "billing", "telemedicine"],
-  hospital:   ["patient", "opd", "ipd", "lab", "pharmacy", "billing", "surgery", "inventory", "radiology", "telemedicine"],
-  enterprise: ["patient", "opd", "ipd", "lab", "pharmacy", "billing", "surgery", "inventory", "radiology", "telemedicine", "aiVoice"],
+  trial:   ["patient", "opd", "telemedicine"],
+  starter: ["patient", "opd", "telemedicine", "whatsappEngagement"],
+  clinic: [
+    "patient", "opd", "lab", "pharmacy", "billing", "telemedicine",
+    "patientPortal", "diet", "analytics", "whatsappEngagement",
+  ],
+  hospital: [
+    "patient", "opd", "ipd", "lab", "pharmacy", "billing", "surgery",
+    "inventory", "radiology", "telemedicine",
+    "bedManagement", "otScheduling", "bloodBank", "ambulance",
+    "maternity", "nicu", "dialysis", "physiotherapy", "diet", "cssd",
+    "hrPayroll", "procurement", "insurance", "assetManagement",
+    "analytics", "audit",
+    "patientPortal", "whatsappEngagement",
+  ],
+  enterprise: [
+    "patient", "opd", "ipd", "lab", "pharmacy", "billing", "surgery",
+    "inventory", "radiology", "telemedicine", "aiVoice",
+    "bedManagement", "otScheduling", "bloodBank", "ambulance",
+    "maternity", "nicu", "dialysis", "physiotherapy", "diet", "cssd",
+    "hrPayroll", "procurement", "insurance", "assetManagement",
+    "multiBranch", "analytics", "audit",
+    "patientPortal", "whatsappEngagement",
+    "apiAccess", "whiteLabel",
+  ],
 };
 
 const MODULE_LABELS: Record<keyof OrgModules, string> = {
+  // Core clinical
   patient: "Patient Mgmt",
   opd: "OPD",
   ipd: "IPD",
@@ -60,7 +107,42 @@ const MODULE_LABELS: Record<keyof OrgModules, string> = {
   radiology: "Radiology",
   telemedicine: "Telemedicine",
   aiVoice: "AI Voice",
+  // Hospital sub-departments
+  bedManagement: "Bed Management",
+  otScheduling: "OT Scheduling",
+  bloodBank: "Blood Bank",
+  ambulance: "Ambulance",
+  maternity: "Maternity",
+  nicu: "NICU",
+  dialysis: "Dialysis",
+  physiotherapy: "Physiotherapy",
+  diet: "Diet & Nutrition",
+  cssd: "CSSD",
+  // Back-office
+  hrPayroll: "HR & Payroll",
+  procurement: "Procurement",
+  insurance: "Insurance / TPA",
+  assetManagement: "Asset Mgmt",
+  multiBranch: "Multi-branch",
+  analytics: "Analytics",
+  audit: "Audit & Compliance",
+  // Patient engagement
+  patientPortal: "Patient Portal",
+  whatsappEngagement: "WhatsApp / SMS",
+  // Platform
+  apiAccess: "API Access",
+  whiteLabel: "White-label",
 };
+
+// Section grouping for the module picker — keeps the form readable
+// at 30 modules instead of one big wall of pills.
+const MODULE_SECTIONS: Array<{ title: string; keys: (keyof OrgModules)[] }> = [
+  { title: "Core clinical",         keys: ["patient", "opd", "ipd", "lab", "pharmacy", "billing", "surgery", "inventory", "radiology", "telemedicine", "aiVoice"] },
+  { title: "Hospital departments",  keys: ["bedManagement", "otScheduling", "bloodBank", "ambulance", "maternity", "nicu", "dialysis", "physiotherapy", "diet", "cssd"] },
+  { title: "Back-office",           keys: ["hrPayroll", "procurement", "insurance", "assetManagement", "multiBranch", "analytics", "audit"] },
+  { title: "Patient engagement",    keys: ["patientPortal", "whatsappEngagement"] },
+  { title: "Platform",              keys: ["apiAccess", "whiteLabel"] },
+];
 
 const PLAN_COLORS: Record<OrgPlan, string> = {
   trial: "bg-gray-100 text-gray-700",
@@ -77,6 +159,7 @@ const STATUS_COLORS: Record<OrgStatus, string> = {
 };
 
 const DEFAULT_MODULES: OrgModules = {
+  // Core clinical
   patient: true,
   opd: true,
   ipd: false,
@@ -88,6 +171,31 @@ const DEFAULT_MODULES: OrgModules = {
   radiology: false,
   telemedicine: true,
   aiVoice: false,
+  // Hospital sub-departments
+  bedManagement: false,
+  otScheduling: false,
+  bloodBank: false,
+  ambulance: false,
+  maternity: false,
+  nicu: false,
+  dialysis: false,
+  physiotherapy: false,
+  diet: false,
+  cssd: false,
+  // Back-office
+  hrPayroll: false,
+  procurement: false,
+  insurance: false,
+  assetManagement: false,
+  multiBranch: false,
+  analytics: false,
+  audit: false,
+  // Patient engagement
+  patientPortal: false,
+  whatsappEngagement: false,
+  // Platform
+  apiAccess: false,
+  whiteLabel: false,
 };
 
 interface RepairedStaff {
@@ -375,27 +483,48 @@ export default function AdminOrganizations() {
                   · greyed modules aren&rsquo;t included in the <span className="capitalize">{form.plan}</span> plan
                 </span>
               </label>
-              <div className="flex flex-wrap gap-2">
-                {(Object.keys(MODULE_LABELS) as (keyof OrgModules)[]).map((key) => {
-                  const allowed = allowedForPlan.has(key);
-                  const on = form.modules[key];
+              {/* Group by section so 30 modules don't pile into one wall.
+                  Each section header shows a count of how many are
+                  available + enabled in the current plan. */}
+              <div className="space-y-4">
+                {MODULE_SECTIONS.map((section) => {
+                  const sectionAllowed = section.keys.filter((k) => allowedForPlan.has(k));
+                  const sectionOn = section.keys.filter((k) => form.modules[k] && allowedForPlan.has(k));
+                  // Don't render an entire empty section for tiny plans.
+                  if (sectionAllowed.length === 0) return null;
                   return (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => toggleModule(key)}
-                      disabled={!allowed}
-                      title={allowed ? undefined : `Not available on the ${form.plan} plan — upgrade to enable`}
-                      className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                        !allowed
-                          ? "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-300"
-                          : on
-                          ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                          : "border-gray-300 bg-white text-gray-500 hover:border-indigo-300"
-                      }`}
-                    >
-                      {MODULE_LABELS[key]}
-                    </button>
+                    <div key={section.title}>
+                      <p className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-gray-500">
+                        {section.title}
+                        <span className="ml-2 font-normal text-gray-400">
+                          {sectionOn.length} / {sectionAllowed.length} on
+                        </span>
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {section.keys.map((key) => {
+                          const allowed = allowedForPlan.has(key);
+                          const on = form.modules[key];
+                          return (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={() => toggleModule(key)}
+                              disabled={!allowed}
+                              title={allowed ? undefined : `Not available on the ${form.plan} plan — upgrade to enable`}
+                              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                                !allowed
+                                  ? "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-300"
+                                  : on
+                                  ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                                  : "border-gray-300 bg-white text-gray-500 hover:border-indigo-300"
+                              }`}
+                            >
+                              {MODULE_LABELS[key]}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   );
                 })}
               </div>

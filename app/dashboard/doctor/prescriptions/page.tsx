@@ -72,6 +72,11 @@ function WritePrescriptionModal({
   const printRef = useRef<HTMLDivElement>(null);
   const template = getTemplateById(templateId) || PRESCRIPTION_TEMPLATES[0];
 
+  // Locked identity block — pulled from the doctor's profile on
+  // mount. Doctors enter these once during registration; allowing
+  // ad-hoc edits per prescription would let stale or fake data
+  // leak onto official Rx documents. To change them they must
+  // contact support, who updates the source profile.
   const [form, setForm] = useState<PrescriptionData>(() => {
     const base: PrescriptionData = {
       doctorName: session?.user?.name || "Dr. ",
@@ -127,6 +132,47 @@ function WritePrescriptionModal({
   const [patientEmail, setPatientEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Pull verified identity + clinic details from the doctor's profile
+  // and lock the corresponding form fields. Authoritative source of
+  // truth — anything missing here is something they need to add to
+  // their profile (or ask support to add for them) before issuing
+  // prescriptions, not something they should type freehand on each Rx.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/doctors/me", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (cancelled || !j?.doctor) return;
+        const d = j.doctor as {
+          name?: string;
+          email?: string;
+          specialty?: string;
+          qualifications?: string;
+          licenseNumber?: string;
+          location?: string;
+          city?: string;
+          phone?: string;
+        };
+        setForm((prev) => ({
+          ...prev,
+          doctorName: d.name || prev.doctorName,
+          doctorQualification: d.qualifications || prev.doctorQualification,
+          doctorRegistration: d.licenseNumber || prev.doctorRegistration,
+          doctorSpecialty: d.specialty || prev.doctorSpecialty,
+          clinicAddress:
+            [d.location, d.city].filter(Boolean).join(", ") ||
+            prev.clinicAddress,
+          clinicPhone: d.phone || prev.clinicPhone,
+          clinicEmail: d.email || prev.clinicEmail,
+          signature: d.name || prev.signature,
+        }));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const set = (key: keyof PrescriptionData, val: string) =>
     setForm((p) => ({ ...p, [key]: val }));
@@ -341,51 +387,62 @@ function WritePrescriptionModal({
           </datalist>
 
           <div className="space-y-5">
-            {/* Doctor Info */}
-            <fieldset className="rounded-xl border border-gray-200 p-4">
-              <legend className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                Doctor Details
+            {/* Doctor Info — locked. Authoritative source is the
+                doctor's profile (set at registration / verification).
+                Editing on a per-Rx basis would let stale or
+                falsified credentials onto the printed document. */}
+            <fieldset className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50/60 via-white to-teal-50/40 p-4">
+              <legend className="flex items-center gap-1.5 px-2 text-xs font-semibold uppercase tracking-wider text-emerald-700">
+                <span aria-hidden="true">🔒</span> Doctor Details · pre-filled
               </legend>
               <div className="grid grid-cols-2 gap-3">
-                <Input
-                  label="Name"
-                  value={form.doctorName}
-                  onChange={(v) => set("doctorName", v)}
-                />
-                <Input
+                <ReadOnlyField label="Name" value={form.doctorName} />
+                <ReadOnlyField
                   label="Qualification"
                   value={form.doctorQualification}
-                  onChange={(v) => set("doctorQualification", v)}
-                  placeholder="MD, MBBS"
+                  empty="Add via your profile"
                 />
-                <Input
+                <ReadOnlyField
                   label="Registration No."
                   value={form.doctorRegistration}
-                  onChange={(v) => set("doctorRegistration", v)}
+                  empty="Pending verification"
                 />
-                <Input
+                <ReadOnlyField
                   label="Specialty"
                   value={form.doctorSpecialty}
-                  onChange={(v) => set("doctorSpecialty", v)}
                 />
-                <Input
-                  label="Clinic Name"
-                  value={form.clinicName}
-                  onChange={(v) => set("clinicName", v)}
-                />
-                <Input
+                <ReadOnlyField label="Clinic Name" value={form.clinicName} />
+                <ReadOnlyField
                   label="Phone"
                   value={form.clinicPhone}
-                  onChange={(v) => set("clinicPhone", v)}
+                  empty="Add via your profile"
                 />
                 <div className="col-span-2">
-                  <Input
+                  <ReadOnlyField
                     label="Clinic Address"
                     value={form.clinicAddress}
-                    onChange={(v) => set("clinicAddress", v)}
+                    empty="Add via your profile"
                   />
                 </div>
               </div>
+              <p className="mt-3 text-[11px] leading-relaxed text-emerald-800">
+                These details come from your verified profile and can&apos;t be
+                edited per-prescription. To change them,{" "}
+                <a
+                  href="mailto:support@odudoc.com?subject=Update%20my%20prescription%20identity%20details"
+                  className="font-semibold underline hover:text-emerald-900"
+                >
+                  contact support
+                </a>
+                {" "}or update fields like address &amp; phone on{" "}
+                <Link
+                  href="/dashboard/doctor/profile"
+                  className="font-semibold underline hover:text-emerald-900"
+                >
+                  your profile
+                </Link>
+                .
+              </p>
             </fieldset>
 
             {/* Patient Info */}
@@ -720,6 +777,39 @@ function Input({
         list={listId}
         className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
       />
+    </div>
+  );
+}
+
+/**
+ * Read-only display field for the locked Doctor Details fieldset.
+ * Shows the value (or a hint when empty) in a non-editable styled
+ * box with a subtle lock indicator. Doctors can't tab into it.
+ */
+function ReadOnlyField({
+  label,
+  value,
+  empty,
+}: {
+  label: string;
+  value: string;
+  empty?: string;
+}) {
+  const hasValue = !!value && value.trim().length > 0;
+  return (
+    <div>
+      <label className="mb-1 flex items-center gap-1 text-xs font-medium text-emerald-800">
+        <span aria-hidden="true" className="text-[10px]">🔒</span>
+        {label}
+      </label>
+      <div
+        aria-readonly="true"
+        className={`flex min-h-[38px] items-center rounded-lg border border-emerald-200 bg-white/80 px-3 py-2 text-sm ${
+          hasValue ? "text-slate-800" : "text-slate-400 italic"
+        }`}
+      >
+        {hasValue ? value : empty || "—"}
+      </div>
     </div>
   );
 }

@@ -78,6 +78,46 @@ export default function ConsentPage() {
           </p>
         </div>
 
+        {/* Distribution + counts. Quick at-a-glance "where is my data
+            going?" view. Active-only counts since revoked rows don't
+            grant access. */}
+        {(() => {
+          const active = consents.filter((c) => !c.revokedAt);
+          if (active.length === 0) return null;
+          const buckets: Record<ConsentScope, number> = {
+            demographics_only: 0, summary: 0, full_chart: 0, psychiatric: 0,
+          };
+          for (const c of active) buckets[c.scope] += 1;
+          const colors: Record<ConsentScope, string> = {
+            demographics_only: "bg-cyan-400",
+            summary: "bg-emerald-400",
+            full_chart: "bg-amber-400",
+            psychiatric: "bg-rose-400",
+          };
+          return (
+            <div className="mt-6 rounded-2xl border border-white/60 bg-white p-4 shadow-sm">
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">
+                Active consents · by scope
+              </p>
+              <div className="flex h-3 overflow-hidden rounded-full bg-slate-100">
+                {(Object.keys(buckets) as ConsentScope[]).map((s) => {
+                  const pct = (buckets[s] / active.length) * 100;
+                  if (pct === 0) return null;
+                  return <div key={s} className={`${colors[s]} transition-all`} style={{ width: `${pct}%` }} title={`${s}: ${buckets[s]}`} />;
+                })}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-3 text-[11px]">
+                {(Object.keys(buckets) as ConsentScope[]).map((s) => (
+                  <span key={s} className="inline-flex items-center gap-1 text-slate-600">
+                    <span className={`inline-block h-2 w-2 rounded-full ${colors[s]}`} />
+                    {SCOPE_LABEL[s]} <b className="text-slate-900">{buckets[s]}</b>
+                  </span>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
         <form onSubmit={submit} className="mt-6 rounded-3xl border border-white/60 bg-white p-5 shadow-sm">
           <h3 className="text-sm font-bold text-slate-900">Grant new access</h3>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">

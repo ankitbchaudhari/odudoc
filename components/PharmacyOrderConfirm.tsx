@@ -9,6 +9,7 @@
 // the counter — the pharmacy staff require it to mark pickup complete.
 
 import { useCallback, useEffect, useState } from "react";
+import SharedBadge from "@/components/StatusBadge";
 
 interface StoreQuoteLine {
   rxLabel: string;
@@ -301,19 +302,17 @@ export default function PharmacyOrderConfirm({ draft, onCancel }: Props) {
   );
 }
 
+// Maps the pharmacy-order lifecycle to canonical clinical-tones keys
+// while keeping the user-facing labels phrased for patients (not staff).
 function StatusPill({ status }: { status: string }) {
-  const map: Record<string, { bg: string; text: string; label: string }> = {
-    placed: { bg: "bg-amber-100", text: "text-amber-800", label: "Waiting for pharmacy" },
-    accepted: { bg: "bg-sky-100", text: "text-sky-800", label: "Pharmacy accepted · preparing" },
-    ready: { bg: "bg-emerald-100", text: "text-emerald-800", label: "Ready for pickup" },
-    dispatched: { bg: "bg-indigo-100", text: "text-indigo-800", label: "Out for delivery" },
-    completed: { bg: "bg-gray-100", text: "text-gray-700", label: "Completed" },
-    cancelled: { bg: "bg-red-100", text: "text-red-700", label: "Cancelled" },
+  const map: Record<string, { tone: import("@/lib/clinical-tones").ToneKey; label: string }> = {
+    placed:     { tone: "pending",     label: "Waiting for pharmacy" },
+    accepted:   { tone: "in_progress", label: "Pharmacy accepted · preparing" },
+    ready:      { tone: "ready",       label: "Ready for pickup" },
+    dispatched: { tone: "delivered",   label: "Out for delivery" },
+    completed:  { tone: "completed",   label: "Completed" },
+    cancelled:  { tone: "cancelled",   label: "Cancelled" },
   };
   const m = map[status] || map.placed;
-  return (
-    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${m.bg} ${m.text}`}>
-      {m.label}
-    </span>
-  );
+  return <SharedBadge status={m.tone} label={m.label} />;
 }

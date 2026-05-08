@@ -107,6 +107,49 @@ export default function LaboratoryPage() {
         <StatTile label="Delivered today" value={counts.delivered} emoji="📦" tone="teal" />
       </div>
 
+      {/* Pipeline strip — visual order flow with per-stage totals.
+          Uses the canonical clinical-tones colors. */}
+      {orders.length > 0 && (
+        <div className="mb-6 rounded-2xl border border-white/60 bg-white p-4 shadow-sm">
+          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">
+            Order pipeline
+          </p>
+          <div className="flex h-3 overflow-hidden rounded-full bg-slate-100">
+            {(["pending", "collected", "in_progress", "ready", "delivered"] as const).map((s) => {
+              const total = orders.length;
+              const pct = (counts[s] / total) * 100;
+              if (pct === 0) return null;
+              const colors: Record<string, string> = {
+                pending: "bg-amber-400",
+                collected: "bg-cyan-400",
+                in_progress: "bg-sky-400",
+                ready: "bg-emerald-400",
+                delivered: "bg-teal-400",
+              };
+              return (
+                <div
+                  key={s}
+                  className={`${colors[s]} transition-all`}
+                  style={{ width: `${pct}%` }}
+                  title={`${s}: ${counts[s]} (${pct.toFixed(0)}%)`}
+                />
+              );
+            })}
+          </div>
+          <div className="mt-2 flex flex-wrap gap-3 text-[11px]">
+            {(["pending", "collected", "in_progress", "ready", "delivered"] as const).map((s) => (
+              <span key={s} className="inline-flex items-center gap-1 text-slate-600">
+                <span className={`inline-block h-2 w-2 rounded-full ${{
+                  pending: "bg-amber-400", collected: "bg-cyan-400", in_progress: "bg-sky-400",
+                  ready: "bg-emerald-400", delivered: "bg-teal-400",
+                }[s]}`} />
+                {s.replace("_", " ")} <b className="text-slate-900">{counts[s]}</b>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {showNew && (
         <form onSubmit={submitNew} className="mb-6 rounded-3xl border border-white/60 bg-white p-5 shadow-sm">
           <h3 className="text-sm font-bold text-slate-900">Order a test</h3>

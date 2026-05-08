@@ -60,6 +60,10 @@ type CsTools = {
   StackScrollMouseWheelTool: unknown;
   StackScrollTool: unknown;
   clearToolState: (el: HTMLElement, toolName: string) => void;
+  globalImageIdSpecificToolStateManager?: {
+    saveToolState: () => unknown;
+    restoreToolState: (state: unknown) => void;
+  };
 };
 
 declare global {
@@ -137,6 +141,9 @@ function DicomViewerInner() {
   const sp = useSearchParams();
   // Support stacks via ?src=...&src=... .
   const srcs: string[] = sp.getAll("src").filter(Boolean);
+  // Optional translucent overlay (e.g. AI heatmap PNG, segmentation
+  // mask). Stacked on top of the DICOM canvas at 60% opacity.
+  const overlay = sp.get("overlay") || "";
   const elRef = useRef<HTMLDivElement | null>(null);
   const stackRef = useRef<{ ids: ImageId[]; idx: number; numFrames: number } | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -145,8 +152,18 @@ function DicomViewerInner() {
   const [frame, setFrame] = useState(0);
   const [totalFrames, setTotalFrames] = useState(1);
   const [inverted, setInverted] = useState(false);
+  const [annotationStatus, setAnnotationStatus] = useState<string | null>(null);
+  const [overlayOpacity, setOverlayOpacity] = useState(60);
 
   const allDicom = srcs.length > 0 && srcs.every(isDicomUrl);
+
+  // Stable per-study identifier: hash the source URLs together so
+  // saved annotations follow the study, not the request.
+  const studyKey = srcs.length > 0
+    ? srcs.length === 1
+      ? srcs[0]
+      : `stack:${srcs.map((s) => s).join("|")}`
+    : "";
 
   // Lazy script load + cornerstone setup.
   useEffect(() => {
@@ -289,6 +306,54 @@ function DicomViewerInner() {
     setInverted(!inverted);
   }, [inverted]);
 
+  /** Serialize cornerstone-tools' global tool state and POST it to
+   *  /api/emr/dicom-annotations. The server stores one row per
+   *  (clinic, studyKey) so reopening the same study restores every
+   *  measurement / ROI the doctor drew. */
+  const saveAnnotations = useCallback(async () => {
+    const ct = window.cornerstoneTools;
+    if (!ct?.globalImageIdSpecificToolStateManager || !studyKey) return;
+    setAnnotationStatus("Saving…");
+    try {
+      const state = ct.globalImageIdSpecificToolStateManager.saveToolState();
+      const res = await fetch("/api/emr/dicom-annotations", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ studyKey, toolStateJson: JSON.stringify(state) }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || `HTTP ${res.status}`);
+      setAnnotationStatus("✓ Saved");
+      setTimeout(() => setAnnotationStatus(null), 2500);
+    } catch (err) {
+      setAnnotationStatus(`Save failed: ${(err as Error).message}`);
+    }
+  }, [studyKey]);
+
+  const loadAnnotations = useCallback(async () => {
+    const ct = window.cornerstoneTools;
+    const cs = window.cornerstone;
+    if (!ct?.globalImageIdSpecificToolStateManager || !studyKey || !elRef.current) return;
+    setAnnotationStatus("Loading…");
+    try {
+      const sp = new URLSearchParams({ studyKey });
+      const res = await fetch(`/api/emr/dicom-annotations?${sp}`, { cache: "no-store" });
+      if (!res.ok) throw new Error((await res.json()).error || `HTTP ${res.status}`);
+      const j = await res.json();
+      if (!j.annotation) {
+        setAnnotationStatus("No saved annotations for this study");
+        setTimeout(() => setAnnotationStatus(null), 2500);
+        return;
+      }
+      const state = JSON.parse(j.annotation.toolStateJson);
+      ct.globalImageIdSpecificToolStateManager.restoreToolState(state);
+      if (cs) cs.resize(elRef.current);
+      setAnnotationStatus(`✓ Loaded · saved by ${j.annotation.createdBy}`);
+      setTimeout(() => setAnnotationStatus(null), 4000);
+    } catch (err) {
+      setAnnotationStatus(`Load failed: ${(err as Error).message}`);
+    }
+  }, [studyKey]);
+
   const clearMeasurements = useCallback(() => {
     const ct = window.cornerstoneTools;
     if (!ct || !elRef.current) return;
@@ -371,6 +436,18 @@ function DicomViewerInner() {
                 <button onClick={reset} className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-violet-100 hover:bg-white/10">
                   ↺ Reset
                 </button>
+                <span className="mx-2 self-center text-xs text-white/30">|</span>
+                <button onClick={saveAnnotations} className="rounded-lg bg-emerald-500/30 px-3 py-1.5 text-xs font-semibold text-emerald-100 ring-1 ring-emerald-300/30 hover:bg-emerald-500/40">
+                  💾 Save
+                </button>
+                <button onClick={loadAnnotations} className="rounded-lg bg-cyan-500/30 px-3 py-1.5 text-xs font-semibold text-cyan-100 ring-1 ring-cyan-300/30 hover:bg-cyan-500/40">
+                  📥 Load
+                </button>
+                {annotationStatus && (
+                  <span className="ml-2 self-center text-[11px] italic text-violet-200">
+                    {annotationStatus}
+                  </span>
+                )}
               </div>
 
               {/* W/L presets */}
@@ -387,11 +464,41 @@ function DicomViewerInner() {
                 ))}
               </div>
 
-              <div
-                ref={elRef}
-                className="relative h-[600px] w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/10"
-                style={{ touchAction: "none" }}
-              />
+              <div className="relative">
+                <div
+                  ref={elRef}
+                  className="relative h-[600px] w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/10"
+                  style={{ touchAction: "none" }}
+                />
+                {/* AI heatmap overlay — pass ?overlay=<png-url>. Drawn
+                    on top of the DICOM canvas with adjustable opacity
+                    so radiologists can compare the model's heatmap to
+                    the underlying anatomy. Pointer-events disabled so
+                    cornerstone tools still receive mouse events. */}
+                {overlay && (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={overlay}
+                      alt="AI overlay"
+                      className="pointer-events-none absolute inset-0 h-full w-full rounded-2xl object-contain mix-blend-screen"
+                      style={{ opacity: overlayOpacity / 100 }}
+                    />
+                    <div className="absolute right-3 top-3 flex items-center gap-2 rounded-lg bg-black/60 px-3 py-1.5 text-[11px] backdrop-blur-sm">
+                      <span className="text-violet-200">Overlay</span>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={overlayOpacity}
+                        onChange={(e) => setOverlayOpacity(Number(e.target.value))}
+                        className="w-20 accent-violet-400"
+                      />
+                      <span className="font-mono text-white/80">{overlayOpacity}%</span>
+                    </div>
+                  </>
+                )}
+              </div>
 
               {/* Frame slider */}
               {totalFrames > 1 && (

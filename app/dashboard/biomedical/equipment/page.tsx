@@ -94,12 +94,38 @@ export default function EquipmentPage() {
       actions={<button onClick={() => setShowNew((v) => !v)} className="rounded-full bg-white px-4 py-2 text-xs font-bold text-orange-700 shadow-md hover:-translate-y-0.5">+ Add equipment</button>}
     >
       {summary && (
-        <div className="mb-6 grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <StatTile label="Active" value={summary.active} emoji="🧰" tone="emerald" />
-          <StatTile label="Under maintenance" value={summary.underMaintenance} emoji="🔧" tone="amber" />
-          <StatTile label="Maintenance due" value={summary.maintenanceDueSoon} emoji="⏱️" tone="rose" hint="< 14 days" />
-          <StatTile label="Calibration due" value={summary.calibrationDueSoon} emoji="📐" tone="cyan" hint="< 14 days" />
-        </div>
+        <>
+          <div className="mb-6 grid gap-4 grid-cols-2 lg:grid-cols-4">
+            <StatTile label="Active" value={summary.active} emoji="🧰" tone="emerald" />
+            <StatTile label="Under maintenance" value={summary.underMaintenance} emoji="🔧" tone="amber" />
+            <StatTile label="Maintenance due" value={summary.maintenanceDueSoon} emoji="⏱️" tone="rose" hint="< 14 days" />
+            <StatTile label="Calibration due" value={summary.calibrationDueSoon} emoji="📐" tone="cyan" hint="< 14 days" />
+          </div>
+
+          {summary.total > 0 && (
+            <div className="mb-6 rounded-2xl border border-white/60 bg-white p-4 shadow-sm">
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">
+                Fleet status
+              </p>
+              <div className="flex h-3 overflow-hidden rounded-full bg-slate-100">
+                {([
+                  { k: "active", v: summary.active, c: "bg-emerald-400" },
+                  { k: "under_maintenance", v: summary.underMaintenance, c: "bg-amber-400" },
+                  { k: "out_of_service", v: summary.outOfService, c: "bg-rose-400" },
+                ] as const).map((x) => {
+                  const pct = (x.v / summary.total) * 100;
+                  if (pct === 0) return null;
+                  return <div key={x.k} className={`${x.c} transition-all`} style={{ width: `${pct}%` }} title={`${x.k}: ${x.v}`} />;
+                })}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-3 text-[11px]">
+                <span className="inline-flex items-center gap-1 text-slate-600"><span className="inline-block h-2 w-2 rounded-full bg-emerald-400" /> active <b className="text-slate-900">{summary.active}</b></span>
+                <span className="inline-flex items-center gap-1 text-slate-600"><span className="inline-block h-2 w-2 rounded-full bg-amber-400" /> under maintenance <b className="text-slate-900">{summary.underMaintenance}</b></span>
+                <span className="inline-flex items-center gap-1 text-slate-600"><span className="inline-block h-2 w-2 rounded-full bg-rose-400" /> out of service <b className="text-slate-900">{summary.outOfService}</b></span>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {showNew && (

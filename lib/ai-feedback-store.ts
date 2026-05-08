@@ -12,6 +12,7 @@
 // require a migration.
 
 import { bindPersistentArray } from "./persistent-array";
+import { bumpAggregate } from "./ai-feedback-aggregates";
 
 export type AiFeedbackSurface =
   | "ai-prescription.diagnosis"
@@ -91,6 +92,10 @@ export async function recordAiFeedback(input: RecordFeedbackInput): Promise<AiFe
   };
   feedback.push(row);
   flushFeedback();
+  // Cross-Lambda persistence: bump the materialised aggregate so
+  // downstream readers (reranker / admin) don't have to re-aggregate
+  // raw rows on every cold start.
+  void bumpAggregate(row.surface, row.suggestion, row.verdict).catch(() => {});
   return row;
 }
 

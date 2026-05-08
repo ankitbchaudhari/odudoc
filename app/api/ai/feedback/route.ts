@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
   }
   // New row → next rerank should reflect it. Pure in-memory bump,
   // safe even if the persist fails.
-  invalidateRerankerCache();
+  invalidateRerankerCache(surface);
 
   return NextResponse.json({ ok: true, id: row.id });
 }

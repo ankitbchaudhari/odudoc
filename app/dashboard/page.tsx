@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { Consultation } from "@/lib/consultations-store";
+import SharedBadge from "@/components/StatusBadge";
 import type { PrescriptionRecord } from "@/lib/prescriptions-store";
 
 function greeting(): string {
@@ -408,20 +409,19 @@ function EmptyState({ emoji, label, sub }: { emoji: string; label: string; sub?:
   );
 }
 
+// Maps the patient-facing consultation lifecycle to canonical
+// clinical-tones keys so this dashboard's status pills match every
+// other surface (reception, lab, vendor, …).
 function StatusPill({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    completed: "bg-emerald-100 text-emerald-700",
-    rejected: "bg-rose-100 text-rose-700",
-    refunded: "bg-amber-100 text-amber-700",
-    approved: "bg-sky-100 text-sky-700",
-    awaiting_doctor: "bg-indigo-100 text-indigo-700",
-    in_progress: "bg-purple-100 text-purple-700",
-    rescheduled: "bg-orange-100 text-orange-700",
+  const map: Record<string, import("@/lib/clinical-tones").ToneKey> = {
+    completed: "completed",
+    rejected: "rejected",
+    refunded: "cancelled",
+    approved: "in_progress",
+    awaiting_doctor: "pending",
+    in_progress: "in_progress",
+    rescheduled: "scheduled",
   };
-  const cls = map[status] || "bg-gray-100 text-gray-700";
-  return (
-    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${cls}`}>
-      {status.replace(/_/g, " ")}
-    </span>
-  );
+  const tone = map[status] || "neutral";
+  return <SharedBadge status={tone} label={status.replace(/_/g, " ")} />;
 }

@@ -195,15 +195,37 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
       setResendIn(30);
       setStep("otp");
     } catch (err) {
-      const msg = (err as { code?: string; message?: string }).code
-        || (err as Error).message
-        || "";
-      if (/auth\/invalid-phone-number/.test(msg)) {
+      // Surface the actual Firebase error code so support can debug
+      // ("auth/billing-not-enabled", "auth/quota-exceeded",
+      // "auth/operation-not-allowed", etc). Generic "try again" hid
+      // the real reason and made every failure look like a transient
+      // network blip.
+      const code = (err as { code?: string }).code || "";
+      const message = (err as Error).message || "";
+      // Best effort log to the browser console so devs/support can
+      // copy the full Firebase error from the user's session.
+      // eslint-disable-next-line no-console
+      console.error("[BookingModal] phone OTP send failed", { code, message, err });
+
+      if (/auth\/invalid-phone-number/.test(code)) {
         setPaymentError("That phone number doesn't look right. Include the country code.");
-      } else if (/auth\/too-many-requests/.test(msg)) {
-        setPaymentError("Too many attempts from this device. Try again later.");
-      } else if (/auth\/captcha-check-failed/.test(msg)) {
+      } else if (/auth\/too-many-requests/.test(code)) {
+        setPaymentError("Too many attempts from this device. Try again in a few minutes.");
+      } else if (/auth\/captcha-check-failed/.test(code) || /reCAPTCHA/i.test(message)) {
         setPaymentError("Anti-bot check failed. Please refresh and try again.");
+      } else if (/auth\/quota-exceeded/.test(code)) {
+        setPaymentError("Daily SMS quota reached. Please try again tomorrow or contact support.");
+      } else if (/auth\/billing-not-enabled/.test(code)) {
+        setPaymentError("Phone verification is temporarily unavailable. Please contact support.");
+      } else if (/auth\/operation-not-allowed/.test(code)) {
+        setPaymentError("Phone verification isn't enabled for this site yet. Please contact support.");
+      } else if (/auth\/unauthorized-domain/.test(code)) {
+        setPaymentError("This domain isn't authorized for phone verification yet. Please contact support.");
+      } else if (/auth\/network-request-failed/.test(code)) {
+        setPaymentError("Network error. Check your connection and try again.");
+      } else if (code) {
+        // Show the Firebase code in dev/staging so the cause is visible.
+        setPaymentError(`Could not send code (${code}). Please try again.`);
       } else {
         setPaymentError("Could not send code. Please try again.");
       }

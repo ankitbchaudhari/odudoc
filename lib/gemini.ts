@@ -119,16 +119,40 @@ export async function generateJson<T = unknown>(
   let chosenModel = "";
   const startedAt = Date.now();
 
+  // Per-request timeout. Gemini occasionally takes 30+s under load,
+  // and the user just sees a spinner. Force-abort at 22s so we can
+  // either retry the same model or fall through to a faster fallback
+  // before they give up. Total worst-case (2 attempts × 4 models) is
+  // ~3 min, but the very first ok result short-circuits.
+  const REQUEST_TIMEOUT_MS = 22_000;
   outer: for (const model of modelsToTry) {
-    for (let attempt = 0; attempt < 3; attempt++) {
-      const r = await fetch(
-        `${apiUrl(model)}?key=${encodeURIComponent(apiKey)}`,
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: requestBody,
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
+      let r: Response;
+      try {
+        r = await fetch(
+          `${apiUrl(model)}?key=${encodeURIComponent(apiKey)}`,
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: requestBody,
+            signal: ctrl.signal,
+          }
+        );
+      } catch (err) {
+        clearTimeout(t);
+        const aborted = (err as { name?: string })?.name === "AbortError";
+        lastStatus = aborted ? 504 : 0;
+        lastErrBody = aborted ? "request timed out" : (err instanceof Error ? err.message : String(err));
+        // Treat timeouts and network errors as transient — try next
+        // attempt or fall through to the next model in the chain.
+        if (attempt < 1) {
+          await new Promise((resolve) => setTimeout(resolve, 300));
         }
-      );
+        continue;
+      }
+      clearTimeout(t);
       if (r.ok) {
         res = r;
         chosenModel = model;
@@ -138,8 +162,11 @@ export async function generateJson<T = unknown>(
       lastErrBody = await r.text().catch(() => "");
       const transient = r.status === 503 || r.status === 429 || r.status >= 500;
       if (!transient) break; // non-transient — skip to next model
-      if (attempt < 2) {
-        await new Promise((resolve) => setTimeout(resolve, 800 * Math.pow(2, attempt)));
+      if (attempt < 1) {
+        // Tighter retry: 400ms vs the old 800ms × 2^n. Two attempts
+        // per model is enough to dodge a momentary 503; longer waits
+        // just compound the perceived slowness.
+        await new Promise((resolve) => setTimeout(resolve, 400));
       }
     }
   }

@@ -73,6 +73,78 @@ const EMPTY: PatientForm = {
   vitals: "",
 };
 
+/** POST JSON with a client-side timeout + one automatic retry on
+ *  502/503/504 / network errors. Server side already retries Gemini
+ *  internally, but a transient hiccup in the entire request can still
+ *  surface here — this gives doctors one extra silent retry before
+ *  showing an error. */
+async function fetchWithRetry(
+  url: string,
+  body: unknown,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any> {
+  const tryOnce = async (): Promise<{ ok: boolean; status: number; data: { error?: string; [k: string]: unknown } }> => {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 60_000);
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+        signal: ctrl.signal,
+      });
+      const data = await res.json().catch(() => ({}));
+      return { ok: res.ok, status: res.status, data };
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+
+  let last: { ok: boolean; status: number; data: { error?: string; [k: string]: unknown } } | null = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const r = await tryOnce();
+      if (r.ok) return r.data;
+      last = r;
+      // Only retry on transient gateway / capacity errors. 4xx errors
+      // (validation, auth) are immediate failures.
+      if (![502, 503, 504, 429].includes(r.status)) break;
+    } catch (err) {
+      last = { ok: false, status: 0, data: { error: (err as Error).message || "Network error" } };
+    }
+    if (attempt < 1) {
+      await new Promise((r) => setTimeout(r, 600));
+    }
+  }
+  const e = new Error(last?.data?.error || `Request failed (HTTP ${last?.status || 0})`);
+  // Tag the status so humanizeAiError can shape a friendlier message.
+  (e as Error & { status?: number }).status = last?.status || 0;
+  throw e;
+}
+
+/** Map raw fetch / API errors into copy a clinician can act on. */
+function humanizeAiError(err: unknown): string {
+  const e = err as { message?: string; status?: number; name?: string };
+  const status = e?.status;
+  const msg = e?.message || "";
+  if (e?.name === "AbortError" || /timed out|abort/i.test(msg)) {
+    return "AI is taking longer than usual. Please try again — it usually responds within 10 seconds.";
+  }
+  if (status === 502 || status === 503 || status === 504 || /timed out/i.test(msg)) {
+    return "AI service is temporarily busy. Try again in a few seconds.";
+  }
+  if (status === 429) {
+    return "Too many requests in a short window. Please wait a moment and try again.";
+  }
+  if (status === 401) {
+    return "Your session expired. Please refresh and sign in again.";
+  }
+  if (/non.?json|MAX_TOKENS|finishReason/i.test(msg)) {
+    return "AI returned an incomplete response. Try shortening the symptoms input or click again.";
+  }
+  return msg || "AI request failed. Please try again.";
+}
+
 export default function AiPrescriptionPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [patient, setPatient] = useState<PatientForm>(EMPTY);
@@ -148,13 +220,10 @@ export default function AiPrescriptionPage() {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch("/api/doctor/ai-prescription/suggest", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ mode: "diagnosis", patient }),
+      const data = await fetchWithRetry("/api/doctor/ai-prescription/suggest", {
+        mode: "diagnosis",
+        patient,
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Request failed");
       const dxList: Diagnosis[] = data.diagnoses || [];
       setDiagnoses(dxList);
       setGeneralNotes(data.generalNotes || "");
@@ -165,7 +234,7 @@ export default function AiPrescriptionPage() {
       const topNames = dxList.slice(0, 2).map((d) => d.name).filter(Boolean);
       topNames.forEach((n) => void prefetchTreatment(n));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Request failed");
+      setError(humanizeAiError(err));
     } finally {
       setLoading(false);
     }
@@ -183,13 +252,11 @@ export default function AiPrescriptionPage() {
     }
     setLoading(true);
     try {
-      const res = await fetch("/api/doctor/ai-prescription/suggest", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ mode: "treatment", diagnosis: dx, patient }),
+      const data = await fetchWithRetry("/api/doctor/ai-prescription/suggest", {
+        mode: "treatment",
+        diagnosis: dx,
+        patient,
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Request failed");
       const tx: TreatmentResponse = {
         investigations: data.investigations || [],
         medications: data.medications || [],
@@ -201,7 +268,7 @@ export default function AiPrescriptionPage() {
       setTreatment(tx);
       setStep(3);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Request failed");
+      setError(humanizeAiError(err));
     } finally {
       setLoading(false);
     }

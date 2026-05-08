@@ -145,6 +145,30 @@ export const PATIENT_ACL: Record<AclField, Record<AclRole, AclVerdict>> = {
   },
 };
 
+/** Translate a ConsentScope (from patient-consent-store) into the
+ *  AclRole that best represents what the receiving clinic is allowed
+ *  to see. Used by cross-clinic read paths after activeConsentScope()
+ *  returns a non-null scope.
+ *
+ *  - demographics_only → "reception" (sees demographics only)
+ *  - summary           → "nurse"     (current visit dx + active Rx)
+ *  - full_chart        → "doctor_treating" (full record)
+ *  - psychiatric       → "doctor_treating" (caller still needs the
+ *                        patient's psychiatricConsent flag set on
+ *                        the record itself for that section to
+ *                        actually render)
+ */
+export function aclRoleFromConsentScope(
+  scope: "demographics_only" | "summary" | "full_chart" | "psychiatric",
+): AclRole {
+  switch (scope) {
+    case "demographics_only": return "reception";
+    case "summary":           return "nurse";
+    case "full_chart":        return "doctor_treating";
+    case "psychiatric":       return "doctor_treating";
+  }
+}
+
 /** Map an emr-store ClinicAccess.role to an AclRole. Unknown roles
  *  fall through to "doctor_other" (locked out). */
 export function aclRoleFromClinicRole(

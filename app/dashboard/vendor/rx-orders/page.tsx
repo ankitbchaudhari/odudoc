@@ -11,6 +11,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import SharedBadge from "@/components/StatusBadge";
 
 type Status =
   | "placed"
@@ -364,19 +365,19 @@ function Btn({
   );
 }
 
+// Maps the local Rx-fulfilment statuses to the canonical clinical-tones
+// keys so this queue inherits the same visual grammar as every other
+// dashboard. Local labels are preserved for the Rx-specific phrasing
+// ("New" instead of "Pending", "Out for delivery" instead of "Delivered").
 function StatusPill({ status }: { status: Status }) {
-  const map: Record<Status, { bg: string; text: string; label: string }> = {
-    placed: { bg: "bg-amber-100", text: "text-amber-800", label: "New" },
-    accepted: { bg: "bg-sky-100", text: "text-sky-800", label: "Preparing" },
-    ready: { bg: "bg-emerald-100", text: "text-emerald-800", label: "Ready" },
-    dispatched: { bg: "bg-indigo-100", text: "text-indigo-800", label: "Out for delivery" },
-    completed: { bg: "bg-gray-100", text: "text-gray-700", label: "Completed" },
-    cancelled: { bg: "bg-red-100", text: "text-red-700", label: "Cancelled" },
+  const map: Record<Status, { tone: import("@/lib/clinical-tones").ToneKey; label: string }> = {
+    placed:     { tone: "pending",     label: "New" },
+    accepted:   { tone: "in_progress", label: "Preparing" },
+    ready:      { tone: "ready",       label: "Ready" },
+    dispatched: { tone: "delivered",   label: "Out for delivery" },
+    completed:  { tone: "completed",   label: "Completed" },
+    cancelled:  { tone: "cancelled",   label: "Cancelled" },
   };
   const m = map[status];
-  return (
-    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${m.bg} ${m.text}`}>
-      {m.label}
-    </span>
-  );
+  return <SharedBadge status={m.tone} label={m.label} />;
 }

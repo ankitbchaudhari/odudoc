@@ -130,8 +130,8 @@ export default function DoctorPayoutPage() {
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
                 Payout method
               </p>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-                {(["bank", "paypal", "wise", "upi", "other"] as Method[]).map((m) => (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {(["bank", "paypal", "wise", "other"] as Method[]).map((m) => (
                   <button
                     key={m}
                     type="button"
@@ -146,6 +146,11 @@ export default function DoctorPayoutPage() {
                   </button>
                 ))}
               </div>
+              <p className="mt-2 text-xs text-gray-500">
+                Don&apos;t see your method? Pick <b>Other</b> and describe it — we
+                support local mobile money (M-Pesa, GCash), UPI, crypto wallets,
+                and regional bank networks worldwide.
+              </p>
             </div>
 
             {/* Method-specific fields */}
@@ -164,23 +169,23 @@ export default function DoctorPayoutPage() {
                     className="input-modern"
                     value={details.bankName || ""}
                     onChange={(e) => set("bankName", e.target.value)}
-                    placeholder="e.g. HSBC, Chase, HDFC"
+                    placeholder="Your bank's name"
                   />
                 </Field>
-                <Field label="Account number / IBAN">
+                <Field label="Account number or IBAN">
                   <input
                     className="input-modern"
                     value={details.accountNumber || ""}
                     onChange={(e) => set("accountNumber", e.target.value)}
-                    placeholder="Local account number or IBAN"
+                    placeholder="Local account number, IBAN, or equivalent"
                   />
                 </Field>
-                <Field label="SWIFT / IFSC / Routing / BIC">
+                <Field label="Bank routing code">
                   <input
                     className="input-modern"
                     value={details.routingCode || ""}
                     onChange={(e) => set("routingCode", e.target.value)}
-                    placeholder="SWIFT for international, IFSC for India, etc."
+                    placeholder="SWIFT/BIC, sort code, ABA, BSB, IFSC, CLABE…"
                   />
                 </Field>
                 <Field label="Bank country">

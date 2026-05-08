@@ -97,47 +97,72 @@ export default function VendorRxOrdersPage() {
   const storeNameById = (id: string) =>
     stores.find((s) => s.id === id)?.name || "—";
 
+  const tabCount = orders.length;
+
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/40 to-sky-50/40 py-10">
       <div className="mx-auto max-w-5xl px-4">
-        <div className="mb-5">
-          <Link href="/dashboard/vendor" className="text-xs text-gray-500 hover:underline">
-            ← Back to dashboard
-          </Link>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900">Prescription orders</h1>
-          <p className="text-sm text-gray-500">
-            Rx fulfillment queue. Confirm the pickup PIN before handing over medicines.
-          </p>
+        <Link href="/dashboard/vendor" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-emerald-600">
+          ← Back to dashboard
+        </Link>
+
+        {/* Hero */}
+        <div className="relative mt-4 overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 p-8 text-white shadow-xl">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-cyan-300/30 blur-3xl" />
+          <div className="relative flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/80">
+                Pharmacy · Rx queue
+              </p>
+              <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">Prescription orders</h1>
+              <p className="mt-2 max-w-md text-sm text-white/90">
+                Rx fulfillment queue. Confirm the pickup PIN before handing over medicines.
+              </p>
+            </div>
+            <button
+              onClick={load}
+              className="rounded-full bg-white/15 px-4 py-2 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white/25"
+            >
+              ↻ Refresh
+            </button>
+          </div>
         </div>
 
-        <div className="mb-5 flex flex-wrap gap-2">
+        {/* Tabs as pill row */}
+        <div className="mt-6 mb-5 flex flex-wrap gap-2">
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+              className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
                 tab === t.id
-                  ? "bg-primary-600 text-white"
-                  : "bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-100"
+                  ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/30"
+                  : "border border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-emerald-300 hover:text-emerald-700"
               }`}
             >
               {t.label}
+              {tab === t.id && tabCount > 0 && (
+                <span className="ml-1.5 inline-flex items-center justify-center rounded-full bg-white/25 px-1.5 text-[10px]">
+                  {tabCount}
+                </span>
+              )}
             </button>
           ))}
-          <button
-            onClick={load}
-            className="ml-auto rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 ring-1 ring-gray-200 hover:bg-gray-100"
-          >
-            ↻ Refresh
-          </button>
         </div>
 
         {loading ? (
-          <p className="text-sm text-gray-500">Loading…</p>
+          <div className="flex items-center justify-center rounded-3xl border border-white/60 bg-white py-16 shadow-sm">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-500" />
+          </div>
         ) : orders.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-gray-200 bg-white p-6 text-center text-sm text-gray-500">
-            No orders in this tab.
-          </p>
+          <div className="rounded-3xl border border-dashed border-slate-200 bg-white py-16 text-center shadow-sm">
+            <span className="text-5xl">💊</span>
+            <p className="mt-3 text-base font-semibold text-slate-900">No orders in this tab</p>
+            <p className="mt-1 text-sm text-slate-500">
+              When new Rx orders come in they&apos;ll show up here automatically.
+            </p>
+          </div>
         ) : (
           <div className="space-y-4">
             {orders.map((o) => (
@@ -246,7 +271,7 @@ function OrderCard({
   }
 
   return (
-    <article className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <article className="overflow-hidden rounded-3xl border border-white/60 bg-white p-5 shadow-sm transition hover:shadow-md">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
@@ -326,13 +351,13 @@ function Btn({
 }) {
   const cls =
     tone === "primary"
-      ? "bg-primary-600 hover:bg-primary-700 text-white"
-      : "bg-white text-red-600 border border-red-200 hover:bg-red-50";
+      ? "bg-gradient-to-r from-emerald-500 to-teal-600 hover:-translate-y-0.5 hover:shadow-md text-white shadow-sm"
+      : "bg-white text-rose-600 border border-rose-200 hover:bg-rose-50";
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-md px-3 py-1.5 text-xs font-semibold disabled:opacity-50 ${cls}`}
+      className={`rounded-xl px-4 py-2 text-xs font-semibold transition disabled:opacity-50 ${cls}`}
     >
       {children}
     </button>

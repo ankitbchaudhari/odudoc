@@ -122,21 +122,30 @@ export default function VendorTeamPage() {
   const revoked = staff.filter((s) => s.status === "revoked");
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50/40 to-pink-50/40 py-10">
       <div className="mx-auto max-w-4xl px-4">
-        <div className="mb-5">
-          <Link href="/dashboard/vendor" className="text-xs text-gray-500 hover:underline">
-            ← Back to dashboard
-          </Link>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900">Team access</h1>
-          <p className="text-sm text-gray-500">
-            Invite pharmacists and cashiers to your pharmacy. Each role has different permissions.
-          </p>
-          {myRole && (
-            <p className="mt-1 text-[11px] uppercase tracking-wider text-gray-400">
-              You are signed in as: {myRole}
+        <Link href="/dashboard/vendor" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-violet-600">
+          ← Back to dashboard
+        </Link>
+
+        {/* Hero */}
+        <div className="relative mt-4 mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 p-8 text-white shadow-xl">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-pink-300/30 blur-3xl" />
+          <div className="relative">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/80">
+              Pharmacy · Team
             </p>
-          )}
+            <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">Team access</h1>
+            <p className="mt-2 max-w-md text-sm text-white/90">
+              Invite pharmacists and cashiers to your pharmacy. Each role has different permissions.
+            </p>
+            {myRole && (
+              <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white backdrop-blur-sm ring-1 ring-white/30">
+                Signed in as · {myRole}
+              </span>
+            )}
+          </div>
         </div>
 
         {error && (
@@ -146,7 +155,7 @@ export default function VendorTeamPage() {
         )}
 
         {/* Active + invited */}
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <section className="rounded-3xl border border-white/60 bg-white p-6 shadow-sm">
           <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700">
             Staff ({active.length})
           </h2>
@@ -202,7 +211,7 @@ export default function VendorTeamPage() {
         </section>
 
         {/* Invite form */}
-        <section className="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <section className="mt-6 rounded-3xl border border-white/60 bg-white p-6 shadow-sm">
           <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700">
             Invite someone
           </h2>
@@ -275,8 +284,10 @@ export default function VendorTeamPage() {
                             : [...f.storeIds, s.id],
                         }))
                       }
-                      className={`rounded-full px-3 py-1 text-[11px] font-semibold transition ${
-                        on ? "bg-primary-600 text-white" : "bg-gray-100 text-gray-600"
+                      className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition ${
+                        on
+                          ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm"
+                          : "border border-slate-200 bg-white text-slate-600 hover:border-violet-300"
                       }`}
                     >
                       {on ? "✓ " : ""}
@@ -291,16 +302,16 @@ export default function VendorTeamPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-violet-500/30 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-50"
               >
-                {saving ? "Sending invite…" : "Send invite"}
+                {saving ? "Sending invite…" : "✉ Send invite"}
               </button>
             </div>
           </form>
         </section>
 
         {revoked.length > 0 && (
-          <section className="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <section className="mt-6 rounded-3xl border border-white/60 bg-white p-6 shadow-sm">
             <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700">
               Revoked ({revoked.length})
             </h2>

@@ -166,15 +166,22 @@ export default function VendorStoresPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/40 to-emerald-50/40 py-10">
       <div className="mx-auto max-w-5xl px-4">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <Link href="/dashboard/vendor" className="text-xs text-gray-500 hover:underline">
-              ← Back to dashboard
-            </Link>
-            <h1 className="mt-1 text-2xl font-bold text-gray-900">Stores & stock</h1>
-            <p className="text-sm text-gray-500">
+        <Link href="/dashboard/vendor" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-sky-600">
+          ← Back to dashboard
+        </Link>
+
+        {/* Hero */}
+        <div className="relative mt-4 mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-sky-600 via-blue-600 to-indigo-600 p-8 text-white shadow-xl">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-emerald-300/30 blur-3xl" />
+          <div className="relative">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/80">
+              Pharmacy · Locations
+            </p>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">Stores &amp; stock</h1>
+            <p className="mt-2 max-w-md text-sm text-white/90">
               Manage your physical pharmacy locations and the medicines each one stocks.
             </p>
           </div>

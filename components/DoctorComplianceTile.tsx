@@ -182,21 +182,24 @@ export default function DoctorComplianceTile() {
             </span>
           </li>
 
-          {/* Stripe Connect */}
-          <li className="rounded-xl border border-gray-100 bg-gray-50 px-3 py-2">
-            <div className="flex items-center justify-between gap-3">
-              <div>
+          {/* Stripe Connect — needs to be unmistakable. The CTA is the
+              single most-important action a verified doctor needs to
+              take to start earning, so render the button row whenever
+              we're not in the "Ready" state and make it big. */}
+          <li className="rounded-xl border border-gray-100 bg-gray-50 px-3 py-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
                 <p className="font-semibold text-gray-900">Stripe payouts</p>
-                <p className="text-xs text-gray-500">
+                <p className="mt-0.5 text-xs text-gray-500">
                   {stripeReady
                     ? "Ready — payouts will land on your connected bank."
                     : stripePartial
                       ? "Onboarding incomplete — finish the Stripe form to receive payouts."
-                      : "Not connected — you must connect a Stripe account to receive earnings."}
+                      : "Not connected — connect a Stripe account to receive earnings."}
                 </p>
               </div>
               <span
-                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${
+                className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${
                   stripeReady
                     ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
                     : stripePartial
@@ -207,36 +210,41 @@ export default function DoctorComplianceTile() {
                 {stripeReady ? "Ready" : stripePartial ? "Incomplete" : "Not connected"}
               </span>
             </div>
+
             {!stripeReady && (
-              <div className="mt-2.5 flex flex-wrap items-center gap-2">
+              <div className="mt-3 space-y-2">
+                {/* Primary CTA — full-width, large, gradient. Cannot be
+                    missed even on a small phone viewport. */}
                 <button
                   onClick={() => startStripe(stripeMissing ? "onboard" : "refresh")}
                   disabled={busy}
-                  className="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50"
+                  className="block w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-3 text-center text-sm font-bold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 sm:text-base"
                 >
                   {busy
                     ? "Opening Stripe…"
                     : stripeMissing
-                      ? "Connect Stripe →"
-                      : "Resume onboarding →"}
+                      ? "Connect Stripe account →"
+                      : "Resume Stripe onboarding →"}
                 </button>
-                {/* Manual re-check — covers the case where a doctor
-                    finished the Stripe form in another tab and the
-                    auto-poll on ?stripe=return didn't fire. Cheap;
-                    one /v1/accounts retrieve per click. */}
-                <button
-                  onClick={refreshStripe}
-                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                  title="Re-check Stripe — useful if you finished the form in another window."
-                >
-                  ↻ Refresh status
-                </button>
-                {stripeMissing && (
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={refreshStripe}
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    title="Re-check Stripe — useful if you finished the form in another window."
+                  >
+                    ↻ Refresh status
+                  </button>
                   <span className="text-[11px] text-slate-500">
-                    Just finished Stripe? Click <b>Refresh status</b> — it can take up to a minute to sync.
+                    Just finished the Stripe form? Click <b>Refresh status</b> — it can take up to a minute to sync.
                   </span>
+                </div>
+
+                {error && (
+                  <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                    {error}
+                  </p>
                 )}
-                {error && <p className="basis-full text-xs text-rose-600">{error}</p>}
               </div>
             )}
           </li>

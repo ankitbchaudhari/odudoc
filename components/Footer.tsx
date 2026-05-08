@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
-import Logo from "@/components/Logo";
 import { SPECIALTIES } from "@/lib/seo/specialties";
 import { CITIES } from "@/lib/seo/cities";
 import { SYMPTOMS } from "@/lib/seo/symptoms";
@@ -142,10 +141,6 @@ export default function Footer() {
 
         {/* Social & Bottom */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-gray-800 pt-8 md:flex-row">
-          <div className="inline-flex items-center rounded-xl bg-white px-4 py-2 shadow-sm">
-            <Logo size="md" />
-          </div>
-
           <div className="flex gap-4">
             {[
               { name: "Facebook", url: "#", letter: "f" },
@@ -168,26 +163,6 @@ export default function Footer() {
 
           <p className="text-sm text-gray-500">
             &copy; {new Date().getFullYear()} OduDoc. {t("footer.rights")}
-          </p>
-        </div>
-
-        {/* Merchant disclosure — required by Indian payment gateways
-            (Razorpay / IndusPays / PayU / Cashfree) for KYC sign-off.
-            Keep this visible site-wide; the /legal page has the full
-            statutory listing. */}
-        <div className="mt-8 border-t border-gray-800 pt-6 text-center text-xs leading-5 text-gray-500">
-          <p>
-            Payments processed by{" "}
-            <span className="font-medium text-gray-300">
-              SARJUDAS DIGITAL TRADING AND ESCROW SERVICES PRIVATE LIMITED
-            </span>
-            {" "}· CIN U52520GJ2019PTC109503 · GSTIN 24ABCCS4962M1ZY
-          </p>
-          <p className="mt-1">
-            Registered office: A-1002, 10th Floor, Aakash Pruthhvi, Vadod, Majura, Pandesara, Surat, Gujarat 394221, India ·{" "}
-            <Link href="/legal" className="text-primary-400 hover:underline">
-              Full legal details
-            </Link>
           </p>
         </div>
       </div>

@@ -32,12 +32,19 @@ export type MedicineForm =
 
 export interface CatalogMedicine {
   id: string; // stable slug, e.g. "paracetamol"
-  generic: string; // canonical generic name
-  brands: string[]; // common Indian brand names
+  generic: string; // canonical generic name (English, ASCII)
+  brands: string[]; // common Indian brand names (English, ASCII)
   composition?: string; // active ingredient(s) + strength hint
   form: MedicineForm;
   strengths: string[]; // e.g. ["500mg", "650mg"]
   otc: boolean; // over-the-counter or prescription only
+  /** Country-specific native-language entries. Keys are BCP-47 lang
+   *  tags ("ja", "ar", "ru", "zh-Hans", "es", "fr", "de", "pt-BR",
+   *  "th", "ko"). Each language can override the generic name and
+   *  add region-specific brand names so the same SKU resolves
+   *  whether the doctor types "Paracetamol" or "アセトアミノフェン"
+   *  or "باراسيتامول". */
+  localNames?: Record<string, { generic?: string; brands?: string[] }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -79,6 +86,7 @@ function seedCatalog(): CatalogMedicine[] {
     strengths: string[],
     otc: boolean,
     composition?: string,
+    localNames?: CatalogMedicine["localNames"],
   ): CatalogMedicine => ({
     id,
     generic,
@@ -87,20 +95,50 @@ function seedCatalog(): CatalogMedicine[] {
     form,
     strengths,
     otc,
+    localNames,
     createdAt: n,
     updatedAt: n,
   });
 
   return [
     // Analgesics / antipyretics
-    mk("paracetamol", "Paracetamol", ["Crocin", "Dolo", "Calpol", "Tylenol"], "tablet", ["500mg", "650mg"], true),
-    mk("ibuprofen", "Ibuprofen", ["Brufen", "Combiflam", "Advil"], "tablet", ["200mg", "400mg"], true),
+    mk("paracetamol", "Paracetamol", ["Crocin", "Dolo", "Calpol", "Tylenol", "Panadol"], "tablet", ["500mg", "650mg"], true, undefined, {
+      ja:        { generic: "アセトアミノフェン", brands: ["タイレノール", "カロナール"] },
+      ar:        { generic: "باراسيتامول",       brands: ["بانادول"] },
+      ru:        { generic: "Парацетамол",       brands: ["Панадол"] },
+      "zh-Hans": { generic: "对乙酰氨基酚",        brands: ["泰诺", "百服宁"] },
+      es:        { generic: "Paracetamol",       brands: ["Termalgin", "Apiretal"] },
+      fr:        { generic: "Paracétamol",       brands: ["Doliprane", "Efferalgan"] },
+      de:        { generic: "Paracetamol",       brands: ["Ben-u-ron"] },
+      "pt-BR":   { generic: "Paracetamol",       brands: ["Tylenol", "Doril"] },
+      th:        { generic: "พาราเซตามอล",        brands: ["ไทลินอล"] },
+      ko:        { generic: "아세트아미노펜",      brands: ["타이레놀"] },
+    }),
+    mk("ibuprofen", "Ibuprofen", ["Brufen", "Combiflam", "Advil", "Motrin", "Nurofen"], "tablet", ["200mg", "400mg"], true, undefined, {
+      ja:        { generic: "イブプロフェン",   brands: ["ブルフェン"] },
+      ar:        { generic: "إيبوبروفين",     brands: ["نوروفين"] },
+      ru:        { generic: "Ибупрофен",     brands: ["Нурофен"] },
+      "zh-Hans": { generic: "布洛芬",         brands: ["美林"] },
+      es:        { generic: "Ibuprofeno",    brands: ["Espidifen", "Neobrufen"] },
+      fr:        { generic: "Ibuprofène",    brands: ["Advil", "Nurofen"] },
+      de:        { generic: "Ibuprofen",     brands: ["Dolormin"] },
+      "pt-BR":   { generic: "Ibuprofeno",    brands: ["Advil", "Alivium"] },
+    }),
     mk("aspirin", "Aspirin", ["Disprin", "Ecosprin"], "tablet", ["75mg", "325mg"], true),
     mk("diclofenac", "Diclofenac", ["Voveran", "Voltaren"], "tablet", ["50mg"], false),
     mk("tramadol", "Tramadol", ["Ultracet", "Tramasure"], "tablet", ["50mg", "100mg"], false),
 
     // Antibiotics
-    mk("amoxicillin", "Amoxicillin", ["Mox", "Novamox", "Amoxil"], "capsule", ["250mg", "500mg"], false),
+    mk("amoxicillin", "Amoxicillin", ["Mox", "Novamox", "Amoxil"], "capsule", ["250mg", "500mg"], false, undefined, {
+      ja:        { generic: "アモキシシリン",  brands: ["サワシリン"] },
+      ar:        { generic: "أموكسيسيلين",   brands: ["أموكسيل"] },
+      ru:        { generic: "Амоксициллин",  brands: ["Флемоксин"] },
+      "zh-Hans": { generic: "阿莫西林",        brands: ["阿莫仙"] },
+      es:        { generic: "Amoxicilina",   brands: ["Clamoxyl"] },
+      fr:        { generic: "Amoxicilline",  brands: ["Clamoxyl"] },
+      de:        { generic: "Amoxicillin",   brands: ["Amoxypen"] },
+      "pt-BR":   { generic: "Amoxicilina",   brands: ["Amoxil"] },
+    }),
     mk("amoxiclav", "Amoxicillin + Clavulanic acid", ["Augmentin", "Clavam"], "tablet", ["625mg"], false, "Amoxicillin 500mg + Clavulanic acid 125mg"),
     mk("azithromycin", "Azithromycin", ["Azithral", "Azee", "Zithromax"], "tablet", ["250mg", "500mg"], false),
     mk("cefixime", "Cefixime", ["Taxim-O", "Zifi"], "tablet", ["200mg"], false),
@@ -337,27 +375,42 @@ export function getMedicineById(id: string): CatalogMedicine | null {
   return medicines.find((m) => m.id === id) || null;
 }
 
-// Normalize an Rx-line label (brand or generic, possibly with strength)
-// into a catalog entry. Returns null on no match so the caller can keep
-// the raw string around.
+/** Yield all searchable name strings for a catalog row across every
+ *  language we have on file (English + each localNames entry). Used
+ *  by matchMedicine() so a Japanese pharmacist typing "アセトアミノフェン"
+ *  still resolves to the same SKU as a US doctor typing "Tylenol". */
+function namesFor(m: CatalogMedicine): string[] {
+  const out: string[] = [m.generic, ...m.brands];
+  if (m.localNames) {
+    for (const lang of Object.keys(m.localNames)) {
+      const entry = m.localNames[lang];
+      if (entry.generic) out.push(entry.generic);
+      if (entry.brands) out.push(...entry.brands);
+    }
+  }
+  return out.filter(Boolean).map((s) => s.toLowerCase());
+}
+
+// Normalize an Rx-line label (brand or generic, possibly with strength,
+// in any supported language) into a catalog entry. Returns null on no
+// match so the caller can keep the raw string around.
 export function matchMedicine(rawName: string): CatalogMedicine | null {
+  // For non-Latin scripts trim/lowercase is still safe and harmless.
   const q = rawName.trim().toLowerCase();
   if (!q) return null;
-  // 1) exact id / generic / brand
+  // 1) exact id / any localised name
   for (const m of medicines) {
     if (m.id === q) return m;
-    if (m.generic.toLowerCase() === q) return m;
-    if (m.brands.some((b) => b.toLowerCase() === q)) return m;
+    if (namesFor(m).includes(q)) return m;
   }
-  // 2) starts-with on generic/brand (handles "paracetamol 500mg")
+  // 2) starts-with — covers "paracetamol 500mg" / "アセトアミノフェン 500mg"
   for (const m of medicines) {
-    if (q.startsWith(m.generic.toLowerCase())) return m;
-    if (m.brands.some((b) => q.startsWith(b.toLowerCase()))) return m;
+    if (namesFor(m).some((n) => q.startsWith(n) || n.startsWith(q))) return m;
   }
-  // 3) contains — last resort (handles "Tab. Crocin 650")
+  // 3) contains — last resort (handles "Tab. Crocin 650" or
+  //    "錠剤 アセトアミノフェン 500mg")
   for (const m of medicines) {
-    if (q.includes(m.generic.toLowerCase())) return m;
-    if (m.brands.some((b) => q.includes(b.toLowerCase()))) return m;
+    if (namesFor(m).some((n) => q.includes(n))) return m;
   }
   return null;
 }

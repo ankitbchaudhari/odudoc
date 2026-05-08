@@ -240,7 +240,24 @@ export default function AiPrescriptionPage() {
     }
   }
 
+  // Fire-and-forget feedback collector. Used by the diagnosis +
+  // treatment cards so accept/reject signals land in ai-feedback-store
+  // for future ranker training.
+  function logFeedback(
+    surface: "ai-prescription.diagnosis" | "ai-prescription.treatment",
+    suggestion: string,
+    verdict: "accepted" | "edited" | "rejected" | "ignored",
+  ) {
+    void fetch("/api/ai/feedback", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ surface, suggestion, verdict }),
+    }).catch(() => {});
+  }
+
   async function requestTreatment(dx: string) {
+    // Picking a diagnosis = accepting the suggestion.
+    logFeedback("ai-prescription.diagnosis", dx, "accepted");
     setSelectedDx(dx);
     setError(null);
     // Cache hit: skip the spinner entirely.

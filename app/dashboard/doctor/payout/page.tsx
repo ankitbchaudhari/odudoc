@@ -114,6 +114,14 @@ export default function DoctorPayoutPage() {
               payouts manually after each consultation cycle — typically every
               7–14 days.
             </p>
+            {/* Minimum payout notice — front and center so doctors
+                aren't surprised when a small balance rolls forward. */}
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm ring-1 ring-white/30">
+              <span aria-hidden="true">💰</span>
+              Minimum payout: <span className="font-bold">USD 100</span>
+              <span className="text-white/70">·</span>
+              <span className="font-normal text-white/80">Balances under this amount roll over to the next cycle.</span>
+            </div>
           </div>
 
           <div className="p-6 sm:p-8">

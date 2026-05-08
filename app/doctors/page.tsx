@@ -13,6 +13,27 @@ interface PublicSpecialty {
   emoji: string;
 }
 
+/** Specialty matcher that bridges the noun/practitioner distinction.
+ *  Doctors are stored with practitioner names ("Psychiatrist",
+ *  "Cardiologist") while specialty cards use the discipline name
+ *  ("Psychiatry", "Cardiology"). A naive === comparison filters out
+ *  every match. We normalize by lowercasing and stripping common
+ *  noun/agent suffixes, then check substring overlap. */
+function specialtyMatches(doctorSpecialty: string, filter: string): boolean {
+  const root = (s: string) =>
+    s
+      .toLowerCase()
+      .trim()
+      .replace(/\s*&\s*.*$/, "") // "Gynecology & Obstetrics" → "gynecology"
+      .replace(/(ologist|iatrist|atrician|ician|ologist|ology|iatry|atrics|ics|ical|ist|y)$/u, "");
+  const a = root(doctorSpecialty);
+  const b = root(filter);
+  if (!a || !b) return doctorSpecialty.toLowerCase() === filter.toLowerCase();
+  // Either root is a prefix of the other — covers "psychiat" vs
+  // "psychiat", "cardiolog" vs "cardiolog", "general" vs "general".
+  return a === b || a.startsWith(b) || b.startsWith(a);
+}
+
 export default function DoctorsPage() {
   // Doctors come exclusively from the admin-managed API. No static fallback —
   // if the admin hasn't added any, the list is empty.
@@ -92,7 +113,7 @@ export default function DoctorsPage() {
       );
     }
 
-    if (specialty) list = list.filter((d) => d.specialty === specialty);
+    if (specialty) list = list.filter((d) => specialtyMatches(d.specialty, specialty));
     if (gender) list = list.filter((d) => d.gender === gender);
     if (minExperience > 0) list = list.filter((d) => d.experience >= minExperience);
     if (maxFee > 0) list = list.filter((d) => d.fee <= maxFee);

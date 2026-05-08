@@ -4,7 +4,6 @@ import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import AppDownloadBadges from "@/components/AppDownloadBadges";
 
 function LoginForm() {
@@ -137,7 +136,8 @@ function LoginForm() {
       {/* Right — the form */}
       <div className="w-full max-w-md justify-self-center lg:justify-self-start">
         <div className="mb-6 text-center lg:text-left">
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src="/images/logo.svg"
             alt="OduDoc"
             width={440}

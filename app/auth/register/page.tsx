@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { COUNTRIES } from "@/lib/countries";
 import PhoneInput from "@/components/PhoneInput";
 import AppDownloadBadges from "@/components/AppDownloadBadges";
@@ -146,7 +145,8 @@ export default function RegisterPage() {
         {/* Form column */}
         <div className="order-2 w-full max-w-xl justify-self-center lg:order-1 lg:justify-self-end">
           <div className="mb-6 text-center lg:text-left">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/images/logo.svg"
               alt="OduDoc"
               width={440}

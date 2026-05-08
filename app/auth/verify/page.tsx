@@ -4,7 +4,6 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import Image from "next/image";
 
 function VerifyForm() {
   const router = useRouter();
@@ -179,7 +178,8 @@ function VerifyForm() {
   return (
     <div className="w-full max-w-md">
       <div className="mb-8 text-center">
-        <Image src="/images/logo.svg" alt="OduDoc" width={440} height={108} className="mx-auto mb-6 h-14 w-auto" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/logo.svg" alt="OduDoc" width={440} height={108} className="mx-auto mb-6 h-14 w-auto" />
         <h1 className="text-2xl font-bold text-gray-900">Two-Step Verification</h1>
         <p className="mt-2 text-sm text-gray-500">
           To keep your account secure, we sent verification codes to your email and phone.

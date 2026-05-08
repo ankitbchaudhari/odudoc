@@ -182,6 +182,42 @@ export interface Doctor {
   stripePayoutsEnabled?: boolean;
   stripeChargesEnabled?: boolean;
   stripeAccountUpdatedAt?: string; // ISO of the last sync
+
+  // -------------------------------------------------------------------
+  // Manual payout details (universal — works in every country we
+  // operate in, even where Stripe isn't supported). Admin reviews
+  // these and pushes payouts manually.
+  // -------------------------------------------------------------------
+  payout?: DoctorPayoutDetails;
+}
+
+export type DoctorPayoutMethod =
+  | "bank" // Local bank transfer / wire / ACH
+  | "paypal"
+  | "wise" // Wise (TransferWise)
+  | "upi" // UPI (India)
+  | "other";
+
+export interface DoctorPayoutDetails {
+  method: DoctorPayoutMethod;
+  /** Account holder name as it appears on the bank account. */
+  accountHolder?: string;
+  bankName?: string;
+  /** Local account number, IBAN, or wallet identifier. */
+  accountNumber?: string;
+  /** SWIFT/BIC for international, IFSC for India, sort code for UK,
+   *  routing number for US, BSB for AU, etc. */
+  routingCode?: string;
+  /** ISO 3166-1 alpha-2 of the bank's country. */
+  country?: string;
+  /** ISO 4217 currency the doctor wants to be paid in. */
+  currency?: string;
+  paypalEmail?: string;
+  upiId?: string;
+  /** Free-form note — use for "transfer reference: my-clinic-id" or
+   *  "preferred payout day: Friday". */
+  notes?: string;
+  updatedAt?: string;
 }
 
 export function isInstantlyAvailable(d: Doctor, at: Date = new Date()): boolean {
@@ -663,6 +699,30 @@ export function rejectDoctorVerification(
   d.verifiedBy = undefined;
   d.verificationSubmittedAt = undefined;
   d.verificationRejectionReason = reason.trim() || "Documents could not be verified.";
+  d.updatedAt = now();
+  flush();
+  return d;
+}
+
+// ---------------------------------------------------------------------
+// Manual payout helpers
+// ---------------------------------------------------------------------
+
+/** Update a doctor's manual payout details. Admin reviews these and
+ *  pushes payouts off-platform (bank wire, PayPal, Wise, UPI). */
+export function setDoctorPayout(
+  id: string,
+  patch: Partial<DoctorPayoutDetails>,
+): Doctor | null {
+  const d = doctors.find((x) => x.id === id);
+  if (!d) return null;
+  const prev = d.payout || { method: "bank" };
+  d.payout = {
+    ...prev,
+    ...patch,
+    method: patch.method || prev.method || "bank",
+    updatedAt: now(),
+  };
   d.updatedAt = now();
   flush();
   return d;

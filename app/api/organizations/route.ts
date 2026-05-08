@@ -14,6 +14,7 @@ import {
 } from "@/lib/organizations-store";
 import { deleteMembershipsForOrg } from "@/lib/memberships-store";
 import { recordAudit, type AuditAction } from "@/lib/audit-log-store";
+import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -57,6 +58,18 @@ export async function POST(req: NextRequest) {
     summary: `Created organization "${org.name}" on ${org.plan} plan`,
     meta: { plan: org.plan, modules: org.modules },
   });
+  // Drain pending Postgres writes before returning. Vercel freezes
+  // the Lambda the moment we respond, so a fire-and-forget flush()
+  // can be killed mid-write — the operator sees a 200 + the row in
+  // the table, but on the next page load it's gone.
+  try {
+    await awaitAllFlushesStrict();
+  } catch {
+    return NextResponse.json(
+      { error: "saved_but_not_persisted" },
+      { status: 500 },
+    );
+  }
   return NextResponse.json({ organization: org });
 }
 
@@ -138,6 +151,14 @@ export async function PATCH(req: NextRequest) {
     });
   }
 
+  try {
+    await awaitAllFlushesStrict();
+  } catch {
+    return NextResponse.json(
+      { error: "saved_but_not_persisted" },
+      { status: 500 },
+    );
+  }
   return NextResponse.json({ organization: updated });
 }
 
@@ -147,17 +168,33 @@ export async function DELETE(req: NextRequest) {
   const body = await req.json();
   if (!body.id) return NextResponse.json({ error: "missing_id" }, { status: 400 });
   const before = getOrganizationById(String(body.id));
-  const ok = deleteOrganization(String(body.id));
-  if (ok) {
-    deleteMembershipsForOrg(String(body.id));
-    recordAudit({
-      actorEmail: g.email,
-      action: "org.delete",
-      orgId: String(body.id),
-      orgName: before?.name,
-      summary: `Deleted organization "${before?.name || body.id}"`,
-      meta: { plan: before?.plan, status: before?.status },
-    });
+  if (!before) {
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
-  return NextResponse.json({ ok });
+  const ok = deleteOrganization(String(body.id));
+  if (!ok) {
+    return NextResponse.json({ ok: false, error: "delete_failed" }, { status: 500 });
+  }
+  deleteMembershipsForOrg(String(body.id));
+  recordAudit({
+    actorEmail: g.email,
+    action: "org.delete",
+    orgId: String(body.id),
+    orgName: before.name,
+    summary: `Deleted organization "${before.name}"`,
+    meta: { plan: before.plan, status: before.status },
+  });
+  // Critical: drain Postgres writes before responding. Without this
+  // the Lambda freezes after the JSON response and the underlying
+  // delete is killed mid-flight, so the org reappears on the next
+  // page load. Same fix we applied to /api/admin/doctors.
+  try {
+    await awaitAllFlushesStrict();
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "deleted_but_not_persisted" },
+      { status: 500 },
+    );
+  }
+  return NextResponse.json({ ok: true });
 }

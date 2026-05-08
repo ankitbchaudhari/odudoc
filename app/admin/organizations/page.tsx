@@ -329,12 +329,36 @@ export default function AdminOrganizations() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this organization and all its memberships?")) return;
-    await fetch("/api/organizations", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    });
+    const target = orgs.find((o) => o.id === id);
+    const name = target?.name || id;
+    if (!confirm(
+      `Delete "${name}" and all its memberships?\n\n` +
+      `This removes the organization, every staff membership, and any seeded demo accounts. The action cannot be undone.`
+    )) return;
+    try {
+      const r = await fetch("/api/organizations", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      const body = await r.json().catch(() => ({} as Record<string, unknown>));
+      if (!r.ok || (body as { ok?: boolean }).ok === false) {
+        const code = (body as { error?: string }).error || "";
+        const msg =
+          code === "forbidden"
+            ? "Only Super Admins can delete organizations."
+            : code === "not_found"
+              ? "That organization no longer exists. Refresh the list."
+              : code === "deleted_but_not_persisted"
+                ? "The delete was applied but the persistent layer didn't confirm. Refresh and try again — if the row is gone, you're fine."
+                : code || `Delete failed (HTTP ${r.status}).`;
+        alert(`Couldn't delete "${name}": ${msg}`);
+        return;
+      }
+    } catch (err) {
+      alert(`Delete failed — network error: ${(err as Error).message}`);
+      return;
+    }
     await load();
   };
 

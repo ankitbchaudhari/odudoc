@@ -26,12 +26,20 @@ export interface Membership {
 }
 
 const memberships: Membership[] = [];
-const { hydrate, flush } = bindPersistentArray<Membership>(
+const {
+  hydrate,
+  reload: reloadMembershipsInternal,
+  flush,
+} = bindPersistentArray<Membership>(
   "memberships",
   memberships,
   () => []
 );
 await hydrate();
+
+export async function reloadMemberships() {
+  await reloadMembershipsInternal();
+}
 
 export function listMemberships(): Membership[] {
   return [...memberships];

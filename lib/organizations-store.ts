@@ -179,12 +179,24 @@ export function clampModulesToPlan(
 }
 
 const orgs: Organization[] = [];
-const { hydrate, flush } = bindPersistentArray<Organization>(
+const {
+  hydrate,
+  reload: reloadOrgsInternal,
+  flush,
+} = bindPersistentArray<Organization>(
   "organizations",
   orgs,
   () => []
 );
 await hydrate();
+
+/** Force a re-read from Postgres so this Lambda picks up writes
+ *  from sibling Lambdas. Call before any read that needs to be
+ *  consistent with recent mutations elsewhere (admin orgs list
+ *  after a delete on a different Lambda, for example). */
+export async function reloadOrganizations() {
+  await reloadOrgsInternal();
+}
 
 function genSlug(name: string): string {
   const base = name

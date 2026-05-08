@@ -8,11 +8,12 @@ import {
   updateOrganization,
   deleteOrganization,
   getOrganizationById,
+  reloadOrganizations,
   type OrgPlan,
   type OrgStatus,
   type Organization,
 } from "@/lib/organizations-store";
-import { deleteMembershipsForOrg } from "@/lib/memberships-store";
+import { deleteMembershipsForOrg, reloadMemberships } from "@/lib/memberships-store";
 import { recordAudit, type AuditAction } from "@/lib/audit-log-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { getActiveOrgId, setActiveOrgId } from "@/lib/tenant";
@@ -32,6 +33,10 @@ async function guard(): Promise<{ email: string } | NextResponse> {
 export async function GET() {
   const g = await guard();
   if (g instanceof NextResponse) return g;
+  // Re-read from Postgres so a warm Lambda picks up deletes / edits
+  // performed on sibling Lambdas. Without this the org list can show
+  // stale rows for up to ~5 minutes (until the Lambda recycles).
+  await reloadOrganizations();
   return NextResponse.json({ organizations: listOrganizations() });
 }
 
@@ -168,6 +173,11 @@ export async function DELETE(req: NextRequest) {
   if (g instanceof NextResponse) return g;
   const body = await req.json();
   if (!body.id) return NextResponse.json({ error: "missing_id" }, { status: 400 });
+  // Refresh from Postgres so we operate on the same state the operator
+  // saw on the page — otherwise a Lambda warm from a stale snapshot
+  // would `not_found` on a row that genuinely exists in the DB.
+  await reloadOrganizations();
+  await reloadMemberships();
   const before = getOrganizationById(String(body.id));
   if (!before) {
     return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });

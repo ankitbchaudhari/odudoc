@@ -394,17 +394,49 @@ export default function DoctorsPage() {
           {/* Results */}
           <div className="min-w-0 flex-1">
             <p className="mb-3 hidden text-sm text-gray-600 lg:block">
-              <span className="font-semibold text-gray-900">{filtered.length}</span> doctor{filtered.length !== 1 ? "s" : ""} found
+              {doctorsLoaded ? (
+                <>
+                  <span className="font-semibold text-gray-900">{filtered.length}</span>{" "}
+                  doctor{filtered.length !== 1 ? "s" : ""} found
+                </>
+              ) : (
+                <span className="text-gray-400">Loading doctors…</span>
+              )}
             </p>
 
             <div className="flex flex-col gap-4">
-              {filtered.length > 0 ? (
+              {!doctorsLoaded ? (
+                // Skeleton while the initial /api/doctors fetch is in
+                // flight — don't flash "No doctors found" before the
+                // request even resolves.
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="animate-pulse rounded-xl bg-white p-5 shadow-sm"
+                  >
+                    <div className="flex gap-4">
+                      <div className="h-16 w-16 rounded-full bg-gray-200" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 w-2/3 rounded bg-gray-200" />
+                        <div className="h-3 w-1/3 rounded bg-gray-100" />
+                        <div className="h-3 w-1/2 rounded bg-gray-100" />
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : filtered.length > 0 ? (
                 filtered.map((d) => <DoctorListRow key={d.id} doctor={d} />)
               ) : (
                 <div className="rounded-xl bg-white py-16 text-center shadow-sm">
                   <p className="text-4xl">🔍</p>
-                  <p className="mt-4 text-lg font-semibold text-gray-900">No doctors found</p>
-                  <p className="mt-1 text-sm text-gray-500">Try adjusting your filters</p>
+                  <p className="mt-4 text-lg font-semibold text-gray-900">
+                    {doctors.length === 0 ? "No doctors yet" : "No doctors match your filters"}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {doctors.length === 0
+                      ? "We're onboarding clinicians right now — check back soon."
+                      : "Try clearing one of the filters to widen your search."}
+                  </p>
                   {activeFilterCount > 0 && (
                     <button
                       onClick={clearFilters}

@@ -216,16 +216,83 @@ function WritePrescriptionModal({
 
   const openPrintWindow = () => {
     if (!printRef.current) return;
-    const win = window.open("", "_blank");
-    if (!win) return;
-    win.document.write(`<!DOCTYPE html><html><head><title>Prescription - ${form.patientName || "Patient"}</title>
-      <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;print-color-adjust:exact;-webkit-print-color-adjust:exact}@media print{body{margin:0}}</style>
-      </head><body>${printRef.current.innerHTML}</body></html>`);
-    win.document.close();
-    setTimeout(() => {
-      win.print();
-      win.close();
-    }, 400);
+    // Use a hidden iframe instead of window.open. Reasons:
+    //   1. Pop-up blockers kill window.open after an `await` because
+    //      it's no longer in the user-gesture stack (PDF / Save & Print
+    //      both await the save first).
+    //   2. The previous code closed the new window 400ms after print
+    //      was called, which often dismissed the print dialog before
+    //      the doctor could pick "Save as PDF".
+    //   3. An iframe inherits the parent's tab so we can inject the
+    //      app's actual stylesheets, ensuring the printed Rx looks
+    //      like the on-screen preview.
+    const html = printRef.current.innerHTML;
+
+    // Carry over stylesheets from the host document so Tailwind /
+    // app fonts apply inside the iframe. <link rel=stylesheet> is
+    // honoured; `<style>` tags get copied verbatim.
+    const styleNodes = Array.from(
+      document.querySelectorAll<HTMLElement>('link[rel="stylesheet"], style'),
+    )
+      .map((n) => n.outerHTML)
+      .join("\n");
+
+    const iframe = document.createElement("iframe");
+    iframe.setAttribute("aria-hidden", "true");
+    iframe.style.cssText =
+      "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;";
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc) {
+      iframe.remove();
+      return;
+    }
+    doc.open();
+    doc.write(
+      `<!DOCTYPE html><html><head><title>Prescription - ${form.patientName || "Patient"}</title>${styleNodes}<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}@media print{body{margin:0}}</style></head><body>${html}</body></html>`,
+    );
+    doc.close();
+
+    const cleanup = () => {
+      try {
+        iframe.remove();
+      } catch {
+        /* already removed */
+      }
+    };
+
+    const triggerPrint = () => {
+      // Give linked stylesheets a beat to finish loading. 350ms is
+      // enough on every modern browser without making the wait feel
+      // perceptible.
+      setTimeout(() => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error("[Rx] print() failed", err);
+        }
+        // Some browsers (Chrome) fire afterprint as soon as the
+        // dialog closes; others (Safari) don't. Fall back to a
+        // generous 60s remove so we don't leak iframes.
+        const w = iframe.contentWindow;
+        const removeOnDone = () => cleanup();
+        try {
+          w?.addEventListener("afterprint", removeOnDone, { once: true });
+        } catch {
+          /* cross-origin paranoia, never hits same-origin iframe */
+        }
+        setTimeout(cleanup, 60_000);
+      }, 350);
+    };
+
+    if (iframe.contentDocument?.readyState === "complete") {
+      triggerPrint();
+    } else {
+      iframe.addEventListener("load", triggerPrint, { once: true });
+    }
   };
 
   // Save first (so the record exists for the patient / admin audit) and only

@@ -106,6 +106,9 @@ export default function AdminOrganizations() {
   const [saving, setSaving] = useState(false);
   const [repairingId, setRepairingId] = useState<string | null>(null);
   const [repairResult, setRepairResult] = useState<{ orgName: string; staff: RepairedStaff[] } | null>(null);
+  // Surface every save / fetch failure so silent close-on-error
+  // never happens again.
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -162,25 +165,56 @@ export default function AdminOrganizations() {
   };
 
   const handleSave = async () => {
-    if (!form.name.trim() || !form.contactEmail.trim()) return;
+    setSaveError(null);
+    if (!form.name.trim()) {
+      setSaveError("Organization name is required.");
+      return;
+    }
+    if (!form.contactEmail.trim()) {
+      setSaveError("Contact email is required.");
+      return;
+    }
+    // Light email sanity check — server validates again, but giving
+    // the operator immediate feedback beats waiting for a 400.
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contactEmail.trim())) {
+      setSaveError("Contact email doesn't look valid.");
+      return;
+    }
     setSaving(true);
     try {
-      if (editingId) {
-        await fetch("/api/organizations", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: editingId, ...form }),
-        });
-      } else {
-        await fetch("/api/organizations", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
-        });
+      const r = editingId
+        ? await fetch("/api/organizations", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: editingId, ...form }),
+          })
+        : await fetch("/api/organizations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(form),
+          });
+      if (!r.ok) {
+        // Translate the server's machine codes into operator copy.
+        // The `forbidden` 403 is the trickiest — that's a "you're
+        // signed in as plain admin, not super admin" issue.
+        const body = await r.json().catch(() => ({} as Record<string, unknown>));
+        const code = (body as { error?: string }).error || "";
+        const msg =
+          code === "forbidden"
+            ? "Only Super Admins can create organizations. Sign in with a super-admin account, or ask one to add yours to lib/tenant.ts SUPER_ADMIN_EMAILS."
+            : code === "missing_fields"
+              ? "Organization name and contact email are required."
+              : code === "not_found"
+                ? "That organization no longer exists. Refresh the list."
+                : code || `Save failed (HTTP ${r.status}).`;
+        setSaveError(msg);
+        return;
       }
       setShowForm(false);
       resetForm();
       await load();
+    } catch (err) {
+      setSaveError((err as Error).message || "Save failed — network error.");
     } finally {
       setSaving(false);
     }
@@ -255,6 +289,7 @@ export default function AdminOrganizations() {
         <button
           onClick={() => {
             resetForm();
+            setSaveError(null);
             setShowForm(!showForm);
           }}
           className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700"
@@ -366,6 +401,12 @@ export default function AdminOrganizations() {
               </div>
             </div>
           </div>
+          {saveError && (
+            <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+              <p className="font-semibold">Couldn&apos;t save the organization</p>
+              <p className="mt-1">{saveError}</p>
+            </div>
+          )}
           <div className="mt-4 flex gap-3">
             <button
               onClick={handleSave}
@@ -377,6 +418,7 @@ export default function AdminOrganizations() {
             <button
               onClick={() => {
                 setShowForm(false);
+                setSaveError(null);
                 resetForm();
               }}
               className="rounded-lg border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"

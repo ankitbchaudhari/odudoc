@@ -15,6 +15,7 @@ import {
 import { deleteMembershipsForOrg } from "@/lib/memberships-store";
 import { recordAudit, type AuditAction } from "@/lib/audit-log-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
+import { getActiveOrgId, setActiveOrgId } from "@/lib/tenant";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -171,8 +172,22 @@ export async function DELETE(req: NextRequest) {
   if (!before) {
     return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
+  // Clear the active-org cookie BEFORE the delete if the operator is
+  // currently impersonating this very org. Otherwise the cookie would
+  // dangle pointing at a now-deleted id and the next /admin/* request
+  // would 404 trying to resolve the tenant.
+  const activeBefore = await getActiveOrgId();
+  let exitedImpersonation = false;
+  if (activeBefore === String(body.id)) {
+    await setActiveOrgId(null);
+    exitedImpersonation = true;
+  }
+
   const ok = deleteOrganization(String(body.id));
   if (!ok) {
+    // Restore impersonation if we just dropped it; the operator
+    // probably wants to be back in the org they were viewing.
+    if (exitedImpersonation) await setActiveOrgId(activeBefore);
     return NextResponse.json({ ok: false, error: "delete_failed" }, { status: 500 });
   }
   deleteMembershipsForOrg(String(body.id));
@@ -182,7 +197,7 @@ export async function DELETE(req: NextRequest) {
     orgId: String(body.id),
     orgName: before.name,
     summary: `Deleted organization "${before.name}"`,
-    meta: { plan: before.plan, status: before.status },
+    meta: { plan: before.plan, status: before.status, exitedImpersonation },
   });
   // Critical: drain Postgres writes before responding. Without this
   // the Lambda freezes after the JSON response and the underlying
@@ -196,5 +211,5 @@ export async function DELETE(req: NextRequest) {
       { status: 500 },
     );
   }
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, exitedImpersonation });
 }

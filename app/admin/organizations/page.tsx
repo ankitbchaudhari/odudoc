@@ -217,6 +217,13 @@ export default function AdminOrganizations() {
   // Surface every save / fetch failure so silent close-on-error
   // never happens again.
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Page-level toast for delete success / failure. Lives outside the
+  // form so the operator sees it whether or not the form is open.
+  const [toast, setToast] = useState<
+    | { kind: "ok"; text: string }
+    | { kind: "err"; text: string }
+    | null
+  >(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -333,7 +340,9 @@ export default function AdminOrganizations() {
     const name = target?.name || id;
     if (!confirm(
       `Delete "${name}" and all its memberships?\n\n` +
-      `This removes the organization, every staff membership, and any seeded demo accounts. The action cannot be undone.`
+      `This removes the organization, every staff membership, and any seeded demo accounts. ` +
+      `If you're currently impersonating this org, support mode will be exited automatically. ` +
+      `The action cannot be undone.`
     )) return;
     try {
       const r = await fetch("/api/organizations", {
@@ -352,11 +361,25 @@ export default function AdminOrganizations() {
               : code === "deleted_but_not_persisted"
                 ? "The delete was applied but the persistent layer didn't confirm. Refresh and try again — if the row is gone, you're fine."
                 : code || `Delete failed (HTTP ${r.status}).`;
-        alert(`Couldn't delete "${name}": ${msg}`);
+        setToast({ kind: "err", text: `Couldn't delete "${name}": ${msg}` });
+        return;
+      }
+      const exited = (body as { exitedImpersonation?: boolean }).exitedImpersonation;
+      setToast({
+        kind: "ok",
+        text: exited
+          ? `"${name}" deleted. Support mode also exited because you were impersonating it.`
+          : `"${name}" deleted.`,
+      });
+      // If we exited impersonation server-side, the org-switcher in the
+      // header still thinks we're in the org. Force a hard reload so it
+      // re-reads /api/tenant/context.
+      if (exited) {
+        setTimeout(() => window.location.reload(), 600);
         return;
       }
     } catch (err) {
-      alert(`Delete failed — network error: ${(err as Error).message}`);
+      setToast({ kind: "err", text: `Delete failed — network error: ${(err as Error).message}` });
       return;
     }
     await load();
@@ -411,6 +434,23 @@ export default function AdminOrganizations() {
 
   return (
     <div>
+      {toast && (
+        <div
+          className={`mb-4 flex items-start justify-between gap-3 rounded-lg border px-4 py-3 text-sm ${
+            toast.kind === "ok"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+              : "border-rose-200 bg-rose-50 text-rose-800"
+          }`}
+        >
+          <span>{toast.text}</span>
+          <button
+            onClick={() => setToast(null)}
+            className="text-xs font-semibold underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Organizations</h2>

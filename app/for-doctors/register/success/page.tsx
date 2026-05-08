@@ -32,10 +32,10 @@ function SuccessContent() {
         {/* Logo */}
         <div className="mb-6">
           <Image
-            src="/images/logo-full.png"
+            src="/images/logo.svg"
             alt="OduDoc"
-            width={750}
-            height={200}
+            width={440}
+            height={108}
             className="mx-auto h-10 w-auto"
           />
         </div>

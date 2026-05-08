@@ -18,10 +18,10 @@ const sizes: Record<string, string> = {
 export default function Logo({ size = "sm", link = true, className = "" }: LogoProps) {
   const img = (
     <Image
-      src="/images/logo-full.png"
+      src="/images/logo.svg"
       alt="OduDoc"
-      width={392}
-      height={130}
+      width={440}
+      height={108}
       className={`${sizes[size]} w-auto object-contain ${className}`}
       priority
     />

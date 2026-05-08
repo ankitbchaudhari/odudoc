@@ -138,10 +138,10 @@ function LoginForm() {
       <div className="w-full max-w-md justify-self-center lg:justify-self-start">
         <div className="mb-6 text-center lg:text-left">
           <Image
-            src="/images/logo-full.png"
+            src="/images/logo.svg"
             alt="OduDoc"
-            width={750}
-            height={200}
+            width={440}
+            height={108}
             className="mx-auto h-12 w-auto lg:mx-0"
           />
           <h1 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">

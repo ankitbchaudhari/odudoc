@@ -37,10 +37,10 @@ function VerifyResult() {
     <div className="w-full max-w-md">
       <div className="mb-8 text-center">
         <Image
-          src="/images/logo-full.png"
+          src="/images/logo.svg"
           alt="OduDoc"
-          width={750}
-          height={200}
+          width={440}
+          height={108}
           className="mx-auto mb-6 h-14 w-auto"
         />
       </div>

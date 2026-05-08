@@ -179,7 +179,7 @@ function VerifyForm() {
   return (
     <div className="w-full max-w-md">
       <div className="mb-8 text-center">
-        <Image src="/images/logo-full.png" alt="OduDoc" width={750} height={200} className="mx-auto mb-6 h-14 w-auto" />
+        <Image src="/images/logo.svg" alt="OduDoc" width={440} height={108} className="mx-auto mb-6 h-14 w-auto" />
         <h1 className="text-2xl font-bold text-gray-900">Two-Step Verification</h1>
         <p className="mt-2 text-sm text-gray-500">
           To keep your account secure, we sent verification codes to your email and phone.

@@ -28,9 +28,20 @@ export async function POST() {
 
   const doctor = findDoctorByEmail(email);
   if (!doctor) return NextResponse.json({ error: "Doctor record not found" }, { status: 404 });
-  if (doctor.status !== "Active") {
+  // Verification is the real gate for payouts. `status` is just admin
+  // housekeeping (soft-deactivate a doctor) and shouldn't block a
+  // verified doctor from completing Connect onboarding. Earlier we
+  // gated on status === "Active" too, which 403'd self-signed-up
+  // doctors whose status field never got stamped.
+  if (!doctor.verified) {
     return NextResponse.json(
-      { error: "Doctor must be approved before connecting Stripe." },
+      { error: "Your account must be verified before connecting Stripe. Submit your verification documents first." },
+      { status: 403 },
+    );
+  }
+  if (doctor.status === "Inactive") {
+    return NextResponse.json(
+      { error: "Your account is currently paused. Contact support to reactivate before connecting Stripe." },
       { status: 403 },
     );
   }

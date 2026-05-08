@@ -752,7 +752,12 @@ export default function DoctorProfilePage() {
           border-radius: 0.75rem;
           border: 1px solid rgb(203 213 225);
           background: white;
-          padding: 0.625rem 0.875rem;
+          /* Longhand so utility classes like pl-9 can override the
+             left padding without the shorthand winning the cascade. */
+          padding-top: 0.625rem;
+          padding-right: 0.875rem;
+          padding-bottom: 0.625rem;
+          padding-left: 0.875rem;
           font-size: 0.875rem;
           color: rgb(15 23 42);
           transition: border-color 0.15s, box-shadow 0.15s;

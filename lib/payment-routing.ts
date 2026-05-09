@@ -17,8 +17,9 @@
 // is true AND its keys are non-empty.
 
 import { getSettings } from "./settings-store";
+import { isCashfreeConfigured } from "./cashfree";
 
-export type PaymentProviderId = "stripe" | "payu" | "tazapay" | "connectpay";
+export type PaymentProviderId = "stripe" | "payu" | "tazapay" | "connectpay" | "cashfree";
 
 export interface PaymentProvider {
   id: PaymentProviderId;
@@ -53,7 +54,19 @@ const PROVIDER_META: Record<PaymentProviderId, PaymentProvider> = {
     description: "Hosted checkout — US / EU alternative",
     icon: "🌐",
   },
+  cashfree: {
+    id: "cashfree",
+    name: "Cashfree",
+    description: "UPI, Indian cards, net banking, Paytm — India-first",
+    icon: "🇮🇳",
+  },
 };
+
+const CASHFREE_COUNTRIES = new Set([
+  "IN", // primary
+  // Cashfree's cards rail also supports cross-border for these:
+  "BD", "LK", "NP", "BT",
+]);
 
 const PAYU_COUNTRIES = new Set([
   "IN", "PL", "RO", "CZ", "HU", "TR", "ZA", "MX", "CO", "AR", "PE",
@@ -81,22 +94,29 @@ export function providersForCountry(country?: string): PaymentProvider[] {
   const settings = getSettings();
   for (const gw of settings.paymentGateways) {
     if (!gw.enabled) continue;
-    if (gw.id === "stripe" || gw.id === "payu" || gw.id === "tazapay" || gw.id === "connectpay") {
+    if (gw.id === "stripe" || gw.id === "payu" || gw.id === "tazapay" || gw.id === "connectpay" || gw.id === "cashfree") {
       // Some providers also need keys to be non-empty before the lib
       // helpers will accept a request. Enabled-without-keys is a
       // half-configured state that should not be offered.
       const hasKeys = gw.id === "stripe"
         ? Boolean(process.env.STRIPE_SECRET_KEY) // Stripe uses env, not the row
-        : Boolean(gw.publicKey && gw.secretKey);
+        : gw.id === "cashfree"
+          ? isCashfreeConfigured() // Cashfree uses env vars too
+          : Boolean(gw.publicKey && gw.secretKey);
       if (hasKeys) enabled.add(gw.id);
     }
   }
   // Stripe is always present if configured — it's our global default.
   if (process.env.STRIPE_SECRET_KEY) enabled.add("stripe");
+  // Cashfree is enabled by env presence, no admin row needed.
+  if (isCashfreeConfigured()) enabled.add("cashfree");
 
   // Build the regional preference list for this country, then any
   // remaining enabled providers in a stable fallback order.
   const preferred: PaymentProviderId[] = [];
+  // Cashfree leads in India + neighbouring countries — UPI is native,
+  // settlement is fast, and it's the lowest-friction rail for INR.
+  if (cc && CASHFREE_COUNTRIES.has(cc) && enabled.has("cashfree")) preferred.push("cashfree");
   if (cc && PAYU_COUNTRIES.has(cc) && enabled.has("payu")) preferred.push("payu");
   if (cc && TAZAPAY_COUNTRIES.has(cc) && enabled.has("tazapay")) preferred.push("tazapay");
   if (cc && CONNECTPAY_COUNTRIES.has(cc) && enabled.has("connectpay")) preferred.push("connectpay");
@@ -105,7 +125,7 @@ export function providersForCountry(country?: string): PaymentProvider[] {
   // Append any enabled providers we haven't surfaced yet (e.g. PayU is
   // enabled but the visitor isn't in a PayU country — still offer it
   // as a secondary option for travellers / VPN users).
-  for (const id of ["stripe", "payu", "tazapay", "connectpay"] as const) {
+  for (const id of ["stripe", "cashfree", "payu", "tazapay", "connectpay"] as const) {
     if (enabled.has(id) && !preferred.includes(id)) preferred.push(id);
   }
 

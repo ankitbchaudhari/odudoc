@@ -58,10 +58,23 @@ interface JsPdfInstance {
   output: (type: "blob") => Blob;
 }
 
-const HTML2CANVAS_CDN = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-const JSPDF_CDN = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+// CDN URL lists: cdnjs first, jsdelivr second, unpkg last. Some
+// regions / corporate networks block one of these; tripling the list
+// keeps the download path resilient. The script is cached after first
+// success so subsequent clicks are instant.
+const HTML2CANVAS_CDNS = [
+  "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
+  "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js",
+  "https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js",
+];
+const JSPDF_CDNS = [
+  "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+  "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js",
+  "https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js",
+];
 
-function loadScriptOnce(src: string): Promise<void> {
+/** Load one specific CDN URL. */
+function loadOne(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
     if (document.querySelector(`script[data-cdn="${src}"]`)) return resolve();
     const s = document.createElement("script");
@@ -73,6 +86,35 @@ function loadScriptOnce(src: string): Promise<void> {
     document.head.appendChild(s);
   });
 }
+
+/** Try a list of CDN URLs in order until one succeeds. Throws only
+ *  when every fallback fails. Resolves once the corresponding global
+ *  (`window.html2canvas` / `window.jspdf`) is available. */
+async function loadFromAny(srcs: string[], globalCheck: () => boolean): Promise<void> {
+  if (globalCheck()) return;
+  let lastErr: Error | null = null;
+  for (const src of srcs) {
+    try {
+      await loadOne(src);
+      // Some CDNs cache the URL but the global takes a microtask to
+      // appear — wait one tick before checking.
+      await new Promise((r) => setTimeout(r, 50));
+      if (globalCheck()) return;
+    } catch (err) {
+      lastErr = err as Error;
+    }
+  }
+  throw new Error(
+    lastErr
+      ? `All CDNs failed (last: ${lastErr.message}). Check network / corporate firewall.`
+      : "Library loaded but global is missing — version mismatch?",
+  );
+}
+
+const ensureHtml2Canvas = () =>
+  loadFromAny(HTML2CANVAS_CDNS, () => typeof window !== "undefined" && !!window.html2canvas);
+const ensureJsPdf = () =>
+  loadFromAny(JSPDF_CDNS, () => typeof window !== "undefined" && !!window.jspdf?.jsPDF);
 
 /** Mirror of lib/public-doctors.ts:friendlyDoctorSlug. Kept inline so
  *  the client doesn't need a server roundtrip. */
@@ -121,8 +163,15 @@ export default function DoctorIdCardPage() {
    *  canvas is what we hand to jsPDF as the image source for each
    *  page — gives crisper output than a blob round-trip. */
   const captureToCanvas = async (el: HTMLElement, scale = 4): Promise<HTMLCanvasElement> => {
-    await loadScriptOnce(HTML2CANVAS_CDN);
+    await ensureHtml2Canvas();
     if (!window.html2canvas) throw new Error("html2canvas failed to load");
+    // Wait for any web fonts the card uses to finish loading. Without
+    // this, html2canvas sometimes captures fallback-font metrics and
+    // text overlaps because the layout was computed against the real
+    // font but the canvas was painted with the fallback.
+    if (typeof document !== "undefined" && "fonts" in document) {
+      try { await (document as Document & { fonts: { ready: Promise<void> } }).fonts.ready; } catch { /* noop */ }
+    }
     return window.html2canvas(el, {
       backgroundColor: null,
       scale, // 4× of the 640 px source = 2560 px wide, plenty for print
@@ -150,7 +199,7 @@ export default function DoctorIdCardPage() {
     canvases: HTMLCanvasElement[],
     title: string,
   ): Promise<Blob> => {
-    await loadScriptOnce(JSPDF_CDN);
+    await ensureJsPdf();
     const Jspdf = window.jspdf?.jsPDF;
     if (!Jspdf) throw new Error("jsPDF failed to load");
     const CARD_W_MM = 85.6;
@@ -196,7 +245,7 @@ export default function DoctorIdCardPage() {
       const [frontCanvas, backCanvas] = await Promise.all([
         captureToCanvas(sides[0], 4),
         captureToCanvas(sides[1], 4),
-        loadScriptOnce(JSPDF_CDN),
+        ensureJsPdf(),
       ]);
       const pdfBlob = await buildPdf(
         [frontCanvas, backCanvas],
@@ -386,25 +435,24 @@ export default function DoctorIdCardPage() {
               {side === "front" ? <FrontSide me={me} /> : <BackSide me={me} qrUrl={qrUrl} profileUrl={profileUrl} />}
             </div>
 
-            {/* Hidden off-screen container with BOTH sides at the
-                same physical size as the visible card. The card's
-                interior uses fixed-pixel content (24 px padding,
-                96 px photo, text-2xl etc.) — designed for a ~680 px
-                wide card. Rendering at 1280 px would leave the photo
-                and text tiny in a corner. We instead match the
-                visible size and rely on html2canvas's scale:3 to
-                produce a 1920×1212 retina PNG. Explicit height so
-                the layout computes off-screen — aspectRatio alone
-                isn't reliable when opacity is 0. */}
+            {/* Hidden off-screen container — used by the download
+                button. We position it FAR off-screen (-99999 px) but
+                keep opacity at 1 so html2canvas captures real font
+                metrics, real shadows, real gradients. opacity:0 broke
+                font layout in some browsers — text overlapped because
+                the layout engine skipped the fallback-vs-loaded font
+                relayout step. Fixed positioning keeps it out of the
+                document flow so the visible page isn't pushed down. */}
             <div
               ref={bothSidesRef}
               aria-hidden="true"
-              className="pointer-events-none absolute"
+              className="pointer-events-none"
               style={{
+                position: "fixed",
                 left: "-99999px",
-                top: 0,
+                top: "0",
                 width: "640px",
-                opacity: 0,
+                zIndex: -1,
               }}
             >
               <div

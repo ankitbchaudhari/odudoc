@@ -78,8 +78,31 @@ export async function getPublicDoctorsFresh(): Promise<PublicDoctor[]> {
   }
 }
 
+/** Friendly URL slug derived from name + last 4 chars of id for
+ *  uniqueness. "Dr. Ankit Chaudhari" id="d-mouf6key-zg2u" →
+ *  "dr-ankit-chaudhari-zg2u". Two doctors with identical names can't
+ *  collide because the id suffix is randomised at create time. */
+export function friendlyDoctorSlug(name: string, id: string): string {
+  const namePart = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+  // Take the trailing token of the id ("zg2u" from "d-mouf6key-zg2u").
+  const idSuffix = id.split("-").pop() || id.slice(-4);
+  return namePart ? `${namePart}-${idSuffix}` : id;
+}
+
 export function getPublicDoctorById(id: string): PublicDoctor | null {
-  return getPublicDoctors().find((d) => d.id === id) || null;
+  // Try the canonical id first (legacy links), then fall back to a
+  // friendly-slug match so "/doctors/dr-ankit-chaudhari-zg2u" resolves.
+  const doctors = getPublicDoctors();
+  const direct = doctors.find((d) => d.id === id);
+  if (direct) return direct;
+  // Match by slug — case-insensitive against either the id suffix or
+  // a fully-formed friendly slug.
+  const lower = id.toLowerCase();
+  return doctors.find((d) => friendlyDoctorSlug(d.name, d.id) === lower) || null;
 }
 
 export async function getPublicDoctorByIdFresh(id: string): Promise<PublicDoctor | null> {

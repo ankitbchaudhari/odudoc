@@ -11,6 +11,7 @@ import {
   type DoctorStatus,
 } from "@/lib/doctors-store";
 import { sendDoctorRemovedEmail, sendEmail } from "@/lib/email";
+import { adminSetUserRoleByEmail } from "@/lib/users-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
@@ -181,6 +182,24 @@ export async function DELETE(
   const doctor = getDoctorById(id);
   const ok = deleteDoctor(id);
   if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  // Critical: drop the user's "doctor" role too. Without this the
+  // orphan-reconciler in /api/admin/doctors GET sees the user with
+  // role="doctor" but no doctor record, and helpfully creates a
+  // brand-new doctor row for them — the deleted doctor "comes back"
+  // on the very next page load. Downgrade to "patient" so the user
+  // account survives (login still works, any past bookings stay
+  // attached) but they no longer appear in the doctor list.
+  if (doctor?.email) {
+    try {
+      adminSetUserRoleByEmail(doctor.email, "patient");
+    } catch (err) {
+      log.warn("admin.doctors.role_downgrade_failed", {
+        email: doctor.email,
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
 
   // Notify the doctor that they've been removed. Awaited so the Lambda
   // doesn't exit before Resend finishes the HTTP call.

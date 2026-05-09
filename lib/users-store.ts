@@ -725,6 +725,22 @@ export function isInactiveFor(email: string, days: number): boolean {
 
 // ---------- Admin moderation helpers ----------
 
+/** Admin-side role change. Used by /api/admin/doctors DELETE so the
+ *  orphan-reconciler doesn't re-create a doctor profile for a user
+ *  whose role is still "doctor" after the doctor row was removed.
+ *  Match by email — IDs aren't always known to the caller and email
+ *  is the doctor↔user join key everywhere else. */
+export function adminSetUserRoleByEmail(
+  email: string,
+  role: User["role"],
+): User | null {
+  const u = findUserByEmail(email);
+  if (!u) return null;
+  u.role = role;
+  flush();
+  return u;
+}
+
 export function banUser(id: string, reason: string): User | null {
   const u = findUserById(id);
   if (!u) return null;

@@ -95,6 +95,7 @@ export default function Footer() {
         { label: t("footer.help"), href: "/help" },
         { label: t("footer.privacy"), href: "/privacy" },
         { label: t("footer.terms"), href: "/terms" },
+        { label: "Refund & Cancellation", href: "/refund-policy" },
         { label: "Legal & Compliance", href: "/legal" },
         { label: t("footer.directory"), href: "/directory" },
         { label: t("footer.wiki"), href: "/wiki" },

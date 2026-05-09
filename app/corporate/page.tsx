@@ -277,13 +277,13 @@ export default function CorporatePage() {
             hunt through the hero for the login affordance. */}
         <div className="relative mx-auto flex max-w-7xl justify-end px-4 pt-6 sm:px-6 lg:px-8">
           <Link
-            href="/auth/login?callbackUrl=/admin"
+            href="/corporate/login"
             className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
             </svg>
-            Sign in
+            Corporate sign-in
           </Link>
         </div>
 
@@ -333,23 +333,23 @@ export default function CorporatePage() {
                   the primary lead-capture goal, but still discoverable
                   for orgs that have already onboarded. */}
               <Link
-                href="/auth/login?callbackUrl=/admin"
+                href="/corporate/login"
                 className="inline-flex items-center gap-2 rounded-xl border border-teal-300/40 bg-gradient-to-r from-teal-500/20 to-cyan-500/20 px-6 py-3 text-sm font-semibold text-teal-100 backdrop-blur-sm transition-colors hover:from-teal-500/30 hover:to-cyan-500/30"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                 </svg>
-                Sign in to your hospital
+                Hospital admin sign-in
               </Link>
             </div>
             <p className="mt-3 text-xs text-slate-400">
-              Already using OduDoc?{" "}
-              <Link href="/auth/login?callbackUrl=/admin" className="font-semibold text-teal-300 hover:text-teal-200 hover:underline">
+              For hospital admins, doctors, nurses, billing & lab employees.{" "}
+              <Link href="/corporate/login" className="font-semibold text-teal-300 hover:text-teal-200 hover:underline">
                 Sign in to your admin console
               </Link>{" "}
-              · New here?{" "}
-              <Link href="/auth/register" className="font-semibold text-teal-300 hover:text-teal-200 hover:underline">
-                Create an account
+              · New hospital?{" "}
+              <Link href="/contact" className="font-semibold text-teal-300 hover:text-teal-200 hover:underline">
+                Talk to sales
               </Link>
             </p>
             <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-4">

@@ -98,12 +98,12 @@ export default function DoctorIdCardPage() {
     : "";
 
   /** Capture a single DOM node to a PNG blob via html2canvas. */
-  const captureToBlob = async (el: HTMLElement): Promise<Blob> => {
+  const captureToBlob = async (el: HTMLElement, scale = 3): Promise<Blob> => {
     await loadScriptOnce(HTML2CANVAS_CDN);
     if (!window.html2canvas) throw new Error("html2canvas failed to load");
     const canvas = await window.html2canvas(el, {
       backgroundColor: null,
-      scale: 3, // Retina-quality so prints + WhatsApp re-compression survive
+      scale, // Retina-quality so prints + WhatsApp re-compression survive
       useCORS: true,
       logging: false,
     });
@@ -145,9 +145,12 @@ export default function DoctorIdCardPage() {
       // Capture both first, THEN download — saves the user from a
       // popup-blocker "this site is downloading multiple files" prompt
       // because both downloads start within ~200 ms of each other.
+      // Capture at scale 4 because the off-screen source is 640 px
+      // wide — that gives us a 2560 × 1616 PNG, plenty crisp for
+      // print or for WhatsApp's aggressive re-compression.
       const [frontBlob, backBlob] = await Promise.all([
-        captureToBlob(sides[0]),
-        captureToBlob(sides[1]),
+        captureToBlob(sides[0], 4),
+        captureToBlob(sides[1], 4),
       ]);
       triggerDownload(frontBlob, `odudoc-${slug}-front.png`);
       // Tiny delay so Chrome doesn't merge them into a single
@@ -332,12 +335,16 @@ export default function DoctorIdCardPage() {
               {side === "front" ? <FrontSide me={me} /> : <BackSide me={me} qrUrl={qrUrl} profileUrl={profileUrl} />}
             </div>
 
-            {/* Hidden off-screen container with BOTH sides at full
-                size. Used only by the "download front + back" button.
-                Keeping it mounted at all times means the first click
-                doesn't have to wait for a render pass + image fetch.
-                Positioned far off-screen rather than display:none so
-                html2canvas can actually paint it. */}
+            {/* Hidden off-screen container with BOTH sides at the
+                same physical size as the visible card. The card's
+                interior uses fixed-pixel content (24 px padding,
+                96 px photo, text-2xl etc.) — designed for a ~680 px
+                wide card. Rendering at 1280 px would leave the photo
+                and text tiny in a corner. We instead match the
+                visible size and rely on html2canvas's scale:3 to
+                produce a 1920×1212 retina PNG. Explicit height so
+                the layout computes off-screen — aspectRatio alone
+                isn't reliable when opacity is 0. */}
             <div
               ref={bothSidesRef}
               aria-hidden="true"
@@ -345,21 +352,21 @@ export default function DoctorIdCardPage() {
               style={{
                 left: "-99999px",
                 top: 0,
-                width: "1280px", // 2x the on-screen card width for crispness
+                width: "640px",
                 opacity: 0,
               }}
             >
               <div
                 data-card-side="front"
                 className="relative overflow-hidden rounded-3xl"
-                style={{ width: "1280px", aspectRatio: "1.586 / 1" }}
+                style={{ width: "640px", height: "404px" /* 640 / 1.586 */ }}
               >
                 <FrontSide me={me} />
               </div>
               <div
                 data-card-side="back"
                 className="relative mt-4 overflow-hidden rounded-3xl"
-                style={{ width: "1280px", aspectRatio: "1.586 / 1" }}
+                style={{ width: "640px", height: "404px" }}
               >
                 <BackSide me={me} qrUrl={qrUrl} profileUrl={profileUrl} />
               </div>

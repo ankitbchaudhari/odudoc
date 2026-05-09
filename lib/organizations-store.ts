@@ -28,30 +28,69 @@ export interface Organization {
     patient: boolean;            // Patient management (registration, demographics)
     opd: boolean;                // Outpatient department
     ipd: boolean;                // Inpatient department
+    appointments: boolean;       // Appointment booking + calendar
+    encounters: boolean;         // Visit / encounter notes
+    hospitalRx: boolean;         // Hospital prescription pad (Rx)
+    medicalRecords: boolean;     // EHR document store + timeline
+    referrals: boolean;          // Inbound / outbound referrals
+    consentForms: boolean;       // E-signed consent forms
+    dischargeSummaries: boolean; // Discharge summary builder
+    allergiesProblems: boolean;  // Allergy + problem list
+    immunizations: boolean;      // Vaccination schedule + register
+    vitalsEws: boolean;          // Vitals capture + early-warning scores
     lab: boolean;                // Laboratory orders + results
-    pharmacy: boolean;           // Dispensing + inventory link
-    billing: boolean;            // Invoicing + payment capture
+    pathology: boolean;          // Pathology / histopathology
+    pharmacy: boolean;           // Dispensing + inventory link (legacy bundled)
+    pharmacyDispense: boolean;   // Pharmacy dispense counter
+    pharmacyInventory: boolean;  // Pharmacy stock + expiry tracking
+    billing: boolean;            // Invoicing + payment capture (legacy)
+    invoices: boolean;           // Itemised invoice builder
     surgery: boolean;            // Surgery / OT module (basic)
     inventory: boolean;          // SKU registry across stocks
     radiology: boolean;          // Imaging orders + DICOM viewer
     telemedicine: boolean;       // Online consultations
     aiVoice: boolean;            // AI voice scribe / dictation
-    // ─── Hospital sub-departments (corporate) ───────────────────────
+    // ─── Inpatient & surgical ──────────────────────────────────────
     bedManagement: boolean;      // Wards, beds, occupancy, transfers
     otScheduling: boolean;       // OT calendar + room allocation
+    preAnesthesia: boolean;      // Pre-anesthesia checklist + records
+    icu: boolean;                // ICU charts + critical care
+    laborDelivery: boolean;      // L&D partograph + delivery records
+    woundCare: boolean;          // Wound care charts
+    painManagement: boolean;     // Pain scores + analgesia plans
+    oncology: boolean;           // Chemo protocols + cycle tracking
+    cardiology: boolean;         // Cath-lab + ECG + echo workflows
+    endoscopy: boolean;          // Endoscopy scheduling + reports
     bloodBank: boolean;          // Donor registry, cross-match, units
     ambulance: boolean;          // Ambulance dispatch + GPS tracking
-    maternity: boolean;          // Antenatal / delivery / postnatal
+    maternity: boolean;          // Antenatal / postnatal
     nicu: boolean;               // Neonatal ICU charts + ventilator logs
     dialysis: boolean;           // Dialysis sessions + machine logs
     physiotherapy: boolean;      // PT sessions + treatment plans
     diet: boolean;               // Patient diet plans + kitchen orders
     cssd: boolean;               // Central Sterile Supply Department
-    // ─── Back-office / Corporate ────────────────────────────────────
+    // ─── Front-office & engagement ─────────────────────────────────
+    opdQueue: boolean;           // Live OPD token queue + display board
+    patientFeedback: boolean;    // CSAT / NPS surveys
+    visitors: boolean;           // Visitor pass + attendant tracking
+    // ─── Workforce ──────────────────────────────────────────────────
     hrPayroll: boolean;          // Employee records + attendance + payroll
+    medicalStaff: boolean;       // Medical staff registry + privileges
+    shiftRoster: boolean;        // Shift roster planning
+    staffScheduling: boolean;    // Day-of staff scheduling
+    dutyHandover: boolean;       // Duty handover notes
+    // ─── Facilities & compliance ───────────────────────────────────
     procurement: boolean;        // Vendor management + purchase orders
     insurance: boolean;          // TPA / cashless / claim management
-    assetManagement: boolean;    // Capital asset registry (separate from inventory)
+    assetManagement: boolean;    // Capital asset registry
+    biomedical: boolean;         // Biomedical equipment tracking
+    biomedicalWaste: boolean;    // Biomedical waste manifest
+    housekeeping: boolean;       // Housekeeping ticket queue
+    linenLaundry: boolean;       // Linen + laundry tracking
+    infectionControl: boolean;   // HAI surveillance
+    incidentReports: boolean;    // Patient safety incident reports
+    emergencyCodes: boolean;     // Code blue / red drill log
+    mortuary: boolean;           // Mortuary register
     multiBranch: boolean;        // Multi-location / branch consolidation
     analytics: boolean;          // Executive dashboards + custom reports
     audit: boolean;              // Compliance audit logs + e-signature
@@ -77,17 +116,39 @@ const DEFAULT_MODULES: Organization["modules"] = {
   patient: true,
   opd: true,
   ipd: false,
+  appointments: true,
+  encounters: true,
+  hospitalRx: false,
+  medicalRecords: true,
+  referrals: false,
+  consentForms: false,
+  dischargeSummaries: false,
+  allergiesProblems: false,
+  immunizations: false,
+  vitalsEws: false,
   lab: false,
+  pathology: false,
   pharmacy: false,
+  pharmacyDispense: false,
+  pharmacyInventory: false,
   billing: false,
+  invoices: false,
   surgery: false,
   inventory: false,
   radiology: false,
   telemedicine: true,
   aiVoice: false,
-  // Hospital sub-departments
+  // Inpatient & surgical
   bedManagement: false,
   otScheduling: false,
+  preAnesthesia: false,
+  icu: false,
+  laborDelivery: false,
+  woundCare: false,
+  painManagement: false,
+  oncology: false,
+  cardiology: false,
+  endoscopy: false,
   bloodBank: false,
   ambulance: false,
   maternity: false,
@@ -96,11 +157,28 @@ const DEFAULT_MODULES: Organization["modules"] = {
   physiotherapy: false,
   diet: false,
   cssd: false,
-  // Back-office
+  // Front-office & engagement
+  opdQueue: false,
+  patientFeedback: false,
+  visitors: false,
+  // Workforce
   hrPayroll: false,
+  medicalStaff: false,
+  shiftRoster: false,
+  staffScheduling: false,
+  dutyHandover: false,
+  // Facilities & compliance
   procurement: false,
   insurance: false,
   assetManagement: false,
+  biomedical: false,
+  biomedicalWaste: false,
+  housekeeping: false,
+  linenLaundry: false,
+  infectionControl: false,
+  incidentReports: false,
+  emergencyCodes: false,
+  mortuary: false,
   multiBranch: false,
   analytics: false,
   audit: false,
@@ -119,13 +197,27 @@ const DEFAULT_MODULES: Organization["modules"] = {
 type ModuleKey = keyof Organization["modules"];
 const ALL_MODULES: readonly ModuleKey[] = [
   // Core clinical
-  "patient", "opd", "ipd", "lab", "pharmacy", "billing",
+  "patient", "opd", "ipd", "appointments", "encounters", "hospitalRx",
+  "medicalRecords", "referrals", "consentForms", "dischargeSummaries",
+  "allergiesProblems", "immunizations", "vitalsEws",
+  "lab", "pathology",
+  "pharmacy", "pharmacyDispense", "pharmacyInventory",
+  "billing", "invoices",
   "surgery", "inventory", "radiology", "telemedicine", "aiVoice",
-  // Hospital sub-departments
-  "bedManagement", "otScheduling", "bloodBank", "ambulance",
-  "maternity", "nicu", "dialysis", "physiotherapy", "diet", "cssd",
-  // Back-office
-  "hrPayroll", "procurement", "insurance", "assetManagement",
+  // Inpatient & surgical
+  "bedManagement", "otScheduling", "preAnesthesia", "icu",
+  "laborDelivery", "woundCare", "painManagement",
+  "oncology", "cardiology", "endoscopy",
+  "bloodBank", "ambulance", "maternity", "nicu",
+  "dialysis", "physiotherapy", "diet", "cssd",
+  // Front-office & engagement
+  "opdQueue", "patientFeedback", "visitors",
+  // Workforce
+  "hrPayroll", "medicalStaff", "shiftRoster", "staffScheduling", "dutyHandover",
+  // Facilities & compliance
+  "procurement", "insurance", "assetManagement",
+  "biomedical", "biomedicalWaste", "housekeeping", "linenLaundry",
+  "infectionControl", "incidentReports", "emergencyCodes", "mortuary",
   "multiBranch", "analytics", "audit",
   // Patient engagement
   "patientPortal", "whatsappEngagement",
@@ -134,22 +226,46 @@ const ALL_MODULES: readonly ModuleKey[] = [
 ];
 
 export const PLAN_MODULE_ENTITLEMENTS: Record<OrgPlan, readonly ModuleKey[]> = {
-  trial:      ["patient", "opd", "telemedicine"],
-  starter:    ["patient", "opd", "telemedicine", "whatsappEngagement"],
+  trial: [
+    "patient", "opd", "appointments", "encounters", "medicalRecords",
+    "telemedicine",
+  ],
+  starter: [
+    "patient", "opd", "appointments", "encounters", "medicalRecords",
+    "hospitalRx", "vitalsEws", "allergiesProblems",
+    "telemedicine", "whatsappEngagement",
+  ],
   // Single-clinic tier — billing + lab + pharmacy + patient portal,
   // but no inpatient sub-departments.
   clinic: [
-    "patient", "opd", "lab", "pharmacy", "billing", "telemedicine",
+    "patient", "opd", "appointments", "encounters", "hospitalRx",
+    "medicalRecords", "referrals", "consentForms", "allergiesProblems",
+    "immunizations", "vitalsEws",
+    "lab", "pharmacy", "pharmacyDispense", "pharmacyInventory",
+    "billing", "invoices",
+    "telemedicine", "opdQueue", "patientFeedback",
     "patientPortal", "diet", "analytics", "whatsappEngagement",
   ],
   // Multi-bed hospital tier — inpatient + most sub-departments + the
   // back-office set. Misses platform tier (API / white-label / multi-branch).
   hospital: [
-    "patient", "opd", "ipd", "lab", "pharmacy", "billing", "surgery",
-    "inventory", "radiology", "telemedicine",
-    "bedManagement", "otScheduling", "bloodBank", "ambulance",
-    "maternity", "nicu", "dialysis", "physiotherapy", "diet", "cssd",
-    "hrPayroll", "procurement", "insurance", "assetManagement",
+    "patient", "opd", "ipd", "appointments", "encounters", "hospitalRx",
+    "medicalRecords", "referrals", "consentForms", "dischargeSummaries",
+    "allergiesProblems", "immunizations", "vitalsEws",
+    "lab", "pathology",
+    "pharmacy", "pharmacyDispense", "pharmacyInventory",
+    "billing", "invoices",
+    "surgery", "inventory", "radiology", "telemedicine",
+    "bedManagement", "otScheduling", "preAnesthesia", "icu",
+    "laborDelivery", "woundCare", "painManagement",
+    "oncology", "cardiology", "endoscopy",
+    "bloodBank", "ambulance", "maternity", "nicu",
+    "dialysis", "physiotherapy", "diet", "cssd",
+    "opdQueue", "patientFeedback", "visitors",
+    "hrPayroll", "medicalStaff", "shiftRoster", "staffScheduling", "dutyHandover",
+    "procurement", "insurance", "assetManagement",
+    "biomedical", "biomedicalWaste", "housekeeping", "linenLaundry",
+    "infectionControl", "incidentReports", "emergencyCodes", "mortuary",
     "analytics", "audit",
     "patientPortal", "whatsappEngagement",
   ],

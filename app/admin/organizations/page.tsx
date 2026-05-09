@@ -10,17 +10,39 @@ interface OrgModules {
   patient: boolean;
   opd: boolean;
   ipd: boolean;
+  appointments: boolean;
+  encounters: boolean;
+  hospitalRx: boolean;
+  medicalRecords: boolean;
+  referrals: boolean;
+  consentForms: boolean;
+  dischargeSummaries: boolean;
+  allergiesProblems: boolean;
+  immunizations: boolean;
+  vitalsEws: boolean;
   lab: boolean;
+  pathology: boolean;
   pharmacy: boolean;
+  pharmacyDispense: boolean;
+  pharmacyInventory: boolean;
   billing: boolean;
+  invoices: boolean;
   surgery: boolean;
   inventory: boolean;
   radiology: boolean;
   telemedicine: boolean;
   aiVoice: boolean;
-  // Hospital sub-departments
+  // Inpatient & surgical
   bedManagement: boolean;
   otScheduling: boolean;
+  preAnesthesia: boolean;
+  icu: boolean;
+  laborDelivery: boolean;
+  woundCare: boolean;
+  painManagement: boolean;
+  oncology: boolean;
+  cardiology: boolean;
+  endoscopy: boolean;
   bloodBank: boolean;
   ambulance: boolean;
   maternity: boolean;
@@ -29,11 +51,28 @@ interface OrgModules {
   physiotherapy: boolean;
   diet: boolean;
   cssd: boolean;
-  // Back-office
+  // Front-office & engagement
+  opdQueue: boolean;
+  patientFeedback: boolean;
+  visitors: boolean;
+  // Workforce
   hrPayroll: boolean;
+  medicalStaff: boolean;
+  shiftRoster: boolean;
+  staffScheduling: boolean;
+  dutyHandover: boolean;
+  // Facilities & compliance
   procurement: boolean;
   insurance: boolean;
   assetManagement: boolean;
+  biomedical: boolean;
+  biomedicalWaste: boolean;
+  housekeeping: boolean;
+  linenLaundry: boolean;
+  infectionControl: boolean;
+  incidentReports: boolean;
+  emergencyCodes: boolean;
+  mortuary: boolean;
   multiBranch: boolean;
   analytics: boolean;
   audit: boolean;
@@ -66,63 +105,140 @@ const STATUSES: OrgStatus[] = ["active", "suspended", "cancelled"];
 // Duplicated here (not fetched) so the disabled-state renders instantly as
 // the operator flips the plan dropdown. Server still re-clamps on save —
 // this is a UX hint, not a security boundary.
+const ALL_KEYS: (keyof OrgModules)[] = [
+  "patient", "opd", "ipd", "appointments", "encounters", "hospitalRx",
+  "medicalRecords", "referrals", "consentForms", "dischargeSummaries",
+  "allergiesProblems", "immunizations", "vitalsEws",
+  "lab", "pathology",
+  "pharmacy", "pharmacyDispense", "pharmacyInventory",
+  "billing", "invoices",
+  "surgery", "inventory", "radiology", "telemedicine", "aiVoice",
+  "bedManagement", "otScheduling", "preAnesthesia", "icu",
+  "laborDelivery", "woundCare", "painManagement",
+  "oncology", "cardiology", "endoscopy",
+  "bloodBank", "ambulance", "maternity", "nicu",
+  "dialysis", "physiotherapy", "diet", "cssd",
+  "opdQueue", "patientFeedback", "visitors",
+  "hrPayroll", "medicalStaff", "shiftRoster", "staffScheduling", "dutyHandover",
+  "procurement", "insurance", "assetManagement",
+  "biomedical", "biomedicalWaste", "housekeeping", "linenLaundry",
+  "infectionControl", "incidentReports", "emergencyCodes", "mortuary",
+  "multiBranch", "analytics", "audit",
+  "patientPortal", "whatsappEngagement",
+  "apiAccess", "whiteLabel",
+];
+
 const PLAN_MODULES: Record<OrgPlan, (keyof OrgModules)[]> = {
-  trial:   ["patient", "opd", "telemedicine"],
-  starter: ["patient", "opd", "telemedicine", "whatsappEngagement"],
+  trial: [
+    "patient", "opd", "appointments", "encounters", "medicalRecords",
+    "telemedicine",
+  ],
+  starter: [
+    "patient", "opd", "appointments", "encounters", "medicalRecords",
+    "hospitalRx", "vitalsEws", "allergiesProblems",
+    "telemedicine", "whatsappEngagement",
+  ],
   clinic: [
-    "patient", "opd", "lab", "pharmacy", "billing", "telemedicine",
+    "patient", "opd", "appointments", "encounters", "hospitalRx",
+    "medicalRecords", "referrals", "consentForms", "allergiesProblems",
+    "immunizations", "vitalsEws",
+    "lab", "pharmacy", "pharmacyDispense", "pharmacyInventory",
+    "billing", "invoices",
+    "telemedicine", "opdQueue", "patientFeedback",
     "patientPortal", "diet", "analytics", "whatsappEngagement",
   ],
   hospital: [
-    "patient", "opd", "ipd", "lab", "pharmacy", "billing", "surgery",
-    "inventory", "radiology", "telemedicine",
-    "bedManagement", "otScheduling", "bloodBank", "ambulance",
-    "maternity", "nicu", "dialysis", "physiotherapy", "diet", "cssd",
-    "hrPayroll", "procurement", "insurance", "assetManagement",
+    "patient", "opd", "ipd", "appointments", "encounters", "hospitalRx",
+    "medicalRecords", "referrals", "consentForms", "dischargeSummaries",
+    "allergiesProblems", "immunizations", "vitalsEws",
+    "lab", "pathology",
+    "pharmacy", "pharmacyDispense", "pharmacyInventory",
+    "billing", "invoices",
+    "surgery", "inventory", "radiology", "telemedicine",
+    "bedManagement", "otScheduling", "preAnesthesia", "icu",
+    "laborDelivery", "woundCare", "painManagement",
+    "oncology", "cardiology", "endoscopy",
+    "bloodBank", "ambulance", "maternity", "nicu",
+    "dialysis", "physiotherapy", "diet", "cssd",
+    "opdQueue", "patientFeedback", "visitors",
+    "hrPayroll", "medicalStaff", "shiftRoster", "staffScheduling", "dutyHandover",
+    "procurement", "insurance", "assetManagement",
+    "biomedical", "biomedicalWaste", "housekeeping", "linenLaundry",
+    "infectionControl", "incidentReports", "emergencyCodes", "mortuary",
     "analytics", "audit",
     "patientPortal", "whatsappEngagement",
   ],
-  enterprise: [
-    "patient", "opd", "ipd", "lab", "pharmacy", "billing", "surgery",
-    "inventory", "radiology", "telemedicine", "aiVoice",
-    "bedManagement", "otScheduling", "bloodBank", "ambulance",
-    "maternity", "nicu", "dialysis", "physiotherapy", "diet", "cssd",
-    "hrPayroll", "procurement", "insurance", "assetManagement",
-    "multiBranch", "analytics", "audit",
-    "patientPortal", "whatsappEngagement",
-    "apiAccess", "whiteLabel",
-  ],
+  enterprise: ALL_KEYS,
 };
 
 const MODULE_LABELS: Record<keyof OrgModules, string> = {
   // Core clinical
-  patient: "Patient Mgmt",
+  patient: "Patients",
   opd: "OPD",
   ipd: "IPD",
-  lab: "Lab",
+  appointments: "Appointments",
+  encounters: "Encounters",
+  hospitalRx: "Hospital Rx",
+  medicalRecords: "Medical Records",
+  referrals: "Referrals",
+  consentForms: "Consent Forms",
+  dischargeSummaries: "Discharge Summaries",
+  allergiesProblems: "Allergies & Problems",
+  immunizations: "Immunizations",
+  vitalsEws: "Vitals & EWS",
+  lab: "Lab Orders",
+  pathology: "Pathology",
   pharmacy: "Pharmacy",
+  pharmacyDispense: "Pharmacy Dispense",
+  pharmacyInventory: "Pharmacy Inventory",
   billing: "Billing",
+  invoices: "Invoices",
   surgery: "Surgery / OT",
   inventory: "Inventory",
   radiology: "Radiology",
   telemedicine: "Telemedicine",
   aiVoice: "AI Voice",
-  // Hospital sub-departments
-  bedManagement: "Bed Management",
+  // Inpatient & surgical
+  bedManagement: "Wards & Beds",
   otScheduling: "OT Scheduling",
+  preAnesthesia: "Pre-Anesthesia",
+  icu: "ICU / Critical Care",
+  laborDelivery: "Labor & Delivery",
+  woundCare: "Wound Care",
+  painManagement: "Pain Management",
+  oncology: "Oncology & Chemo",
+  cardiology: "Cardiology",
+  endoscopy: "Endoscopy",
   bloodBank: "Blood Bank",
-  ambulance: "Ambulance",
+  ambulance: "Ambulance Dispatch",
   maternity: "Maternity",
   nicu: "NICU",
   dialysis: "Dialysis",
   physiotherapy: "Physiotherapy",
-  diet: "Diet & Nutrition",
-  cssd: "CSSD",
-  // Back-office
+  diet: "Dietary Orders",
+  cssd: "CSSD Sterilization",
+  // Front-office & engagement
+  opdQueue: "OPD Queue",
+  patientFeedback: "Patient Feedback",
+  visitors: "Visitors",
+  // Workforce
   hrPayroll: "HR & Payroll",
+  medicalStaff: "Medical Staff",
+  shiftRoster: "Shift Roster",
+  staffScheduling: "Staff Scheduling",
+  dutyHandover: "Duty Handover",
+  // Facilities & compliance
   procurement: "Procurement",
   insurance: "Insurance / TPA",
   assetManagement: "Asset Mgmt",
+  biomedical: "Biomedical",
+  biomedicalWaste: "Biomedical Waste",
+  housekeeping: "Housekeeping",
+  linenLaundry: "Linen & Laundry",
+  infectionControl: "Infection Control",
+  incidentReports: "Incident Reports",
+  emergencyCodes: "Emergency Codes",
+  mortuary: "Mortuary",
   multiBranch: "Multi-branch",
   analytics: "Analytics",
   audit: "Audit & Compliance",
@@ -137,11 +253,63 @@ const MODULE_LABELS: Record<keyof OrgModules, string> = {
 // Section grouping for the module picker — keeps the form readable
 // at 30 modules instead of one big wall of pills.
 const MODULE_SECTIONS: Array<{ title: string; keys: (keyof OrgModules)[] }> = [
-  { title: "Core clinical",         keys: ["patient", "opd", "ipd", "lab", "pharmacy", "billing", "surgery", "inventory", "radiology", "telemedicine", "aiVoice"] },
-  { title: "Hospital departments",  keys: ["bedManagement", "otScheduling", "bloodBank", "ambulance", "maternity", "nicu", "dialysis", "physiotherapy", "diet", "cssd"] },
-  { title: "Back-office",           keys: ["hrPayroll", "procurement", "insurance", "assetManagement", "multiBranch", "analytics", "audit"] },
-  { title: "Patient engagement",    keys: ["patientPortal", "whatsappEngagement"] },
-  { title: "Platform",              keys: ["apiAccess", "whiteLabel"] },
+  {
+    title: "Core clinical",
+    keys: [
+      "patient", "opd", "appointments", "encounters", "hospitalRx",
+      "medicalRecords", "referrals", "consentForms", "dischargeSummaries",
+      "allergiesProblems", "immunizations", "vitalsEws",
+    ],
+  },
+  {
+    title: "Diagnostics & pharmacy",
+    keys: [
+      "lab", "pathology", "radiology",
+      "pharmacy", "pharmacyDispense", "pharmacyInventory",
+      "inventory", "bloodBank",
+    ],
+  },
+  {
+    title: "Inpatient & surgical",
+    keys: [
+      "ipd", "bedManagement", "surgery", "otScheduling", "preAnesthesia",
+      "icu", "laborDelivery", "woundCare", "painManagement",
+      "oncology", "cardiology", "endoscopy",
+      "maternity", "nicu", "dialysis", "physiotherapy",
+    ],
+  },
+  {
+    title: "Front-office & engagement",
+    keys: [
+      "telemedicine", "opdQueue", "patientFeedback", "visitors",
+      "patientPortal", "whatsappEngagement",
+    ],
+  },
+  {
+    title: "Revenue & admin",
+    keys: [
+      "billing", "invoices", "insurance", "procurement",
+      "assetManagement", "analytics", "audit",
+    ],
+  },
+  {
+    title: "Workforce",
+    keys: [
+      "hrPayroll", "medicalStaff", "shiftRoster", "staffScheduling", "dutyHandover",
+    ],
+  },
+  {
+    title: "Facilities & compliance",
+    keys: [
+      "diet", "cssd", "biomedical", "biomedicalWaste",
+      "housekeeping", "linenLaundry", "infectionControl",
+      "incidentReports", "emergencyCodes", "ambulance", "mortuary",
+    ],
+  },
+  {
+    title: "Platform & enterprise",
+    keys: ["aiVoice", "multiBranch", "apiAccess", "whiteLabel"],
+  },
 ];
 
 const PLAN_COLORS: Record<OrgPlan, string> = {
@@ -163,17 +331,39 @@ const DEFAULT_MODULES: OrgModules = {
   patient: true,
   opd: true,
   ipd: false,
+  appointments: true,
+  encounters: true,
+  hospitalRx: false,
+  medicalRecords: true,
+  referrals: false,
+  consentForms: false,
+  dischargeSummaries: false,
+  allergiesProblems: false,
+  immunizations: false,
+  vitalsEws: false,
   lab: false,
+  pathology: false,
   pharmacy: false,
+  pharmacyDispense: false,
+  pharmacyInventory: false,
   billing: false,
+  invoices: false,
   surgery: false,
   inventory: false,
   radiology: false,
   telemedicine: true,
   aiVoice: false,
-  // Hospital sub-departments
+  // Inpatient & surgical
   bedManagement: false,
   otScheduling: false,
+  preAnesthesia: false,
+  icu: false,
+  laborDelivery: false,
+  woundCare: false,
+  painManagement: false,
+  oncology: false,
+  cardiology: false,
+  endoscopy: false,
   bloodBank: false,
   ambulance: false,
   maternity: false,
@@ -182,11 +372,28 @@ const DEFAULT_MODULES: OrgModules = {
   physiotherapy: false,
   diet: false,
   cssd: false,
-  // Back-office
+  // Front-office & engagement
+  opdQueue: false,
+  patientFeedback: false,
+  visitors: false,
+  // Workforce
   hrPayroll: false,
+  medicalStaff: false,
+  shiftRoster: false,
+  staffScheduling: false,
+  dutyHandover: false,
+  // Facilities & compliance
   procurement: false,
   insurance: false,
   assetManagement: false,
+  biomedical: false,
+  biomedicalWaste: false,
+  housekeeping: false,
+  linenLaundry: false,
+  infectionControl: false,
+  incidentReports: false,
+  emergencyCodes: false,
+  mortuary: false,
   multiBranch: false,
   analytics: false,
   audit: false,

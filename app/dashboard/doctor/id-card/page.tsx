@@ -81,7 +81,12 @@ export default function DoctorIdCardPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const slug = me ? friendlyDoctorSlug(`Dr ${me.name}`, me.id) : "";
+  // Match server-side computation: lib/public-doctors.ts uses
+  // friendlyDoctorSlug(d.name, d.id), NOT a "Dr " prefix. Pre-pending
+  // "Dr " here produced "dr-bright-atune-zg2u" while the lookup
+  // expected "bright-atune-zg2u" — patients clicking the QR landed
+  // on a "Doctor not found" page. Pass me.name verbatim.
+  const slug = me ? friendlyDoctorSlug(me.name, me.id) : "";
   const profileUrl = me ? `https://www.odudoc.com/doctors/${slug}` : "";
   const qrUrl = profileUrl
     ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=4&data=${encodeURIComponent(profileUrl)}`

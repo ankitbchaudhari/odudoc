@@ -1,14 +1,23 @@
-// Auth gate for the doctors directory and individual doctor profile pages.
-// Only signed-in members can browse doctor profiles — non-members are
-// redirected to the login page with a callbackUrl so they come back here
-// after authenticating.
+// Layout shell for the /doctors/* routes.
+//
+// We used to gate the entire subtree behind a sign-in redirect here,
+// but that broke the most important funnel: a doctor shares their
+// QR / profile URL on WhatsApp, the patient taps it, and instead of
+// landing on the doctor's bookable profile they got punted to a
+// generic login page with no context. They never came back.
+//
+// New policy:
+//   - /doctors          (directory listing) — auth-gated inside the
+//                       page itself, since browsing all doctors is
+//                       lead-capture territory
+//   - /doctors/[id]     (individual profile) — fully public so the
+//                       patient can read the bio, see the slots, and
+//                       hit "Book" without first creating an account.
+//                       The booking flow itself still verifies their
+//                       phone via OTP, so identity is captured at
+//                       the moment of intent rather than upfront.
 
-import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import type { Metadata } from "next";
-
-export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Find Doctors — Verified Specialists Near You",
@@ -23,17 +32,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function DoctorsLayout({
+export default function DoctorsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Don't 500 the whole page on a transient NextAuth/DB outage —
-  // treat any failure as "no session" and route to the login page,
-  // which is the same outcome an unauthenticated user gets.
-  const session = await getServerSession(authOptions).catch(() => null);
-  if (!session?.user) {
-    redirect("/auth/login?callbackUrl=/doctors");
-  }
   return <>{children}</>;
 }

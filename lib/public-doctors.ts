@@ -95,14 +95,20 @@ export function friendlyDoctorSlug(name: string, id: string): string {
 
 export function getPublicDoctorById(id: string): PublicDoctor | null {
   // Try the canonical id first (legacy links), then fall back to a
-  // friendly-slug match so "/doctors/dr-ankit-chaudhari-zg2u" resolves.
+  // friendly-slug match so "/doctors/ankit-chaudhari-zg2u" resolves.
   const doctors = getPublicDoctors();
   const direct = doctors.find((d) => d.id === id);
   if (direct) return direct;
-  // Match by slug — case-insensitive against either the id suffix or
-  // a fully-formed friendly slug.
-  const lower = id.toLowerCase();
-  return doctors.find((d) => friendlyDoctorSlug(d.name, d.id) === lower) || null;
+  // Match by slug — case-insensitive. We also strip a leading "dr-"
+  // because an earlier version of the id-card page generated slugs
+  // with that prefix, and a number of those QR codes are already in
+  // the wild on doctors' WhatsApp Status / business cards. Treat
+  // "dr-bright-atune-zg2u" and "bright-atune-zg2u" as equivalent.
+  const lower = id.toLowerCase().replace(/^dr-/, "");
+  return doctors.find((d) => {
+    const slug = friendlyDoctorSlug(d.name, d.id).replace(/^dr-/, "");
+    return slug === lower;
+  }) || null;
 }
 
 export async function getPublicDoctorByIdFresh(id: string): Promise<PublicDoctor | null> {

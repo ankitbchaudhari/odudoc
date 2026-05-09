@@ -177,6 +177,12 @@ export default function DoctorDashboardPage() {
               >
                 My profile
               </Link>
+              <Link
+                href="/dashboard/doctor/id-card"
+                className="rounded-xl bg-white/15 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/25"
+              >
+                My ID card
+              </Link>
             </div>
           </div>
         </div>
@@ -390,6 +396,7 @@ export default function DoctorDashboardPage() {
                   { label: "Bookings", href: "/dashboard/doctor/appointments", icon: "📅", bg: "from-emerald-100 to-teal-100" },
                   { label: "Patient Referrals", href: "/dashboard/doctor/referrals", icon: "↗️", bg: "from-violet-100 to-fuchsia-100" },
                   { label: "Refer & earn", href: "/dashboard/referrals", icon: "🎁", bg: "from-indigo-100 to-fuchsia-100" },
+                  { label: "My ID card", href: "/dashboard/doctor/id-card", icon: "🪪", bg: "from-cyan-100 to-blue-100" },
                 ].map((a) => (
                   <Link
                     key={a.label}

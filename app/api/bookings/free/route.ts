@@ -23,14 +23,21 @@ export const runtime = "nodejs";
 // /dashboard/doctor/consultations dashboards.
 
 export async function POST(req: NextRequest) {
-  if (!paymentsDisabled()) {
+  const body = await req.json().catch(() => ({}));
+  // Two valid paths into this endpoint:
+  //   1. Global free-mode (paymentsDisabled() === true) — booking is
+  //      created as paid because nobody is being charged.
+  //   2. pendingPayment flag — patient is going through Cashfree (or
+  //      another webhook-driven gateway). Booking lands as pending
+  //      and the gateway webhook flips it to paid on confirmation.
+  // Anything else 403s.
+  const wantsPending = body?.pendingPayment === true;
+  if (!paymentsDisabled() && !wantsPending) {
     return NextResponse.json(
       { error: "Free bookings are not enabled. Please complete payment." },
       { status: 403 }
     );
   }
-
-  const body = await req.json().catch(() => ({}));
   const {
     doctorId = "",
     doctorName = "",
@@ -110,6 +117,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: slotErr }, { status: 400 });
   }
 
+  // pendingPayment = true → patient is going through Cashfree (or a
+  // similar gateway that confirms via webhook). Booking is created in
+  // pending state and the webhook flips it to paid on confirmation.
+  const pendingPayment = body?.pendingPayment === true;
+
   // 1. Legacy booking record (admin / earnings views).
   const booking = createBooking({
     doctorId: String(doctorId),
@@ -118,8 +130,8 @@ export async function POST(req: NextRequest) {
     patientPhone: phone,
     timeSlot: String(timeSlot),
     fee: feeNum,
-    paymentStatus: "paid",
-    paymentIntentId: `free_${Date.now()}`,
+    paymentStatus: pendingPayment ? "pending" : "paid",
+    paymentIntentId: pendingPayment ? "" : `free_${Date.now()}`,
   });
 
   // 2. Consultation record so it shows in the new dashboards.
@@ -163,7 +175,13 @@ export async function POST(req: NextRequest) {
       additional: `Booked from doctor profile page during free promotion. Legacy booking ID: ${booking.id}`,
     },
   });
-  markPaid(consultation.id, booking.paymentIntentId);
+  // Only mark paid for the genuine free-promotion path. When
+  // pendingPayment is set, payment confirmation happens via the
+  // Cashfree webhook (or the verify-on-return path) — we leave the
+  // consultation in its initial unpaid state until then.
+  if (!pendingPayment) {
+    markPaid(consultation.id, booking.paymentIntentId);
+  }
 
   // Fire-and-forget notifications.
   Promise.all([

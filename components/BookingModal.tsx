@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Doctor } from "@/lib/data";
 import PaymentForm from "@/components/PaymentForm";
+import CashfreeCheckout from "@/components/CashfreeCheckout";
 import CurrencySwitcher, { useCheckoutCurrency } from "@/components/CurrencySwitcher";
 import { convert } from "@/lib/currency-convert";
 import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase-client";
@@ -88,6 +89,13 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [paymentsOff, setPaymentsOff] = useState(false);
+  // Surfaced from /api/payments-config so we know whether to render
+  // the Cashfree button (Indian UPI / cards / netbanking) alongside
+  // Stripe. Stripe stays the global fallback.
+  const [cashfreeAvailable, setCashfreeAvailable] = useState(false);
+  // Mode toggle on the payment step. Defaults to Cashfree when
+  // the visitor's checkout currency is INR; otherwise Stripe.
+  const [provider, setProvider] = useState<"stripe" | "cashfree">("stripe");
 
   // Visitor-chosen checkout currency. Pricing is authored in USD; the
   // PaymentIntent is created in this currency server-side at the live
@@ -114,9 +122,17 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
     if (!open) return;
     fetch("/api/payments-config")
       .then((r) => r.json())
-      .then((d) => setPaymentsOff(!!d.disabled))
+      .then((d) => {
+        setPaymentsOff(!!d.disabled);
+        const cfReady = Boolean(d?.gateways?.cashfree);
+        setCashfreeAvailable(cfReady);
+        // If the visitor's checkout currency is INR and Cashfree is
+        // wired, default to Cashfree — UPI is much smoother than
+        // an international card on Stripe in India.
+        if (cfReady && checkout.code === "INR") setProvider("cashfree");
+      })
       .catch(() => {});
-  }, [open]);
+  }, [open, checkout.code]);
 
   // Resend countdown for the OTP step. Must live above the `if (!open)`
   // early return so the hook count is stable across renders.
@@ -305,6 +321,41 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
             window.location.href = `/dashboard/consultations/${data.consultation.id}`;
           }, 1800);
         }
+        return;
+      }
+
+      // If the patient picked Cashfree, we don't pre-create anything
+      // on our side — the CashfreeCheckout component creates the
+      // Cashfree order on click + launches the SDK + verifies on
+      // return. Just create the booking shell so we have a stable
+      // orderId to give Cashfree.
+      if (provider === "cashfree") {
+        const bookRes = await fetch("/api/bookings/free", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            doctorId: doctor.id,
+            doctorName: doctor.name,
+            fee: doctor.fee,
+            specialty: doctor.specialty,
+            patientName: name,
+            patientPhone: phone.trim(),
+            timeSlot: selectedSlot,
+            date: selectedDate,
+            consultToken: token,
+            // Mark unpaid so the consultation sits in "pending payment"
+            // state until the Cashfree webhook flips it.
+            pendingPayment: true,
+          }),
+        });
+        const bookData = await bookRes.json();
+        if (!bookRes.ok) {
+          setPaymentError(bookData.error || "Booking failed. Please try again.");
+          return;
+        }
+        setBookingId(bookData.booking.id);
+        if (bookData.consultation?.id) setConsultationId(bookData.consultation.id);
+        setStep("payment");
         return;
       }
 
@@ -690,24 +741,67 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
           </div>
         )}
 
-        {step === "payment" && clientSecret && (
+        {step === "payment" && (clientSecret || (provider === "cashfree" && bookingId)) && (
           <>
             <h2 className="text-lg font-bold text-gray-900">Payment</h2>
             <p className="mt-1 mb-5 text-sm text-gray-500">
               Complete your payment to confirm booking
             </p>
 
-            <PaymentForm
-              clientSecret={clientSecret}
-              doctorName={doctor.name}
-              timeSlot={selectedSlot!}
-              fee={doctor.fee}
-              patientName={name}
-              patientPhone={phone}
-              doctorId={doctor.id}
-              onSuccess={handlePaymentSuccess}
-              onError={handlePaymentError}
-            />
+            {/* Provider toggle — only render when Cashfree is wired AND
+                the visitor already has a Stripe PaymentIntent OR a
+                Cashfree-eligible booking. Hidden on countries where
+                Cashfree won't accept the customer's instrument. */}
+            {cashfreeAvailable && (
+              <div className="mb-4 inline-flex rounded-full bg-slate-100 p-1 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setProvider("cashfree")}
+                  className={`rounded-full px-3 py-1.5 transition ${provider === "cashfree" ? "bg-white text-[#6933FF] shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                >
+                  🇮🇳 UPI / Cards (Cashfree)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProvider("stripe")}
+                  className={`rounded-full px-3 py-1.5 transition ${provider === "stripe" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                >
+                  💳 International (Stripe)
+                </button>
+              </div>
+            )}
+
+            {provider === "cashfree" && bookingId ? (
+              <CashfreeCheckout
+                orderId={bookingId}
+                amount={Number((convertedFee ?? doctor.fee).toFixed(2))}
+                currency={(checkout.code === "INR" ? "INR" : "INR") as "INR"}
+                customerName={name}
+                customerEmail={(typeof window !== "undefined" && new URLSearchParams(window.location.search).get("email")) || `${phone.replace(/[^0-9]/g, "")}@odudoc.example`}
+                customerPhone={phone.replace(/^\+/, "")}
+                description={`Consultation with ${doctor.name} on ${selectedSlot}`}
+                doctorId={doctor.id}
+                // Cashfree's success path doesn't carry a stripe-style
+                // PaymentIntent id — the order id IS the booking id, so
+                // we forward an empty string for paymentIntentId.
+                onSuccess={() => handlePaymentSuccess("", bookingId)}
+                onError={handlePaymentError}
+              />
+            ) : clientSecret ? (
+              <PaymentForm
+                clientSecret={clientSecret}
+                doctorName={doctor.name}
+                timeSlot={selectedSlot!}
+                fee={doctor.fee}
+                patientName={name}
+                patientPhone={phone}
+                doctorId={doctor.id}
+                onSuccess={handlePaymentSuccess}
+                onError={handlePaymentError}
+              />
+            ) : (
+              <p className="text-sm text-slate-500">Initialising payment…</p>
+            )}
 
             {paymentError && (
               <div className="mt-4 rounded-lg bg-red-50 p-3 text-xs text-red-700">

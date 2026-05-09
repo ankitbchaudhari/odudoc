@@ -348,6 +348,14 @@ export function bindPersistentArray<T>(
 
   // Wrap mutators to auto-flush. Each call is debounced via the flushPromise
   // serialisation so a burst of writes causes a single tail write.
+  //
+  // Auto-tombstone: every mutator that REMOVES items (splice, pop, shift)
+  // captures the removed entries' ids and adds them to the tombstones set
+  // before flushing. This prevents mergingSave() from re-adding the row
+  // it just saw "missing" in the local ref. Without this, every store
+  // that deletes via splice + flush ends up with an instantly-revived
+  // row — the merge-before-save reads DB, sees the row, treats it as a
+  // stale-read recovery, and writes it back. Bug affected ~70 stores.
   for (const name of MUTATORS) {
     const original = (ref as unknown as Record<string, (...args: unknown[]) => unknown>)[name];
     if (typeof original === "function") {
@@ -355,7 +363,25 @@ export function bindPersistentArray<T>(
         this: unknown,
         ...args: unknown[]
       ) {
+        // Snapshot ids before the call so we can diff and tombstone.
+        const beforeIds = new Set<string | number>();
+        if (name === "splice" || name === "pop" || name === "shift") {
+          for (const item of ref as unknown as Array<{ id?: unknown }>) {
+            const id = item?.id;
+            if (typeof id === "string" || typeof id === "number") beforeIds.add(id);
+          }
+        }
         const result = original.apply(this, args);
+        if (beforeIds.size > 0) {
+          const afterIds = new Set<string | number>();
+          for (const item of ref as unknown as Array<{ id?: unknown }>) {
+            const id = item?.id;
+            if (typeof id === "string" || typeof id === "number") afterIds.add(id);
+          }
+          for (const id of beforeIds) {
+            if (!afterIds.has(id)) tombstones.add(id);
+          }
+        }
         flush();
         return result;
       };

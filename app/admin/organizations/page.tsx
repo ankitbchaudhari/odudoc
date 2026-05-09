@@ -421,6 +421,17 @@ export default function AdminOrganizations() {
   const [saving, setSaving] = useState(false);
   const [repairingId, setRepairingId] = useState<string | null>(null);
   const [repairResult, setRepairResult] = useState<{ orgName: string; staff: RepairedStaff[] } | null>(null);
+  // Credentials issued for the org's first admin user when a new org
+  // is saved. Shown in a modal so the operator can copy + share if
+  // delivery fails. Cleared on dismiss.
+  const [bootstrapResult, setBootstrapResult] = useState<{
+    orgName: string;
+    email: string;
+    tempPassword: string;
+    expiresAt: string;
+    userCreated: boolean;
+    delivery: { email: { sent: boolean; reason?: string }; sms: { sent: boolean; reason?: string } };
+  } | null>(null);
   // Surface every save / fetch failure so silent close-on-error
   // never happens again.
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -531,6 +542,20 @@ export default function AdminOrganizations() {
                 : code || `Save failed (HTTP ${r.status}).`;
         setSaveError(msg);
         return;
+      }
+      // On create, the server bootstraps an org-admin user and emails/
+      // SMS's a 3-day temp password. Surface those credentials to the
+      // operator immediately — covers the case where email/SMS dispatch
+      // failed (staging without SMTP, bad phone number, etc.) and they
+      // need to share the password through another channel.
+      const created = await r.json().catch(() => null) as
+        | { adminBootstrap?: typeof bootstrapResult; organization?: { name?: string } }
+        | null;
+      if (!editingId && created?.adminBootstrap) {
+        setBootstrapResult({
+          ...created.adminBootstrap,
+          orgName: created.organization?.name || form.name,
+        });
       }
       setShowForm(false);
       resetForm();
@@ -924,6 +949,115 @@ export default function AdminOrganizations() {
         )}
         {loading && <div className="py-12 text-center text-sm text-gray-400">Loading…</div>}
       </div>
+
+      {bootstrapResult && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+          onClick={() => setBootstrapResult(null)}
+        >
+          <div
+            className="w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Admin account ready for {bootstrapResult.orgName}
+                </h2>
+                <p className="mt-0.5 text-[13px] text-slate-500">
+                  {bootstrapResult.userCreated
+                    ? "A new admin user was created and credentials were dispatched."
+                    : "Credentials were issued to the existing user matching this email."}
+                </p>
+              </div>
+              <button
+                onClick={() => setBootstrapResult(null)}
+                className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Close"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-[13px]">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Username</span>
+                <button
+                  onClick={() => navigator.clipboard?.writeText(bootstrapResult.email)}
+                  className="text-[11px] font-semibold text-indigo-600 hover:underline"
+                >
+                  Copy
+                </button>
+              </div>
+              <p className="font-mono text-slate-800">{bootstrapResult.email}</p>
+
+              <div className="mt-3 mb-2 flex items-center justify-between gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Temporary password</span>
+                <button
+                  onClick={() => navigator.clipboard?.writeText(bootstrapResult.tempPassword)}
+                  className="text-[11px] font-semibold text-indigo-600 hover:underline"
+                >
+                  Copy
+                </button>
+              </div>
+              <p className="font-mono text-slate-800">{bootstrapResult.tempPassword}</p>
+
+              <p className="mt-3 text-[11px] text-amber-700">
+                ⚠ Must be changed within 3 days — expires{" "}
+                {new Date(bootstrapResult.expiresAt).toLocaleString()}
+              </p>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-2 text-[12px]">
+              <div
+                className={`rounded-md border px-3 py-2 ${
+                  bootstrapResult.delivery.email.sent
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : "border-amber-200 bg-amber-50 text-amber-800"
+                }`}
+              >
+                <p className="font-semibold">
+                  {bootstrapResult.delivery.email.sent ? "✓ Email sent" : "⚠ Email not sent"}
+                </p>
+                {!bootstrapResult.delivery.email.sent && (
+                  <p className="mt-0.5 text-[11px] opacity-80">
+                    {bootstrapResult.delivery.email.reason || "Share the password manually."}
+                  </p>
+                )}
+              </div>
+              <div
+                className={`rounded-md border px-3 py-2 ${
+                  bootstrapResult.delivery.sms.sent
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : "border-slate-200 bg-slate-50 text-slate-600"
+                }`}
+              >
+                <p className="font-semibold">
+                  {bootstrapResult.delivery.sms.sent ? "✓ SMS sent" : "SMS skipped"}
+                </p>
+                {!bootstrapResult.delivery.sms.sent && (
+                  <p className="mt-0.5 text-[11px] opacity-80">
+                    {bootstrapResult.delivery.sms.reason === "no_phone"
+                      ? "No phone on file."
+                      : bootstrapResult.delivery.sms.reason || "Provider not configured."}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setBootstrapResult(null)}
+                className="rounded-lg bg-primary-600 px-4 py-2 text-[13px] font-semibold text-white hover:bg-primary-700"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {repairResult && (
         <div

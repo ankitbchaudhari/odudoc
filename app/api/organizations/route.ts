@@ -17,6 +17,7 @@ import { deleteMembershipsForOrg, reloadMemberships } from "@/lib/memberships-st
 import { recordAudit, type AuditAction } from "@/lib/audit-log-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { getActiveOrgId, setActiveOrgId } from "@/lib/tenant";
+import { bootstrapOrgAdmin } from "@/lib/org-admin-bootstrap";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -64,6 +65,41 @@ export async function POST(req: NextRequest) {
     summary: `Created organization "${org.name}" on ${org.plan} plan`,
     meta: { plan: org.plan, modules: org.modules },
   });
+
+  // Bootstrap the org's first admin user. The contact email becomes
+  // the username, gets a 12-char temp password with a 3-day TTL, and
+  // is emailed + SMS'd the credentials. Wrapped in try/catch so an
+  // SMTP/Twilio outage can't roll back the org creation — the
+  // super-admin still gets the temp password back in the response and
+  // can hand it over manually.
+  let adminBootstrap: Awaited<ReturnType<typeof bootstrapOrgAdmin>> | null = null;
+  let bootstrapError: string | null = null;
+  try {
+    adminBootstrap = await bootstrapOrgAdmin({
+      orgId: org.id,
+      orgName: org.name,
+      contactEmail: org.contactEmail,
+      contactPhone: org.contactPhone,
+      country: org.country,
+    });
+    recordAudit({
+      actorEmail: g.email,
+      action: "org.create",
+      orgId: org.id,
+      orgName: org.name,
+      summary: `Provisioned admin account for ${adminBootstrap.email} (${adminBootstrap.userCreated ? "new user" : "existing user promoted"})`,
+      meta: {
+        userId: adminBootstrap.userId,
+        userCreated: adminBootstrap.userCreated,
+        emailDelivered: adminBootstrap.delivery.email.sent,
+        smsDelivered: adminBootstrap.delivery.sms.sent,
+        tempPasswordExpiresAt: adminBootstrap.expiresAt,
+      },
+    });
+  } catch (err) {
+    bootstrapError = (err as Error).message || "bootstrap_failed";
+  }
+
   // Drain pending Postgres writes before returning. Vercel freezes
   // the Lambda the moment we respond, so a fire-and-forget flush()
   // can be killed mid-write — the operator sees a 200 + the row in
@@ -76,7 +112,22 @@ export async function POST(req: NextRequest) {
       { status: 500 },
     );
   }
-  return NextResponse.json({ organization: org });
+  return NextResponse.json({
+    organization: org,
+    // Surface the temp password + delivery status to the super-admin
+    // UI so it can show a "credentials emailed" toast (and copy-to-
+    // clipboard fallback when delivery failed).
+    adminBootstrap: adminBootstrap
+      ? {
+          email: adminBootstrap.email,
+          tempPassword: adminBootstrap.tempPassword,
+          expiresAt: adminBootstrap.expiresAt,
+          userCreated: adminBootstrap.userCreated,
+          delivery: adminBootstrap.delivery,
+        }
+      : null,
+    bootstrapError,
+  });
 }
 
 export async function PATCH(req: NextRequest) {

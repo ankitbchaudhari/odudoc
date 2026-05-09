@@ -1122,6 +1122,58 @@ export async function sendVendorWelcomeEmail(params: {
   });
 }
 
+// Sent when a super-admin onboards a new organization. The contact
+// email becomes the org's first admin user; this welcome carries the
+// temporary password and signposts the 3-day change-password window.
+// Mirrors the doctor/vendor welcome shape so the brand voice stays
+// consistent.
+export async function sendOrgAdminWelcomeEmail(params: {
+  to: string;
+  name: string;          // person's name (or org name as fallback)
+  orgName: string;       // organization the admin owns
+  tempPassword: string;
+  expiresAt: string;
+  loginUrl?: string;     // override sign-in URL (e.g. /corporate/login)
+}): Promise<SendEmailResult> {
+  const expires = new Date(params.expiresAt);
+  const expiresLabel = isNaN(expires.getTime())
+    ? "3 days"
+    : expires.toLocaleString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+  const loginUrl = params.loginUrl || `${SITE_URL}/corporate/login`;
+
+  const html = renderShell({
+    preheader: `Your ${params.orgName} admin account on ${BRAND} is ready.`,
+    heading: `Welcome to ${BRAND}, ${escapeHtml(params.name)}`,
+    bodyHtml: `
+      <p>An ${BRAND} super-admin has provisioned your hospital admin account for <strong>${escapeHtml(params.orgName)}</strong>. You can sign in right now with the credentials below:</p>
+      <p style="margin:16px 0;padding:14px 18px;background:#f3f4f6;border:1px dashed #9ca3af;border-radius:8px;font-family:monospace;font-size:14px;line-height:1.8;">
+        <strong>Username:</strong> ${escapeHtml(params.to)}<br/>
+        <strong>Temporary password:</strong> ${escapeHtml(params.tempPassword)}
+      </p>
+      <p><strong>This password must be changed within 3 days</strong> (by ${escapeHtml(expiresLabel)}) or it will expire and you'll be locked out until a super-admin re-issues a new one.</p>
+      <p>After signing in you'll land on the admin console for ${escapeHtml(params.orgName)}, where you can invite doctors and staff, configure modules, and start onboarding patients.</p>
+    `,
+    ctaLabel: "Sign in & change password",
+    ctaUrl: loginUrl,
+    footerNote: "If you weren't expecting this invitation, reply to this email and we'll investigate.",
+  });
+
+  return sendEmail({
+    from: "admin",
+    to: params.to,
+    subject: `Welcome to ${BRAND} — ${params.orgName} admin account ready`,
+    html,
+    replyTo: `admin@${DOMAIN}`,
+  });
+}
+
 export async function sendPasswordResetByAdminEmail(params: {
   to: string;
   name: string;

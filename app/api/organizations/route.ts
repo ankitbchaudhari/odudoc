@@ -14,6 +14,7 @@ import {
   type Organization,
 } from "@/lib/organizations-store";
 import { deleteMembershipsForOrg, reloadMemberships } from "@/lib/memberships-store";
+import { deleteTransfersForOrg } from "@/lib/inter-org-transfers-store";
 import { recordAudit, type AuditAction } from "@/lib/audit-log-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { getActiveOrgId, setActiveOrgId } from "@/lib/tenant";
@@ -252,6 +253,9 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "delete_failed" }, { status: 500 });
   }
   deleteMembershipsForOrg(String(body.id));
+  // Also clear inter-org transfers + connections involving the org so
+  // a partner doesn't see ghost rows pointing at a deleted tenant.
+  deleteTransfersForOrg(String(body.id));
   recordAudit({
     actorEmail: g.email,
     action: "org.delete",

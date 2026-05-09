@@ -31,7 +31,17 @@ export type AuditAction =
   | "user.delete"
   | "user.role_change"
   // Platform
-  | "module.request_submitted";
+  | "module.request_submitted"
+  // Inter-org network — partner handshake + patient/records transfers
+  | "network.connect_request"
+  | "network.connect_accept"
+  | "network.connect_decline"
+  | "network.disconnect"
+  | "transfer.create"
+  | "transfer.accept"
+  | "transfer.decline"
+  | "transfer.complete"
+  | "transfer.cancel";
 
 export interface AuditEntry {
   id: string;

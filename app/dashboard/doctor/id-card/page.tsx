@@ -36,10 +36,30 @@ interface DoctorRecord {
 declare global {
   interface Window {
     html2canvas?: (el: HTMLElement, opts?: Record<string, unknown>) => Promise<HTMLCanvasElement>;
+    // jsPDF UMD bundle exposes a `jspdf` global with a `jsPDF` constructor.
+    jspdf?: { jsPDF: new (opts?: Record<string, unknown>) => JsPdfInstance };
   }
 }
 
+interface JsPdfInstance {
+  addImage: (
+    data: string,
+    format: string,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    alias?: string,
+    compression?: "NONE" | "FAST" | "MEDIUM" | "SLOW",
+  ) => void;
+  addPage: (size?: [number, number] | string, orient?: "p" | "portrait" | "l" | "landscape") => void;
+  setProperties: (props: Record<string, string>) => void;
+  save: (filename: string) => void;
+  output: (type: "blob") => Blob;
+}
+
 const HTML2CANVAS_CDN = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+const JSPDF_CDN = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
 
 function loadScriptOnce(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -97,21 +117,18 @@ export default function DoctorIdCardPage() {
     ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=4&data=${encodeURIComponent(profileUrl)}`
     : "";
 
-  /** Capture a single DOM node to a PNG blob via html2canvas. */
-  const captureToBlob = async (el: HTMLElement, scale = 3): Promise<Blob> => {
+  /** Capture a single DOM node to a canvas via html2canvas. The
+   *  canvas is what we hand to jsPDF as the image source for each
+   *  page — gives crisper output than a blob round-trip. */
+  const captureToCanvas = async (el: HTMLElement, scale = 4): Promise<HTMLCanvasElement> => {
     await loadScriptOnce(HTML2CANVAS_CDN);
     if (!window.html2canvas) throw new Error("html2canvas failed to load");
-    const canvas = await window.html2canvas(el, {
+    return window.html2canvas(el, {
       backgroundColor: null,
-      scale, // Retina-quality so prints + WhatsApp re-compression survive
+      scale, // 4× of the 640 px source = 2560 px wide, plenty for print
       useCORS: true,
       logging: false,
     });
-    const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, "image/png"),
-    );
-    if (!blob) throw new Error("Could not encode PNG");
-    return blob;
   };
 
   /** Trigger a browser download for a single blob. */
@@ -124,39 +141,69 @@ export default function DoctorIdCardPage() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
-  /** Single-click download — captures BOTH front and back from the
-   *  hidden double-card container and saves them as two PNGs. The
-   *  browser will offer them back-to-back; on most platforms the
-   *  user gets a tiny "downloads complete" stack notification.
-   *  Held-Shift / Held-Alt trick is avoided — this is a simple flow. */
+  /** Build a CR80-card-sized PDF from one or more canvas captures.
+   *  CR80 = 85.6 × 53.98 mm, the international ID-card / credit-card
+   *  format. Doctors can print the PDF on a card printer for a
+   *  physical OduDoc visiting card, or attach it on WhatsApp / email
+   *  where PDFs are universally previewable. */
+  const buildPdf = async (
+    canvases: HTMLCanvasElement[],
+    title: string,
+  ): Promise<Blob> => {
+    await loadScriptOnce(JSPDF_CDN);
+    const Jspdf = window.jspdf?.jsPDF;
+    if (!Jspdf) throw new Error("jsPDF failed to load");
+    const CARD_W_MM = 85.6;
+    const CARD_H_MM = 53.98;
+    const pdf = new Jspdf({
+      unit: "mm",
+      format: [CARD_W_MM, CARD_H_MM],
+      orientation: "landscape",
+      compress: true,
+    });
+    pdf.setProperties({
+      title,
+      author: me?.name ? `Dr. ${me.name}` : "OduDoc",
+      subject: "Doctor visiting card",
+      creator: "OduDoc",
+    });
+    canvases.forEach((c, i) => {
+      if (i > 0) pdf.addPage([CARD_W_MM, CARD_H_MM], "landscape");
+      // JPEG with FAST compression keeps the PDF small (~150-300 KB
+      // total) while staying visually identical to the source.
+      const dataUrl = c.toDataURL("image/jpeg", 0.92);
+      pdf.addImage(dataUrl, "JPEG", 0, 0, CARD_W_MM, CARD_H_MM, undefined, "FAST");
+    });
+    return pdf.output("blob");
+  };
+
+  /** Single-click download — captures BOTH front and back, composes
+   *  a single 2-page PDF (front on page 1, back on page 2), and
+   *  saves it. PDF is the right format because it: (a) prints to a
+   *  consistent physical card size, (b) attaches cleanly to WhatsApp
+   *  / email, (c) opens in any browser without a viewer plugin. */
   const downloadBoth = async () => {
     if (!bothSidesRef.current || !me) return;
     setBusy(true);
     setToast(null);
     try {
-      // Each child of bothSidesRef is one side of the card. Capturing
-      // them individually gives us two clean rectangular PNGs that
-      // match the on-screen aspect ratio exactly.
       const sides = Array.from(
         bothSidesRef.current.querySelectorAll<HTMLElement>("[data-card-side]"),
       );
       if (sides.length < 2) throw new Error("Card sides not mounted yet");
 
-      // Capture both first, THEN download — saves the user from a
-      // popup-blocker "this site is downloading multiple files" prompt
-      // because both downloads start within ~200 ms of each other.
-      // Capture at scale 4 because the off-screen source is 640 px
-      // wide — that gives us a 2560 × 1616 PNG, plenty crisp for
-      // print or for WhatsApp's aggressive re-compression.
-      const [frontBlob, backBlob] = await Promise.all([
-        captureToBlob(sides[0], 4),
-        captureToBlob(sides[1], 4),
+      // Capture both sides + load jsPDF in parallel — saves ~300ms.
+      const [frontCanvas, backCanvas] = await Promise.all([
+        captureToCanvas(sides[0], 4),
+        captureToCanvas(sides[1], 4),
+        loadScriptOnce(JSPDF_CDN),
       ]);
-      triggerDownload(frontBlob, `odudoc-${slug}-front.png`);
-      // Tiny delay so Chrome doesn't merge them into a single
-      // "Downloading 2 files" prompt that needs user permission.
-      setTimeout(() => triggerDownload(backBlob, `odudoc-${slug}-back.png`), 250);
-      setToast({ kind: "ok", text: "✓ Downloaded front + back as two PNGs" });
+      const pdfBlob = await buildPdf(
+        [frontCanvas, backCanvas],
+        `OduDoc ID Card — Dr. ${me.name}`,
+      );
+      triggerDownload(pdfBlob, `odudoc-${slug}.pdf`);
+      setToast({ kind: "ok", text: "✓ Downloaded front + back in a single PDF" });
     } catch (err) {
       setToast({ kind: "err", text: `Download failed: ${(err as Error).message}` });
     } finally {
@@ -164,17 +211,21 @@ export default function DoctorIdCardPage() {
     }
   };
 
-  /** Single-side download fallback for the "Download front" / "Download
-   *  back" buttons that still appear under the front/back toggle (some
-   *  doctors only want to share one side). */
+  /** Single-side download fallback. Saves whichever side is currently
+   *  visible as a one-page PDF. Useful when a doctor only wants to
+   *  share one face for a specific channel. */
   const downloadOneSide = async () => {
     if (!cardRef.current || !me) return;
     setBusy(true);
     setToast(null);
     try {
-      const blob = await captureToBlob(cardRef.current);
-      triggerDownload(blob, `odudoc-${slug}-${side}.png`);
-      setToast({ kind: "ok", text: `✓ Downloaded ${side} side as PNG` });
+      const canvas = await captureToCanvas(cardRef.current, 4);
+      const pdfBlob = await buildPdf(
+        [canvas],
+        `OduDoc ID Card (${side}) — Dr. ${me.name}`,
+      );
+      triggerDownload(pdfBlob, `odudoc-${slug}-${side}.pdf`);
+      setToast({ kind: "ok", text: `✓ Downloaded ${side} side as PDF` });
     } catch (err) {
       setToast({ kind: "err", text: `Download failed: ${(err as Error).message}` });
     } finally {
@@ -382,8 +433,8 @@ export default function DoctorIdCardPage() {
           <ActionBtn
             onClick={downloadBoth}
             disabled={busy}
-            icon="📥"
-            label={busy ? "Preparing…" : "Download front + back"}
+            icon="📄"
+            label={busy ? "Preparing PDF…" : "Download PDF (front + back)"}
             gradient="from-cyan-500 via-sky-500 to-blue-600"
           />
           <ActionBtn
@@ -411,7 +462,7 @@ export default function DoctorIdCardPage() {
             disabled={busy}
             className="text-xs text-slate-500 underline-offset-4 hover:text-slate-800 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Or download just the {side} side
+            Or download just the {side} side (single-page PDF)
           </button>
         </div>
 

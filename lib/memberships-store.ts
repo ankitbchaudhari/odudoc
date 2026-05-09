@@ -30,6 +30,9 @@ const {
   hydrate,
   reload: reloadMembershipsInternal,
   flush,
+  // Same merge-before-save bug as organizations-store: deletes need
+  // to mark the id as a tombstone or mergingSave() re-pulls the row.
+  tombstone,
 } = bindPersistentArray<Membership>(
   "memberships",
   memberships,
@@ -101,18 +104,20 @@ export function deleteMembership(id: string): boolean {
   const i = memberships.findIndex((m) => m.id === id);
   if (i < 0) return false;
   memberships.splice(i, 1);
+  tombstone(id);
   flush();
   return true;
 }
 
 export function deleteMembershipsForOrg(organizationId: string): number {
-  let n = 0;
+  const removed: string[] = [];
   for (let i = memberships.length - 1; i >= 0; i--) {
     if (memberships[i].organizationId === organizationId) {
+      removed.push(memberships[i].id);
       memberships.splice(i, 1);
-      n++;
     }
   }
-  if (n > 0) flush();
-  return n;
+  for (const id of removed) tombstone(id);
+  if (removed.length > 0) flush();
+  return removed.length;
 }

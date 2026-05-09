@@ -183,6 +183,13 @@ const {
   hydrate,
   reload: reloadOrgsInternal,
   flush,
+  // Tombstone marks an id as deliberately deleted so mergingSave()
+  // doesn't immediately re-pull it from Postgres on the next flush.
+  // Without this, deleteOrganization() splices in-memory + flushes,
+  // but mergingSave reads back from DB, sees the row "missing", and
+  // re-adds it. The delete then never persists. Bug we already
+  // fixed in emr-store for patients/visits/etc.
+  tombstone,
 } = bindPersistentArray<Organization>(
   "organizations",
   orgs,
@@ -292,6 +299,10 @@ export function deleteOrganization(id: string): boolean {
   const i = orgs.findIndex((o) => o.id === id);
   if (i < 0) return false;
   orgs.splice(i, 1);
+  // Mark as deleted BEFORE flushing so mergingSave's "rows in DB but
+  // not in memory → re-add" loop knows to skip it. Without this the
+  // row ping-pongs back into existence.
+  tombstone(id);
   flush();
   return true;
 }

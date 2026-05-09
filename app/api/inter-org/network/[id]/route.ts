@@ -11,6 +11,7 @@ import {
   acceptConnection,
   declineConnection,
   revokeConnection,
+  setRevenueSplit,
   findConnection,
 } from "@/lib/inter-org-network-store";
 import { getOrganizationById } from "@/lib/organizations-store";
@@ -49,6 +50,11 @@ export async function PATCH(req: NextRequest, ctxParam: RouteCtx) {
       updated = revokeConnection(id, orgId);
       auditAction = "network.disconnect";
       summary = "Revoked partner connection";
+    } else if (action === "set_revenue_split") {
+      const pct = Math.max(0, Math.min(50, parseInt(String(body.pct ?? 0), 10)));
+      updated = setRevenueSplit(id, orgId, pct);
+      auditAction = "network.connect_accept"; // closest semantic match
+      summary = `Set referral revenue split to ${pct}%`;
     } else {
       return NextResponse.json({ error: "invalid_action" }, { status: 400 });
     }

@@ -47,6 +47,12 @@ export interface OrgConnection {
   acceptedAt?: string;
   revokedByOrgId?: string;
   revokedAt?: string;
+  /** Default referral revenue split — percentage (0–50) of the
+   *  receiving org's gross routed back to the sending org on
+   *  referral-type transfers. Snapshotted into each transfer at
+   *  create-time so renegotiating the connection later doesn't
+   *  retro-apply to in-flight kickbacks. Defaults to 0 (no split). */
+  revenueSplitPct?: number;
 }
 
 const connections: OrgConnection[] = [];
@@ -177,6 +183,24 @@ export function revokeConnection(
   c.revokedByOrgId = revokingOrgId;
   c.revokedAt = new Date().toISOString();
   c.updatedAt = c.revokedAt;
+  flush();
+  return c;
+}
+
+/** Update the configured referral-revenue split percentage on a
+ *  connection. Either side may set it (the configured value is the
+ *  same in both directions — sender always gets the kickback). The
+ *  caller must validate that 0 ≤ pct ≤ 50; we clamp defensively. */
+export function setRevenueSplit(
+  connectionId: string,
+  byOrgId: string,
+  pct: number,
+): OrgConnection | null {
+  const c = connections.find((x) => x.id === connectionId);
+  if (!c) return null;
+  if (c.orgAId !== byOrgId && c.orgBId !== byOrgId) return null;
+  c.revenueSplitPct = Math.max(0, Math.min(50, Math.floor(pct)));
+  c.updatedAt = new Date().toISOString();
   flush();
   return c;
 }

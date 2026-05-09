@@ -17,6 +17,7 @@ import {
 } from "@/lib/inter-org-transfers-store";
 import {
   areConnected,
+  findConnection,
   reloadConnections,
 } from "@/lib/inter-org-network-store";
 import { getOrganizationById } from "@/lib/organizations-store";
@@ -128,6 +129,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "break_glass_reason_required" }, { status: 400 });
     }
 
+    // Snapshot the configured revenue split from the connection. We
+    // only attach the kickback to *referral* transfers — patient
+    // transfers and pure records-shares don't have a billable encounter
+    // at the receiver to split. The receiver can override later by
+    // recording a 0 gross.
+    const conn = findConnection(orgId, toOrgId);
+    const referralSplitPct =
+      type === "referral" && conn?.revenueSplitPct ? conn.revenueSplitPct : 0;
+
     const transfer = createTransfer({
       fromOrgId: orgId,
       toOrgId,
@@ -137,6 +147,7 @@ export async function POST(req: NextRequest) {
       urgency,
       reason,
       items,
+      referralSplitPct,
       patientConsent: {
         granted,
         method: method ? (method as NonNullable<typeof transfer.patientConsent.method>) : undefined,

@@ -15,6 +15,7 @@ import {
 } from "@/lib/organizations-store";
 import { deleteMembershipsForOrg, reloadMemberships } from "@/lib/memberships-store";
 import { deleteTransfersForOrg } from "@/lib/inter-org-transfers-store";
+import { deleteBedSnapshot } from "@/lib/inter-org-beds-store";
 import { recordAudit, type AuditAction } from "@/lib/audit-log-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { getActiveOrgId, setActiveOrgId } from "@/lib/tenant";
@@ -256,6 +257,7 @@ export async function DELETE(req: NextRequest) {
   // Also clear inter-org transfers + connections involving the org so
   // a partner doesn't see ghost rows pointing at a deleted tenant.
   deleteTransfersForOrg(String(body.id));
+  deleteBedSnapshot(String(body.id));
   recordAudit({
     actorEmail: g.email,
     action: "org.delete",

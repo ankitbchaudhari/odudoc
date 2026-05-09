@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import type { Consultation } from "@/lib/consultations-store";
 import SharedBadge from "@/components/StatusBadge";
 import type { PrescriptionRecord } from "@/lib/prescriptions-store";
+import FamilySwitcher from "@/components/FamilySwitcher";
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -129,6 +130,7 @@ export default function DashboardPage() {
                 Here&apos;s a snapshot of your health journey. Book a consult,
                 review your prescriptions, or track your care history.
               </p>
+              <div className="mt-3"><FamilySwitcher /></div>
             </div>
             <div className="flex flex-wrap gap-2">
               <Link
@@ -175,10 +177,10 @@ export default function DashboardPage() {
         <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {[
             { label: "Find Doctors", href: "/doctors", icon: "👨‍⚕️", bg: "from-sky-100 to-blue-100", ring: "ring-sky-200" },
+            { label: "My Family", href: "/dashboard/family", icon: "👨‍👩‍👧‍👦", bg: "from-pink-100 to-rose-100", ring: "ring-pink-200" },
             { label: "Shop Medicines", href: "/shop", icon: "💊", bg: "from-rose-100 to-orange-100", ring: "ring-rose-200" },
             { label: "Blog", href: "/blog", icon: "📰", bg: "from-emerald-100 to-teal-100", ring: "ring-emerald-200" },
             { label: "Refer & earn", href: "/dashboard/referrals", icon: "🎁", bg: "from-indigo-100 to-fuchsia-100", ring: "ring-indigo-200" },
-            { label: "Refer your GP", href: "/dashboard/refer-doctor", icon: "🩺", bg: "from-amber-100 to-orange-100", ring: "ring-amber-200" },
             { label: "My Profile", href: "/profile", icon: "⚙️", bg: "from-violet-100 to-fuchsia-100", ring: "ring-violet-200" },
           ].map((a) => (
             <Link

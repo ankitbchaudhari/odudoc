@@ -11,6 +11,7 @@
 // manual payout flow that works in every country we operate in.
 
 import { useEffect, useState } from "react";
+import { ISO_COUNTRIES, detectIsoCountry } from "@/lib/iso-countries";
 
 interface DoctorMe {
   id: string;
@@ -72,6 +73,16 @@ function methodLabel(m?: PayoutDetails["method"]): string {
 export default function DoctorComplianceTile() {
   const [me, setMe] = useState<DoctorMe | null>(null);
   const [payout, setPayout] = useState<PayoutDetails | null>(null);
+  // License-form state — collapsed by default. Opens when the doctor
+  // clicks "Add" / "Edit" on the Medical license row.
+  const [licenseOpen, setLicenseOpen] = useState(false);
+  const [licenseBusy, setLicenseBusy] = useState(false);
+  const [licenseMsg, setLicenseMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const [licenseForm, setLicenseForm] = useState({
+    country: "",
+    number: "",
+    expiry: "",
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -81,16 +92,64 @@ export default function DoctorComplianceTile() {
     ])
       .then(([meJson, payoutJson]) => {
         if (cancelled) return;
-        setMe(meJson?.doctor ?? null);
+        const doc = meJson?.doctor ?? null;
+        setMe(doc);
         setPayout(payoutJson?.payout ?? null);
+        // Pre-fill the license form with whatever's already on file
+        // so an "Edit" click doesn't blank out existing values.
+        if (doc) {
+          setLicenseForm({
+            country: doc.licenseCountry || detectIsoCountry(),
+            number: doc.licenseNumber || "",
+            expiry: doc.licenseExpiry || "",
+          });
+        }
       })
       .catch(() => {});
     return () => { cancelled = true; };
   }, []);
 
+  const saveLicense = async () => {
+    if (!me) return;
+    setLicenseBusy(true);
+    setLicenseMsg(null);
+    try {
+      const res = await fetch("/api/doctors/me/license", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          country: licenseForm.country,
+          number: licenseForm.number,
+          expiry: licenseForm.expiry || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setLicenseMsg({ kind: "err", text: data.error || `Save failed (${res.status})` });
+        return;
+      }
+      setMe({
+        ...me,
+        licenseCountry: data.licenseCountry,
+        licenseNumber: data.licenseNumber,
+        licenseExpiry: data.licenseExpiry,
+      });
+      setLicenseMsg({ kind: "ok", text: "✓ License saved." });
+      setTimeout(() => {
+        setLicenseOpen(false);
+        setLicenseMsg(null);
+      }, 1200);
+    } catch (err) {
+      setLicenseMsg({ kind: "err", text: (err as Error).message || "Network error" });
+    } finally {
+      setLicenseBusy(false);
+    }
+  };
+
   if (!me) return null;
   const urg = expiryUrgency(me.licenseExpiry);
   const payoutReady = !!(payout && payout.method && payoutSummary(payout));
+  const hasLicense = Boolean(me.licenseNumber);
 
   return (
     <section className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
@@ -125,17 +184,97 @@ export default function DoctorComplianceTile() {
             </div>
           </li>
 
-          {/* License expiry */}
-          <li className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2">
-            <div>
-              <p className="font-semibold text-gray-900">Medical license</p>
-              <p className="text-xs text-gray-500">
-                {me.licenseNumber ? `${me.licenseCountry || ""} · ${me.licenseNumber}` : "Not on file"}
-              </p>
+          {/* Medical license — now editable inline so doctors can
+              add or update it without going through the admin
+              verification flow. Identity-critical so we POST to a
+              dedicated /api/doctors/me/license endpoint with strict
+              validation rather than the open PATCH on /api/doctors/me. */}
+          <li className="rounded-xl border border-gray-100 bg-gray-50 px-3 py-2">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="font-semibold text-gray-900">Medical license</p>
+                <p className="text-xs text-gray-500">
+                  {hasLicense
+                    ? `${me.licenseCountry || ""} · ${me.licenseNumber}`
+                    : "Not on file — add your medical board registration to complete your card."}
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                {hasLicense && (
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${urg.cls}`}>
+                    {urg.label}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setLicenseOpen((v) => !v)}
+                  className={`rounded-lg px-3 py-1 text-xs font-semibold transition ${
+                    hasLicense
+                      ? "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                      : "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-sm hover:-translate-y-0.5"
+                  }`}
+                >
+                  {hasLicense ? (licenseOpen ? "Cancel" : "Edit") : "Add license"}
+                </button>
+              </div>
             </div>
-            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${urg.cls}`}>
-              {urg.label}
-            </span>
+
+            {licenseOpen && (
+              <div className="mt-3 grid gap-3 rounded-xl border border-sky-100 bg-white p-3 sm:grid-cols-3">
+                <label className="block text-xs">
+                  <span className="font-bold uppercase tracking-wider text-slate-500">Country</span>
+                  <select
+                    value={licenseForm.country}
+                    onChange={(e) => setLicenseForm({ ...licenseForm, country: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm"
+                  >
+                    <option value="">Select…</option>
+                    {ISO_COUNTRIES.map((c) => (
+                      <option key={c.iso} value={c.iso}>{c.iso} — {c.name}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block text-xs">
+                  <span className="font-bold uppercase tracking-wider text-slate-500">License number</span>
+                  <input
+                    value={licenseForm.number}
+                    onChange={(e) => setLicenseForm({ ...licenseForm, number: e.target.value })}
+                    placeholder="e.g. ME12345 / MCI-67890"
+                    className="mt-1 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm"
+                  />
+                </label>
+                <label className="block text-xs">
+                  <span className="font-bold uppercase tracking-wider text-slate-500">Expiry (optional)</span>
+                  <input
+                    type="date"
+                    value={licenseForm.expiry}
+                    onChange={(e) => setLicenseForm({ ...licenseForm, expiry: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm"
+                  />
+                </label>
+                <div className="sm:col-span-3 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={saveLicense}
+                    disabled={licenseBusy || !licenseForm.country || !licenseForm.number}
+                    className="rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {licenseBusy ? "Saving…" : "Save license"}
+                  </button>
+                  {licenseMsg && (
+                    <span className={`text-xs font-semibold ${licenseMsg.kind === "ok" ? "text-emerald-700" : "text-rose-700"}`}>
+                      {licenseMsg.text}
+                    </span>
+                  )}
+                </div>
+                <p className="sm:col-span-3 text-[11px] text-slate-500">
+                  This is your medical board / council registration number
+                  (e.g. State Medical Council in India, GMC in the UK,
+                  state license # in the US). It appears on your ID card
+                  and is shown to patients.
+                </p>
+              </div>
+            )}
           </li>
 
           {/* Manual payout — universal, country-agnostic. Doctor enters

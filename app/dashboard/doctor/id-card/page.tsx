@@ -31,6 +31,12 @@ interface DoctorRecord {
   city?: string;
   country?: string;
   phone?: string;
+  // Marketing fields surfaced on the card so it doesn't read empty.
+  rating?: number;
+  consultationCount?: number;
+  services?: string[];
+  fee?: number;
+  bio?: string;
 }
 
 declare global {
@@ -611,17 +617,19 @@ function FrontSide({ me }: { me: DoctorRecord }) {
         }}
       />
 
-      <div className="absolute inset-0 flex flex-col p-6">
+      {/* Layout: top header → hero (photo + name + tags) → stats
+          strip → bottom footer. Each row earns its space; no more
+          big empty middle section the doctor complained about. */}
+      <div className="absolute inset-0 flex flex-col p-5">
+        {/* Header — OduDoc branding + verified pill */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 ring-1 ring-white/30 backdrop-blur-sm">
-              <span className="text-lg">⚕️</span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 ring-1 ring-white/30 backdrop-blur-sm">
+              <span className="text-base">⚕️</span>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/90">
-                OduDoc
-              </p>
-              <p className="text-[9px] text-white/60">Verified clinician</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/90">OduDoc</p>
+              <p className="text-[9px] text-white/60">Verified telehealth clinician</p>
             </div>
           </div>
           {me.verified && (
@@ -631,8 +639,9 @@ function FrontSide({ me }: { me: DoctorRecord }) {
           )}
         </div>
 
-        <div className="mt-3 flex flex-1 items-center gap-4">
-          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl ring-2 ring-white/40">
+        {/* Hero — photo + name + qualifications + location chip */}
+        <div className="mt-3 flex items-center gap-4">
+          <div className="relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-2xl ring-2 ring-white/40">
             {me.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={me.imageUrl} alt={me.name} className="h-full w-full object-cover" crossOrigin="anonymous" />
@@ -641,26 +650,77 @@ function FrontSide({ me }: { me: DoctorRecord }) {
                 {initials || "DR"}
               </div>
             )}
-            {/* Soft inner highlight */}
             <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-white/20 to-transparent" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-2xl font-bold leading-tight">
+            <p className="truncate text-[22px] font-bold leading-tight">
               Dr. {me.name.replace(/^Dr\.?\s*/i, "")}
             </p>
             {me.specialty && (
               <p className="mt-0.5 text-sm font-semibold text-cyan-100">{me.specialty}</p>
             )}
-            {me.qualifications && (
-              <p className="mt-0.5 truncate text-xs text-white/80">{me.qualifications}</p>
-            )}
-            {me.experience !== undefined && me.experience > 0 && (
-              <p className="mt-1 text-[11px] text-white/70">{me.experience}+ years experience</p>
-            )}
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-white/85">
+              {me.qualifications && <span>{me.qualifications}</span>}
+              {(me.city || me.country) && (
+                <span className="inline-flex items-center gap-0.5">
+                  <span aria-hidden="true">📍</span>
+                  {[me.city, me.country].filter(Boolean).join(", ")}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-end justify-between gap-3 border-t border-white/15 pt-3 text-[10px]">
+        {/* Stats strip — 3 KPI columns. Fills the dead space the
+            user complained about. Always shows experience + rating
+            + consultations; values default sensibly when blank. */}
+        <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-white/10 px-3 py-2 ring-1 ring-white/15 backdrop-blur-sm">
+          <div className="text-center">
+            <p className="text-[8px] font-bold uppercase tracking-[0.15em] text-white/60">Experience</p>
+            <p className="mt-0.5 text-sm font-bold text-white">
+              {me.experience !== undefined && me.experience > 0 ? `${me.experience}+ yrs` : "—"}
+            </p>
+          </div>
+          <div className="border-x border-white/15 text-center">
+            <p className="text-[8px] font-bold uppercase tracking-[0.15em] text-white/60">Rating</p>
+            <p className="mt-0.5 text-sm font-bold text-white">
+              {me.rating && me.rating > 0 ? <>★ {me.rating.toFixed(1)}</> : "New"}
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-[8px] font-bold uppercase tracking-[0.15em] text-white/60">Consults</p>
+            <p className="mt-0.5 text-sm font-bold text-white">
+              {me.consultationCount && me.consultationCount > 0 ? me.consultationCount.toLocaleString() : "Open"}
+            </p>
+          </div>
+        </div>
+
+        {/* Services chips — top 4 fit comfortably on a CR80 card.
+            Skipped silently when the doctor hasn't set any services. */}
+        {me.services && me.services.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {me.services.slice(0, 4).map((s) => (
+              <span
+                key={s}
+                className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold text-white/95 ring-1 ring-white/20"
+              >
+                {s}
+              </span>
+            ))}
+            {me.services.length > 4 && (
+              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white/70">
+                +{me.services.length - 4} more
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Spacer pushes the footer to the bottom regardless of how
+            many optional rows ended up rendering above. */}
+        <div className="flex-1" />
+
+        {/* Footer — license + URL */}
+        <div className="flex flex-wrap items-end justify-between gap-3 border-t border-white/15 pt-2.5 text-[10px]">
           <div>
             <p className="font-bold uppercase tracking-[0.15em] text-white/60">License</p>
             <p className="mt-0.5 text-white/90">
@@ -671,7 +731,7 @@ function FrontSide({ me }: { me: DoctorRecord }) {
           </div>
           <div className="text-right">
             <p className="font-bold uppercase tracking-[0.15em] text-white/60">odudoc.com</p>
-            <p className="mt-0.5 text-white/80">/doctors/{me.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 18)}…</p>
+            <p className="mt-0.5 text-white/80">/doctors/{me.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 22)}</p>
           </div>
         </div>
       </div>

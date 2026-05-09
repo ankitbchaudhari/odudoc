@@ -73,6 +73,11 @@ export default function DoctorIdCardPage() {
   const [toast, setToast] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [side, setSide] = useState<"front" | "back">("front");
   const cardRef = useRef<HTMLDivElement | null>(null);
+  // Hidden off-screen container that holds BOTH sides stacked. We
+  // render this only for the "download front + back" button so the
+  // visible preview can stay focused on whichever side the user is
+  // looking at, while a single click still produces a complete image.
+  const bothSidesRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     fetch("/api/doctors/me", { cache: "no-store" })
@@ -92,29 +97,80 @@ export default function DoctorIdCardPage() {
     ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=4&data=${encodeURIComponent(profileUrl)}`
     : "";
 
-  const downloadPng = async () => {
+  /** Capture a single DOM node to a PNG blob via html2canvas. */
+  const captureToBlob = async (el: HTMLElement): Promise<Blob> => {
+    await loadScriptOnce(HTML2CANVAS_CDN);
+    if (!window.html2canvas) throw new Error("html2canvas failed to load");
+    const canvas = await window.html2canvas(el, {
+      backgroundColor: null,
+      scale: 3, // Retina-quality so prints + WhatsApp re-compression survive
+      useCORS: true,
+      logging: false,
+    });
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/png"),
+    );
+    if (!blob) throw new Error("Could not encode PNG");
+    return blob;
+  };
+
+  /** Trigger a browser download for a single blob. */
+  const triggerDownload = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  /** Single-click download — captures BOTH front and back from the
+   *  hidden double-card container and saves them as two PNGs. The
+   *  browser will offer them back-to-back; on most platforms the
+   *  user gets a tiny "downloads complete" stack notification.
+   *  Held-Shift / Held-Alt trick is avoided — this is a simple flow. */
+  const downloadBoth = async () => {
+    if (!bothSidesRef.current || !me) return;
+    setBusy(true);
+    setToast(null);
+    try {
+      // Each child of bothSidesRef is one side of the card. Capturing
+      // them individually gives us two clean rectangular PNGs that
+      // match the on-screen aspect ratio exactly.
+      const sides = Array.from(
+        bothSidesRef.current.querySelectorAll<HTMLElement>("[data-card-side]"),
+      );
+      if (sides.length < 2) throw new Error("Card sides not mounted yet");
+
+      // Capture both first, THEN download — saves the user from a
+      // popup-blocker "this site is downloading multiple files" prompt
+      // because both downloads start within ~200 ms of each other.
+      const [frontBlob, backBlob] = await Promise.all([
+        captureToBlob(sides[0]),
+        captureToBlob(sides[1]),
+      ]);
+      triggerDownload(frontBlob, `odudoc-${slug}-front.png`);
+      // Tiny delay so Chrome doesn't merge them into a single
+      // "Downloading 2 files" prompt that needs user permission.
+      setTimeout(() => triggerDownload(backBlob, `odudoc-${slug}-back.png`), 250);
+      setToast({ kind: "ok", text: "✓ Downloaded front + back as two PNGs" });
+    } catch (err) {
+      setToast({ kind: "err", text: `Download failed: ${(err as Error).message}` });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /** Single-side download fallback for the "Download front" / "Download
+   *  back" buttons that still appear under the front/back toggle (some
+   *  doctors only want to share one side). */
+  const downloadOneSide = async () => {
     if (!cardRef.current || !me) return;
     setBusy(true);
     setToast(null);
     try {
-      await loadScriptOnce(HTML2CANVAS_CDN);
-      if (!window.html2canvas) throw new Error("html2canvas failed to load");
-      const canvas = await window.html2canvas(cardRef.current, {
-        backgroundColor: null,
-        scale: 3,
-        useCORS: true,
-        logging: false,
-      });
-      const blob = await new Promise<Blob | null>((resolve) =>
-        canvas.toBlob(resolve, "image/png"),
-      );
-      if (!blob) throw new Error("Could not encode PNG");
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `odudoc-${slug}-${side}.png`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      const blob = await captureToBlob(cardRef.current);
+      triggerDownload(blob, `odudoc-${slug}-${side}.png`);
       setToast({ kind: "ok", text: `✓ Downloaded ${side} side as PNG` });
     } catch (err) {
       setToast({ kind: "err", text: `Download failed: ${(err as Error).message}` });
@@ -275,16 +331,52 @@ export default function DoctorIdCardPage() {
             >
               {side === "front" ? <FrontSide me={me} /> : <BackSide me={me} qrUrl={qrUrl} profileUrl={profileUrl} />}
             </div>
+
+            {/* Hidden off-screen container with BOTH sides at full
+                size. Used only by the "download front + back" button.
+                Keeping it mounted at all times means the first click
+                doesn't have to wait for a render pass + image fetch.
+                Positioned far off-screen rather than display:none so
+                html2canvas can actually paint it. */}
+            <div
+              ref={bothSidesRef}
+              aria-hidden="true"
+              className="pointer-events-none absolute"
+              style={{
+                left: "-99999px",
+                top: 0,
+                width: "1280px", // 2x the on-screen card width for crispness
+                opacity: 0,
+              }}
+            >
+              <div
+                data-card-side="front"
+                className="relative overflow-hidden rounded-3xl"
+                style={{ width: "1280px", aspectRatio: "1.586 / 1" }}
+              >
+                <FrontSide me={me} />
+              </div>
+              <div
+                data-card-side="back"
+                className="relative mt-4 overflow-hidden rounded-3xl"
+                style={{ width: "1280px", aspectRatio: "1.586 / 1" }}
+              >
+                <BackSide me={me} qrUrl={qrUrl} profileUrl={profileUrl} />
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Action row — colourful gradient buttons */}
+        {/* Action row — colourful gradient buttons. Primary download
+            now grabs both sides in a single click; the per-side
+            shortcut sits underneath as a small text link for doctors
+            who only want one face of the card. */}
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <ActionBtn
-            onClick={downloadPng}
+            onClick={downloadBoth}
             disabled={busy}
             icon="📥"
-            label={busy ? "Preparing…" : `Download ${side}`}
+            label={busy ? "Preparing…" : "Download front + back"}
             gradient="from-cyan-500 via-sky-500 to-blue-600"
           />
           <ActionBtn
@@ -305,6 +397,15 @@ export default function DoctorIdCardPage() {
             label="Share via email"
             gradient="from-amber-500 via-orange-500 to-rose-500"
           />
+        </div>
+        <div className="mt-2 text-center">
+          <button
+            onClick={downloadOneSide}
+            disabled={busy}
+            className="text-xs text-slate-500 underline-offset-4 hover:text-slate-800 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Or download just the {side} side
+          </button>
         </div>
 
         {toast && (

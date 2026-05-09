@@ -15,6 +15,7 @@ import {
 } from "@/lib/health-passport-store";
 import { getDependentForOwner } from "@/lib/family-store";
 import { getOrganizationById } from "@/lib/organizations-store";
+import { recordConsent } from "@/lib/consent-vault-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
 export const runtime = "nodejs";
@@ -74,6 +75,20 @@ export async function POST(req: NextRequest) {
     scopes,
     ttlHours,
     note: body.note ? String(body.note).slice(0, 500) : undefined,
+  });
+  // Mirror into the unified DPDP consent vault so the patient sees
+  // every grant in one place + can download a signed receipt.
+  recordConsent({
+    userId,
+    dependentId,
+    purpose: "passport_share",
+    purposeStatement: `Allow ${target.name} to read your health passport — ${scopes.join(", ")}${ttlHours ? ` for ${ttlHours} hours` : " until revoked"}.`,
+    recipientKind: "organization",
+    recipientId: grantedToOrgId,
+    recipientName: target.name,
+    dataCategories: scopes,
+    ttlHours,
+    lawfulBasis: "consent",
   });
   try { await awaitAllFlushesStrict(); } catch {
     return NextResponse.json({ error: "saved_but_not_persisted" }, { status: 500 });

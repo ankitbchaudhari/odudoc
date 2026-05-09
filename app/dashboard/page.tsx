@@ -181,6 +181,7 @@ export default function DashboardPage() {
             { label: "My Family", href: "/dashboard/family", icon: "👨‍👩‍👧‍👦", bg: "from-pink-100 to-rose-100", ring: "ring-pink-200" },
             { label: "Shop Medicines", href: "/shop", icon: "💊", bg: "from-rose-100 to-orange-100", ring: "ring-rose-200" },
             { label: "Refer & earn", href: "/dashboard/referrals", icon: "🎁", bg: "from-indigo-100 to-fuchsia-100", ring: "ring-indigo-200" },
+            { label: "Privacy & Consent", href: "/dashboard/privacy", icon: "🔐", bg: "from-slate-100 to-zinc-100", ring: "ring-slate-200" },
             { label: "My Profile", href: "/profile", icon: "⚙️", bg: "from-violet-100 to-fuchsia-100", ring: "ring-violet-200" },
           ].map((a) => (
             <Link

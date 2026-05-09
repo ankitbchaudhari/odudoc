@@ -182,6 +182,7 @@ export default function DashboardPage() {
             { label: "Shop Medicines", href: "/shop", icon: "💊", bg: "from-rose-100 to-orange-100", ring: "ring-rose-200" },
             { label: "Refer & earn", href: "/dashboard/referrals", icon: "🎁", bg: "from-indigo-100 to-fuchsia-100", ring: "ring-indigo-200" },
             { label: "Messages", href: "/dashboard/messages", icon: "💬", bg: "from-emerald-100 to-lime-100", ring: "ring-emerald-200" },
+            { label: "Insurance & Cashless", href: "/dashboard/insurance", icon: "🛡️", bg: "from-amber-100 to-yellow-100", ring: "ring-amber-200" },
             { label: "Privacy & Consent", href: "/dashboard/privacy", icon: "🔐", bg: "from-slate-100 to-zinc-100", ring: "ring-slate-200" },
             { label: "My Profile", href: "/profile", icon: "⚙️", bg: "from-violet-100 to-fuchsia-100", ring: "ring-violet-200" },
           ].map((a) => (

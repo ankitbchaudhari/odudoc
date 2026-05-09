@@ -16,6 +16,7 @@ import {
 import { deleteMembershipsForOrg, reloadMemberships } from "@/lib/memberships-store";
 import { deleteTransfersForOrg } from "@/lib/inter-org-transfers-store";
 import { deleteBedSnapshot } from "@/lib/inter-org-beds-store";
+import { deletePreauthsForOrg } from "@/lib/insurance/preauth-store";
 import { recordAudit, type AuditAction } from "@/lib/audit-log-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { getActiveOrgId, setActiveOrgId } from "@/lib/tenant";
@@ -258,6 +259,7 @@ export async function DELETE(req: NextRequest) {
   // a partner doesn't see ghost rows pointing at a deleted tenant.
   deleteTransfersForOrg(String(body.id));
   deleteBedSnapshot(String(body.id));
+  deletePreauthsForOrg(String(body.id));
   recordAudit({
     actorEmail: g.email,
     action: "org.delete",

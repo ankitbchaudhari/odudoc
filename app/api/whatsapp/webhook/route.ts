@@ -18,6 +18,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { findConversationByPhone, appendMessage, setOptIn } from "@/lib/whatsapp/conversations-store";
 import { classify, HELP_MENU } from "@/lib/whatsapp/intent";
 import { sendFreeform } from "@/lib/whatsapp/dispatcher";
+import { verifyTwilioSignature } from "@/lib/twilio-signature";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -54,6 +55,19 @@ export async function POST(req: NextRequest) {
     from = params.get("From") || "";
     body = params.get("Body") || "";
     providerSid = params.get("MessageSid") || undefined;
+    // ── Signature verification ─────────────────────────────────
+    // Build the form-params object for verification + reconstruct the
+    // URL Twilio called (Vercel sets x-forwarded-proto/host).
+    const sig = req.headers.get("x-twilio-signature") || "";
+    const formParams: Record<string, string> = {};
+    for (const [k, v] of params.entries()) formParams[k] = v;
+    const proto = req.headers.get("x-forwarded-proto") || "https";
+    const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
+    const u = new URL(req.url);
+    const fullUrl = `${proto}://${host}${u.pathname}${u.search}`;
+    if (!verifyTwilioSignature({ url: fullUrl, formParams, signature: sig })) {
+      return new NextResponse("<Response/>", { status: 403, headers: { "content-type": "text/xml" } });
+    }
   } else {
     const j = await req.json().catch(() => ({} as Record<string, unknown>));
     from = String(j.From || j.from || "");

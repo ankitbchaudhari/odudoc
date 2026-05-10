@@ -17,12 +17,13 @@ import { listPrescriptions } from "@/lib/prescriptions-store";
 import { listOrdersForPatient } from "@/lib/lab-marketplace/order-store";
 import { listTransactionsForUser } from "@/lib/wallet/store";
 import { listForUser } from "@/lib/notifications/store";
+import { listReadings, classify, VITAL_LABEL } from "@/lib/vitals/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export type TimelineKind =
-  | "appointment" | "prescription" | "lab_order" | "wallet" | "notification";
+  | "appointment" | "prescription" | "lab_order" | "wallet" | "notification" | "vital";
 
 export interface TimelineEvent {
   id: string;
@@ -149,6 +150,26 @@ export async function GET() {
               : n.severity === "success" ? "ok" : "neutral",
           href: n.link,
           meta: { kind: n.kind, severity: n.severity },
+        });
+      }
+    } catch { /* skip */ }
+  }
+
+  // Vital sign readings — userId-keyed.
+  if (userId) {
+    try {
+      const vitals = listReadings(userId, { limit: 50 });
+      for (const v of vitals) {
+        const sev = classify(v);
+        events.push({
+          id: `vital:${v.id}`,
+          kind: "vital",
+          at: v.takenAt,
+          title: `${VITAL_LABEL[v.kind]}: ${v.kind === "bp" ? `${v.value}/${v.value2 ?? "?"}` : v.value} ${v.unit}`,
+          body: [v.context?.replace(/_/g, " "), v.note].filter(Boolean).join(" · ") || undefined,
+          tone: sev === "critical" ? "critical" : sev === "warn" ? "warn" : "ok",
+          href: "/dashboard/vitals",
+          meta: { kind: v.kind },
         });
       }
     } catch { /* skip */ }

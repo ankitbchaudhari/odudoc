@@ -12,7 +12,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-type TimelineKind = "appointment" | "prescription" | "lab_order" | "wallet" | "notification";
+type TimelineKind = "appointment" | "prescription" | "lab_order" | "wallet" | "notification" | "vital";
 
 interface TimelineEvent {
   id: string;
@@ -31,6 +31,7 @@ const KIND_LABEL: Record<TimelineKind, string> = {
   lab_order: "Lab",
   wallet: "Wallet",
   notification: "Alert",
+  vital: "Vital",
 };
 const KIND_EMOJI: Record<TimelineKind, string> = {
   appointment: "📅",
@@ -38,6 +39,7 @@ const KIND_EMOJI: Record<TimelineKind, string> = {
   lab_order: "🧪",
   wallet: "💰",
   notification: "🔔",
+  vital: "❤️",
 };
 const TONE_DOT: Record<NonNullable<TimelineEvent["tone"]>, string> = {
   neutral: "bg-slate-300",
@@ -115,7 +117,7 @@ export default function TimelinePage() {
 
       {/* Filter chips */}
       <div className="mb-6 flex flex-wrap gap-2">
-        {(["all", "appointment", "prescription", "lab_order", "wallet", "notification"] as const).map((k) => {
+        {(["all", "appointment", "prescription", "lab_order", "vital", "wallet", "notification"] as const).map((k) => {
           const active = filter === k;
           const c = counts[k] || 0;
           if (k !== "all" && c === 0) return null;

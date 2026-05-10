@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   Delivery,
   DeliveryStatus,
@@ -237,38 +238,26 @@ export default function MaternityPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-slate-900">
-            Labor & Delivery Register
-          </h1>
-          <p className="text-sm text-slate-500">
-            Maternal + newborn outcomes, partograph stage timings & complication audit
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            setEditDelivery(null);
-            setShowForm(true);
-          }}
-          className="rounded-lg bg-primary-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-primary-700"
-        >
-          + New admission
-        </button>
-      </header>
+      <PageHero
+        icon="👶"
+        eyebrow="Maternal & Newborn"
+        title="Labor & Delivery Register"
+        subtitle="Maternal + newborn outcomes, partograph stage timings & complication audit"
+        tone="fuchsia"
+        primaryAction={{ label: "+ New admission", onClick: () => { setEditDelivery(null); setShowForm(true); } }}
+      />
 
       {stats && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">
-          <Stat label="Active labor" value={stats.activeLabor} color={stats.activeLabor > 0 ? "amber" : "slate"} />
-          <Stat label="Delivered today" value={stats.deliveriesToday} color="emerald" />
-          <Stat label="Delivered (month)" value={stats.deliveriesThisMonth} color="slate"
-            sub={`${stats.normalPct}% NVD · ${stats.csectionPct}% CS`} />
-          <Stat label="Avg blood loss" value={`${stats.avgBloodLossMl}ml`} color={stats.avgBloodLossMl > 500 ? "rose" : "slate"} sub="completed deliveries" />
-          <Stat label="Complications" value={stats.complicationsThisMonth} color={stats.complicationsThisMonth > 0 ? "amber" : "slate"} sub="this month" />
-          <Stat label="Stillbirths" value={stats.stillbirthsThisMonth} color={stats.stillbirthsThisMonth > 0 ? "rose" : "slate"} sub="this month" />
-          <Stat label="Neonatal deaths" value={stats.neonatalDeathsThisMonth} color={stats.neonatalDeathsThisMonth > 0 ? "rose" : "slate"} sub="this month" />
-          <Stat label="NICU admits" value={stats.nicuAdmitsThisMonth} color="blue" sub="this month" />
-        </div>
+        <StatGrid cols={4}>
+          <StatCard label="Active labor" value={stats.activeLabor} tone={stats.activeLabor > 0 ? "amber" : "slate"} icon="🤰" />
+          <StatCard label="Delivered today" value={stats.deliveriesToday} tone="emerald" icon="🍼" />
+          <StatCard label="Delivered (month)" value={stats.deliveriesThisMonth} tone="indigo" hint={`${stats.normalPct}% NVD · ${stats.csectionPct}% CS`} icon="📊" />
+          <StatCard label="Avg blood loss" value={`${stats.avgBloodLossMl}ml`} tone={stats.avgBloodLossMl > 500 ? "rose" : "teal"} hint="completed deliveries" icon="🩸" />
+          <StatCard label="Complications" value={stats.complicationsThisMonth} tone={stats.complicationsThisMonth > 0 ? "amber" : "slate"} hint="this month" icon="⚠️" />
+          <StatCard label="Stillbirths" value={stats.stillbirthsThisMonth} tone={stats.stillbirthsThisMonth > 0 ? "rose" : "slate"} hint="this month" icon="🕯️" />
+          <StatCard label="Neonatal deaths" value={stats.neonatalDeathsThisMonth} tone={stats.neonatalDeathsThisMonth > 0 ? "rose" : "slate"} hint="this month" icon="💔" />
+          <StatCard label="NICU admits" value={stats.nicuAdmitsThisMonth} tone="violet" hint="this month" icon="🏥" />
+        </StatGrid>
       )}
 
       <Section>

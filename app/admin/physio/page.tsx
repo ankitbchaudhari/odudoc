@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   PhysioPlan,
   PhysioSession,
@@ -268,36 +269,25 @@ export default function PhysioPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-slate-900">
-            Physiotherapy & Rehabilitation
-          </h1>
-          <p className="text-sm text-slate-500">
-            Treatment plans, session tracking & pain outcome (VAS) monitoring
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            setEditPlan(null);
-            setShowPlanForm(true);
-          }}
-          className="rounded-lg bg-primary-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-primary-700"
-        >
-          + New plan
-        </button>
-      </header>
+      <PageHero
+        icon="🏃"
+        eyebrow="Rehabilitation"
+        title="Physiotherapy & Rehabilitation"
+        subtitle="Treatment plans, session tracking & pain outcome (VAS) monitoring"
+        tone="emerald"
+        primaryAction={{ label: "+ New plan", onClick: () => { setEditPlan(null); setShowPlanForm(true); } }}
+      />
 
       {stats && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
-          <Stat label="Active plans" value={stats.activePlans} color="emerald" />
-          <Stat label="Today's sessions" value={stats.sessionsToday} color="slate" />
-          <Stat label="Sessions (month)" value={stats.sessionsThisMonth} color="slate" />
-          <Stat label="Completed (month)" value={stats.completedThisMonth} color="emerald" />
-          <Stat label="No-show rate" value={`${stats.noShowRatePct}%`} color={stats.noShowRatePct > 15 ? "rose" : "slate"} sub="this month" />
-          <Stat label="Avg pain drop" value={stats.avgPainDropThisMonth.toFixed(1)} color="blue" sub="VAS Δ / session" />
-          <Stat label="Plans completed" value={stats.plansCompletedThisMonth} color="emerald" sub="this month" />
-        </div>
+        <StatGrid cols={4}>
+          <StatCard label="Active plans" value={stats.activePlans} tone="emerald" icon="📋" />
+          <StatCard label="Today's sessions" value={stats.sessionsToday} tone="sky" icon="📅" />
+          <StatCard label="Sessions (month)" value={stats.sessionsThisMonth} tone="indigo" icon="📊" />
+          <StatCard label="Completed (month)" value={stats.completedThisMonth} tone="teal" icon="✓" />
+          <StatCard label="No-show rate" value={`${stats.noShowRatePct}%`} tone={stats.noShowRatePct > 15 ? "rose" : "slate"} hint="this month" icon="👻" />
+          <StatCard label="Avg pain drop" value={stats.avgPainDropThisMonth.toFixed(1)} tone="violet" hint="VAS Δ / session" icon="📉" />
+          <StatCard label="Plans completed" value={stats.plansCompletedThisMonth} tone="fuchsia" hint="this month" icon="🏁" />
+        </StatGrid>
       )}
 
       <Section>

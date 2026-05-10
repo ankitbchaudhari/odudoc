@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   EmergencyCode,
   CodeType,
@@ -221,36 +222,25 @@ export default function EmergencyCodesPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-slate-900">
-            Emergency Code Activations
-          </h1>
-          <p className="text-sm text-slate-500">
-            Rapid-response log with arrival-time audit & resuscitation outcomes
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            setEditCode(null);
-            setShowForm(true);
-          }}
-          className="rounded-lg bg-rose-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-rose-700"
-        >
-          🚨 Activate Code
-        </button>
-      </header>
+      <PageHero
+        icon="🚨"
+        eyebrow="Rapid Response"
+        title="Emergency Code Activations"
+        subtitle="Rapid-response log with arrival-time audit & resuscitation outcomes"
+        tone="rose"
+        primaryAction={{ label: "🚨 Activate Code", onClick: () => { setEditCode(null); setShowForm(true); } }}
+      />
 
       {stats && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
-          <Stat label="Active now" value={stats.activeNow} color={stats.activeNow > 0 ? "rose" : "slate"} />
-          <Stat label="This month" value={stats.codesThisMonth} color="slate" />
-          <Stat label="Code Blue (month)" value={stats.codeBlueThisMonth} color="blue" />
-          <Stat label="Drills (month)" value={stats.drillsThisMonth} color="slate" />
-          <Stat label="False alarms" value={stats.falseAlarmsThisMonth} color={stats.falseAlarmsThisMonth > 3 ? "amber" : "slate"} sub="this month" />
-          <Stat label="Avg response" value={`${stats.avgResponseMin}m`} color={stats.avgResponseMin > 5 ? "rose" : "emerald"} sub="last 90d" />
-          <Stat label="Blue survival" value={`${stats.codeBlueSurvivalPct}%`} color="blue" sub="ROSC+xfer / 90d" />
-        </div>
+        <StatGrid cols={4}>
+          <StatCard label="Active now" value={stats.activeNow} tone={stats.activeNow > 0 ? "rose" : "slate"} icon="🔴" />
+          <StatCard label="This month" value={stats.codesThisMonth} tone="indigo" icon="📅" />
+          <StatCard label="Code Blue (month)" value={stats.codeBlueThisMonth} tone="sky" icon="🩺" />
+          <StatCard label="Drills (month)" value={stats.drillsThisMonth} tone="violet" icon="🎯" />
+          <StatCard label="False alarms" value={stats.falseAlarmsThisMonth} tone={stats.falseAlarmsThisMonth > 3 ? "amber" : "slate"} hint="this month" icon="🔔" />
+          <StatCard label="Avg response" value={`${stats.avgResponseMin}m`} tone={stats.avgResponseMin > 5 ? "rose" : "emerald"} hint="last 90d" icon="⏱️" />
+          <StatCard label="Blue survival" value={`${stats.codeBlueSurvivalPct}%`} tone="teal" hint="ROSC+xfer / 90d" icon="❤️" />
+        </StatGrid>
       )}
 
       <Section>

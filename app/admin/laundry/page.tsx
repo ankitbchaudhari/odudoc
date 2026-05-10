@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   LinenItem,
   LaundryBatch,
@@ -124,44 +125,28 @@ export default function LaundryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Linen & Laundry</h1>
-          <p className="text-sm text-slate-500">
-            Linen stock counts with auto-reconciled laundry batch cycles
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {tab === "batches" ? (
-            <button
-              onClick={() => setShowBatchForm(true)}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-primary-700"
-            >
-              + Send Batch
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                setEditItem(null);
-                setShowItemForm(true);
-              }}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-primary-700"
-            >
-              + New Linen Item
-            </button>
-          )}
-        </div>
-      </div>
+      <PageHero
+        icon="🧺"
+        eyebrow="Soft Services"
+        title="Linen & Laundry"
+        subtitle="Linen stock counts with auto-reconciled laundry batch cycles"
+        tone="violet"
+        primaryAction={
+          tab === "batches"
+            ? { label: "+ Send Batch", onClick: () => setShowBatchForm(true) }
+            : { label: "+ New Linen Item", onClick: () => { setEditItem(null); setShowItemForm(true); } }
+        }
+      />
 
       {stats && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-6">
-          <Stat label="Linen stock value" value={`₹${stats.totalLinenValue.toLocaleString()}`} />
-          <Stat label="Low-stock items" value={stats.itemsLowStock} color={stats.itemsLowStock > 0 ? "amber" : "emerald"} />
-          <Stat label="Batches in transit" value={stats.batchesInTransit} color="blue" />
-          <Stat label="Overdue batches" value={stats.overdueBatches} color={stats.overdueBatches > 0 ? "rose" : "emerald"} />
-          <Stat label="Damaged (this month)" value={stats.damagedThisMonth} color={stats.damagedThisMonth > 0 ? "amber" : "slate"} />
-          <Stat label="Lost (this month)" value={stats.lostThisMonth} color={stats.lostThisMonth > 0 ? "rose" : "slate"} />
-        </div>
+        <StatGrid cols={6}>
+          <StatCard label="Linen stock value" value={`₹${stats.totalLinenValue.toLocaleString()}`} tone="emerald" icon="💰" />
+          <StatCard label="Low-stock items" value={stats.itemsLowStock} tone={stats.itemsLowStock > 0 ? "amber" : "emerald"} icon="📉" />
+          <StatCard label="Batches in transit" value={stats.batchesInTransit} tone="sky" icon="🚚" />
+          <StatCard label="Overdue batches" value={stats.overdueBatches} tone={stats.overdueBatches > 0 ? "rose" : "teal"} icon="⏰" />
+          <StatCard label="Damaged (this month)" value={stats.damagedThisMonth} tone={stats.damagedThisMonth > 0 ? "amber" : "slate"} icon="⚠️" />
+          <StatCard label="Lost (this month)" value={stats.lostThisMonth} tone={stats.lostThisMonth > 0 ? "rose" : "slate"} icon="❌" />
+        </StatGrid>
       )}
 
       <div className="flex gap-1 border-b border-slate-200">

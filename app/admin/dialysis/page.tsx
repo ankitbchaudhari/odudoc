@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   DialysisMachine,
   DialysisSession,
@@ -212,50 +213,28 @@ export default function DialysisPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-slate-900">
-            Dialysis Unit
-          </h1>
-          <p className="text-sm text-slate-500">
-            Hemodialysis sessions, machine roster & service schedule
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {tab === "sessions" && (
-            <button
-              onClick={() => {
-                setEditSession(null);
-                setShowSessionForm(true);
-              }}
-              className="rounded-lg bg-primary-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-primary-700"
-            >
-              + Schedule Session
-            </button>
-          )}
-          {tab === "machines" && (
-            <button
-              onClick={() => {
-                setEditMachine(null);
-                setShowMachineForm(true);
-              }}
-              className="rounded-lg bg-primary-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-primary-700"
-            >
-              + Add Machine
-            </button>
-          )}
-        </div>
-      </header>
+      <PageHero
+        icon="💧"
+        eyebrow="Renal Care"
+        title="Dialysis Unit"
+        subtitle="Hemodialysis sessions, machine roster & service schedule"
+        tone="indigo"
+        primaryAction={
+          tab === "sessions"
+            ? { label: "+ Schedule Session", onClick: () => { setEditSession(null); setShowSessionForm(true); } }
+            : { label: "+ Add Machine", onClick: () => { setEditMachine(null); setShowMachineForm(true); } }
+        }
+      />
 
       {stats && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-          <Stat label="Today's sessions" value={stats.sessionsToday} color="slate" />
-          <Stat label="Active now" value={stats.activeSessions} color="emerald" />
-          <Stat label="Available machines" value={stats.availableMachines} color="emerald" sub={`${stats.inUseMachines} in use`} />
-          <Stat label="Service due ≤14d" value={stats.servicesDueSoon} color={stats.servicesDueSoon > 0 ? "amber" : "slate"} />
-          <Stat label="UF achievement" value={`${stats.avgUfAchievementPct}%`} color="blue" sub="this month" />
-          <Stat label="Complication rate" value={`${stats.complicationRatePct}%`} color={stats.complicationRatePct > 15 ? "rose" : "slate"} sub="this month" />
-        </div>
+        <StatGrid cols={6}>
+          <StatCard label="Today's sessions" value={stats.sessionsToday} tone="sky" icon="📅" />
+          <StatCard label="Active now" value={stats.activeSessions} tone="emerald" icon="🟢" />
+          <StatCard label="Available machines" value={stats.availableMachines} tone="teal" hint={`${stats.inUseMachines} in use`} icon="⚙️" />
+          <StatCard label="Service due ≤14d" value={stats.servicesDueSoon} tone={stats.servicesDueSoon > 0 ? "amber" : "slate"} icon="🔧" />
+          <StatCard label="UF achievement" value={`${stats.avgUfAchievementPct}%`} tone="violet" hint="this month" icon="🎯" />
+          <StatCard label="Complication rate" value={`${stats.complicationRatePct}%`} tone={stats.complicationRatePct > 15 ? "rose" : "indigo"} hint="this month" icon="⚠️" />
+        </StatGrid>
       )}
 
       <div className="flex items-center gap-1 border-b border-slate-200">

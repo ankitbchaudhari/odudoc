@@ -117,23 +117,32 @@ async function initSchema(): Promise<void> {
   // One-time cleanup: drop the demo posts (ids "1".."6") that shipped with
   // the initial seed. Safe to re-run — only removes known legacy IDs.
   await sql`DELETE FROM blog_posts WHERE id IN ('1','2','3','4','5','6')`;
+  // Wider wipe — also remove any seeded posts from /lib/data that
+  // landed under numeric ids or seed-/demo- prefixes. Operators who
+  // want the demo set stay can opt back in with SEED_DEMO_BLOG=1.
+  if (process.env.SEED_DEMO_BLOG !== "1") {
+    await sql`DELETE FROM blog_posts WHERE id ~ '^[0-9]+$' OR id LIKE 'seed-%' OR id LIKE 'demo-%'`;
+  }
 
-  // Seed from static data if empty. We only seed once — after the admin
-  // deletes a seed post, it stays deleted.
-  const existing = (await sql`SELECT COUNT(*)::int AS n FROM blog_posts`) as Array<{ n: number }>;
-  if (existing[0]?.n === 0) {
-    for (const p of seedPosts) {
-      await sql`
-        INSERT INTO blog_posts
-          (id, slug, title, excerpt, content, author, author_bio, author_initials,
-           category, tags, date, read_time, featured, status)
-        VALUES
-          (${p.id}, ${p.slug}, ${p.title}, ${p.excerpt}, ${p.content}, ${p.author},
-           ${(p as BlogPost & { authorBio?: string }).authorBio ?? "OduDoc contributor."},
-           ${p.authorInitials}, ${p.category}, ${p.tags},
-           ${p.date}, ${p.readTime}, ${p.featured}, 'Published')
-        ON CONFLICT (id) DO NOTHING
-      `;
+  // No automatic seeding — the dashboard starts empty so admins
+  // populate it themselves. Set SEED_DEMO_BLOG=1 to bring back the
+  // 15 demo posts (useful for screencasts / sales demos).
+  if (process.env.SEED_DEMO_BLOG === "1") {
+    const existing = (await sql`SELECT COUNT(*)::int AS n FROM blog_posts`) as Array<{ n: number }>;
+    if (existing[0]?.n === 0) {
+      for (const p of seedPosts) {
+        await sql`
+          INSERT INTO blog_posts
+            (id, slug, title, excerpt, content, author, author_bio, author_initials,
+             category, tags, date, read_time, featured, status)
+          VALUES
+            (${p.id}, ${p.slug}, ${p.title}, ${p.excerpt}, ${p.content}, ${p.author},
+             ${(p as BlogPost & { authorBio?: string }).authorBio ?? "OduDoc contributor."},
+             ${p.authorInitials}, ${p.category}, ${p.tags},
+             ${p.date}, ${p.readTime}, ${p.featured}, 'Published')
+          ON CONFLICT (id) DO NOTHING
+        `;
+      }
     }
   }
 }

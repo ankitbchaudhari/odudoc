@@ -21,22 +21,40 @@ const departments: Department[] = [];
 const { hydrate, reload, flush } = bindPersistentArray<Department>(
   "departments",
   departments,
-  () => [
-    { id: "d1", name: "Cardiology", icon: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z", doctorCount: 8, status: "Active", description: "Heart and cardiovascular system" },
-    { id: "d2", name: "Neurology", icon: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z", doctorCount: 5, status: "Active", description: "Brain and nervous system" },
-    { id: "d3", name: "Orthopedics", icon: "M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z", doctorCount: 6, status: "Active", description: "Bones, joints, and muscles" },
-    { id: "d4", name: "Pediatrics", icon: "M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z", doctorCount: 7, status: "Active", description: "Child healthcare" },
-    { id: "d5", name: "Dermatology", icon: "M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01", doctorCount: 4, status: "Active", description: "Skin, hair, and nails" },
-    { id: "d6", name: "Ophthalmology", icon: "M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z", doctorCount: 3, status: "Active", description: "Eye care and vision" },
-    { id: "d7", name: "Dentistry", icon: "M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z", doctorCount: 5, status: "Inactive", description: "Dental and oral health" },
-  ]
+  // Empty by default — admin populates via /admin/departments. Set
+  // SEED_DEMO_DEPARTMENTS=1 to bring back the 7 demo entries.
+  () => process.env.SEED_DEMO_DEPARTMENTS === "1" ? [
+    { id: "d1", name: "Cardiology", icon: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z", doctorCount: 0, status: "Active", description: "Heart and cardiovascular system" },
+    { id: "d2", name: "Neurology", icon: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z", doctorCount: 0, status: "Active", description: "Brain and nervous system" },
+    { id: "d3", name: "Orthopedics", icon: "M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z", doctorCount: 0, status: "Active", description: "Bones, joints, and muscles" },
+    { id: "d4", name: "Pediatrics", icon: "M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z", doctorCount: 0, status: "Active", description: "Child healthcare" },
+    { id: "d5", name: "Dermatology", icon: "M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01", doctorCount: 0, status: "Active", description: "Skin, hair, and nails" },
+    { id: "d6", name: "Ophthalmology", icon: "M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z", doctorCount: 0, status: "Active", description: "Eye care and vision" },
+    { id: "d7", name: "Dentistry", icon: "M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z", doctorCount: 0, status: "Inactive", description: "Dental and oral health" },
+  ] : []
 );
 await hydrate();
 
-// One-time migration: seed the wider standard specialty list if it's not
-// already present. Match by normalised name so re-running this is a no-op
-// and we never clobber an admin's custom description/icon.
+// One-time wipe: drop all the seed-id rows we previously populated
+// from the demo set and the EXTRA list, so existing deployments clear
+// their department list. Custom rows added by admins (id NOT starting
+// with "d" or "dept-seed-") are preserved. Safe to re-run.
+(function wipeSeedDepartments() {
+  if (process.env.SEED_DEMO_DEPARTMENTS === "1") return;
+  const before = departments.length;
+  for (let i = departments.length - 1; i >= 0; i--) {
+    const id = departments[i].id;
+    if (/^d\d+$/.test(id) || id.startsWith("dept-seed-")) {
+      departments.splice(i, 1);
+    }
+  }
+  if (departments.length !== before) flush();
+})();
+
+// Optional auto-seed of the wider standard specialty list. Off by
+// default; set SEED_DEMO_DEPARTMENTS=1 to enable for sales demos.
 (function seedExtraDepartments() {
+  if (process.env.SEED_DEMO_DEPARTMENTS !== "1") return;
   const EXTRA: Omit<Department, "id">[] = [
     { name: "General Medicine", icon: "M12 6v6m0 0v6m0-6h6m-6 0H6", doctorCount: 0, status: "Active", description: "Primary care and general physicians" },
     { name: "Gynecology & Obstetrics", icon: "M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z", doctorCount: 0, status: "Active", description: "Women's health, pregnancy and childbirth" },

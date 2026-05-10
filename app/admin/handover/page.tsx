@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   Handover,
   PatientHandoverEntry,
@@ -141,44 +142,22 @@ export default function HandoverPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Duty Handover — SBAR</h1>
-          <p className="text-sm text-slate-500">
-            Shift-to-shift handoffs using Situation / Background / Assessment / Recommendation
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            setEditing(null);
-            setCreating(true);
-          }}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-primary-700"
-        >
-          + New Handover
-        </button>
-      </div>
+      <PageHero
+        icon="🔄"
+        eyebrow="Shift Continuity"
+        title="Duty Handover — SBAR"
+        subtitle="Shift-to-shift handoffs using Situation / Background / Assessment / Recommendation"
+        tone="indigo"
+        primaryAction={{ label: "+ New Handover", onClick: () => { setEditing(null); setCreating(true); } }}
+      />
 
       {stats && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Stat label="Today's shifts" value={stats.todayHandovers} />
-          <Stat
-            label="Awaiting ack"
-            value={stats.pendingAck}
-            color={stats.pendingAck > 0 ? "blue" : "slate"}
-          />
-          <Stat
-            label="Disputed"
-            value={stats.disputed}
-            color={stats.disputed > 0 ? "rose" : "emerald"}
-          />
-          <Stat
-            label="Critical patients"
-            value={stats.criticalPatients}
-            color={stats.criticalPatients > 0 ? "rose" : "slate"}
-            sub="Across open handovers"
-          />
-        </div>
+        <StatGrid cols={4}>
+          <StatCard label="Today's shifts" value={stats.todayHandovers} tone="sky" icon="📋" />
+          <StatCard label="Awaiting ack" value={stats.pendingAck} tone={stats.pendingAck > 0 ? "amber" : "slate"} icon="⏳" />
+          <StatCard label="Disputed" value={stats.disputed} tone={stats.disputed > 0 ? "rose" : "emerald"} icon="⚠️" />
+          <StatCard label="Critical patients" value={stats.criticalPatients} tone={stats.criticalPatients > 0 ? "rose" : "violet"} hint="Across open handovers" icon="🚨" />
+        </StatGrid>
       )}
 
       <Section>

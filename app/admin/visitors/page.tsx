@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   VisitorPass,
   VisitorBlacklist,
@@ -169,39 +170,23 @@ export default function VisitorsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Visitor Management</h1>
-          <p className="text-sm text-slate-500">
-            Badge issuance, overstay detection, and blacklist enforcement
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowForm(true)}
-            className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-primary-700"
-          >
-            + Issue Pass
-          </button>
-        </div>
-      </div>
+      <PageHero
+        icon="🛂"
+        eyebrow="Front Office"
+        title="Visitor Management"
+        subtitle="Badge issuance, overstay detection, and blacklist enforcement"
+        tone="amber"
+        primaryAction={{ label: "+ Issue Pass", onClick: () => setShowForm(true) }}
+      />
 
       {stats && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-          <Stat label="Currently inside" value={stats.currentlyInside} color="emerald" />
-          <Stat label="Today — checked in" value={stats.todayIn} color="blue" />
-          <Stat label="Today — checked out" value={stats.todayOut} color="slate" />
-          <Stat
-            label="Overstaying"
-            value={stats.overstay}
-            color={stats.overstay > 0 ? "rose" : "emerald"}
-          />
-          <Stat
-            label="Blacklisted"
-            value={stats.blacklisted}
-            color={stats.blacklisted > 0 ? "amber" : "slate"}
-          />
-        </div>
+        <StatGrid cols={5}>
+          <StatCard label="Currently inside" value={stats.currentlyInside} tone="emerald" icon="🟢" />
+          <StatCard label="Today — checked in" value={stats.todayIn} tone="sky" icon="📥" />
+          <StatCard label="Today — checked out" value={stats.todayOut} tone="indigo" icon="📤" />
+          <StatCard label="Overstaying" value={stats.overstay} tone={stats.overstay > 0 ? "rose" : "teal"} icon="⏰" />
+          <StatCard label="Blacklisted" value={stats.blacklisted} tone={stats.blacklisted > 0 ? "rose" : "slate"} icon="🚫" />
+        </StatGrid>
       )}
 
       <div className="flex gap-1 border-b border-slate-200">

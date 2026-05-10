@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 
 type UnitStatus = "available" | "occupied" | "out_of_service" | "cleaning";
 type CustodyStatus = "admitted" | "in_storage" | "autopsy_pending" | "autopsy_done" | "released";
@@ -378,33 +379,25 @@ export default function MortuaryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Mortuary</h1>
-          <p className="text-sm text-slate-500">
-            Body custody, refrigerated unit tracking, MLC / autopsy / embalming workflow and release chain-of-custody.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {tab === "records" && (
-            <button onClick={() => openRecordForm()} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">
-              + Admit Body
-            </button>
-          )}
-          {tab === "units" && (
-            <button onClick={() => openUnitForm()} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">
-              + Add Unit
-            </button>
-          )}
-        </div>
-      </div>
+      <PageHero
+        icon="🕯️"
+        eyebrow="Custody & Release"
+        title="Mortuary"
+        subtitle="Body custody, refrigerated unit tracking, MLC / autopsy / embalming workflow and release chain-of-custody"
+        tone="indigo"
+        primaryAction={
+          tab === "records"
+            ? { label: "+ Admit Body", onClick: () => openRecordForm() }
+            : { label: "+ Add Unit", onClick: () => openUnitForm() }
+        }
+      />
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        <Stat label="In custody" value={stats.inCustody} tone={stats.inCustody > 0 ? "amber" : "slate"} />
-        <Stat label="Autopsy pending" value={stats.autopsyPending} tone={stats.autopsyPending > 0 ? "red" : "slate"} />
-        <Stat label="Active MLC cases" value={stats.mlc} tone={stats.mlc > 0 ? "red" : "slate"} />
-        <Stat label="Units available" value={stats.available} tone="emerald" />
-      </div>
+      <StatGrid cols={4}>
+        <StatCard label="In custody" value={stats.inCustody} tone={stats.inCustody > 0 ? "amber" : "slate"} icon="📋" />
+        <StatCard label="Autopsy pending" value={stats.autopsyPending} tone={stats.autopsyPending > 0 ? "rose" : "slate"} icon="🔬" />
+        <StatCard label="Active MLC cases" value={stats.mlc} tone={stats.mlc > 0 ? "rose" : "violet"} icon="⚖️" />
+        <StatCard label="Units available" value={stats.available} tone="emerald" icon="❄️" />
+      </StatGrid>
 
       <div className="flex gap-1 border-b border-slate-200">
         {(["records", "units"] as const).map((t) => (

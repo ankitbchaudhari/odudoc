@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   FeedbackSurvey,
   FeedbackSource,
@@ -214,66 +215,34 @@ export default function FeedbackPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Patient Feedback & NPS</h1>
-          <p className="text-sm text-slate-500">
-            Post-visit satisfaction tracking with NABH-aligned complaint escalation
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            setShowForm(true);
-            setForm(EMPTY_FORM);
-          }}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-primary-700"
-        >
-          + New Feedback
-        </button>
-      </div>
+      <PageHero
+        icon="⭐"
+        eyebrow="Voice of Patient"
+        title="Patient Feedback & NPS"
+        subtitle="Post-visit satisfaction tracking with NABH-aligned complaint escalation"
+        tone="violet"
+        primaryAction={{ label: "+ New Feedback", onClick: () => { setShowForm(true); setForm(EMPTY_FORM); } }}
+      />
 
-      {/* Stats */}
       {analytics && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Stat
-            label="Total responses"
-            value={analytics.submitted}
-            sub={`${analytics.pendingReview} awaiting review`}
-          />
-          <Stat
+        <StatGrid cols={4}>
+          <StatCard label="Total responses" value={analytics.submitted} tone="indigo" hint={`${analytics.pendingReview} awaiting review`} icon="📨" />
+          <StatCard
             label="Overall rating"
             value={analytics.avgOverall ? `${analytics.avgOverall}/5` : "—"}
-            sub={`Doc ${analytics.avgDoctor || "—"} · Nursing ${analytics.avgNursing || "—"}`}
-            color={
-              analytics.avgOverall >= 4
-                ? "emerald"
-                : analytics.avgOverall >= 3
-                ? "amber"
-                : analytics.avgOverall > 0
-                ? "rose"
-                : "slate"
-            }
+            hint={`Doc ${analytics.avgDoctor || "—"} · Nursing ${analytics.avgNursing || "—"}`}
+            tone={analytics.avgOverall >= 4 ? "emerald" : analytics.avgOverall >= 3 ? "amber" : analytics.avgOverall > 0 ? "rose" : "slate"}
+            icon="⭐"
           />
-          <Stat
+          <StatCard
             label="Net Promoter Score"
             value={analytics.nps === 0 && analytics.promoters + analytics.detractors === 0 ? "—" : analytics.nps}
-            sub={`${analytics.promoters} prom · ${analytics.passives} pass · ${analytics.detractors} detr`}
-            color={
-              analytics.nps >= 50
-                ? "emerald"
-                : analytics.nps >= 0
-                ? "amber"
-                : "rose"
-            }
+            hint={`${analytics.promoters} prom · ${analytics.passives} pass · ${analytics.detractors} detr`}
+            tone={analytics.nps >= 50 ? "emerald" : analytics.nps >= 0 ? "amber" : "rose"}
+            icon="📈"
           />
-          <Stat
-            label="Open complaints"
-            value={analytics.openComplaints}
-            sub="Follow-up needed"
-            color={analytics.openComplaints > 0 ? "rose" : "emerald"}
-          />
-        </div>
+          <StatCard label="Open complaints" value={analytics.openComplaints} tone={analytics.openComplaints > 0 ? "rose" : "teal"} hint="Follow-up needed" icon="📢" />
+        </StatGrid>
       )}
 
       {/* Tabs */}

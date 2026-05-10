@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   CleaningZone,
   CleaningTask,
@@ -180,53 +181,27 @@ export default function HousekeepingPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Housekeeping & Sanitation</h1>
-          <p className="text-sm text-slate-500">
-            NABH-aligned zone cleaning roster with inspector sign-off
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {tab === "tasks" && (
-            <button
-              onClick={() => setShowTaskForm(true)}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-primary-700"
-            >
-              + New Task
-            </button>
-          )}
-          {tab === "zones" && (
-            <button
-              onClick={() => {
-                setEditZone(null);
-                setShowZoneForm(true);
-              }}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-primary-700"
-            >
-              + New Zone
-            </button>
-          )}
-        </div>
-      </div>
+      <PageHero
+        icon="🧹"
+        eyebrow="Sanitation"
+        title="Housekeeping & Sanitation"
+        subtitle="NABH-aligned zone cleaning roster with inspector sign-off"
+        tone="emerald"
+        primaryAction={
+          tab === "tasks"
+            ? { label: "+ New Task", onClick: () => setShowTaskForm(true) }
+            : { label: "+ New Zone", onClick: () => { setEditZone(null); setShowZoneForm(true); } }
+        }
+      />
 
       {stats && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-          <Stat label="Today scheduled" value={stats.todayScheduled} />
-          <Stat label="In progress" value={stats.inProgress} color="blue" />
-          <Stat
-            label="Overdue"
-            value={stats.overdue}
-            color={stats.overdue > 0 ? "rose" : "emerald"}
-          />
-          <Stat label="Completed today" value={stats.completedToday} color="emerald" />
-          <Stat
-            label="Inspection fails today"
-            value={stats.inspectionFailsToday}
-            color={stats.inspectionFailsToday > 0 ? "rose" : "slate"}
-            sub={`${stats.zonesActive} active zones · ${stats.zonesHigh} high-risk`}
-          />
-        </div>
+        <StatGrid cols={5}>
+          <StatCard label="Today scheduled" value={stats.todayScheduled} tone="sky" icon="📅" />
+          <StatCard label="In progress" value={stats.inProgress} tone="amber" icon="🔄" />
+          <StatCard label="Overdue" value={stats.overdue} tone={stats.overdue > 0 ? "rose" : "emerald"} icon="⏰" />
+          <StatCard label="Completed today" value={stats.completedToday} tone="teal" icon="✓" />
+          <StatCard label="Inspection fails today" value={stats.inspectionFailsToday} tone={stats.inspectionFailsToday > 0 ? "rose" : "violet"} hint={`${stats.zonesActive} active zones · ${stats.zonesHigh} high-risk`} icon="🛡️" />
+        </StatGrid>
       )}
 
       <div className="flex gap-1 border-b border-slate-200">

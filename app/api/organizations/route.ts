@@ -23,6 +23,8 @@ import {
   deleteLeavesForOrg as deleteRosterLeavesForOrg,
   deleteRostersForOrg,
 } from "@/lib/roster/store";
+import { deleteSkusForOrg } from "@/lib/procurement/sku-store";
+import { deletePosForOrg } from "@/lib/procurement/po-store";
 // (No org-cascade for rx-fulfillment — orders are scoped to patients
 //  + pharmacies, not orgs.)
 import { recordAudit, type AuditAction } from "@/lib/audit-log-store";
@@ -272,6 +274,8 @@ export async function DELETE(req: NextRequest) {
   deleteRosterStaffForOrg(String(body.id));
   deleteRosterLeavesForOrg(String(body.id));
   deleteRostersForOrg(String(body.id));
+  deleteSkusForOrg(String(body.id));
+  deletePosForOrg(String(body.id));
   recordAudit({
     actorEmail: g.email,
     action: "org.delete",

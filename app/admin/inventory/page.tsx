@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   InventoryItem,
   ItemCategory,
@@ -261,55 +262,21 @@ export default function InventoryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-900">Inventory</h2>
-          <p className="text-sm text-slate-500">
-            Drugs, consumables, equipment — batches, expiry, reorder levels.
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            if (showForm) reset();
-            else setShowForm(true);
-          }}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          {showForm ? "Close" : "+ New item"}
-        </button>
-      </div>
+      <PageHero
+        icon="📦"
+        eyebrow="Stores"
+        title="Inventory"
+        subtitle="Drugs, consumables, equipment — batches, expiry, reorder levels"
+        tone="indigo"
+        primaryAction={{ label: showForm ? "Close" : "+ New item", onClick: () => { if (showForm) reset(); else setShowForm(true); } }}
+      />
 
-      {/* Summary */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {[
-          { label: "Items", value: summary.totalItems },
-          { label: "Units on hand", value: summary.totalOnHand },
-          {
-            label: "Low stock",
-            value: summary.lowCount,
-            accent: "text-amber-600",
-          },
-          {
-            label: "Expiring <30d",
-            value: summary.expiringCount,
-            accent: "text-red-600",
-          },
-        ].map((s) => (
-          <div
-            key={s.label}
-            className="rounded-lg border border-slate-200 bg-white p-4"
-          >
-            <div className="text-[11px] uppercase tracking-wider text-slate-500">
-              {s.label}
-            </div>
-            <div
-              className={`mt-1 text-2xl font-semibold ${s.accent || "text-slate-900"}`}
-            >
-              {s.value}
-            </div>
-          </div>
-        ))}
-      </div>
+      <StatGrid cols={4}>
+        <StatCard label="Items" value={summary.totalItems} tone="indigo" icon="📋" />
+        <StatCard label="Units on hand" value={summary.totalOnHand} tone="emerald" icon="📦" />
+        <StatCard label="Low stock" value={summary.lowCount} tone={summary.lowCount > 0 ? "amber" : "slate"} icon="📉" />
+        <StatCard label="Expiring <30d" value={summary.expiringCount} tone={summary.expiringCount > 0 ? "rose" : "teal"} icon="⏰" />
+      </StatGrid>
 
       {err && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">

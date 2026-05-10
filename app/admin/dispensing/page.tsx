@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 import type { DispenseRecord } from "@/lib/hospital/dispensing-store";
 import type { InventoryItem } from "@/lib/hospital/inventory-store";
 import type { HospitalPrescription } from "@/lib/hospital/prescriptions-store";
@@ -226,23 +227,14 @@ export default function DispensingPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-900">
-            Pharmacy Dispensing
-          </h2>
-          <p className="text-sm text-slate-500">
-            Dispense medications against inventory (FEFO). Creates stock
-            movements traced to the prescription.
-          </p>
-        </div>
-        <button
-          onClick={() => (showForm ? reset() : setShowForm(true))}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          {showForm ? "Close" : "+ New dispense"}
-        </button>
-      </div>
+      <PageHero
+        icon="💊"
+        eyebrow="Pharmacy"
+        title="Pharmacy Dispensing"
+        subtitle="Dispense medications against inventory (FEFO). Creates stock movements traced to the prescription"
+        tone="emerald"
+        primaryAction={{ label: showForm ? "Close" : "+ New dispense", onClick: () => (showForm ? reset() : setShowForm(true)) }}
+      />
 
       {err && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type { Ward, WardType, BedStatus } from "@/lib/hospital/wards-store";
 
 const WARD_TYPES: WardType[] = [
@@ -181,38 +182,21 @@ export default function WardsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-900">Wards & Beds</h2>
-          <p className="text-sm text-slate-500">
-            Ward/bed catalog with occupancy, daily rates, and status management.
-          </p>
-        </div>
-        <button
-          onClick={() => (showForm ? reset() : setShowForm(true))}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          {showForm ? "Close" : "+ New ward"}
-        </button>
-      </div>
+      <PageHero
+        icon="🏥"
+        eyebrow="Bed Management"
+        title="Wards & Beds"
+        subtitle="Ward/bed catalog with occupancy, daily rates, and status management"
+        tone="indigo"
+        primaryAction={{ label: showForm ? "Close" : "+ New ward", onClick: () => (showForm ? reset() : setShowForm(true)) }}
+      />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {[
-          { label: "Wards", value: wards.length },
-          { label: "Total beds", value: totalBeds },
-          { label: "Occupied", value: occupied, accent: "text-red-600" },
-          { label: "Occupancy", value: `${occupancyPct}%` },
-        ].map((s) => (
-          <div key={s.label} className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="text-[11px] uppercase tracking-wider text-slate-500">
-              {s.label}
-            </div>
-            <div className={`mt-1 text-2xl font-semibold ${s.accent || "text-slate-900"}`}>
-              {s.value}
-            </div>
-          </div>
-        ))}
-      </div>
+      <StatGrid cols={4}>
+        <StatCard label="Wards" value={wards.length} tone="indigo" icon="🏨" />
+        <StatCard label="Total beds" value={totalBeds} tone="violet" icon="🛏️" />
+        <StatCard label="Occupied" value={occupied} tone={occupied > 0 ? "rose" : "slate"} icon="🔴" />
+        <StatCard label="Occupancy" value={`${occupancyPct}%`} tone={occupancyPct >= 85 ? "amber" : "emerald"} icon="📊" />
+      </StatGrid>
 
       {err && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">

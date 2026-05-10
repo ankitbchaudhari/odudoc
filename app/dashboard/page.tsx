@@ -196,6 +196,7 @@ export default function DashboardPage() {
             { label: "AI Credits", href: "/dashboard/ai-credit", icon: "🤖", bg: "from-purple-100 to-violet-100", ring: "ring-purple-200" },
             { label: "Jobs Board", href: "/jobs", icon: "💼", bg: "from-blue-100 to-indigo-100", ring: "ring-blue-200" },
             { label: "Find Courses", href: "/education", icon: "🎓", bg: "from-yellow-100 to-amber-100", ring: "ring-yellow-200" },
+            { label: "My Surgery Videos", href: "/dashboard/surgery-video", icon: "🎥", bg: "from-purple-100 to-pink-100", ring: "ring-purple-200" },
             { label: "Notifications", href: "/dashboard/notifications", icon: "🔔", bg: "from-fuchsia-100 to-purple-100", ring: "ring-fuchsia-200" },
             { label: "Health Passport", href: "/dashboard/health-passport", icon: "🪪", bg: "from-emerald-100 to-teal-100", ring: "ring-emerald-200" },
             { label: "My Family", href: "/dashboard/family", icon: "👨‍👩‍👧‍👦", bg: "from-pink-100 to-rose-100", ring: "ring-pink-200" },

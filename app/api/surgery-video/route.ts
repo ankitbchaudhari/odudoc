@@ -34,7 +34,19 @@ export async function GET(req: NextRequest) {
       ip: clientIpFromHeaders(req.headers),
     });
     if (!s) return NextResponse.json({ error: "forbidden_or_not_found" }, { status: 403 });
-    return NextResponse.json({ session: s, configured: isConfigured(), provider: activeProvider() });
+    return NextResponse.json({
+      session: s,
+      configured: isConfigured(),
+      provider: activeProvider(),
+      // Watermark hint mirrors /api/documents — the viewer overlays
+      // userId + IP + timestamp diagonally so a screen-recorded leak
+      // traces back to the device that recorded it.
+      watermark: {
+        patientUserId: s.patientUserId,
+        ip: clientIpFromHeaders(req.headers),
+        viewedAt: new Date().toISOString(),
+      },
+    });
   }
   const orgId = url.searchParams.get("orgId");
   const patientUserId = url.searchParams.get("patientUserId");

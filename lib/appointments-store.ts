@@ -1,6 +1,8 @@
 // Appointments store — Postgres-backed via bindPersistentArray.
 
 import { bindPersistentArray } from "./persistent-array";
+import { pushNotification } from "./notifications/store";
+import { findUserByEmail } from "./users-store";
 
 export type AppointmentStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";
 
@@ -83,6 +85,23 @@ export function createAppointment(input: AppointmentInput): Appointment {
   };
   appointments.unshift(a);
   flush();
+  // Patient-facing confirmation push. Email→userId resolution may
+  // miss for unregistered patients (walk-ins / phone bookings) —
+  // we silently no-op rather than fail the booking.
+  if (a.patientEmail) {
+    const u = findUserByEmail(a.patientEmail);
+    if (u) {
+      pushNotification({
+        userId: u.id,
+        kind: a.status === "Confirmed" ? "appointment_confirmed" : "appointment_reminder",
+        severity: "info",
+        title: a.status === "Confirmed" ? "Appointment confirmed" : "Appointment requested",
+        body: `${a.doctorName} on ${a.date} at ${a.time}.`,
+        link: "/dashboard/consultations",
+        reference: `appt:${a.id}:${a.status}`,
+      });
+    }
+  }
   return a;
 }
 
@@ -96,10 +115,26 @@ export function updateAppointment(id: string, patch: Partial<AppointmentInput>):
   if (patch.doctorId !== undefined) a.doctorId = patch.doctorId;
   if (patch.date !== undefined) a.date = patch.date;
   if (patch.time !== undefined) a.time = patch.time;
+  const prevStatus = a.status;
   if (patch.status !== undefined) a.status = patch.status;
   if (patch.notes !== undefined) a.notes = patch.notes;
   a.updatedAt = now();
   flush();
+  // Status-change notification.
+  if (patch.status && patch.status !== prevStatus && a.patientEmail) {
+    const u = findUserByEmail(a.patientEmail);
+    if (u) {
+      const kind = a.status === "Cancelled" ? "appointment_cancelled" : "appointment_confirmed";
+      pushNotification({
+        userId: u.id, kind,
+        severity: a.status === "Cancelled" ? "warn" : "success",
+        title: `Appointment ${a.status.toLowerCase()}`,
+        body: `${a.doctorName} on ${a.date} at ${a.time}.`,
+        link: "/dashboard/consultations",
+        reference: `appt:${a.id}:${a.status}`,
+      });
+    }
+  }
   return a;
 }
 

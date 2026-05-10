@@ -19,12 +19,13 @@ import { listTransactionsForUser } from "@/lib/wallet/store";
 import { listForUser } from "@/lib/notifications/store";
 import { listReadings, classify, VITAL_LABEL } from "@/lib/vitals/store";
 import { listOrdersForPatient as listRxOrdersForPatient } from "@/lib/rx-fulfillment/order-store";
+import { listSymptoms } from "@/lib/symptoms/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export type TimelineKind =
-  | "appointment" | "prescription" | "lab_order" | "rx_order" | "wallet" | "notification" | "vital";
+  | "appointment" | "prescription" | "lab_order" | "rx_order" | "wallet" | "notification" | "vital" | "symptom";
 
 export interface TimelineEvent {
   id: string;
@@ -194,6 +195,26 @@ export async function GET() {
           tone: sev === "critical" ? "critical" : sev === "warn" ? "warn" : "ok",
           href: "/dashboard/vitals",
           meta: { kind: v.kind },
+        });
+      }
+    } catch { /* skip */ }
+  }
+
+  // Symptom log entries — userId-keyed.
+  if (userId) {
+    try {
+      const syms = listSymptoms(userId, { limit: 50 });
+      for (const s of syms) {
+        const sev = s.severity;
+        events.push({
+          id: `symptom:${s.id}`,
+          kind: "symptom",
+          at: s.takenAt,
+          title: `${s.symptom} (${sev}/10)`,
+          body: [s.bodyArea, s.trigger ? `trigger: ${s.trigger}` : null, s.notes].filter(Boolean).join(" · ") || undefined,
+          tone: sev >= 8 ? "critical" : sev >= 5 ? "warn" : sev >= 1 ? "neutral" : "ok",
+          href: "/dashboard/symptoms",
+          meta: { severity: sev },
         });
       }
     } catch { /* skip */ }

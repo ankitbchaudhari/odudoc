@@ -9,6 +9,7 @@
 // fetches the single document by id.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 
 type Category = "prescription" | "lab_report" | "discharge" | "imaging" | "insurance" | "vaccination" | "consent" | "other";
 
@@ -59,23 +60,6 @@ export default function DocumentsPage() {
     for (const d of docs) c[d.category] = (c[d.category] || 0) + 1;
     return c;
   }, [docs]);
-
-  const view = async (id: string) => {
-    const r = await fetch(`/api/documents?id=${encodeURIComponent(id)}`);
-    if (!r.ok) return;
-    const d = await r.json();
-    const data = d.document.data as string;
-    // Open in a new tab. data: URLs work in most modern browsers
-    // for images/PDFs; some browsers block data: navigations, in
-    // which case we fall back to a Blob URL.
-    try {
-      window.open(data, "_blank");
-    } catch {
-      const blob = await (await fetch(data)).blob();
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank");
-    }
-  };
 
   const remove = async (id: string) => {
     if (!confirm("Delete this document? This cannot be undone.")) return;
@@ -152,12 +136,12 @@ export default function DocumentsPage() {
                   </svg>
                 </button>
               </div>
-              <button
-                onClick={() => view(d.id)}
-                className="mt-3 w-full rounded-lg bg-slate-900 px-3 py-2 text-xs font-bold text-white hover:bg-slate-800"
+              <Link
+                href={`/dashboard/documents/view/${d.id}`}
+                className="mt-3 block w-full rounded-lg bg-slate-900 px-3 py-2 text-center text-xs font-bold text-white hover:bg-slate-800"
               >
                 Open document
-              </button>
+              </Link>
             </li>
           ))}
         </ul>

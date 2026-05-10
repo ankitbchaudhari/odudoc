@@ -14,6 +14,7 @@ import {
   DocumentCategory, MAX_BYTES,
 } from "@/lib/documents/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
+import { recordAuditEvent, clientIpFromHeaders } from "@/lib/audit/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,7 +34,29 @@ export async function GET(req: NextRequest) {
   if (id) {
     const doc = getDocument(id, userId);
     if (!doc) return NextResponse.json({ error: "not_found" }, { status: 404 });
-    return NextResponse.json({ document: doc });
+    // Every document open is recorded — patients see who looked,
+    // when, and from what IP. Print/download events are recorded
+    // separately via PUT (action: "print" | "download").
+    const ip = clientIpFromHeaders(req.headers);
+    recordAuditEvent({
+      actorUserId: userId,
+      actorRole: (session?.user as { role?: string } | undefined)?.role as "patient" | "doctor" | "admin" | undefined,
+      actorEmail: session?.user?.email || undefined,
+      subjectUserId: userId, // self-view; cross-user views go through a different route
+      resource: "document",
+      resourceId: doc.id,
+      action: "view",
+      ip,
+      userAgent: req.headers.get("user-agent") || undefined,
+    });
+    return NextResponse.json({
+      document: doc,
+      // Watermark hint — the client overlays patient ID + IP +
+      // timestamp on every render of the document. The ip echoed
+      // here matches what audit logged so the watermark and the log
+      // tell the same story.
+      watermark: { patientUserId: userId, ip, viewedAt: new Date().toISOString() },
+    });
   }
   const list = listDocuments(userId, category && VALID_CATEGORIES.includes(category) ? category : undefined);
   // Strip data URL on list view to keep payload small.
@@ -84,6 +107,34 @@ export async function POST(req: NextRequest) {
   // Return metadata only — client already has the data it just uploaded.
   const { data: _data, ...meta } = result.doc;
   return NextResponse.json({ document: meta });
+}
+
+// Patient-side print/download tracking. We don't gate these here
+// (the patient owns the data); we just log so suspicious patterns
+// are visible.
+export async function PUT(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  if (!userId) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  const body = await req.json().catch(() => ({}));
+  if (!body.id || !body.action) return NextResponse.json({ error: "missing_fields" }, { status: 400 });
+  const doc = getDocument(String(body.id), userId);
+  if (!doc) return NextResponse.json({ error: "not_found" }, { status: 404 });
+  const action = String(body.action);
+  if (action !== "print" && action !== "download" && action !== "share") {
+    return NextResponse.json({ error: "invalid_action" }, { status: 400 });
+  }
+  recordAuditEvent({
+    actorUserId: userId,
+    actorEmail: session?.user?.email || undefined,
+    subjectUserId: userId,
+    resource: "document",
+    resourceId: doc.id,
+    action,
+    ip: clientIpFromHeaders(req.headers),
+    userAgent: req.headers.get("user-agent") || undefined,
+  });
+  return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(req: NextRequest) {

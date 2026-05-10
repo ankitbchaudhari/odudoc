@@ -182,6 +182,7 @@ export default function DashboardPage() {
             { label: "Today's Meds", href: "/dashboard/adherence", icon: "💊", bg: "from-emerald-100 to-teal-100", ring: "ring-emerald-200" },
             { label: "Documents", href: "/dashboard/documents", icon: "📁", bg: "from-amber-100 to-orange-100", ring: "ring-amber-200" },
             { label: "Vaccinations", href: "/dashboard/vaccinations", icon: "💉", bg: "from-cyan-100 to-blue-100", ring: "ring-cyan-200" },
+            { label: "Care Plans", href: "/dashboard/care-plan", icon: "📋", bg: "from-teal-100 to-cyan-100", ring: "ring-teal-200" },
             { label: "Notifications", href: "/dashboard/notifications", icon: "🔔", bg: "from-fuchsia-100 to-purple-100", ring: "ring-fuchsia-200" },
             { label: "Health Passport", href: "/dashboard/health-passport", icon: "🪪", bg: "from-emerald-100 to-teal-100", ring: "ring-emerald-200" },
             { label: "My Family", href: "/dashboard/family", icon: "👨‍👩‍👧‍👦", bg: "from-pink-100 to-rose-100", ring: "ring-pink-200" },

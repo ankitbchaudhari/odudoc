@@ -3,8 +3,10 @@
 import { useState, useMemo } from "react";
 import DynamicForm, { FormField } from "./DynamicForm";
 import { departments, doctors } from "@/lib/data";
+import { useLanguage } from "@/lib/language-context";
 
 export default function AppointmentForm() {
+  const { t } = useLanguage();
   const [selectedDept, setSelectedDept] = useState("");
   const [appointmentDetails, setAppointmentDetails] = useState<Record<string, string | boolean> | null>(null);
 
@@ -17,9 +19,9 @@ export default function AppointmentForm() {
   }, [selectedDept]);
 
   const fields: FormField[] = [
-    { name: "fullName", label: "Full Name", type: "text", required: true, placeholder: "John Doe" },
-    { name: "email", label: "Email Address", type: "email", required: true, placeholder: "john@example.com" },
-    { name: "phone", label: "Phone Number", type: "phone", required: true, placeholder: "+1 (555) 000-0000" },
+    { name: "fullName", label: t("booking.patientName"), type: "text", required: true, placeholder: "John Doe" },
+    { name: "email", label: t("booking.email"), type: "email", required: true, placeholder: "john@example.com" },
+    { name: "phone", label: t("booking.phone"), type: "phone", required: true, placeholder: "+1 (555) 000-0000" },
     {
       name: "department",
       label: "Department",
@@ -35,20 +37,20 @@ export default function AppointmentForm() {
       placeholder: "Select Doctor",
       options: filteredDoctors.map((d) => ({ label: d.name, value: d.id })),
     },
-    { name: "date", label: "Preferred Date", type: "date", required: true },
+    { name: "date", label: t("booking.selectDate"), type: "date", required: true },
     {
       name: "time",
-      label: "Preferred Time",
+      label: t("booking.selectTime"),
       type: "select",
       required: true,
-      placeholder: "Select Time",
+      placeholder: t("booking.selectTime"),
       options: [
         { label: "Morning (8AM - 12PM)", value: "morning" },
         { label: "Afternoon (12PM - 5PM)", value: "afternoon" },
         { label: "Evening (5PM - 9PM)", value: "evening" },
       ],
     },
-    { name: "message", label: "Additional Message", type: "textarea", placeholder: "Any special requests or concerns..." },
+    { name: "message", label: t("booking.reason"), type: "textarea", placeholder: "Any special requests or concerns..." },
   ];
 
   const handleSubmit = (data: Record<string, string | boolean>) => {
@@ -110,11 +112,11 @@ export default function AppointmentForm() {
 
   return (
     <div>
-      <h2 className="mb-6 text-xl font-bold text-gray-900">Appointment Details</h2>
+      <h2 className="mb-6 text-xl font-bold text-gray-900">{t("booking.appointmentDetails")}</h2>
       <DynamicForm
         fields={fields}
         onSubmit={handleSubmit}
-        submitLabel="Book Appointment"
+        submitLabel={t("booking.confirmBooking")}
       />
     </div>
   );

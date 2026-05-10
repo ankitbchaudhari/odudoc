@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard, TabSwitch } from "@/components/admin/PageShell";
 import type {
   RehabEpisode, RehabSession, RehabDiscipline, EpisodeCategory,
   EpisodeStatus, SessionStatus, FunctionalGoal, FimScore,
@@ -80,34 +81,37 @@ export default function RehabPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Rehabilitation (PM&R)</h1>
-          <p className="text-sm text-slate-500">PT / OT / ST episodes, FIM tracking, functional goals, sessions</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => { setEditEp(null); setShowEp(true); }} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Episode</button>
-          <button onClick={() => { setEditSn(null); setShowSn(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Session</button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="🏃"
+        eyebrow="Therapy"
+        title="Rehabilitation (PM&R)"
+        subtitle="PT / OT / ST episodes, FIM tracking, functional goals, sessions"
+        tone="emerald"
+        secondaryAction={{ label: "+ Episode", onClick: () => { setEditEp(null); setShowEp(true); } }}
+        primaryAction={{ label: "+ Session", onClick: () => { setEditSn(null); setShowSn(true); } }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
-          <StatTile label="Active" value={stats.activeEpisodes} tone="emerald" />
-          <StatTile label="Pending intake" value={stats.pendingIntake} tone="amber" />
-          <StatTile label="On hold" value={stats.onHold} tone="slate" />
-          <StatTile label="Discharged (month)" value={stats.dischargedMonth} tone="slate" />
-          <StatTile label="Sessions today" value={stats.sessionsToday} tone="indigo" />
-          <StatTile label="Completed (week)" value={stats.completedWeek} tone="emerald" />
-          <StatTile label="Missed (week)" value={stats.missedWeek} tone="rose" />
-        </div>
+        <StatGrid cols={7}>
+          <StatCard label="Active" value={stats.activeEpisodes} tone="emerald" icon="●" />
+          <StatCard label="Pending intake" value={stats.pendingIntake} tone="amber" icon="📝" />
+          <StatCard label="On hold" value={stats.onHold} tone="slate" icon="⏸" />
+          <StatCard label="Discharged (mo)" value={stats.dischargedMonth} tone="teal" icon="✓" />
+          <StatCard label="Sessions today" value={stats.sessionsToday} tone="indigo" icon="📅" />
+          <StatCard label="Completed (wk)" value={stats.completedWeek} tone="violet" icon="🏁" />
+          <StatCard label="Missed (wk)" value={stats.missedWeek} tone="rose" icon="✕" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex items-center gap-2 border-b border-slate-200">
-        <TabBtn active={tab === "episodes"} onClick={() => setTab("episodes")}>Episodes ({episodes.length})</TabBtn>
-        <TabBtn active={tab === "sessions"} onClick={() => setTab("sessions")}>Sessions ({sessions.length})</TabBtn>
-      </div>
+      <TabSwitch
+        active={tab}
+        onSelect={(k) => setTab(k as "episodes" | "sessions")}
+        tabs={[
+          { key: "episodes", label: "Episodes", count: episodes.length },
+          { key: "sessions", label: "Sessions", count: sessions.length },
+        ]}
+      />
 
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
         {tab === "episodes" ? (

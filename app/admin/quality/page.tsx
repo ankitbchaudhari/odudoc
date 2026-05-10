@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard, TabSwitch, FilterChip } from "@/components/admin/PageShell";
 import type {
   QualityIndicator, QualityMeasurement,
   IndicatorCategory, IndicatorStatus, Frequency, Direction,
@@ -68,43 +69,46 @@ export default function QualityPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Quality Indicators (NABH)</h1>
-          <p className="text-sm text-slate-500">Definition, targets, periodic measurement, RCA / action plan</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => { setEditInd(null); setShowInd(true); }} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Indicator</button>
-          <button onClick={() => { setEditMeas(null); setShowMeas(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Measurement</button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="🏆"
+        eyebrow="NABH"
+        title="Quality Indicators (NABH)"
+        subtitle="Definition, targets, periodic measurement, RCA / action plan"
+        tone="violet"
+        secondaryAction={{ label: "+ Indicator", onClick: () => { setEditInd(null); setShowInd(true); } }}
+        primaryAction={{ label: "+ Measurement", onClick: () => { setEditMeas(null); setShowMeas(true); } }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
-          <StatTile label="Active indicators" value={stats.activeIndicators} tone="slate" />
-          <StatTile label="NABH mandatory" value={stats.mandatoryIndicators} tone="indigo" />
-          <StatTile label="Measurements (month)" value={stats.measurementsMonth} tone="slate" />
-          <StatTile label="Missed (month)" value={stats.missedMonth} tone="rose" />
-          <StatTile label="Missed (quarter)" value={stats.missedQuarter} tone="rose" />
-          <StatTile label="Missing RCA" value={stats.missedMissingRca} tone="amber" />
-          <StatTile label="Performance %" value={stats.performancePct} tone="emerald" />
-        </div>
+        <StatGrid cols={7}>
+          <StatCard label="Active indicators" value={stats.activeIndicators} tone="slate" icon="📊" />
+          <StatCard label="NABH mandatory" value={stats.mandatoryIndicators} tone="indigo" icon="★" />
+          <StatCard label="Measurements (mo)" value={stats.measurementsMonth} tone="teal" icon="📈" />
+          <StatCard label="Missed (mo)" value={stats.missedMonth} tone="rose" icon="✕" />
+          <StatCard label="Missed (qtr)" value={stats.missedQuarter} tone="orange" icon="⚠" />
+          <StatCard label="Missing RCA" value={stats.missedMissingRca} tone="amber" icon="🔍" />
+          <StatCard label="Performance %" value={stats.performancePct} tone="emerald" icon="✓" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex items-center gap-2 border-b border-slate-200">
-        <TabBtn active={tab === "indicators"} onClick={() => setTab("indicators")}>Indicators ({indicators.length})</TabBtn>
-        <TabBtn active={tab === "measurements"} onClick={() => setTab("measurements")}>Measurements ({measurements.length})</TabBtn>
-      </div>
+      <TabSwitch
+        active={tab}
+        onSelect={(k) => setTab(k as "indicators" | "measurements")}
+        tabs={[
+          { key: "indicators", label: "Indicators", count: indicators.length },
+          { key: "measurements", label: "Measurements", count: measurements.length },
+        ]}
+      />
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {tab === "indicators" ? (
           <>
-            <FilterPill active={filterCategory === ""} onClick={() => setFilterCategory("")}>All categories</FilterPill>
-            {CATEGORIES.map((c) => <FilterPill key={c} active={filterCategory === c} onClick={() => setFilterCategory(c)}>{CATEGORY_LABEL[c]}</FilterPill>)}
+            <FilterChip active={filterCategory === ""} onClick={() => setFilterCategory("")}>All categories</FilterChip>
+            {CATEGORIES.map((c) => <FilterChip key={c} active={filterCategory === c} onClick={() => setFilterCategory(c)}>{CATEGORY_LABEL[c]}</FilterChip>)}
           </>
         ) : (
-          <FilterPill active={missedOnly} onClick={() => setMissedOnly(!missedOnly)}>Missed only</FilterPill>
+          <FilterChip active={missedOnly} onClick={() => setMissedOnly(!missedOnly)}>Missed only</FilterChip>
         )}
       </div>
 

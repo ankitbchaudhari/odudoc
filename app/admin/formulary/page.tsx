@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard, FilterChip } from "@/components/admin/PageShell";
 import type {
   FormularyDrug, DosageForm, DrugCategory, ScheduleClass,
   FormularyStatus, PregnancyCategory,
@@ -67,40 +68,41 @@ export default function FormularyPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Pharmacy Formulary</h1>
-          <p className="text-sm text-slate-500">Drug master — generics, strengths, schedule class, P&T restrictions, LASA / high-alert flags</p>
-        </div>
-        <button onClick={() => { setEditing(null); setShowModal(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Add drug</button>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="💊"
+        eyebrow="Pharmacy"
+        title="Pharmacy Formulary"
+        subtitle="Drug master — generics, strengths, schedule class, P&T restrictions, LASA / high-alert flags"
+        tone="violet"
+        primaryAction={{ label: "+ Add drug", onClick: () => { setEditing(null); setShowModal(true); } }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-8">
-          <StatTile label="Total" value={stats.total} tone="slate" />
-          <StatTile label="Active" value={stats.active} tone="emerald" />
-          <StatTile label="Restricted" value={stats.restricted} tone="amber" />
-          <StatTile label="Non-formulary" value={stats.nonFormulary} tone="slate" />
-          <StatTile label="Pending P&T" value={stats.pendingPac} tone="indigo" />
-          <StatTile label="High-alert" value={stats.highAlert} tone="rose" />
-          <StatTile label="LASA" value={stats.lasa} tone="rose" />
-          <StatTile label="Narcotic" value={stats.narcotic} tone="rose" />
-        </div>
+        <StatGrid cols={7}>
+          <StatCard label="Total" value={stats.total} tone="slate" icon="∑" />
+          <StatCard label="Active" value={stats.active} tone="emerald" icon="✓" />
+          <StatCard label="Restricted" value={stats.restricted} tone="amber" icon="🔒" />
+          <StatCard label="Non-formulary" value={stats.nonFormulary} tone="orange" icon="✕" />
+          <StatCard label="Pending P&T" value={stats.pendingPac} tone="indigo" icon="⏳" />
+          <StatCard label="High-alert" value={stats.highAlert} tone="rose" icon="❗" />
+          <StatCard label="LASA" value={stats.lasa} tone="fuchsia" icon="⚠" />
+          <StatCard label="Narcotic" value={stats.narcotic} tone="violet" icon="🔐" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search generic / brand / ATC..." className="w-72 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value as DrugCategory | "")} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+      <div className="flex flex-wrap items-center gap-2">
+        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search generic / brand / ATC..." className="w-72 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+        <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value as DrugCategory | "")} className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm">
           <option value="">All categories</option>
           {CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_LABEL[c]}</option>)}
         </select>
-        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as FormularyStatus | "")} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as FormularyStatus | "")} className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm">
           <option value="">All status</option>
           {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
         </select>
-        <FilterPill active={highAlertOnly} onClick={() => setHighAlertOnly(!highAlertOnly)}>High-alert only</FilterPill>
-        <FilterPill active={lasaOnly} onClick={() => setLasaOnly(!lasaOnly)}>LASA only</FilterPill>
+        <FilterChip active={highAlertOnly} onClick={() => setHighAlertOnly(!highAlertOnly)}>High-alert only</FilterChip>
+        <FilterChip active={lasaOnly} onClick={() => setLasaOnly(!lasaOnly)}>LASA only</FilterChip>
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm">

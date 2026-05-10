@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard, FilterChip } from "@/components/admin/PageShell";
 import type {
   CarePlan, CarePlanStatus, NursingDiagnosis, NursingGoal,
   NursingIntervention, NursingProgressEntry, DiagnosisStatus,
@@ -68,29 +69,30 @@ export default function NursingCarePage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Nursing Care Plans</h1>
-          <p className="text-sm text-slate-500">NANDA diagnoses · NOC goals · NIC interventions · SOAP progress notes</p>
-        </div>
-        <button onClick={() => { setEditing(null); setShowPlan(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ New care plan</button>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="🩷"
+        eyebrow="Bedside"
+        title="Nursing Care Plans"
+        subtitle="NANDA diagnoses · NOC goals · NIC interventions · SOAP progress notes"
+        tone="rose"
+        primaryAction={{ label: "+ New care plan", onClick: () => { setEditing(null); setShowPlan(true); } }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-          <StatTile label="Active" value={stats.active} tone="emerald" />
-          <StatTile label="On hold" value={stats.onHold} tone="slate" />
-          <StatTile label="Completed (month)" value={stats.completedMonth} tone="slate" />
-          <StatTile label="Active diagnoses" value={stats.activeDiagnoses} tone="indigo" />
-          <StatTile label="High priority" value={stats.highPriority} tone="rose" />
-          <StatTile label="Overdue review" value={stats.overdueReview} tone="amber" />
-        </div>
+        <StatGrid cols={6}>
+          <StatCard label="Active" value={stats.active} tone="emerald" icon="●" />
+          <StatCard label="On hold" value={stats.onHold} tone="slate" icon="⏸" />
+          <StatCard label="Completed (mo)" value={stats.completedMonth} tone="teal" icon="✓" />
+          <StatCard label="Active diagnoses" value={stats.activeDiagnoses} tone="indigo" icon="📋" />
+          <StatCard label="High priority" value={stats.highPriority} tone="rose" icon="❗" />
+          <StatCard label="Overdue review" value={stats.overdueReview} tone="amber" icon="⏰" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <FilterPill active={filterStatus === ""} onClick={() => setFilterStatus("")}>All</FilterPill>
-        {STATUSES.map((s) => <FilterPill key={s} active={filterStatus === s} onClick={() => setFilterStatus(s)}>{STATUS_LABEL[s]}</FilterPill>)}
+      <div className="flex flex-wrap items-center gap-2">
+        <FilterChip active={filterStatus === ""} onClick={() => setFilterStatus("")}>All</FilterChip>
+        {STATUSES.map((s) => <FilterChip key={s} active={filterStatus === s} onClick={() => setFilterStatus(s)}>{STATUS_LABEL[s]}</FilterChip>)}
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm">

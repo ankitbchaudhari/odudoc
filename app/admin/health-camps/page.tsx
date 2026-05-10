@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard, TabSwitch } from "@/components/admin/PageShell";
 import type {
   HealthCamp, CampRegistration, CampStatus, CampType, Partnership, RegistrationOutcome, Gender,
 } from "@/lib/hospital/health-camps-store";
@@ -73,34 +74,37 @@ export default function HealthCampsPage() {
   );
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Health Camps & Outreach</h1>
-          <p className="text-sm text-slate-500">Plan, run, and report community health events</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => { setEditCamp(null); setShowCamp(true); }} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Camp</button>
-          <button onClick={() => { setEditReg(null); setShowReg(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Registration</button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="⛺"
+        eyebrow="Outreach"
+        title="Health Camps & Outreach"
+        subtitle="Plan, run, and report community health events"
+        tone="emerald"
+        secondaryAction={{ label: "+ Camp", onClick: () => { setEditCamp(null); setShowCamp(true); } }}
+        primaryAction={{ label: "+ Registration", onClick: () => { setEditReg(null); setShowReg(true); } }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
-          <StatTile label="Upcoming" value={stats.upcoming} tone="indigo" />
-          <StatTile label="Ongoing" value={stats.ongoing} tone="emerald" />
-          <StatTile label="Pending approval" value={stats.pendingApproval} tone="amber" />
-          <StatTile label="Completed (month)" value={stats.completedMonth} tone="slate" />
-          <StatTile label="Reached (month)" value={stats.totalReachedMonth} tone="slate" />
-          <StatTile label="Screened (month)" value={stats.screenedMonth} tone="slate" />
-          <StatTile label="Referred (month)" value={stats.referredMonth} tone="rose" />
-        </div>
+        <StatGrid cols={7}>
+          <StatCard label="Upcoming" value={stats.upcoming} tone="indigo" icon="📅" />
+          <StatCard label="Ongoing" value={stats.ongoing} tone="emerald" icon="●" />
+          <StatCard label="Pending approval" value={stats.pendingApproval} tone="amber" icon="⏳" />
+          <StatCard label="Completed (mo)" value={stats.completedMonth} tone="teal" icon="✓" />
+          <StatCard label="Reached (mo)" value={stats.totalReachedMonth} tone="sky" icon="👥" />
+          <StatCard label="Screened (mo)" value={stats.screenedMonth} tone="violet" icon="🩺" />
+          <StatCard label="Referred (mo)" value={stats.referredMonth} tone="rose" icon="↗" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex items-center gap-2">
-        <TabBtn active={tab === "camps"} onClick={() => setTab("camps")}>Camps ({camps.length})</TabBtn>
-        <TabBtn active={tab === "regs"} onClick={() => setTab("regs")}>Registrations ({regs.length})</TabBtn>
-      </div>
+      <TabSwitch
+        active={tab}
+        onSelect={(k) => setTab(k as "camps" | "regs")}
+        tabs={[
+          { key: "camps", label: "Camps", count: camps.length },
+          { key: "regs", label: "Registrations", count: regs.length },
+        ]}
+      />
 
       {tab === "camps" && (
         <>

@@ -28,11 +28,25 @@ export async function GET() {
     ? sessionRole
     : ctx.role;
 
+  // Surface the org's plan as a free-text "kind" so the header chrome
+  // can render "<Hospital> · hospital admin" vs "Super admin". Plan
+  // is the closest proxy we have to org-type; replace with an explicit
+  // OrgKind enum if the data model adds one.
+  const planLabel = ctx.organization?.plan
+    ? ctx.organization.plan.charAt(0).toUpperCase() + ctx.organization.plan.slice(1)
+    : undefined;
+
   return NextResponse.json({
     isSuperAdmin: ctx.isSuperAdmin,
     role: effectiveRole,
     organizationId: ctx.organization?.id ?? null,
     organizationName: ctx.organization?.name ?? null,
+    // Active-org echo for the layout's auto-select hook. For super
+    // admins this is null when they haven't picked an org; for tenant
+    // admins it always resolves to their primary membership.
+    activeOrgId: ctx.organization?.id ?? null,
+    activeOrgName: ctx.organization?.name ?? null,
+    activeOrgKind: planLabel,
     // For super-admins with no active org selected, return null so the
     // sidebar falls back to "show everything". For tenant admins we
     // always return the org's module flags.

@@ -46,6 +46,13 @@ interface AdminContext {
   isSuperAdmin: boolean;
   modules: Record<OrgModuleKey, boolean> | null;
   organizationName: string | null;
+  // Resolved display name for the active org chrome — falls back to
+  // organizationName from the API. Used by the user badge in the header
+  // so an org admin sees "<Hospital Name> admin", not "Super admin".
+  activeOrgName?: string;
+  // Best-effort label derived from the org's plan / type for the
+  // sub-line ("hospital admin", "lab admin", etc.). Free-text.
+  activeOrgKind?: string;
   // Raw role from the session. Scoped roles (staff/pharmacist/support/hr)
   // get a curated sidebar rather than the full module-gated one so they
   // aren't distracted by surfaces they can't use anyway. Admin/doctor
@@ -1035,8 +1042,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           isSuperAdmin: !!data.isSuperAdmin,
           modules: data.modules ?? null,
           organizationName: data.organizationName ?? null,
+          activeOrgName: data.activeOrgName ?? data.organizationName ?? undefined,
+          activeOrgKind: data.activeOrgKind ?? undefined,
           role: data.role ?? null,
         });
+        // Org-admin auto-select: if the API resolved a single
+        // organization (non-super-admin with one active membership),
+        // mirror it into localStorage so the org-switcher + scoped
+        // pages pick it up without the user having to choose.
+        if (typeof window !== "undefined" && !data.isSuperAdmin && data.activeOrgId) {
+          const cur = localStorage.getItem("odudoc:active-org");
+          if (cur !== data.activeOrgId) {
+            localStorage.setItem("odudoc:active-org", data.activeOrgId);
+            window.dispatchEvent(new CustomEvent("odudoc:active-org-changed"));
+          }
+        }
       })
       .catch(() => {
         // Failed to load context — leave ctx null so the sidebar stays empty
@@ -1287,7 +1307,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <p className="text-[11px] text-slate-500">Manage your healthcare platform</p>
           </div>
           <div className="flex items-center gap-2">
-            <OrgSwitcher />
+            {/* Org switcher only for super-admin — tenant admins are
+                scoped to their single membership; auto-select handles it. */}
+            {ctx?.isSuperAdmin && <OrgSwitcher />}
             {/* Search */}
             <div className="relative hidden md:block">
               <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1309,12 +1331,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <NotificationBell />
             <div className="mx-1 h-6 w-px bg-slate-200" />
             <div className="flex items-center gap-2.5 rounded-lg px-2 py-1.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-700 text-sm font-bold text-white shadow-sm">
-                A
+              <div className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white shadow-sm ${
+                ctx?.isSuperAdmin ? "bg-gradient-to-br from-primary-400 to-primary-700"
+                                  : "bg-gradient-to-br from-indigo-400 to-indigo-700"
+              }`}>
+                {ctx?.isSuperAdmin ? "A" : (ctx?.activeOrgName || "Org").slice(0, 1).toUpperCase()}
               </div>
               <div className="hidden text-left sm:block">
-                <p className="text-[12.5px] font-semibold leading-tight text-slate-800">Admin</p>
-                <p className="text-[10.5px] leading-tight text-slate-500">Super admin</p>
+                <p className="text-[12.5px] font-semibold leading-tight text-slate-800">
+                  {ctx?.isSuperAdmin ? "Admin" : ctx?.activeOrgName || "Org admin"}
+                </p>
+                <p className="text-[10.5px] leading-tight text-slate-500">
+                  {ctx?.isSuperAdmin ? "Super admin" : ctx?.activeOrgKind ? `${ctx.activeOrgKind} admin` : "Org admin"}
+                </p>
               </div>
             </div>
           </div>

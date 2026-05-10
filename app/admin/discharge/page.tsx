@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 
 type DischargeDisposition =
   | "home"
@@ -300,28 +301,22 @@ export default function DischargePage() {
   }, [list]);
 
   return (
-    <div>
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Discharge Summaries</h1>
-          <p className="text-sm text-slate-500">
-            Medico-legal closure for inpatient episodes — diagnoses, hospital course, meds, and follow-up plan.
-          </p>
-        </div>
-        <button
-          onClick={openNew}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-primary-700"
-        >
-          + New Summary
-        </button>
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="📤"
+        eyebrow="Inpatient Closure"
+        title="Discharge Summaries"
+        subtitle="Medico-legal closure for inpatient episodes — diagnoses, hospital course, meds, and follow-up plan"
+        tone="indigo"
+        primaryAction={{ label: "+ New Summary", onClick: openNew }}
+      />
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <Stat label="Total" value={stats.total} tone="slate" />
-        <Stat label="Draft" value={stats.draftN} tone="amber" />
-        <Stat label="Finalized" value={stats.finalizedN} tone="emerald" />
-        <Stat label="Expired (mortality)" value={stats.expiredN} tone="rose" />
-      </div>
+      <StatGrid cols={4}>
+        <StatCard label="Total" value={stats.total} tone="indigo" icon="📊" />
+        <StatCard label="Draft" value={stats.draftN} tone={stats.draftN > 0 ? "amber" : "slate"} icon="📝" />
+        <StatCard label="Finalized" value={stats.finalizedN} tone="emerald" icon="✓" />
+        <StatCard label="Expired (mortality)" value={stats.expiredN} tone={stats.expiredN > 0 ? "rose" : "slate"} icon="🕯️" />
+      </StatGrid>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <select

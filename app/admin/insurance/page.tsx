@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard as ShellStatCard } from "@/components/admin/PageShell";
 
 export const dynamic = "force-dynamic";
 
@@ -141,20 +142,21 @@ export default function InsurancePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Insurance / TPA</h1>
-        <p className="text-sm text-slate-500">
-          Patient policies, pre-authorizations, and claim settlement tracking.
-        </p>
-      </div>
+      <PageHero
+        icon="🛡️"
+        eyebrow="Revenue Cycle"
+        title="Insurance / TPA"
+        subtitle="Patient policies, pre-authorizations, and claim settlement tracking"
+        tone="emerald"
+      />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        <StatCard label="Policies" value={stats.policies} />
-        <StatCard label="Claims" value={stats.claims} />
-        <StatCard label="In-flight" value={stats.inFlight} accent="blue" />
-        <StatCard label="Claimed" value={fmtMoney(stats.claimed)} accent="amber" />
-        <StatCard label="Settled" value={fmtMoney(stats.settled)} accent="emerald" />
-      </div>
+      <StatGrid cols={5}>
+        <ShellStatCard label="Policies" value={stats.policies} tone="indigo" icon="📄" />
+        <ShellStatCard label="Claims" value={stats.claims} tone="violet" icon="📋" />
+        <ShellStatCard label="In-flight" value={stats.inFlight} tone="sky" icon="✈️" />
+        <ShellStatCard label="Claimed" value={fmtMoney(stats.claimed)} tone="amber" icon="💰" />
+        <ShellStatCard label="Settled" value={fmtMoney(stats.settled)} tone="emerald" icon="✓" />
+      </StatGrid>
 
       <div className="flex border-b border-slate-200">
         {[

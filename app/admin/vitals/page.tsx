@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard as ShellStatCard } from "@/components/admin/PageShell";
 
 export const dynamic = "force-dynamic";
 
@@ -233,33 +234,21 @@ export default function VitalsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">
-            Vitals &amp; Early Warning Score
-          </h1>
-          <p className="text-sm text-slate-500">
-            Timestamped observations with auto-computed NEWS2-style EWS and
-            escalation tiers.
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            resetForm();
-            setShowForm(!showForm);
-          }}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
-        >
-          {showForm ? "Close" : "+ Record Vitals"}
-        </button>
-      </div>
+      <PageHero
+        icon="❤️‍🔥"
+        eyebrow="NEWS2"
+        title="Vitals & Early Warning Score"
+        subtitle="Timestamped observations with auto-computed NEWS2-style EWS and escalation tiers"
+        tone="rose"
+        primaryAction={{ label: showForm ? "Close" : "+ Record Vitals", onClick: () => { resetForm(); setShowForm(!showForm); } }}
+      />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard label="Total readings" value={stats.total} />
-        <StatCard label="High EWS" value={stats.high} accent="red" />
-        <StatCard label="Medium EWS" value={stats.medium} accent="amber" />
-        <StatCard label="Last 24h" value={stats.last24h} accent="blue" />
-      </div>
+      <StatGrid cols={4}>
+        <ShellStatCard label="Total readings" value={stats.total} tone="indigo" icon="📊" />
+        <ShellStatCard label="High EWS" value={stats.high} tone={stats.high > 0 ? "rose" : "slate"} icon="🚨" />
+        <ShellStatCard label="Medium EWS" value={stats.medium} tone={stats.medium > 0 ? "amber" : "slate"} icon="⚠️" />
+        <ShellStatCard label="Last 24h" value={stats.last24h} tone="sky" icon="🕐" />
+      </StatGrid>
 
       <div className="flex flex-wrap gap-3">
         <select

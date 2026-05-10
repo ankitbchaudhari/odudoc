@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 type AefiSeverity = "none" | "mild" | "moderate" | "severe";
 
@@ -79,15 +80,16 @@ export default function ImmunizationsPage() {
   }, []);
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Immunizations</h1>
-        <p className="text-sm text-slate-500">
-          Vaccine catalog with multi-dose schedules, administered-dose tracking, auto due dates, and AEFI capture.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="💉"
+        eyebrow="Preventive Care"
+        title="Immunizations"
+        subtitle="Vaccine catalog with multi-dose schedules, administered-dose tracking, auto due dates, and AEFI capture"
+        tone="emerald"
+      />
 
-      <div className="mb-5 flex gap-1 rounded-lg bg-slate-100 p-1 text-sm">
+      <div className="flex gap-1 rounded-lg bg-slate-100 p-1 text-sm">
         <button
           onClick={() => setTab("doses")}
           className={`flex-1 rounded-md px-4 py-1.5 font-medium transition-colors ${

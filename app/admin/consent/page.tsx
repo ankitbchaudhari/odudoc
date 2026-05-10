@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 
 type ConsentType =
   | "general_admission"
@@ -268,29 +269,22 @@ export default function ConsentFormsPage() {
   }, [forms]);
 
   return (
-    <div>
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Consent Forms</h1>
-          <p className="text-sm text-slate-500">
-            Medico-legal consent capture — admission, surgery, anesthesia, transfusion, research, DNR & DAMA.
-          </p>
-        </div>
-        <button
-          onClick={openNew}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-primary-700"
-        >
-          + New Consent
-        </button>
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="📝"
+        eyebrow="Medico-Legal"
+        title="Consent Forms"
+        subtitle="Medico-legal consent capture — admission, surgery, anesthesia, transfusion, research, DNR & DAMA"
+        tone="violet"
+        primaryAction={{ label: "+ New Consent", onClick: openNew }}
+      />
 
-      {/* Stat tiles */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <StatTile label="Total" value={stats.total} tone="slate" />
-        <StatTile label="Signed" value={stats.signed} tone="emerald" />
-        <StatTile label="Draft" value={stats.draftN} tone="amber" />
-        <StatTile label="Revoked" value={stats.revoked} tone="rose" />
-      </div>
+      <StatGrid cols={4}>
+        <StatCard label="Total" value={stats.total} tone="indigo" icon="📊" />
+        <StatCard label="Signed" value={stats.signed} tone="emerald" icon="✍️" />
+        <StatCard label="Draft" value={stats.draftN} tone={stats.draftN > 0 ? "amber" : "slate"} icon="📝" />
+        <StatCard label="Revoked" value={stats.revoked} tone={stats.revoked > 0 ? "rose" : "slate"} icon="🚫" />
+      </StatGrid>
 
       {/* Filters */}
       <div className="mb-4 flex flex-wrap items-center gap-2">

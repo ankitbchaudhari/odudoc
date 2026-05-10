@@ -80,6 +80,20 @@ export async function POST(req: NextRequest) {
       wallet: getWallet(userId),
     });
   } catch (err) {
-    return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+    const msg = (err as Error).message || "";
+    // Cashfree returns "Cashfree create order 401" when the App ID +
+    // Secret don't match the configured CASHFREE_ENV. Most common
+    // mistake: SANDBOX keys deployed without setting CASHFREE_ENV
+    // (which defaults to PROD). Surface that hint so ops can fix
+    // env without grepping logs.
+    if (msg.includes("401") || /authentication.?failed|invalid.?credential/i.test(msg)) {
+      const env = (process.env.CASHFREE_ENV || "PROD").toUpperCase();
+      return NextResponse.json({
+        error: "payment_gateway_auth_failed",
+        message: "Payment gateway rejected our credentials. Please try again in a few minutes — our team has been notified.",
+        diagnostic: `Cashfree returned 401 against ${env} endpoint. If your CASHFREE_APP_ID is a SANDBOX key, set CASHFREE_ENV=SANDBOX (or swap to PROD keys).`,
+      }, { status: 502 });
+    }
+    return NextResponse.json({ error: "payment_gateway_error", message: msg }, { status: 500 });
   }
 }

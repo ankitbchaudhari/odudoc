@@ -75,7 +75,15 @@ export default function WalletPage() {
         await load();
       } else {
         const body = await r.json().catch(() => ({}));
-        setToast({ kind: "err", text: `Failed: ${body.error || "unknown"}` });
+        // Surface the user-friendly message when the API provides one;
+        // suppress raw Cashfree internals from the patient's view.
+        const userMsg = body.message
+          || (body.error === "payment_gateway_auth_failed" ? "Payment gateway temporarily unavailable. Please try again shortly." : null)
+          || (body.error === "invalid_amount" ? "Top-up must be between ₹100 and ₹50,000." : null)
+          || `Top-up failed (${body.error || r.status}).`;
+        setToast({ kind: "err", text: userMsg });
+        // Operator diagnostic — only logged client-side, not shown.
+        if (body.diagnostic) console.warn("[wallet topup]", body.diagnostic);
       }
     } finally { setBusy(false); }
   };

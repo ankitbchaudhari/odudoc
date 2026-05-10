@@ -63,15 +63,21 @@ const { hydrate, flush, tombstone } = bindPersistentArray<SurgeryVideoSession>(
 );
 await hydrate();
 
+function cloudflareOk(): boolean {
+  return !!(process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_STREAM_API_TOKEN);
+}
+function muxOk(): boolean {
+  return !!(process.env.MUX_TOKEN_ID && process.env.MUX_TOKEN_SECRET);
+}
+
 export function isConfigured(): boolean {
-  // Cloudflare Stream is the first real provider — configured when
-  // its API token + account id are set.
-  if (process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_STREAM_API_TOKEN) return true;
+  if (cloudflareOk() || muxOk()) return true;
   return !!(process.env.VIDEO_PROVIDER && process.env.VIDEO_INGEST_URL);
 }
 
 export function activeProvider(): string {
-  if (process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_STREAM_API_TOKEN) return "cloudflare";
+  if (cloudflareOk()) return "cloudflare";
+  if (muxOk()) return "mux";
   return process.env.VIDEO_PROVIDER || "stub";
 }
 

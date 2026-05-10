@@ -52,21 +52,42 @@ const { hydrate, flush, tombstone } = bindPersistentArray<CallSession>(
 );
 await hydrate();
 
-export function isConfigured(): boolean {
-  // Twilio is the first real provider — configured if SID/token +
-  // a sender number (under either alias) are present.
-  if (
+function twilioOk(): boolean {
+  return !!(
     process.env.TWILIO_ACCOUNT_SID &&
     process.env.TWILIO_AUTH_TOKEN &&
     (process.env.TWILIO_FROM_NUMBER || process.env.TWILIO_PHONE_NUMBER)
-  ) {
-    return true;
-  }
+  );
+}
+function exotelOk(): boolean {
+  return !!(
+    process.env.EXOTEL_SID &&
+    process.env.EXOTEL_API_KEY &&
+    process.env.EXOTEL_API_TOKEN &&
+    (process.env.EXOTEL_FROM_NUMBER || process.env.EXOTEL_PHONE_NUMBER)
+  );
+}
+function vonageOk(): boolean {
+  return !!(
+    process.env.VONAGE_API_KEY &&
+    process.env.VONAGE_API_SECRET &&
+    process.env.VONAGE_APPLICATION_ID &&
+    process.env.VONAGE_FROM_NUMBER
+  );
+}
+
+export function isConfigured(): boolean {
+  if (twilioOk() || exotelOk() || vonageOk()) return true;
   return !!(process.env.VOICE_BOT_PROVIDER && process.env.VOICE_BOT_API_KEY);
 }
 
 export function activeProvider(): Provider {
-  if (process.env.TWILIO_ACCOUNT_SID) return "twilio";
+  // Preference order: Twilio → Exotel → Vonage. Operators using
+  // multiple providers typically want Twilio for international and
+  // Exotel for India-only numbers; pick whichever is configured.
+  if (twilioOk()) return "twilio";
+  if (exotelOk()) return "exotel" as Provider;
+  if (vonageOk()) return "vonage" as Provider;
   return (process.env.VOICE_BOT_PROVIDER as Provider) || "stub";
 }
 

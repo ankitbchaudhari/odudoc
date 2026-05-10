@@ -184,6 +184,7 @@ export default function DashboardPage() {
             { label: "Messages", href: "/dashboard/messages", icon: "💬", bg: "from-emerald-100 to-lime-100", ring: "ring-emerald-200" },
             { label: "Insurance & Cashless", href: "/dashboard/insurance", icon: "🛡️", bg: "from-amber-100 to-yellow-100", ring: "ring-amber-200" },
             { label: "Order Medicines", href: "/dashboard/rx-fulfillment", icon: "💊", bg: "from-rose-100 to-pink-100", ring: "ring-rose-200" },
+            { label: "Book Lab Tests", href: "/dashboard/labs", icon: "🧪", bg: "from-teal-100 to-emerald-100", ring: "ring-teal-200" },
             { label: "Wearables", href: "/dashboard/wearables", icon: "⌚", bg: "from-cyan-100 to-sky-100", ring: "ring-cyan-200" },
             { label: "Import old Rx", href: "/dashboard/rx-import", icon: "📷", bg: "from-orange-100 to-amber-100", ring: "ring-orange-200" },
             { label: "ABHA / ABDM", href: "/dashboard/abha", icon: "🇮🇳", bg: "from-yellow-100 to-orange-100", ring: "ring-yellow-200" },

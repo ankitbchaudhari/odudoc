@@ -11,6 +11,7 @@
 // doesn't retroactively rewrite the patient's invoice.
 
 import { bindPersistentArray } from "../persistent-array";
+import { pushNotification } from "../notifications/store";
 
 export type FulfillmentStatus =
   | "placed"
@@ -170,6 +171,49 @@ export function transitionOrder(
   o.events.push({ at, status: to, note: note?.trim() || undefined });
   o.updatedAt = at;
   flush();
+
+  // Patient-facing pharmacy notifications. Idempotent on
+  // (userId, kind, "rx_order:<id>:<status>") so retries silent-update
+  // rather than stack.
+  if (o.patientUserId) {
+    const ref = `rx_order:${o.id}:${to}`;
+    if (to === "accepted") {
+      pushNotification({
+        userId: o.patientUserId, kind: "rx_ready", severity: "info",
+        title: "Pharmacy accepted your order",
+        body: `${o.pharmacyName} is preparing your medicines.`,
+        link: "/dashboard/rx-fulfillment", reference: ref,
+      });
+    } else if (to === "packed") {
+      pushNotification({
+        userId: o.patientUserId, kind: "rx_ready", severity: "info",
+        title: "Order packed",
+        body: `${o.pharmacyName} has packed your order. Out for delivery soon.`,
+        link: "/dashboard/rx-fulfillment", reference: ref,
+      });
+    } else if (to === "out_for_delivery") {
+      pushNotification({
+        userId: o.patientUserId, kind: "rx_ready", severity: "success",
+        title: "Out for delivery",
+        body: `${o.pharmacyName}'s rider is on the way. ETA usually 30-60 minutes.`,
+        link: "/dashboard/rx-fulfillment", reference: ref,
+      });
+    } else if (to === "delivered") {
+      pushNotification({
+        userId: o.patientUserId, kind: "rx_ready", severity: "success",
+        title: "Medicines delivered",
+        body: `${o.pharmacyName} delivered your order. Tap to view receipt.`,
+        link: "/dashboard/rx-fulfillment", reference: ref,
+      });
+    } else if (to === "cancelled" || to === "rejected") {
+      pushNotification({
+        userId: o.patientUserId, kind: "rx_ready", severity: "warn",
+        title: to === "rejected" ? "Pharmacy could not fulfil order" : "Order cancelled",
+        body: note || `${o.pharmacyName}: ${to === "rejected" ? "out of stock or unable to source" : "order cancelled"}.`,
+        link: "/dashboard/rx-fulfillment", reference: ref,
+      });
+    }
+  }
   return o;
 }
 

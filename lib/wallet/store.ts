@@ -183,6 +183,20 @@ export function applyTopUp(input: TopUpInput): TopUpResult {
   }
   w.updatedAt = new Date().toISOString();
   flushAcc();
+  // Notify on every successful top-up. Idempotent on the topup tx id
+  // so the Cashfree webhook handler firing this codepath doesn't
+  // double-push (its own pushNotification uses the order id reference).
+  pushNotification({
+    userId: input.userId,
+    kind: "wallet_topup",
+    severity: "success",
+    title: `₹${input.amountRupees.toLocaleString("en-IN")} added to wallet`,
+    body: bonus
+      ? `Plus ₹${bonus.amountRupees.toLocaleString("en-IN")} bonus credited. New balance ₹${w.balanceRupees.toLocaleString("en-IN")}.`
+      : `New balance ₹${w.balanceRupees.toLocaleString("en-IN")}.`,
+    link: "/dashboard/wallet",
+    reference: `topup:${topup.id}`,
+  });
   return { ok: true, topup, bonus, wallet: w };
 }
 

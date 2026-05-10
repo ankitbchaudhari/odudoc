@@ -18,12 +18,13 @@ import { listOrdersForPatient } from "@/lib/lab-marketplace/order-store";
 import { listTransactionsForUser } from "@/lib/wallet/store";
 import { listForUser } from "@/lib/notifications/store";
 import { listReadings, classify, VITAL_LABEL } from "@/lib/vitals/store";
+import { listOrdersForPatient as listRxOrdersForPatient } from "@/lib/rx-fulfillment/order-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export type TimelineKind =
-  | "appointment" | "prescription" | "lab_order" | "wallet" | "notification" | "vital";
+  | "appointment" | "prescription" | "lab_order" | "rx_order" | "wallet" | "notification" | "vital";
 
 export interface TimelineEvent {
   id: string;
@@ -151,6 +152,29 @@ export async function GET() {
           href: n.link,
           meta: { kind: n.kind, severity: n.severity },
         });
+      }
+    } catch { /* skip */ }
+  }
+
+  // Pharmacy fulfillment orders — userId-keyed, one row per status transition.
+  if (userId) {
+    try {
+      const orders = listRxOrdersForPatient(userId);
+      for (const o of orders) {
+        for (const ev of o.events) {
+          events.push({
+            id: `rxorder:${o.id}:${ev.status}:${ev.at}`,
+            kind: "rx_order",
+            at: ev.at,
+            title: `Pharmacy — ${ev.status.replace(/_/g, " ")}`,
+            body: `${o.pharmacyName} · ${o.lines.length} item${o.lines.length === 1 ? "" : "s"}${ev.note ? ` — ${ev.note}` : ""}`,
+            tone: ev.status === "cancelled" || ev.status === "rejected" ? "warn"
+                : ev.status === "delivered" ? "ok"
+                : "neutral",
+            href: "/dashboard/rx-fulfillment",
+            meta: { orderId: o.id, status: ev.status },
+          });
+        }
       }
     } catch { /* skip */ }
   }

@@ -10,7 +10,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignatureDetailed, isWebhookReplay, markWebhookProcessed } from "@/lib/cashfree";
 import { markPaid as markConsultationPaid } from "@/lib/consultations-store";
 import { applyTopUp } from "@/lib/wallet/store";
-import { pushNotification } from "@/lib/notifications/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
@@ -120,16 +119,9 @@ export async function POST(req: NextRequest) {
             note: `Cashfree top-up ${orderId}`,
           });
           if (r.ok && r.wallet) {
-            pushNotification({
-              userId,
-              kind: "wallet_topup",
-              severity: "success",
-              title: `₹${amount} added to wallet`,
-              body: r.bonus ? `Plus ₹${r.bonus.amountRupees} bonus credited. New balance ₹${r.wallet.balanceRupees + r.wallet.bonusBalanceRupees}.`
-                            : `New balance ₹${r.wallet.balanceRupees + r.wallet.bonusBalanceRupees}.`,
-              link: "/dashboard/wallet",
-              reference: orderId,
-            });
+            // applyTopUp now pushes the wallet_topup notification
+            // itself — no need to fire one here too. Webhook stays
+            // useful for the credit + log line.
             log.info("cashfree.webhook.wallet_topup_credited", { orderId, userId, amount });
           } else {
             log.warn("cashfree.webhook.wallet_topup_rejected", { orderId, error: r.error });

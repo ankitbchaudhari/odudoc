@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 
 type Method = "steam" | "ethylene_oxide" | "plasma" | "dry_heat" | "chemical";
 type SetStatus = "active" | "retired";
@@ -301,32 +302,25 @@ export default function CssdPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">CSSD — Sterilization</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Instrument set catalog and autoclave / ETO cycle register.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {tab === "sets" ? (
-            <button onClick={openCreateSet} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700">
-              + New Set
-            </button>
-          ) : (
-            <button onClick={openCreateBatch} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700">
-              + New Load
-            </button>
-          )}
-        </div>
-      </div>
+      <PageHero
+        icon="🧪"
+        eyebrow="Sterile Supply"
+        title="CSSD — Sterilization"
+        subtitle="Instrument set catalog and autoclave / ETO cycle register"
+        tone="violet"
+        primaryAction={
+          tab === "sets"
+            ? { label: "+ New Set", onClick: openCreateSet }
+            : { label: "+ New Load", onClick: openCreateBatch }
+        }
+      />
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Stat label="In Progress" value={stats.inFlight} tone="amber" />
-        <Stat label="BI Pending" value={stats.biPending} tone="slate" />
-        <Stat label="Failed / Recalled" value={stats.failed} tone="red" />
-        <Stat label="Expiring ≤7d" value={stats.expiring} tone="orange" />
-      </div>
+      <StatGrid cols={4}>
+        <StatCard label="In progress" value={stats.inFlight} tone="amber" icon="🔄" />
+        <StatCard label="BI pending" value={stats.biPending} tone="indigo" icon="🧫" />
+        <StatCard label="Failed / recalled" value={stats.failed} tone={stats.failed > 0 ? "rose" : "slate"} icon="⚠️" />
+        <StatCard label="Expiring ≤7d" value={stats.expiring} tone={stats.expiring > 0 ? "orange" : "emerald"} icon="⏰" />
+      </StatGrid>
 
       {/* Tabs */}
       <div className="flex gap-1 rounded-lg bg-slate-100 p-1">

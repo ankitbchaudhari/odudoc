@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   DrugItem, StockLot, StockMovement, ItemForm, StorageTemp, MovementType,
 } from "@/lib/hospital/pharmacy-inventory-store";
@@ -88,25 +89,26 @@ export default function PharmacyInventoryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Pharmacy inventory</h1>
-          <p className="text-sm text-slate-500">SKU master, batch lots, stock movements, low-stock & expiry tracking.</p>
-        </div>
-        <button onClick={() => { setEditItem(null); setShowItemForm(true); }} className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800">+ Add SKU</button>
-      </div>
+      <PageHero
+        icon="💊"
+        eyebrow="Pharmacy"
+        title="Pharmacy Inventory"
+        subtitle="SKU master, batch lots, stock movements, low-stock & expiry tracking"
+        tone="emerald"
+        primaryAction={{ label: "+ Add SKU", onClick: () => { setEditItem(null); setShowItemForm(true); } }}
+      />
 
       {stats && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
-          <Stat label="Active SKUs" value={stats.skus} />
-          <Stat label="Controlled" value={stats.controlled} />
-          <Stat label="Low stock" value={stats.lowStockCount} tone={stats.lowStockCount > 0 ? "amber" : "slate"} />
-          <Stat label="Out of stock" value={stats.outOfStock} tone={stats.outOfStock > 0 ? "rose" : "slate"} />
-          <Stat label="Expiring (30d)" value={stats.expiringSoonUnits} tone={stats.expiringSoonUnits > 0 ? "amber" : "slate"} />
-          <Stat label="Expired units" value={stats.expiredUnits} tone={stats.expiredUnits > 0 ? "rose" : "slate"} />
-          <Stat label="Inventory value" value={stats.inventoryValue} />
-          <Stat label="Movements today" value={stats.movementsToday} />
-        </div>
+        <StatGrid cols={4}>
+          <StatCard label="Active SKUs" value={stats.skus} tone="indigo" icon="📦" />
+          <StatCard label="Controlled" value={stats.controlled} tone="violet" icon="🔒" />
+          <StatCard label="Low stock" value={stats.lowStockCount} tone={stats.lowStockCount > 0 ? "amber" : "slate"} icon="📉" />
+          <StatCard label="Out of stock" value={stats.outOfStock} tone={stats.outOfStock > 0 ? "rose" : "slate"} icon="❌" />
+          <StatCard label="Expiring (30d)" value={stats.expiringSoonUnits} tone={stats.expiringSoonUnits > 0 ? "amber" : "slate"} icon="⏰" />
+          <StatCard label="Expired units" value={stats.expiredUnits} tone={stats.expiredUnits > 0 ? "rose" : "slate"} icon="⚠️" />
+          <StatCard label="Inventory value" value={stats.inventoryValue} tone="emerald" icon="💰" />
+          <StatCard label="Movements today" value={stats.movementsToday} tone="sky" icon="🔄" />
+        </StatGrid>
       )}
 
       <div className="rounded-lg border border-slate-200 bg-white p-3">

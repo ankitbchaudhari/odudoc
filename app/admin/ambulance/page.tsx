@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 
 type VehicleType = "basic" | "als" | "bls" | "neonatal" | "mortuary";
 type VehicleStatus = "available" | "on_call" | "under_maintenance" | "out_of_service";
@@ -390,40 +391,25 @@ export default function AmbulancePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Ambulance &amp; Dispatch</h1>
-          <p className="text-sm text-slate-500">
-            Fleet management and emergency dispatch with real-time status tracking.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {tab === "calls" && (
-            <button
-              onClick={() => openCallForm()}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-            >
-              + New Call
-            </button>
-          )}
-          {tab === "fleet" && (
-            <button
-              onClick={() => openVehicleForm()}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-            >
-              + Add Vehicle
-            </button>
-          )}
-        </div>
-      </div>
+      <PageHero
+        icon="🚑"
+        eyebrow="Pre-Hospital"
+        title="Ambulance & Dispatch"
+        subtitle="Fleet management and emergency dispatch with real-time status tracking"
+        tone="rose"
+        primaryAction={
+          tab === "fleet"
+            ? { label: "+ Add Vehicle", onClick: () => openVehicleForm() }
+            : { label: "+ New Call", onClick: () => openCallForm() }
+        }
+      />
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        <Stat label="Active calls" value={stats.active} tone="amber" />
-        <Stat label="Calls today" value={stats.todayCalls} tone="blue" />
-        <Stat label="Available vehicles" value={stats.available} tone="emerald" />
-        <Stat label="Docs expiring ≤30d" value={stats.compliance} tone={stats.compliance > 0 ? "red" : "slate"} />
-      </div>
+      <StatGrid cols={4}>
+        <StatCard label="Active calls" value={stats.active} tone={stats.active > 0 ? "amber" : "slate"} icon="🔴" />
+        <StatCard label="Calls today" value={stats.todayCalls} tone="sky" icon="📞" />
+        <StatCard label="Available vehicles" value={stats.available} tone="emerald" icon="🚐" />
+        <StatCard label="Docs expiring ≤30d" value={stats.compliance} tone={stats.compliance > 0 ? "rose" : "indigo"} icon="📄" />
+      </StatGrid>
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-slate-200">

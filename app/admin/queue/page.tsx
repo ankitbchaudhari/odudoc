@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 
 type TokenPriority = "emergency" | "senior" | "regular" | "followup";
 type TokenStatus =
@@ -294,33 +295,25 @@ export default function QueuePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">OPD Queue &amp; Tokens</h1>
-          <p className="text-sm text-slate-500">
-            Live walk-in queue for consulting rooms with priority handling and wait-time telemetry.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {(tab === "live" || tab === "history") && (
-            <button onClick={() => openIssueForm()} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">
-              + Issue Token
-            </button>
-          )}
-          {tab === "counters" && (
-            <button onClick={() => openCounterForm()} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">
-              + Add Counter
-            </button>
-          )}
-        </div>
-      </div>
+      <PageHero
+        icon="🎫"
+        eyebrow="OPD Live"
+        title="OPD Queue & Tokens"
+        subtitle="Live walk-in queue for consulting rooms with priority handling and wait-time telemetry"
+        tone="violet"
+        primaryAction={
+          tab === "counters"
+            ? { label: "+ Add Counter", onClick: () => openCounterForm() }
+            : { label: "+ Issue Token", onClick: () => openIssueForm() }
+        }
+      />
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        <Stat label="Waiting" value={stats.waiting} tone={stats.waiting > 0 ? "amber" : "slate"} />
-        <Stat label="Serving" value={stats.serving} tone="blue" />
-        <Stat label="Served today" value={stats.served} tone="emerald" />
-        <Stat label="Avg wait" value={stats.avgWait === null ? "—" : fmtSeconds(stats.avgWait)} tone="slate" />
-      </div>
+      <StatGrid cols={4}>
+        <StatCard label="Waiting" value={stats.waiting} tone={stats.waiting > 0 ? "amber" : "slate"} icon="⏳" />
+        <StatCard label="Serving" value={stats.serving} tone="sky" icon="🔔" />
+        <StatCard label="Served today" value={stats.served} tone="emerald" icon="✓" />
+        <StatCard label="Avg wait" value={stats.avgWait === null ? "—" : fmtSeconds(stats.avgWait)} tone="indigo" icon="⏱️" />
+      </StatGrid>
 
       <div className="flex gap-1 border-b border-slate-200">
         {(["live", "counters", "history"] as const).map((t) => (

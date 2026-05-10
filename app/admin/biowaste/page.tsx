@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 
 type WasteColor = "yellow" | "red" | "white" | "blue" | "black";
 type WasteStatus = "collected" | "handed_over" | "disposed" | "rejected";
@@ -300,32 +301,25 @@ export default function BioWastePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Biomedical Waste</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            BMW 2016 color-coded segregation, vendor handover, and manifest register.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {tab === "records" ? (
-            <button onClick={openCreateRecord} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700">
-              + Record Waste
-            </button>
-          ) : (
-            <button onClick={openCreateVendor} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700">
-              + Add Vendor
-            </button>
-          )}
-        </div>
-      </div>
+      <PageHero
+        icon="🗑️"
+        eyebrow="BMW Compliance"
+        title="Biomedical Waste"
+        subtitle="BMW 2016 color-coded segregation, vendor handover, and manifest register"
+        tone="amber"
+        primaryAction={
+          tab === "records"
+            ? { label: "+ Record Waste", onClick: openCreateRecord }
+            : { label: "+ Add Vendor", onClick: openCreateVendor }
+        }
+      />
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Stat label="Collected Today (kg)" value={stats.todayKg} tone="slate" />
-        <Stat label="Awaiting Handover" value={stats.pending} tone="amber" />
-        <Stat label="This Month (kg)" value={stats.monthKg} tone="slate" />
-        <Stat label="Vendor Auth Expiring ≤30d" value={stats.expiringVendors} tone="red" />
-      </div>
+      <StatGrid cols={4}>
+        <StatCard label="Collected today (kg)" value={stats.todayKg} tone="indigo" icon="⚖️" />
+        <StatCard label="Awaiting handover" value={stats.pending} tone={stats.pending > 0 ? "amber" : "slate"} icon="📦" />
+        <StatCard label="This month (kg)" value={stats.monthKg} tone="emerald" icon="📊" />
+        <StatCard label="Vendor auth expiring ≤30d" value={stats.expiringVendors} tone={stats.expiringVendors > 0 ? "rose" : "teal"} icon="📄" />
+      </StatGrid>
 
       <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
         {(["records", "vendors"] as const).map((t) => (

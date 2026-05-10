@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   OperationTheatre,
   OTType,
@@ -331,43 +332,22 @@ export default function SurgeriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-900">Operation Theatre</h2>
-          <p className="text-sm text-slate-500">
-            OT rooms and surgical bookings with conflict detection, pre-op
-            checklists, and operative notes.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowOT((v) => !v)}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            {showOT ? "Close OT" : "+ New OT"}
-          </button>
-          <button
-            onClick={() => (showForm ? reset() : setShowForm(true))}
-            className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-          >
-            {showForm ? "Close" : "+ Schedule surgery"}
-          </button>
-        </div>
-      </div>
+      <PageHero
+        icon="⚕️"
+        eyebrow="Surgical Suite"
+        title="Operation Theatre"
+        subtitle="OT rooms and surgical bookings with conflict detection, pre-op checklists, and operative notes"
+        tone="rose"
+        primaryAction={{ label: showForm ? "Close" : "+ Schedule surgery", onClick: () => (showForm ? reset() : setShowForm(true)) }}
+        secondaryAction={{ label: showOT ? "Close OT" : "+ New OT", onClick: () => setShowOT((v) => !v) }}
+      />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {[
-          { label: "Theatres", value: theatres.length },
-          { label: "Active bookings", value: activeCount, accent: "text-amber-600" },
-          { label: "Today", value: todayCount },
-          { label: "Total bookings", value: bookings.length },
-        ].map((s) => (
-          <div key={s.label} className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="text-[11px] uppercase tracking-wider text-slate-500">{s.label}</div>
-            <div className={`mt-1 text-2xl font-semibold ${s.accent || "text-slate-900"}`}>{s.value}</div>
-          </div>
-        ))}
-      </div>
+      <StatGrid cols={4}>
+        <StatCard label="Theatres" value={theatres.length} tone="indigo" icon="🚪" />
+        <StatCard label="Active bookings" value={activeCount} tone={activeCount > 0 ? "amber" : "slate"} icon="🔄" />
+        <StatCard label="Today" value={todayCount} tone="emerald" icon="📅" />
+        <StatCard label="Total bookings" value={bookings.length} tone="violet" icon="📊" />
+      </StatGrid>
 
       {err && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{err}</div>

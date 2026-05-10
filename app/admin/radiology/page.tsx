@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   RadiologyOrder,
   Modality,
@@ -302,36 +303,22 @@ export default function RadiologyPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-900">Radiology</h2>
-          <p className="text-sm text-slate-500">
-            Imaging orders across modalities. Authoring an impression
-            auto-advances status to <code className="rounded bg-slate-100 px-1">reported</code>.
-          </p>
-        </div>
-        <button
-          onClick={() => (showForm ? reset() : setShowForm(true))}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          {showForm ? "Close" : "+ New order"}
-        </button>
-      </div>
+      <PageHero
+        icon="🩻"
+        eyebrow="Imaging"
+        title="Radiology"
+        subtitle="Imaging orders across modalities. Authoring an impression auto-advances status to reported"
+        tone="indigo"
+        primaryAction={{ label: showForm ? "Close" : "+ New order", onClick: () => (showForm ? reset() : setShowForm(true)) }}
+      />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        {([
-          ["ordered", "Ordered"],
-          ["in_progress", "In progress"],
-          ["completed", "Completed"],
-          ["reported", "Reported"],
-          ["cancelled", "Cancelled"],
-        ] as const).map(([k, lbl]) => (
-          <div key={k} className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="text-[11px] uppercase tracking-wider text-slate-500">{lbl}</div>
-            <div className="mt-1 text-2xl font-semibold text-slate-900">{statCounts[k]}</div>
-          </div>
-        ))}
-      </div>
+      <StatGrid cols={5}>
+        <StatCard label="Ordered" value={statCounts.ordered} tone="sky" icon="📥" />
+        <StatCard label="In progress" value={statCounts.in_progress} tone="amber" icon="🔄" />
+        <StatCard label="Completed" value={statCounts.completed} tone="teal" icon="✓" />
+        <StatCard label="Reported" value={statCounts.reported} tone="emerald" icon="📄" />
+        <StatCard label="Cancelled" value={statCounts.cancelled} tone="slate" icon="✕" />
+      </StatGrid>
 
       {err && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{err}</div>

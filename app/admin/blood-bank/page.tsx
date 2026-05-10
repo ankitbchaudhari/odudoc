@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard as ShellStatCard } from "@/components/admin/PageShell";
 
 export const dynamic = "force-dynamic";
 
@@ -197,30 +198,21 @@ export default function BloodBankPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Blood Bank</h1>
-        <p className="text-sm text-slate-500">
-          Donors, blood-unit inventory, and transfusion requests with ABO/Rh
-          compatibility and FEFO reservation.
-        </p>
-      </div>
+      <PageHero
+        icon="🩸"
+        eyebrow="Transfusion Services"
+        title="Blood Bank"
+        subtitle="Donors, blood-unit inventory, and transfusion requests with ABO/Rh compatibility and FEFO reservation"
+        tone="rose"
+      />
 
-      {/* stats */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        <StatCard label="Total units" value={topStats.total} />
-        <StatCard label="Available" value={topStats.available} accent="emerald" />
-        <StatCard label="Reserved" value={topStats.reserved} accent="blue" />
-        <StatCard
-          label="Expiring ≤3d"
-          value={topStats.expiringSoon}
-          accent="red"
-        />
-        <StatCard
-          label="Open requests"
-          value={topStats.openRequests}
-          accent="violet"
-        />
-      </div>
+      <StatGrid cols={5}>
+        <ShellStatCard label="Total units" value={topStats.total} tone="indigo" icon="📦" />
+        <ShellStatCard label="Available" value={topStats.available} tone="emerald" icon="✓" />
+        <ShellStatCard label="Reserved" value={topStats.reserved} tone="sky" icon="🔖" />
+        <ShellStatCard label="Expiring ≤3d" value={topStats.expiringSoon} tone={topStats.expiringSoon > 0 ? "rose" : "slate"} icon="⏰" />
+        <ShellStatCard label="Open requests" value={topStats.openRequests} tone="violet" icon="📋" />
+      </StatGrid>
 
       {/* tabs */}
       <div className="flex border-b border-slate-200">

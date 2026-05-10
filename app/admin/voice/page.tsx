@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard as ShellStatCard } from "@/components/admin/PageShell";
 
 export const dynamic = "force-dynamic";
 
@@ -296,35 +297,21 @@ export default function VoicePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">AI Voice</h1>
-          <p className="text-sm text-slate-500">
-            Dictations, transcriptions, and AI-synthesized clinical notes.
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            resetForm();
-            setShowForm(!showForm);
-          }}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
-        >
-          {showForm ? "Close" : "+ New Voice Note"}
-        </button>
-      </div>
+      <PageHero
+        icon="🎙️"
+        eyebrow="Ambient Scribe"
+        title="AI Voice"
+        subtitle="Dictations, transcriptions, and AI-synthesized clinical notes"
+        tone="violet"
+        primaryAction={{ label: showForm ? "Close" : "+ New Voice Note", onClick: () => { resetForm(); setShowForm(!showForm); } }}
+      />
 
-      {/* stats */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard label="Total notes" value={stats.total} />
-        <StatCard label="Summarized" value={stats.summarized} accent="emerald" />
-        <StatCard label="In-flight" value={stats.pending} accent="amber" />
-        <StatCard
-          label="Total audio"
-          value={fmtDuration(stats.totalDuration)}
-          accent="violet"
-        />
-      </div>
+      <StatGrid cols={4}>
+        <ShellStatCard label="Total notes" value={stats.total} tone="indigo" icon="📝" />
+        <ShellStatCard label="Summarized" value={stats.summarized} tone="emerald" icon="✨" />
+        <ShellStatCard label="In-flight" value={stats.pending} tone={stats.pending > 0 ? "amber" : "slate"} icon="🔄" />
+        <ShellStatCard label="Total audio" value={fmtDuration(stats.totalDuration)} tone="fuchsia" icon="🔊" />
+      </StatGrid>
 
       {/* form */}
       {showForm && (

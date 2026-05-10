@@ -7,11 +7,62 @@ import type {
   StaffStatus,
   StaffModuleAccess,
 } from "@/lib/hospital/staff-store";
-import {
-  STAFF_MODULE_LABELS,
-  STAFF_ROLE_DEFAULT_ACCESS,
-  effectiveModuleAccess,
-} from "@/lib/hospital/staff-store";
+
+// Inlined from staff-store — importing runtime values from that file
+// pulls persistent-array → Postgres into the client bundle (server-
+// only deps like `tls` and `fs` then break the build). Keep these
+// duplicates 1:1 with the store; if the store grows new modules,
+// mirror them here.
+const STAFF_MODULE_LABELS: Record<StaffModuleAccess, string> = {
+  patients: "Patients",
+  appointments: "Appointments",
+  opd: "OPD Queue",
+  ipd: "Admissions / IPD",
+  ot: "Surgery / OT",
+  pharmacy: "Pharmacy",
+  lab: "Lab Orders",
+  radiology: "Radiology",
+  billing: "Invoices & Billing",
+  inventory: "Inventory",
+  telemedicine: "Telemedicine",
+  physio: "Physiotherapy",
+  dental: "Dental",
+  cardiology: "Cardiology",
+  icu: "ICU / Critical Care",
+  wards: "Wards & Beds",
+  ambulance: "Ambulance",
+  "blood-bank": "Blood Bank",
+  mortuary: "Mortuary",
+  housekeeping: "Housekeeping",
+  reports: "Reports & Audit",
+};
+
+const STAFF_ROLE_DEFAULT_ACCESS: Record<StaffRole, StaffModuleAccess[]> = {
+  doctor: [
+    "patients", "appointments", "opd", "ipd", "ot", "lab", "radiology",
+    "telemedicine", "cardiology", "icu", "wards",
+  ],
+  resident: [
+    "patients", "appointments", "opd", "ipd", "lab", "radiology", "wards",
+  ],
+  nurse: ["patients", "wards", "ipd", "icu", "appointments"],
+  technician: ["lab", "radiology", "inventory"],
+  pharmacist: ["pharmacy", "inventory"],
+  radiographer: ["radiology"],
+  admin: [
+    "patients", "appointments", "opd", "ipd", "ot", "pharmacy", "lab",
+    "radiology", "billing", "inventory", "telemedicine", "physio", "dental",
+    "cardiology", "icu", "wards", "ambulance", "blood-bank", "mortuary",
+    "housekeeping", "reports",
+  ],
+  housekeeping: ["housekeeping"],
+  other: [],
+};
+
+function effectiveModuleAccess(s: Pick<StaffMember, "moduleAccess" | "role">): StaffModuleAccess[] {
+  if (Array.isArray(s.moduleAccess)) return s.moduleAccess;
+  return STAFF_ROLE_DEFAULT_ACCESS[s.role] ?? [];
+}
 
 const ROLES: StaffRole[] = [
   "doctor",

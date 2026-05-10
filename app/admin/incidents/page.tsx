@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 
 type IncidentCategory =
   | "medication_error"
@@ -296,28 +297,22 @@ export default function IncidentsPage() {
   }, [list]);
 
   return (
-    <div>
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Incident Reports</h1>
-          <p className="text-sm text-slate-500">
-            Adverse events, near-misses, falls, medication errors — with root-cause analysis and CAPA tracking.
-          </p>
-        </div>
-        <button
-          onClick={openNew}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-primary-700"
-        >
-          + Report Incident
-        </button>
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="⚠️"
+        eyebrow="Patient Safety"
+        title="Incident Reports"
+        subtitle="Adverse events, near-misses, falls, medication errors — with root-cause analysis and CAPA tracking"
+        tone="rose"
+        primaryAction={{ label: "+ Report Incident", onClick: openNew }}
+      />
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <Stat label="Open incidents" value={stats.open} tone="amber" />
-        <Stat label="Sentinel events" value={stats.sentinel} tone="rose" />
-        <Stat label="Near misses" value={stats.nearMiss} tone="sky" />
-        <Stat label="Overdue CAPA" value={stats.overdueCapa} tone="rose" />
-      </div>
+      <StatGrid cols={4}>
+        <StatCard label="Open incidents" value={stats.open} tone={stats.open > 0 ? "amber" : "slate"} icon="📂" />
+        <StatCard label="Sentinel events" value={stats.sentinel} tone={stats.sentinel > 0 ? "rose" : "slate"} icon="🚨" />
+        <StatCard label="Near misses" value={stats.nearMiss} tone="sky" icon="👀" />
+        <StatCard label="Overdue CAPA" value={stats.overdueCapa} tone={stats.overdueCapa > 0 ? "rose" : "emerald"} icon="⏰" />
+      </StatGrid>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <select

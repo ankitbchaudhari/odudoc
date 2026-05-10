@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 
 type DietType =
   | "regular" | "diabetic" | "renal" | "cardiac" | "low_sodium" | "low_fat"
@@ -300,27 +301,21 @@ export default function DietaryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Dietary Orders</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Clinical nutrition prescriptions and meal-delivery log.
-          </p>
-        </div>
-        <button
-          onClick={openCreate}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700"
-        >
-          + Prescribe Diet
-        </button>
-      </div>
+      <PageHero
+        icon="🍽️"
+        eyebrow="Clinical Nutrition"
+        title="Dietary Orders"
+        subtitle="Clinical nutrition prescriptions and meal-delivery log"
+        tone="emerald"
+        primaryAction={{ label: "+ Prescribe Diet", onClick: openCreate }}
+      />
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Stat label="Active Orders" value={stats.active} tone="emerald" />
-        <Stat label="NPO (active)" value={stats.npo} tone="red" />
-        <Stat label="Tube Feed / TPN" value={stats.tpnOrTube} tone="amber" />
-        <Stat label="Meals Today" value={stats.mealsToday} tone="slate" />
-      </div>
+      <StatGrid cols={4}>
+        <StatCard label="Active orders" value={stats.active} tone="emerald" icon="📋" />
+        <StatCard label="NPO (active)" value={stats.npo} tone={stats.npo > 0 ? "rose" : "slate"} icon="🚫" />
+        <StatCard label="Tube feed / TPN" value={stats.tpnOrTube} tone={stats.tpnOrTube > 0 ? "amber" : "slate"} icon="💉" />
+        <StatCard label="Meals today" value={stats.mealsToday} tone="indigo" icon="🍱" />
+      </StatGrid>
 
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5">
         <select

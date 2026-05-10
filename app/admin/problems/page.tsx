@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatCard, StatGrid } from "@/components/admin/PageShell";
 
 type AllergyType = "drug" | "food" | "environmental" | "biologic" | "other";
 type AllergySeverity = "mild" | "moderate" | "severe" | "life_threatening";
@@ -97,15 +98,16 @@ export default function ProblemsPage() {
   }, []);
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Allergies & Problem List</h1>
-        <p className="text-sm text-slate-500">
-          Patient-safety record: active allergies with reaction severity, plus chronic / active problems with ICD-10 codes.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="🧬"
+        eyebrow="Patient Safety"
+        title="Allergies & Problem List"
+        subtitle="Patient-safety record: active allergies with reaction severity, plus chronic / active problems with ICD-10 codes"
+        tone="amber"
+      />
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <select
           value={filterPatient}
           onChange={(e) => setFilterPatient(e.target.value)}
@@ -285,11 +287,13 @@ function AllergiesTab({
 
   return (
     <div>
-      <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <Stat label="Total" value={stats.total} tone="slate" />
-        <Stat label="Critical (severe+)" value={stats.critical} tone="rose" />
-        <Stat label="Drug allergies" value={stats.drugs} tone="amber" />
-        <Stat label="Unconfirmed" value={stats.unconfirmed} tone="amber" />
+      <div className="mb-5">
+        <StatGrid cols={4}>
+          <StatCard label="Total" value={stats.total} tone="indigo" icon="📊" />
+          <StatCard label="Critical (severe+)" value={stats.critical} tone={stats.critical > 0 ? "rose" : "slate"} icon="🚨" />
+          <StatCard label="Drug allergies" value={stats.drugs} tone={stats.drugs > 0 ? "amber" : "slate"} icon="💊" />
+          <StatCard label="Unconfirmed" value={stats.unconfirmed} tone={stats.unconfirmed > 0 ? "orange" : "emerald"} icon="❓" />
+        </StatGrid>
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -664,11 +668,13 @@ function ProblemsTab({
 
   return (
     <div>
-      <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <Stat label="Total" value={stats.total} tone="slate" />
-        <Stat label="Active" value={stats.active} tone="emerald" />
-        <Stat label="Urgent" value={stats.urgent} tone="rose" />
-        <Stat label="Resolved" value={stats.resolved} tone="sky" />
+      <div className="mb-5">
+        <StatGrid cols={4}>
+          <StatCard label="Total" value={stats.total} tone="indigo" icon="📊" />
+          <StatCard label="Active" value={stats.active} tone="emerald" icon="🟢" />
+          <StatCard label="Urgent" value={stats.urgent} tone={stats.urgent > 0 ? "rose" : "slate"} icon="🚨" />
+          <StatCard label="Resolved" value={stats.resolved} tone="sky" icon="✓" />
+        </StatGrid>
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">

@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 
 type ReferralDirection = "inbound" | "outbound" | "internal";
 type ReferralUrgency = "routine" | "urgent" | "emergency";
@@ -287,28 +288,22 @@ export default function ReferralsPage() {
   }, [list]);
 
   return (
-    <div>
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Referrals</h1>
-          <p className="text-sm text-slate-500">
-            Inbound & outbound referral tracking with urgency, status workflow, and feedback loop.
-          </p>
-        </div>
-        <button
-          onClick={openNew}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-primary-700"
-        >
-          + New Referral
-        </button>
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="↗️"
+        eyebrow="Care Network"
+        title="Referrals"
+        subtitle="Inbound & outbound referral tracking with urgency, status workflow, and feedback loop"
+        tone="indigo"
+        primaryAction={{ label: "+ New Referral", onClick: openNew }}
+      />
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <Stat label="Total" value={stats.total} tone="slate" />
-        <Stat label="Pending" value={stats.pending} tone="amber" />
-        <Stat label="Open emergencies" value={stats.emergency} tone="rose" />
-        <Stat label="Completed" value={stats.completed} tone="emerald" />
-      </div>
+      <StatGrid cols={4}>
+        <StatCard label="Total" value={stats.total} tone="indigo" icon="📊" />
+        <StatCard label="Pending" value={stats.pending} tone={stats.pending > 0 ? "amber" : "slate"} icon="⏳" />
+        <StatCard label="Open emergencies" value={stats.emergency} tone={stats.emergency > 0 ? "rose" : "slate"} icon="🚨" />
+        <StatCard label="Completed" value={stats.completed} tone="emerald" icon="✓" />
+      </StatGrid>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <select

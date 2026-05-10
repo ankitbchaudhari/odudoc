@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 
 type AssetCategory =
   | "imaging" | "ventilator" | "monitor" | "infusion_pump" | "defibrillator"
@@ -304,29 +305,21 @@ export default function BiomedicalPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Biomedical Equipment</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Asset register, PPM schedules, AMC contracts, and maintenance logs.
-          </p>
-        </div>
-        <button
-          onClick={openCreate}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700"
-        >
-          + Register Asset
-        </button>
-      </div>
+      <PageHero
+        icon="🛠️"
+        eyebrow="Asset Engineering"
+        title="Biomedical Equipment"
+        subtitle="Asset register, PPM schedules, AMC contracts, and maintenance logs"
+        tone="indigo"
+        primaryAction={{ label: "+ Register Asset", onClick: openCreate }}
+      />
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Stat label="Total Assets" value={stats.total} tone="slate" />
-        <Stat label="PPM Overdue" value={stats.ppmOverdue} tone="red" />
-        <Stat label="In Repair / Maint." value={stats.underRepair} tone="orange" />
-        <Stat label="AMC Expiring ≤30d" value={stats.amcExpiring} tone="amber" />
-      </div>
+      <StatGrid cols={4}>
+        <StatCard label="Total assets" value={stats.total} tone="indigo" icon="📦" />
+        <StatCard label="PPM overdue" value={stats.ppmOverdue} tone={stats.ppmOverdue > 0 ? "rose" : "emerald"} icon="⏰" />
+        <StatCard label="In repair / maint." value={stats.underRepair} tone={stats.underRepair > 0 ? "orange" : "slate"} icon="🔧" />
+        <StatCard label="AMC expiring ≤30d" value={stats.amcExpiring} tone={stats.amcExpiring > 0 ? "amber" : "teal"} icon="📄" />
+      </StatGrid>
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5">

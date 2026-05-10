@@ -40,6 +40,13 @@ export interface SurgeryVideoSession {
   durationSeconds?: number;
   /** Bytes — informational. */
   bytes?: number;
+  /** Provider video / live-input UID — Cloudflare Stream issues
+   *  this on direct-upload or live-input creation. */
+  providerVideoId?: string;
+  /** RTMPS ingest URL the in-OT encoder pushes to (live mode). */
+  ingestUrl?: string;
+  /** Stream key for the encoder. Treat as secret. */
+  ingestKey?: string;
   status: SessionStatus;
   startedAt?: string;
   endedAt?: string;
@@ -57,11 +64,43 @@ const { hydrate, flush, tombstone } = bindPersistentArray<SurgeryVideoSession>(
 await hydrate();
 
 export function isConfigured(): boolean {
+  // Cloudflare Stream is the first real provider — configured when
+  // its API token + account id are set.
+  if (process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_STREAM_API_TOKEN) return true;
   return !!(process.env.VIDEO_PROVIDER && process.env.VIDEO_INGEST_URL);
 }
 
 export function activeProvider(): string {
+  if (process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_STREAM_API_TOKEN) return "cloudflare";
   return process.env.VIDEO_PROVIDER || "stub";
+}
+
+/** Attach provider provisioning details to a session — called by
+ *  the provider routes after createDirectUpload / createLiveInput. */
+export function setProviderDetails(
+  id: string,
+  organizationId: string,
+  patch: { providerVideoId?: string; ingestUrl?: string; ingestKey?: string; livePlaybackUrl?: string },
+): SurgeryVideoSession | null {
+  const s = sessions.find((x) => x.id === id && x.organizationId === organizationId);
+  if (!s) return null;
+  if (patch.providerVideoId !== undefined) s.providerVideoId = patch.providerVideoId;
+  if (patch.ingestUrl !== undefined) s.ingestUrl = patch.ingestUrl;
+  if (patch.ingestKey !== undefined) s.ingestKey = patch.ingestKey;
+  if (patch.livePlaybackUrl !== undefined) s.livePlaybackUrl = patch.livePlaybackUrl;
+  flush();
+  return s;
+}
+
+export function findByProviderVideoId(providerVideoId: string): SurgeryVideoSession | null {
+  return sessions.find((s) => s.providerVideoId === providerVideoId) || null;
+}
+
+/** Plain id+org lookup without authorization or audit-log side effect.
+ *  Used by org-side admin / provider integrations that already gate
+ *  on role; viewer paths must use authorizeAndLogView instead. */
+export function getSession(id: string, organizationId: string): SurgeryVideoSession | null {
+  return sessions.find((s) => s.id === id && s.organizationId === organizationId) || null;
 }
 
 export interface CreateSessionInput {

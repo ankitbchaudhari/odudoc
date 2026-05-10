@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type { TeleConsult, ConsultStatus, ConsultMode, ConnectivityQuality, Prescription } from "@/lib/hospital/telemedicine-store";
 // Inlined from telemedicine-store — importing runtime values pulls persistent-array → Postgres into the client bundle and crashes the page.
 const MODE_LABEL: Record<ConsultMode, string> = {
@@ -72,26 +73,27 @@ export default function TelemedicinePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Telemedicine</h1>
-          <p className="text-sm text-slate-500">Video / audio / chat / async consults with SOAP notes, e-prescription, and QoS tracking.</p>
-        </div>
-        <button onClick={() => { setEdit(null); setShowForm(true); }} className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800">+ Schedule consult</button>
-      </div>
+      <PageHero
+        icon="🎥"
+        eyebrow="Virtual Care"
+        title="Telemedicine"
+        subtitle="Video / audio / chat / async consults with SOAP notes, e-prescription, and QoS tracking"
+        tone="emerald"
+        primaryAction={{ label: "+ Schedule consult", onClick: () => { setEdit(null); setShowForm(true); } }}
+      />
 
       {stats && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-9">
-          <Stat label="Scheduled today" value={stats.scheduledToday} />
-          <Stat label="In progress" value={stats.inProgress} tone={stats.inProgress > 0 ? "amber" : "slate"} />
-          <Stat label="Completed (mo)" value={stats.completedMonth} />
-          <Stat label="No-show (mo)" value={stats.noShowMonth} tone={stats.noShowMonth > 0 ? "rose" : "slate"} />
-          <Stat label="Cancelled (mo)" value={stats.cancelledMonth} />
-          <Stat label="Tech failed" value={stats.techFailedMonth} tone={stats.techFailedMonth > 0 ? "rose" : "slate"} />
-          <Stat label="No-show rate" value={`${stats.noShowRate}%`} tone={stats.noShowRate > 20 ? "rose" : stats.noShowRate > 10 ? "amber" : "slate"} />
-          <Stat label="Avg duration" value={`${stats.avgDurationMin}m`} />
-          <Stat label="Revenue (mo)" value={stats.revenue} />
-        </div>
+        <StatGrid cols={5}>
+          <StatCard label="Scheduled today" value={stats.scheduledToday} tone="sky" icon="📅" />
+          <StatCard label="In progress" value={stats.inProgress} tone={stats.inProgress > 0 ? "amber" : "slate"} icon="🔴" />
+          <StatCard label="Completed (mo)" value={stats.completedMonth} tone="emerald" icon="✓" />
+          <StatCard label="No-show (mo)" value={stats.noShowMonth} tone={stats.noShowMonth > 0 ? "rose" : "slate"} icon="👻" />
+          <StatCard label="Cancelled (mo)" value={stats.cancelledMonth} tone="slate" icon="✕" />
+          <StatCard label="Tech failed" value={stats.techFailedMonth} tone={stats.techFailedMonth > 0 ? "rose" : "slate"} icon="⚠️" />
+          <StatCard label="No-show rate" value={`${stats.noShowRate}%`} tone={stats.noShowRate > 20 ? "rose" : stats.noShowRate > 10 ? "amber" : "emerald"} icon="📉" />
+          <StatCard label="Avg duration" value={`${stats.avgDurationMin}m`} tone="indigo" icon="⏱️" />
+          <StatCard label="Revenue (mo)" value={stats.revenue} tone="violet" icon="💰" />
+        </StatGrid>
       )}
 
       <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white p-3">

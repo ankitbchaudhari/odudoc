@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard, TabSwitch } from "@/components/admin/PageShell";
 import type { PainAssessment, PainPlan, PainScale, PainType, PainLocation, WhoStep, PlanStatus, InterventionType, PainIntervention } from "@/lib/hospital/pain-store";
 // Inlined from pain-store — importing runtime values pulls persistent-array → Postgres into the client bundle and crashes the page.
 const SCALE_LABEL: Record<PainScale, string> = {
@@ -53,33 +54,38 @@ export default function PainPage() {
   useEffect(() => { load(); loadPatients(); }, []);
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Pain Management</h1>
-          <p className="text-sm text-slate-500">NRS / VAS / Wong-Baker / FLACC / CPOT + WHO analgesic ladder</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowAssessment(true)} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Assessment</button>
-          <button onClick={() => setShowPlan(true)} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Pain plan</button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="🩹"
+        eyebrow="Comfort & Care"
+        title="Pain Management"
+        subtitle="NRS / VAS / Wong-Baker / FLACC / CPOT + WHO analgesic ladder"
+        tone="rose"
+        primaryAction={{ label: "+ Pain plan", onClick: () => setShowPlan(true) }}
+        secondaryAction={{ label: "+ Assessment", onClick: () => setShowAssessment(true) }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
-          <StatTile label="Assessed today" value={stats.assessedToday} tone="slate" />
-          <StatTile label="Severe / week (≥7)" value={stats.severeWeek} tone="rose" />
-          <StatTile label="Avg score / week" value={stats.avgScoreWeek} tone="slate" />
-          <StatTile label="Active plans" value={stats.activePlans} tone="emerald" />
-          <StatTile label="Strong opioid" value={stats.strongOpioidPlans} tone="rose" />
-          <StatTile label="Overdue review" value={stats.overdueReview} tone="amber" />
-          <StatTile label="High sedation" value={stats.highSedation} tone="rose" />
-        </div>
+        <StatGrid cols={7}>
+          <StatCard label="Assessed today" value={stats.assessedToday} tone="slate" icon="📋" />
+          <StatCard label="Severe / week (≥7)" value={stats.severeWeek} tone="rose" icon="🔥" />
+          <StatCard label="Avg score / week" value={stats.avgScoreWeek} tone="amber" icon="📊" />
+          <StatCard label="Active plans" value={stats.activePlans} tone="emerald" icon="✓" />
+          <StatCard label="Strong opioid" value={stats.strongOpioidPlans} tone="rose" icon="💊" />
+          <StatCard label="Overdue review" value={stats.overdueReview} tone="amber" icon="⏰" />
+          <StatCard label="High sedation" value={stats.highSedation} tone="fuchsia" icon="⚠️" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex items-center gap-2 border-b border-slate-200">
-        <TabBtn active={tab === "assessments"} onClick={() => setTab("assessments")}>Assessments ({assessments.length})</TabBtn>
-        <TabBtn active={tab === "plans"} onClick={() => setTab("plans")}>Pain plans ({plans.length})</TabBtn>
+      <div>
+        <TabSwitch
+          active={tab}
+          onSelect={(k) => setTab(k as "assessments" | "plans")}
+          tabs={[
+            { key: "assessments", label: "Assessments", count: assessments.length },
+            { key: "plans", label: "Pain plans", count: plans.length },
+          ]}
+        />
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard, TabSwitch } from "@/components/admin/PageShell";
 import type { ChartRecord, RoiRequest, ChartStatus, RoiStatus, RoiPurpose, IcdCode, DeficiencyType, Deficiency } from "@/lib/hospital/mrd-store";
 // Inlined from mrd-store — importing runtime values pulls persistent-array → Postgres into the client bundle and crashes the page.
 const CHART_STATUS_LABEL: Record<ChartStatus, string> = {
@@ -64,34 +65,39 @@ export default function MrdPage() {
   useEffect(() => { load(); loadPatients(); }, []);
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Medical Records (MRD)</h1>
-          <p className="text-sm text-slate-500">ICD coding, chart deficiency tracking, release-of-information requests</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowChart(true)} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Chart</button>
-          <button onClick={() => setShowRoi(true)} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ ROI request</button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="📁"
+        eyebrow="Health Information"
+        title="Medical Records (MRD)"
+        subtitle="ICD coding, chart deficiency tracking, release-of-information requests"
+        tone="indigo"
+        primaryAction={{ label: "+ ROI request", onClick: () => setShowRoi(true) }}
+        secondaryAction={{ label: "+ Chart", onClick: () => setShowChart(true) }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-8">
-          <StatTile label="Open charts" value={stats.openCharts} tone="slate" />
-          <StatTile label="Deficient" value={stats.deficientCharts} tone="rose" />
-          <StatTile label="Coded / week" value={stats.codedThisWeek} tone="emerald" />
-          <StatTile label="Overdue >30d" value={stats.overdueCoding} tone="rose" />
-          <StatTile label="ROI pending" value={stats.roiPending} tone="amber" />
-          <StatTile label="Released / mo" value={stats.roiReleasedMonth} tone="emerald" />
-          <StatTile label="Denied / mo" value={stats.roiDeniedMonth} tone="rose" />
-          <StatTile label="Avg LOS (d)" value={stats.avgLosMonth} tone="slate" />
-        </div>
+        <StatGrid cols={4}>
+          <StatCard label="Open charts" value={stats.openCharts} tone="slate" icon="📂" />
+          <StatCard label="Deficient" value={stats.deficientCharts} tone="rose" icon="⚠️" />
+          <StatCard label="Coded / week" value={stats.codedThisWeek} tone="emerald" icon="✓" />
+          <StatCard label="Overdue >30d" value={stats.overdueCoding} tone="rose" icon="⏰" />
+          <StatCard label="ROI pending" value={stats.roiPending} tone="amber" icon="📨" />
+          <StatCard label="Released / mo" value={stats.roiReleasedMonth} tone="emerald" icon="📤" />
+          <StatCard label="Denied / mo" value={stats.roiDeniedMonth} tone="rose" icon="🚫" />
+          <StatCard label="Avg LOS (d)" value={stats.avgLosMonth} tone="indigo" icon="📊" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex items-center gap-2 border-b border-slate-200">
-        <TabBtn active={tab === "charts"} onClick={() => setTab("charts")}>Charts ({charts.length})</TabBtn>
-        <TabBtn active={tab === "roi"} onClick={() => setTab("roi")}>ROI requests ({roi.length})</TabBtn>
+      <div className="mb-4">
+        <TabSwitch
+          active={tab}
+          onSelect={(k) => setTab(k as "charts" | "roi")}
+          tabs={[
+            { key: "charts", label: "Charts", count: charts.length },
+            { key: "roi", label: "ROI requests", count: roi.length },
+          ]}
+        />
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm">

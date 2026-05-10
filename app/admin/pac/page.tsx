@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type { PacAssessment, PacStatus, AsaClass, Mallampati, AnesthesiaPlan } from "@/lib/hospital/pac-store";
 // Inlined from pac-store — importing runtime values pulls persistent-array → Postgres into the client bundle and crashes the page.
 const ASA_LABEL: Record<AsaClass, string> = {
@@ -74,26 +75,27 @@ export default function PacPage() {
   useEffect(() => { loadPatients(); }, []);
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Pre-Anesthesia Check</h1>
-          <p className="text-sm text-slate-500">ASA classification, Mallampati airway, NPO + consent gating</p>
-        </div>
-        <button onClick={() => setShowCreate(true)} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700">+ New PAC</button>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="💉"
+        eyebrow="OR Readiness"
+        title="Pre-Anesthesia Check"
+        subtitle="ASA classification, Mallampati airway, NPO + consent gating"
+        tone="violet"
+        primaryAction={{ label: "+ New PAC", onClick: () => setShowCreate(true) }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-8">
-          <StatTile label="Pending" value={stats.pending} tone="slate" />
-          <StatTile label="In review" value={stats.inReview} tone="amber" />
-          <StatTile label="Cleared / mo" value={stats.clearedMonth} tone="emerald" />
-          <StatTile label="Deferred / mo" value={stats.deferredMonth} tone="amber" />
-          <StatTile label="Rejected / mo" value={stats.rejectedMonth} tone="rose" />
-          <StatTile label="High risk (ASA III-V)" value={stats.highRisk} tone="rose" />
-          <StatTile label="Difficult airway" value={stats.difficultAirway} tone="amber" />
-          <StatTile label="Avg clear (h)" value={stats.avgClearHours} tone="slate" />
-        </div>
+        <StatGrid cols={4}>
+          <StatCard label="Pending" value={stats.pending} tone="slate" icon="⏳" />
+          <StatCard label="In review" value={stats.inReview} tone="amber" icon="🔍" />
+          <StatCard label="Cleared / mo" value={stats.clearedMonth} tone="emerald" icon="✓" />
+          <StatCard label="Deferred / mo" value={stats.deferredMonth} tone="orange" icon="⏸" />
+          <StatCard label="Rejected / mo" value={stats.rejectedMonth} tone="rose" icon="✕" />
+          <StatCard label="High risk (ASA III-V)" value={stats.highRisk} tone="rose" icon="⚠️" />
+          <StatCard label="Difficult airway" value={stats.difficultAirway} tone="fuchsia" icon="🫁" />
+          <StatCard label="Avg clear (h)" value={stats.avgClearHours} tone="indigo" icon="⏱️" />
+        </StatGrid>
       )}
 
       <div className="mb-4 flex flex-wrap items-center gap-2">

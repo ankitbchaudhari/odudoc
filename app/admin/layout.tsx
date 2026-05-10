@@ -825,6 +825,12 @@ const navSections: NavSection[] = [
         icon: "M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 9H9L8 4z",
       },
       {
+        href: "/admin/teleicu",
+        label: "Tele-ICU Center",
+        // Heart-with-pulse icon — critical care monitoring.
+        icon: "M21 12a9 9 0 11-18 0 9 9 0 0118 0z M9 12h2l1-3 2 6 1-3h2",
+      },
+      {
         href: "/admin/enterprise-leads",
         label: "Demo Requests",
         icon: "M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",

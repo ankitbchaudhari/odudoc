@@ -17,6 +17,7 @@ import { deleteMembershipsForOrg, reloadMemberships } from "@/lib/memberships-st
 import { deleteTransfersForOrg } from "@/lib/inter-org-transfers-store";
 import { deleteBedSnapshot } from "@/lib/inter-org-beds-store";
 import { deletePreauthsForOrg } from "@/lib/insurance/preauth-store";
+import { deleteBedsForOrg as deleteTeleIcuBedsForOrg } from "@/lib/teleicu/bed-store";
 // (No org-cascade for rx-fulfillment — orders are scoped to patients
 //  + pharmacies, not orgs.)
 import { recordAudit, type AuditAction } from "@/lib/audit-log-store";
@@ -262,6 +263,7 @@ export async function DELETE(req: NextRequest) {
   deleteTransfersForOrg(String(body.id));
   deleteBedSnapshot(String(body.id));
   deletePreauthsForOrg(String(body.id));
+  deleteTeleIcuBedsForOrg(String(body.id));
   recordAudit({
     actorEmail: g.email,
     action: "org.delete",

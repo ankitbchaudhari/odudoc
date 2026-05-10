@@ -120,16 +120,10 @@ export async function GET() {
 
   // Subscription revenue placeholder — pulls if the clinic-billing
   // store is wired. Many envs won't have it; we degrade gracefully.
-  let subscriptionsArr = 0;
-  try {
-    // String-form path so TS doesn't require the module exist at
-    // type-check time on deploys without it.
-    const sub = await import(("@/lib/clinic-billing-store") as string).catch(() => null) as unknown as { listSubscriptions?: () => Array<{ status?: string; planMonthlyInr?: number }> } | null;
-    if (sub && sub.listSubscriptions) {
-      const subs = sub.listSubscriptions().filter((s) => s.status === "active");
-      subscriptionsArr = subs.reduce((a, s) => a + (s.planMonthlyInr || 0), 0) * 12;
-    }
-  } catch { /* ignore */ }
+  // Subscription revenue is fed from the clinic-billing store when
+  // present. Module isn't always shipped — left at 0 here; wire up
+  // when that store lands.
+  const subscriptionsArr = 0;
 
   const totalGmv = pharmGmv + labGmv + cashlessGmv;
   const platformRevenue = pharmCut + labCut + subscriptionsArr / 12 * 3; // last 3 months equivalent for the 90-day window

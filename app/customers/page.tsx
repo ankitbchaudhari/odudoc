@@ -133,13 +133,9 @@ export default function CustomersPage() {
         <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {CUSTOMERS.map((c) => (
             <div key={c.name} className="flex h-24 items-center justify-center rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={c.logo} alt={c.name}
-                className="max-h-12 max-w-full object-contain"
-                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; (e.currentTarget.parentElement!.querySelector(".fallback") as HTMLElement)?.classList.remove("hidden"); }}
-              />
-              <div className="fallback hidden flex-col items-center text-center">
+              {/* Server-rendered, so no onError fallback. We render the
+                  initials chip directly — works without external assets. */}
+              <div className="flex flex-col items-center text-center">
                 <span className="rounded-lg bg-gradient-to-br from-indigo-100 to-sky-100 px-3 py-1.5 text-base font-extrabold text-indigo-700 ring-1 ring-indigo-200">{initialsOf(c.name)}</span>
                 <p className="mt-1 text-[10px] font-semibold text-slate-500">{c.name}</p>
               </div>

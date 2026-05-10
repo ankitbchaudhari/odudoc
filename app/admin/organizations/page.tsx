@@ -82,6 +82,37 @@ interface OrgModules {
   // Platform
   apiAccess: boolean;
   whiteLabel: boolean;
+  // New capabilities — must stay in sync with /lib/organizations-store.ts.
+  orgBranding: boolean;
+  miniWebsite: boolean;
+  surgeryVideo: boolean;
+  biometricEmergency: boolean;
+  antiCounterfeit: boolean;
+  pharmaCatalogue: boolean;
+  pharmaPartners: boolean;
+  pharmaPromo: boolean;
+  orgVacancies: boolean;
+  educationPartner: boolean;
+  voiceBookingBot: boolean;
+  whatsappBookingBot: boolean;
+  aiCreditPool: boolean;
+  aiPricingOverride: boolean;
+  mlTrainingQueue: boolean;
+  carePlans: boolean;
+  symptomLog: boolean;
+  vaccinations: boolean;
+  documentVault: boolean;
+  auditLog: boolean;
+  emergencyProfile: boolean;
+  vitalAlerts: boolean;
+  consumablesBilling: boolean;
+  countryTax: boolean;
+  watermarkedReports: boolean;
+  referralCommissions: boolean;
+  healthTimeline: boolean;
+  adherence: boolean;
+  shareTokens: boolean;
+  triagePalette: boolean;
 }
 
 interface Organization {
@@ -126,6 +157,15 @@ const ALL_KEYS: (keyof OrgModules)[] = [
   "multiBranch", "analytics", "audit",
   "patientPortal", "whatsappEngagement",
   "apiAccess", "whiteLabel",
+  // New capabilities (Q3 2026)
+  "orgBranding", "miniWebsite", "surgeryVideo", "biometricEmergency",
+  "antiCounterfeit", "pharmaCatalogue", "pharmaPartners", "pharmaPromo",
+  "orgVacancies", "educationPartner", "voiceBookingBot", "whatsappBookingBot",
+  "aiCreditPool", "aiPricingOverride", "mlTrainingQueue",
+  "carePlans", "symptomLog", "vaccinations", "documentVault", "auditLog",
+  "emergencyProfile", "vitalAlerts", "consumablesBilling", "countryTax",
+  "watermarkedReports", "referralCommissions", "healthTimeline",
+  "adherence", "shareTokens", "triagePalette",
 ];
 
 const PLAN_MODULES: Record<OrgPlan, (keyof OrgModules)[]> = {
@@ -137,6 +177,9 @@ const PLAN_MODULES: Record<OrgPlan, (keyof OrgModules)[]> = {
     "patient", "opd", "appointments", "encounters", "medicalRecords",
     "hospitalRx", "vitalsEws", "allergiesProblems",
     "telemedicine", "whatsappEngagement",
+    "carePlans", "symptomLog", "vaccinations", "adherence",
+    "documentVault", "healthTimeline", "auditLog", "emergencyProfile",
+    "countryTax", "watermarkedReports", "triagePalette",
   ],
   clinic: [
     "patient", "opd", "appointments", "encounters", "hospitalRx",
@@ -146,6 +189,12 @@ const PLAN_MODULES: Record<OrgPlan, (keyof OrgModules)[]> = {
     "billing", "invoices",
     "telemedicine", "opdQueue", "patientFeedback",
     "patientPortal", "diet", "analytics", "whatsappEngagement",
+    "orgBranding", "miniWebsite", "orgVacancies",
+    "voiceBookingBot", "whatsappBookingBot", "shareTokens",
+    "carePlans", "symptomLog", "vaccinations", "adherence",
+    "documentVault", "healthTimeline", "auditLog", "emergencyProfile",
+    "countryTax", "watermarkedReports", "referralCommissions",
+    "triagePalette", "vitalAlerts",
   ],
   hospital: [
     "patient", "opd", "ipd", "appointments", "encounters", "hospitalRx",
@@ -167,6 +216,14 @@ const PLAN_MODULES: Record<OrgPlan, (keyof OrgModules)[]> = {
     "infectionControl", "incidentReports", "emergencyCodes", "mortuary",
     "analytics", "audit",
     "patientPortal", "whatsappEngagement",
+    "orgBranding", "miniWebsite", "orgVacancies",
+    "voiceBookingBot", "whatsappBookingBot", "shareTokens",
+    "carePlans", "symptomLog", "vaccinations", "adherence",
+    "documentVault", "healthTimeline", "auditLog", "emergencyProfile",
+    "countryTax", "watermarkedReports", "referralCommissions",
+    "triagePalette", "vitalAlerts",
+    "surgeryVideo", "biometricEmergency", "consumablesBilling",
+    "aiCreditPool",
   ],
   enterprise: ALL_KEYS,
 };
@@ -248,6 +305,37 @@ const MODULE_LABELS: Record<keyof OrgModules, string> = {
   // Platform
   apiAccess: "API Access",
   whiteLabel: "White-label",
+  // New capabilities
+  orgBranding: "Org Branding",
+  miniWebsite: "Mini-Website",
+  surgeryVideo: "Surgery Video",
+  biometricEmergency: "Biometric Emergency",
+  antiCounterfeit: "Anti-Counterfeit",
+  pharmaCatalogue: "Pharma Catalogue",
+  pharmaPartners: "Pharma Partners",
+  pharmaPromo: "Pharma Promo",
+  orgVacancies: "Vacancies",
+  educationPartner: "Education Partner",
+  voiceBookingBot: "Voice IVR Booking",
+  whatsappBookingBot: "WhatsApp Booking Bot",
+  aiCreditPool: "AI Credit Pool",
+  aiPricingOverride: "AI Pricing Override",
+  mlTrainingQueue: "ML Training Queue",
+  carePlans: "Care Plans",
+  symptomLog: "Symptom Log",
+  vaccinations: "Vaccinations",
+  documentVault: "Document Vault",
+  auditLog: "Audit Log",
+  emergencyProfile: "Emergency Profile",
+  vitalAlerts: "Vital Alerts",
+  consumablesBilling: "Consumables Billing",
+  countryTax: "Country Tax Engine",
+  watermarkedReports: "Watermarked Reports",
+  referralCommissions: "Referral Commissions",
+  healthTimeline: "Health Timeline",
+  adherence: "Medication Adherence",
+  shareTokens: "Share Tokens",
+  triagePalette: "Triage Color Palette",
 };
 
 // Section grouping for the module picker — keeps the form readable
@@ -309,6 +397,48 @@ const MODULE_SECTIONS: Array<{ title: string; keys: (keyof OrgModules)[] }> = [
   {
     title: "Platform & enterprise",
     keys: ["aiVoice", "multiBranch", "apiAccess", "whiteLabel"],
+  },
+  {
+    title: "Brand & public surfaces",
+    keys: ["orgBranding", "miniWebsite", "orgVacancies", "watermarkedReports"],
+  },
+  {
+    title: "AI metering & training",
+    keys: ["aiCreditPool", "aiPricingOverride", "mlTrainingQueue"],
+  },
+  {
+    title: "Patient self-service",
+    keys: [
+      "carePlans", "symptomLog", "vaccinations", "adherence",
+      "documentVault", "healthTimeline", "emergencyProfile",
+      "auditLog",
+    ],
+  },
+  {
+    title: "Hospital ops add-ons",
+    keys: [
+      "surgeryVideo", "biometricEmergency", "consumablesBilling",
+      "vitalAlerts", "triagePalette", "shareTokens",
+    ],
+  },
+  {
+    title: "Booking channels",
+    keys: ["voiceBookingBot", "whatsappBookingBot"],
+  },
+  {
+    title: "Pharma supply chain",
+    keys: [
+      "pharmaCatalogue", "pharmaPartners", "pharmaPromo",
+      "antiCounterfeit",
+    ],
+  },
+  {
+    title: "Marketplace & education",
+    keys: ["educationPartner", "referralCommissions"],
+  },
+  {
+    title: "Compliance & tax",
+    keys: ["countryTax"],
   },
 ];
 
@@ -403,6 +533,37 @@ const DEFAULT_MODULES: OrgModules = {
   // Platform
   apiAccess: false,
   whiteLabel: false,
+  // New capabilities — defaults match /lib/organizations-store.ts.
+  orgBranding: false,
+  miniWebsite: false,
+  surgeryVideo: false,
+  biometricEmergency: false,
+  antiCounterfeit: false,
+  pharmaCatalogue: false,
+  pharmaPartners: false,
+  pharmaPromo: false,
+  orgVacancies: false,
+  educationPartner: false,
+  voiceBookingBot: false,
+  whatsappBookingBot: false,
+  aiCreditPool: false,
+  aiPricingOverride: false,
+  mlTrainingQueue: false,
+  carePlans: false,
+  symptomLog: false,
+  vaccinations: false,
+  documentVault: false,
+  auditLog: false,
+  emergencyProfile: false,
+  vitalAlerts: false,
+  consumablesBilling: false,
+  countryTax: true,
+  watermarkedReports: true,
+  referralCommissions: false,
+  healthTimeline: false,
+  adherence: false,
+  shareTokens: false,
+  triagePalette: true,
 };
 
 interface RepairedStaff {

@@ -100,6 +100,41 @@ export interface Organization {
     // ─── Platform / White-label ─────────────────────────────────────
     apiAccess: boolean;          // REST + webhook API for integrations
     whiteLabel: boolean;         // Custom branding, domain, app icons
+    // ─── New capabilities (Q3 2026 batch) ──────────────────────────
+    // Each flag gates one of the modules shipped in the recent
+    // feature run. Defaults are conservative — most are off so a
+    // small clinic doesn't get a confusing UI; the super-admin
+    // toggles per org based on their plan.
+    orgBranding: boolean;        // /admin/branding logo + theme + footer
+    miniWebsite: boolean;        // /admin/website + public /c/<slug>
+    surgeryVideo: boolean;       // Cloudflare Stream / Mux OT streaming
+    biometricEmergency: boolean; // WebAuthn + face capture kiosk
+    antiCounterfeit: boolean;    // Pharma drug + partner verify + kiosk
+    pharmaCatalogue: boolean;    // /admin/pharma/drugs (pharma orgs)
+    pharmaPartners: boolean;     // /admin/pharma/partners
+    pharmaPromo: boolean;        // /admin/pharma/promo
+    orgVacancies: boolean;       // /admin/vacancies + /jobs feed
+    educationPartner: boolean;   // /admin/education + courses + placements
+    voiceBookingBot: boolean;    // Twilio / Exotel / Vonage IVR booking
+    whatsappBookingBot: boolean; // Twilio WhatsApp + SMS multi-turn bot
+    aiCreditPool: boolean;       // Per-org AI metered credits + auto-topup
+    aiPricingOverride: boolean;  // /admin/ai-pricing per-feature override
+    mlTrainingQueue: boolean;    // Opt-in (input,output,gt) sample collection
+    carePlans: boolean;          // /dashboard/care-plan chronic-condition tracker
+    symptomLog: boolean;         // /dashboard/symptoms patient symptom tracker
+    vaccinations: boolean;       // /dashboard/vaccinations UIP schedule
+    documentVault: boolean;      // /dashboard/documents watermarked viewer
+    auditLog: boolean;           // /dashboard/audit + watermark + IP log
+    emergencyProfile: boolean;   // /dashboard/emergency-profile
+    vitalAlerts: boolean;        // Critical reading → assigned doctors push
+    consumablesBilling: boolean; // PPE / syringe / IV supplies auto-bill
+    countryTax: boolean;         // 19-country tax engine on invoices
+    watermarkedReports: boolean; // Diagonal watermark on document/invoice viewers
+    referralCommissions: boolean; // /api/referral-commissions ledger
+    healthTimeline: boolean;     // /dashboard/timeline aggregator
+    adherence: boolean;          // /dashboard/adherence today's meds
+    shareTokens: boolean;        // /share/surgery/[token] public links
+    triagePalette: boolean;      // <TriagePill /> on ward + OPD boards
   };
   // Ops metadata.
   trialEndsAt?: string;
@@ -188,6 +223,37 @@ const DEFAULT_MODULES: Organization["modules"] = {
   // Platform
   apiAccess: false,
   whiteLabel: false,
+  // New capabilities — defaults conservative; super-admin enables per plan.
+  orgBranding: false,
+  miniWebsite: false,
+  surgeryVideo: false,
+  biometricEmergency: false,
+  antiCounterfeit: false,
+  pharmaCatalogue: false,
+  pharmaPartners: false,
+  pharmaPromo: false,
+  orgVacancies: false,
+  educationPartner: false,
+  voiceBookingBot: false,
+  whatsappBookingBot: false,
+  aiCreditPool: false,
+  aiPricingOverride: false,
+  mlTrainingQueue: false,
+  carePlans: false,
+  symptomLog: false,
+  vaccinations: false,
+  documentVault: false,
+  auditLog: false,
+  emergencyProfile: false,
+  vitalAlerts: false,
+  consumablesBilling: false,
+  countryTax: true,           // safe default — invoices need tax always
+  watermarkedReports: true,   // privacy-positive default — always on
+  referralCommissions: false,
+  healthTimeline: false,
+  adherence: false,
+  shareTokens: false,
+  triagePalette: true,        // visual-only, safe default on
 };
 
 // Plan → modules the plan is entitled to. Anything not in this set is
@@ -223,6 +289,15 @@ const ALL_MODULES: readonly ModuleKey[] = [
   "patientPortal", "whatsappEngagement",
   // Platform
   "apiAccess", "whiteLabel",
+  // New capabilities (Q3 2026)
+  "orgBranding", "miniWebsite", "surgeryVideo", "biometricEmergency",
+  "antiCounterfeit", "pharmaCatalogue", "pharmaPartners", "pharmaPromo",
+  "orgVacancies", "educationPartner", "voiceBookingBot", "whatsappBookingBot",
+  "aiCreditPool", "aiPricingOverride", "mlTrainingQueue",
+  "carePlans", "symptomLog", "vaccinations", "documentVault", "auditLog",
+  "emergencyProfile", "vitalAlerts", "consumablesBilling", "countryTax",
+  "watermarkedReports", "referralCommissions", "healthTimeline",
+  "adherence", "shareTokens", "triagePalette",
 ];
 
 export const PLAN_MODULE_ENTITLEMENTS: Record<OrgPlan, readonly ModuleKey[]> = {
@@ -234,6 +309,10 @@ export const PLAN_MODULE_ENTITLEMENTS: Record<OrgPlan, readonly ModuleKey[]> = {
     "patient", "opd", "appointments", "encounters", "medicalRecords",
     "hospitalRx", "vitalsEws", "allergiesProblems",
     "telemedicine", "whatsappEngagement",
+    // New caps — patient-side wellness tools are starter-tier:
+    "carePlans", "symptomLog", "vaccinations", "adherence",
+    "documentVault", "healthTimeline", "auditLog", "emergencyProfile",
+    "countryTax", "watermarkedReports", "triagePalette",
   ],
   // Single-clinic tier — billing + lab + pharmacy + patient portal,
   // but no inpatient sub-departments.
@@ -245,6 +324,15 @@ export const PLAN_MODULE_ENTITLEMENTS: Record<OrgPlan, readonly ModuleKey[]> = {
     "billing", "invoices",
     "telemedicine", "opdQueue", "patientFeedback",
     "patientPortal", "diet", "analytics", "whatsappEngagement",
+    // Clinic-tier additions: branding, mini-site, vacancies, voice + WA
+    // booking bots, share links — single-clinic operators get the
+    // public-presence + booking-channel set.
+    "orgBranding", "miniWebsite", "orgVacancies",
+    "voiceBookingBot", "whatsappBookingBot", "shareTokens",
+    "carePlans", "symptomLog", "vaccinations", "adherence",
+    "documentVault", "healthTimeline", "auditLog", "emergencyProfile",
+    "countryTax", "watermarkedReports", "referralCommissions",
+    "triagePalette", "vitalAlerts",
   ],
   // Multi-bed hospital tier — inpatient + most sub-departments + the
   // back-office set. Misses platform tier (API / white-label / multi-branch).
@@ -268,6 +356,17 @@ export const PLAN_MODULE_ENTITLEMENTS: Record<OrgPlan, readonly ModuleKey[]> = {
     "infectionControl", "incidentReports", "emergencyCodes", "mortuary",
     "analytics", "audit",
     "patientPortal", "whatsappEngagement",
+    // Hospital-tier: clinic set + surgery video + biometric emergency
+    // + consumables billing + AI credit pool. Pharma + education are
+    // org-type-specific so they sit in enterprise.
+    "orgBranding", "miniWebsite", "orgVacancies",
+    "voiceBookingBot", "whatsappBookingBot", "shareTokens",
+    "carePlans", "symptomLog", "vaccinations", "adherence",
+    "documentVault", "healthTimeline", "auditLog", "emergencyProfile",
+    "countryTax", "watermarkedReports", "referralCommissions",
+    "triagePalette", "vitalAlerts",
+    "surgeryVideo", "biometricEmergency", "consumablesBilling",
+    "aiCreditPool",
   ],
   // Enterprise = everything: hospital tier + AI voice + platform tier.
   enterprise: ALL_MODULES,

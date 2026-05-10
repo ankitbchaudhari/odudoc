@@ -18,6 +18,7 @@
 // not supported in the demo; in production it requires RBI auth.
 
 import { bindPersistentArray } from "../persistent-array";
+import { pushNotification } from "../notifications/store";
 
 export type WalletTxKind =
   | "topup"          // patient adds money
@@ -247,7 +248,7 @@ export function applyRefund(input: { userId: string; amountRupees: number; refer
   w.lifetimeSpent = Math.max(0, w.lifetimeSpent - input.amountRupees);
   w.updatedAt = new Date().toISOString();
   flushAcc();
-  return pushTx({
+  const tx = pushTx({
     userId: input.userId,
     kind: "refund",
     amountRupees: input.amountRupees,
@@ -256,6 +257,19 @@ export function applyRefund(input: { userId: string; amountRupees: number; refer
     reference: input.reference,
     note: input.note?.trim(),
   });
+  // Refunds always notify — patients are anxious about whether the
+  // money actually came back, so confirmation is the highest-value
+  // single bell event the wallet fires.
+  pushNotification({
+    userId: input.userId,
+    kind: "wallet_refund",
+    severity: "success",
+    title: `₹${input.amountRupees.toLocaleString("en-IN")} refunded`,
+    body: input.note || `Refund credited to your wallet. New balance ₹${w.balanceRupees.toLocaleString("en-IN")}.`,
+    link: "/dashboard/wallet",
+    reference: input.reference || tx.id,
+  });
+  return tx;
 }
 
 /** Ops adjustment with reason — used for manual corrections. */

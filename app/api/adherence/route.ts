@@ -12,6 +12,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { listPrescriptions } from "@/lib/prescriptions-store";
 import { listDoseEvents, logDose, slotsFor, DoseAction } from "@/lib/adherence/store";
+import { runRefillCheck } from "@/lib/adherence/refill";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
 export const runtime = "nodejs";
@@ -45,6 +46,12 @@ export async function GET() {
   const today = todayIso();
   const rxs = listPrescriptions({ patientEmail: email })
     .filter((rx) => rx.status === "active");
+  // Best-effort refill check on every load. Idempotent in the
+  // notification store, so re-firing during the renotify window is
+  // a no-op rather than a double-push.
+  for (const rx of rxs) {
+    try { await runRefillCheck(rx); } catch { /* skip */ }
+  }
   const events = listDoseEvents(userId, { since: today });
 
   const schedule: ScheduledDose[] = [];

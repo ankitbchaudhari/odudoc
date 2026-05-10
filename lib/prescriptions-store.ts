@@ -6,6 +6,8 @@
 
 import type { PrescriptionData } from "./prescription-templates";
 import { bindPersistentArray } from "./persistent-array";
+import { pushNotification } from "./notifications/store";
+import { findUserByEmail } from "./users-store";
 
 export interface PrescriptionRecord {
   id: string;
@@ -36,6 +38,24 @@ export function addPrescription(
   };
   prescriptions.unshift(rx);
   flush();
+  // Patient-facing notification. patientEmail → userId resolves
+  // for registered users; unregistered email-only entries silently
+  // skip the push (no inbox to deliver to).
+  if (rx.patientEmail) {
+    const u = findUserByEmail(rx.patientEmail);
+    if (u) {
+      const medCount = rx.data.medications?.length || 0;
+      pushNotification({
+        userId: u.id, kind: "rx_ready", severity: "success",
+        title: "New prescription issued",
+        body: medCount
+          ? `${medCount} medication${medCount === 1 ? "" : "s"} from ${rx.data.doctorName || rx.doctorEmail}.`
+          : `From ${rx.data.doctorName || rx.doctorEmail}.`,
+        link: `/dashboard/prescriptions`,
+        reference: `rx:${rx.id}:issued`,
+      });
+    }
+  }
   return rx;
 }
 
@@ -60,7 +80,20 @@ export function getPrescription(id: string): PrescriptionRecord | null {
 export function cancelPrescription(id: string): PrescriptionRecord | null {
   const rx = prescriptions.find((p) => p.id === id);
   if (!rx) return null;
+  if (rx.status === "cancelled") return rx; // idempotent
   rx.status = "cancelled";
   flush();
+  if (rx.patientEmail) {
+    const u = findUserByEmail(rx.patientEmail);
+    if (u) {
+      pushNotification({
+        userId: u.id, kind: "rx_ready", severity: "warn",
+        title: "Prescription cancelled",
+        body: `From ${rx.data.doctorName || rx.doctorEmail}. Tap to review.`,
+        link: `/dashboard/prescriptions`,
+        reference: `rx:${rx.id}:cancelled`,
+      });
+    }
+  }
   return rx;
 }

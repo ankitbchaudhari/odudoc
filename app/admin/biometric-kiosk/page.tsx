@@ -171,8 +171,12 @@ export default function BiometricKioskPage() {
       ctx.drawImage(videoRef.current!, 0, 0, canvas.width, canvas.height);
       // Pixel-hash demo. Production: run a face-embedding model and
       // HMAC the embedding instead — this is brittle to lighting.
+      // ImageData.data is Uint8ClampedArray; copy into a plain
+      // Uint8Array so WebCrypto + the helper signature narrow cleanly.
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const templateHash = await hmacB64(salt, imageData.data);
+      const src = imageData.data;
+      const pixelBytes = new Uint8Array(src.buffer.slice(src.byteOffset, src.byteOffset + src.byteLength));
+      const templateHash = await hmacB64(salt, pixelBytes);
 
       setPhase("enrolling");
       const r = await fetch("/api/biometric/enroll", {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type { CardiologyStudy, StudyType, StudyStatus, Rhythm, Urgency } from "@/lib/hospital/cardiology-store";
 // Inlined from cardiology-store — importing runtime values pulls persistent-array → Postgres into the client bundle and crashes the page.
 const STUDY_LABEL: Record<StudyType, string> = {
@@ -82,25 +83,26 @@ export default function CardiologyPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Cardiology studies</h1>
-          <p className="text-sm text-slate-500">ECG, echo, stress, Holter, ABPM with structured findings & auto-QTc (Bazett).</p>
-        </div>
-        <button onClick={() => { setEditStudy(null); setShowForm(true); }} className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800">+ Request study</button>
-      </div>
+      <PageHero
+        icon="❤️"
+        eyebrow="Cardiac Diagnostics"
+        title="Cardiology Studies"
+        subtitle="ECG, echo, stress, Holter, ABPM with structured findings & auto-QTc (Bazett)"
+        tone="rose"
+        primaryAction={{ label: "+ Request study", onClick: () => { setEditStudy(null); setShowForm(true); } }}
+      />
 
       {stats && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
-          <Stat label="Requested today" value={stats.requestedToday} />
-          <Stat label="Pending reports" value={stats.pendingReports} tone={stats.pendingReports > 0 ? "amber" : "slate"} />
-          <Stat label="STAT pending" value={stats.statPending} tone={stats.statPending > 0 ? "rose" : "slate"} />
-          <Stat label="Reported (mo)" value={stats.reportedMonth} />
-          <Stat label="Amended (mo)" value={stats.amendedMonth} />
-          <Stat label="Avg TAT (hrs)" value={stats.avgTatHours} />
-          <Stat label="Low EF<40 (mo)" value={stats.abnormalEfMonth} tone={stats.abnormalEfMonth > 0 ? "rose" : "slate"} />
-          <Stat label="+ Stress (mo)" value={stats.positiveStressMonth} tone={stats.positiveStressMonth > 0 ? "amber" : "slate"} />
-        </div>
+        <StatGrid cols={4}>
+          <StatCard label="Requested today" value={stats.requestedToday} tone="sky" icon="📥" />
+          <StatCard label="Pending reports" value={stats.pendingReports} tone={stats.pendingReports > 0 ? "amber" : "slate"} icon="📝" />
+          <StatCard label="STAT pending" value={stats.statPending} tone={stats.statPending > 0 ? "rose" : "slate"} icon="🚨" />
+          <StatCard label="Reported (mo)" value={stats.reportedMonth} tone="emerald" icon="✓" />
+          <StatCard label="Amended (mo)" value={stats.amendedMonth} tone="violet" icon="✎" />
+          <StatCard label="Avg TAT (hrs)" value={stats.avgTatHours} tone="indigo" icon="⏱️" />
+          <StatCard label="Low EF<40 (mo)" value={stats.abnormalEfMonth} tone={stats.abnormalEfMonth > 0 ? "rose" : "slate"} icon="💔" />
+          <StatCard label="+ Stress (mo)" value={stats.positiveStressMonth} tone={stats.positiveStressMonth > 0 ? "amber" : "slate"} icon="🏃" />
+        </StatGrid>
       )}
 
       <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white p-3">

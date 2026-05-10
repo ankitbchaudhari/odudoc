@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   EndoscopyProcedure,
   ProcedureStatus,
@@ -213,44 +214,28 @@ export default function EndoscopyPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Endoscopy / GI procedures</h1>
-          <p className="text-sm text-slate-500">Scheduling, findings, biopsies, and quality indicators (PDR, cecal intubation, withdrawal time).</p>
-        </div>
-        <button
-          onClick={() => { setEditProc(null); setShowForm(true); }}
-          className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800"
-        >
-          + Schedule procedure
-        </button>
-      </div>
+      <PageHero
+        icon="🩺"
+        eyebrow="GI Suite"
+        title="Endoscopy / GI Procedures"
+        subtitle="Scheduling, findings, biopsies, and quality indicators (PDR, cecal intubation, withdrawal time)"
+        tone="violet"
+        primaryAction={{ label: "+ Schedule procedure", onClick: () => { setEditProc(null); setShowForm(true); } }}
+      />
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-9">
-          <Stat label="Scheduled today" value={stats.scheduledToday} />
-          <Stat label="In progress" value={stats.inProgress} />
-          <Stat label="Completed (mo)" value={stats.completedMonth} />
-          <Stat label="Cancelled (mo)" value={stats.cancelledMonth} />
-          <Stat label="Biopsies (mo)" value={stats.biopsiesMonth} />
-          <Stat
-            label="Polyp detection %"
-            value={`${stats.polypDetectionRate}%`}
-            tone={stats.polypDetectionRate >= 25 ? "emerald" : stats.polypDetectionRate >= 15 ? "amber" : "rose"}
-          />
-          <Stat
-            label="Cecal intubation %"
-            value={`${stats.cecalIntubationRate}%`}
-            tone={stats.cecalIntubationRate >= 95 ? "emerald" : stats.cecalIntubationRate >= 90 ? "amber" : "rose"}
-          />
-          <Stat
-            label="Avg withdrawal (min)"
-            value={stats.avgWithdrawalMin}
-            tone={stats.avgWithdrawalMin >= 6 ? "emerald" : stats.avgWithdrawalMin >= 4 ? "amber" : "rose"}
-          />
-          <Stat label="Complications (mo)" value={stats.complicationsMonth} tone={stats.complicationsMonth > 0 ? "rose" : "slate"} />
-        </div>
+        <StatGrid cols={5}>
+          <StatCard label="Scheduled today" value={stats.scheduledToday} tone="sky" icon="📅" />
+          <StatCard label="In progress" value={stats.inProgress} tone="amber" icon="🔄" />
+          <StatCard label="Completed (mo)" value={stats.completedMonth} tone="emerald" icon="✓" />
+          <StatCard label="Cancelled (mo)" value={stats.cancelledMonth} tone="slate" icon="✕" />
+          <StatCard label="Biopsies (mo)" value={stats.biopsiesMonth} tone="violet" icon="🧬" />
+          <StatCard label="Polyp detection %" value={`${stats.polypDetectionRate}%`} tone={stats.polypDetectionRate >= 25 ? "emerald" : stats.polypDetectionRate >= 15 ? "amber" : "rose"} icon="🎯" />
+          <StatCard label="Cecal intubation %" value={`${stats.cecalIntubationRate}%`} tone={stats.cecalIntubationRate >= 95 ? "emerald" : stats.cecalIntubationRate >= 90 ? "amber" : "rose"} icon="📍" />
+          <StatCard label="Avg withdrawal (min)" value={stats.avgWithdrawalMin} tone={stats.avgWithdrawalMin >= 6 ? "emerald" : stats.avgWithdrawalMin >= 4 ? "amber" : "rose"} icon="⏱️" />
+          <StatCard label="Complications (mo)" value={stats.complicationsMonth} tone={stats.complicationsMonth > 0 ? "rose" : "slate"} icon="⚠️" />
+        </StatGrid>
       )}
 
       {/* Filters */}

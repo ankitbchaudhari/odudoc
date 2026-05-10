@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   ChemoProtocol,
   ChemoCycle,
@@ -285,34 +286,27 @@ export default function OncologyPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Oncology & Chemotherapy</h1>
-          <p className="text-sm text-slate-500">
-            Treatment protocols, cycle scheduling, CTCAE adverse event tracking.
-          </p>
-        </div>
-        <button
-          onClick={() => { setEditProtocol(null); setShowProtocolForm(true); }}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
-        >
-          + New protocol
-        </button>
-      </div>
+      <PageHero
+        icon="🎗️"
+        eyebrow="Oncology"
+        title="Oncology & Chemotherapy"
+        subtitle="Treatment protocols, cycle scheduling, CTCAE adverse event tracking"
+        tone="fuchsia"
+        primaryAction={{ label: "+ New protocol", onClick: () => { setEditProtocol(null); setShowProtocolForm(true); } }}
+      />
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-8">
-          <Stat label="Active protocols" value={stats.activeProtocols} />
-          <Stat label="Cycles today" value={stats.cyclesToday} />
-          <Stat label="Cycles (month)" value={stats.cyclesMonth} />
-          <Stat label="Administered (mo)" value={stats.administeredMonth} tone="emerald" />
-          <Stat label="Delayed (mo)" value={stats.delayedMonth} tone="amber" />
-          <Stat label="High-tox active" value={stats.highToxicityActive} tone="rose" />
-          <Stat label="Delay rate (90d)" value={`${stats.avgDelayRate}%`} />
-          <Stat label="Completed (mo)" value={stats.completedMonth} tone="emerald" />
-        </div>
+        <StatGrid cols={4}>
+          <StatCard label="Active protocols" value={stats.activeProtocols} tone="violet" icon="📋" />
+          <StatCard label="Cycles today" value={stats.cyclesToday} tone="sky" icon="🔄" />
+          <StatCard label="Cycles (month)" value={stats.cyclesMonth} tone="indigo" icon="📅" />
+          <StatCard label="Administered (mo)" value={stats.administeredMonth} tone="emerald" icon="✓" />
+          <StatCard label="Delayed (mo)" value={stats.delayedMonth} tone="amber" icon="⏰" />
+          <StatCard label="High-tox active" value={stats.highToxicityActive} tone="rose" icon="⚠️" />
+          <StatCard label="Delay rate (90d)" value={`${stats.avgDelayRate}%`} tone="orange" icon="📉" />
+          <StatCard label="Completed (mo)" value={stats.completedMonth} tone="teal" icon="🏁" />
+        </StatGrid>
       )}
 
       {/* Filters */}

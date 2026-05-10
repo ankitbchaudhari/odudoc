@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   ICUStay,
   ICUObservation,
@@ -253,32 +254,26 @@ export default function ICUPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">ICU / Critical Care</h1>
-          <p className="text-sm text-slate-500">
-            Critical care stays, hourly charting, ventilator & pressor tracking, SOFA / APACHE II.
-          </p>
-        </div>
-        <button
-          onClick={() => { setEditStay(null); setShowStayForm(true); }}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
-        >
-          + Admit to ICU
-        </button>
-      </div>
+      <PageHero
+        icon="🏥"
+        eyebrow="Critical Care"
+        title="ICU / Critical Care"
+        subtitle="Critical care stays, hourly charting, ventilator & pressor tracking, SOFA / APACHE II"
+        tone="rose"
+        primaryAction={{ label: "+ Admit to ICU", onClick: () => { setEditStay(null); setShowStayForm(true); } }}
+      />
 
       {stats && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-8">
-          <Stat label="Active stays" value={stats.activeStays} />
-          <Stat label="Ventilated" value={stats.ventilated} tone="amber" />
-          <Stat label="On pressors" value={stats.onPressors} tone="rose" />
-          <Stat label="Observations today" value={stats.observationsToday} />
-          <Stat label="Admissions (mo)" value={stats.admissionsMonth} />
-          <Stat label="Deaths 30d" value={stats.mortality30d} tone="rose" />
-          <Stat label="Mortality 90d" value={`${stats.mortalityRate90d}%`} tone="rose" />
-          <Stat label="Avg LOS (hr)" value={stats.avgLosHours} />
-        </div>
+        <StatGrid cols={4}>
+          <StatCard label="Active stays" value={stats.activeStays} tone="indigo" icon="🛏️" />
+          <StatCard label="Ventilated" value={stats.ventilated} tone="amber" icon="🫁" />
+          <StatCard label="On pressors" value={stats.onPressors} tone="rose" icon="💉" />
+          <StatCard label="Observations today" value={stats.observationsToday} tone="sky" icon="📊" />
+          <StatCard label="Admissions (mo)" value={stats.admissionsMonth} tone="violet" icon="📥" />
+          <StatCard label="Deaths 30d" value={stats.mortality30d} tone="rose" icon="🕯️" />
+          <StatCard label="Mortality 90d" value={`${stats.mortalityRate90d}%`} tone="fuchsia" icon="📉" />
+          <StatCard label="Avg LOS (hr)" value={stats.avgLosHours} tone="emerald" icon="⏱️" />
+        </StatGrid>
       )}
 
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-3">

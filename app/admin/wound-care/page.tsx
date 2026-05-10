@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 import type {
   WoundRecord,
   WoundAssessment,
@@ -282,33 +283,27 @@ export default function WoundCarePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Wound Care</h1>
-          <p className="text-sm text-slate-500">
-            Pressure injuries, diabetic / vascular ulcers, surgical wounds — serial assessments & healing trajectory.
-          </p>
-        </div>
-        <button
-          onClick={() => { setEditWound(null); setShowWoundForm(true); }}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
-        >
-          + New wound
-        </button>
-      </div>
+      <PageHero
+        icon="🩹"
+        eyebrow="Tissue Viability"
+        title="Wound Care"
+        subtitle="Pressure injuries, diabetic / vascular ulcers, surgical wounds — serial assessments & healing trajectory"
+        tone="amber"
+        primaryAction={{ label: "+ New wound", onClick: () => { setEditWound(null); setShowWoundForm(true); } }}
+      />
 
       {stats && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-9">
-          <Stat label="Open wounds" value={stats.openWounds} />
-          <Stat label="Pressure" value={stats.pressureInjuries} tone="amber" />
-          <Stat label="Stage 3/4/Unst" value={stats.stageIiiIvActive} tone="rose" />
-          <Stat label="Infected active" value={stats.infectedActive} tone="rose" />
-          <Stat label="Assessments today" value={stats.assessmentsToday} />
-          <Stat label="Assessments (mo)" value={stats.assessmentsMonth} />
-          <Stat label="Overdue >7d" value={stats.overdueReassessment} tone="amber" />
-          <Stat label="Healed (mo)" value={stats.healedMonth} tone="emerald" />
-          <Stat label="Avg heal (d)" value={stats.avgTimeToHealDays} />
-        </div>
+        <StatGrid cols={5}>
+          <StatCard label="Open wounds" value={stats.openWounds} tone="rose" icon="🔴" />
+          <StatCard label="Pressure" value={stats.pressureInjuries} tone="amber" icon="🛏️" />
+          <StatCard label="Stage 3/4/Unst" value={stats.stageIiiIvActive} tone="rose" icon="⚠️" />
+          <StatCard label="Infected active" value={stats.infectedActive} tone="fuchsia" icon="🦠" />
+          <StatCard label="Assessments today" value={stats.assessmentsToday} tone="sky" icon="📋" />
+          <StatCard label="Assessments (mo)" value={stats.assessmentsMonth} tone="indigo" icon="📊" />
+          <StatCard label="Overdue >7d" value={stats.overdueReassessment} tone="orange" icon="⏰" />
+          <StatCard label="Healed (mo)" value={stats.healedMonth} tone="emerald" icon="✓" />
+          <StatCard label="Avg heal (d)" value={stats.avgTimeToHealDays} tone="teal" icon="📈" />
+        </StatGrid>
       )}
 
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-3">

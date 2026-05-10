@@ -14,6 +14,12 @@ interface Stats {
   formResponses: number;
   orders: number;
   bookings: number;
+  // Org-scoped extras (only present when scope === "org")
+  staff?: number;
+  nurses?: number;
+  activeAdmissions?: number;
+  invoices?: number;
+  outstandingBalance?: number;
 }
 
 interface Subscriber {
@@ -43,12 +49,38 @@ interface RecentOrder {
   createdAt: string;
 }
 
+interface RecentAdmission {
+  id: string;
+  patientId: string;
+  admittingDoctor?: string;
+  chiefComplaint?: string;
+  currentWardId?: string;
+  currentBedId?: string;
+  status: string;
+  admittedAt: string;
+}
+
+interface RecentInvoice {
+  id: string;
+  invoiceNumber: string;
+  patientId: string;
+  status: string;
+  grandTotal: number;
+  balance: number;
+  issuedAt?: string;
+}
+
 interface DashboardResp {
+  // "platform" → super-admin global view; "org" → tenant-scoped.
+  scope?: "platform" | "org";
+  organizationId?: string;
   stats: Stats;
   revenue: number;
   subscribers: Subscriber[];
   comments: Comment[];
   recentOrders: RecentOrder[];
+  recentAdmissions?: RecentAdmission[];
+  recentInvoices?: RecentInvoice[];
 }
 
 // Deterministic gravatar-style avatar — same letter → same colour,
@@ -266,10 +298,80 @@ export default function AdminDashboard() {
       <div>
         <div className="mb-4 flex items-baseline justify-between">
           <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
-            Platform at a glance
+            {data?.scope === "org" ? "Your organization at a glance" : "Platform at a glance"}
           </h2>
           <span className="text-[11px] text-slate-400">Click any card to dive in</span>
         </div>
+        {data?.scope === "org" ? (
+          // Org-scoped tiles — staff, doctors, nurses, admissions,
+          // invoices, balance. No platform-wide marketing tiles.
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <KpiCard
+              label="Staff"
+              value={stats?.staff ?? "—"}
+              href="/admin/staff"
+              tint="from-emerald-50 to-emerald-100/40 text-emerald-900"
+              iconBg="bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-500/30"
+              icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
+            />
+            <KpiCard
+              label="Doctors"
+              value={stats?.doctors ?? "—"}
+              href="/admin/staff?role=doctor"
+              tint="from-cyan-50 to-sky-100/40 text-sky-900"
+              iconBg="bg-gradient-to-br from-cyan-500 to-sky-600 shadow-sky-500/30"
+              icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 14v.01M8 10v.01M12 14v.01M12 10v.01M16 14v.01M16 10v.01M4 6h16a1 1 0 011 1v11a2 2 0 01-2 2H5a2 2 0 01-2-2V7a1 1 0 011-1z" /></svg>}
+            />
+            <KpiCard
+              label="Nurses"
+              value={stats?.nurses ?? "—"}
+              href="/admin/staff?role=nurse"
+              tint="from-pink-50 to-rose-100/40 text-rose-900"
+              iconBg="bg-gradient-to-br from-pink-500 to-rose-600 shadow-rose-500/30"
+              icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>}
+            />
+            <KpiCard
+              label="Active admissions"
+              value={stats?.activeAdmissions ?? "—"}
+              href="/admin/admissions"
+              tint="from-amber-50 to-amber-100/40 text-amber-900"
+              iconBg="bg-gradient-to-br from-amber-500 to-orange-500 shadow-amber-500/30"
+              icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
+            />
+            <KpiCard
+              label="Invoices"
+              value={stats?.invoices ?? "—"}
+              href="/admin/invoices"
+              tint="from-indigo-50 to-indigo-100/40 text-indigo-900"
+              iconBg="bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-indigo-500/30"
+              icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
+            />
+            <KpiCard
+              label="Outstanding (₹)"
+              value={stats?.outstandingBalance ? Math.round(stats.outstandingBalance).toLocaleString() : "—"}
+              href="/admin/invoices?filter=unpaid"
+              tint="from-rose-50 to-pink-100/40 text-rose-900"
+              iconBg="bg-gradient-to-br from-rose-500 to-pink-600 shadow-rose-500/30"
+              icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+            />
+            <KpiCard
+              label="Revenue (₹)"
+              value={data?.revenue ? Math.round(data.revenue).toLocaleString() : "—"}
+              href="/admin/invoices"
+              tint="from-teal-50 to-emerald-100/40 text-teal-900"
+              iconBg="bg-gradient-to-br from-teal-500 to-emerald-600 shadow-teal-500/30"
+              icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
+            />
+            <KpiCard
+              label="Branding"
+              value="Setup"
+              href="/admin/branding"
+              tint="from-violet-50 to-purple-100/40 text-violet-900"
+              iconBg="bg-gradient-to-br from-violet-500 to-purple-600 shadow-violet-500/30"
+              icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>}
+            />
+          </div>
+        ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard
             label="Posts"
@@ -368,9 +470,13 @@ export default function AdminDashboard() {
             }
           />
         </div>
+        )}
       </div>
 
-      {/* ── Subscribers + Comments ────────────────────────────────── */}
+      {/* ── Subscribers + Comments ──────────────────────────────────
+          Platform-only — org admins don't have public-marketing
+          newsletter / comment surfaces, so we hide both lists. */}
+      {data?.scope !== "org" && (
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Subscribers */}
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -488,9 +594,72 @@ export default function AdminDashboard() {
           </ul>
         </div>
       </div>
+      )}
 
-      {/* ── Recent orders ─────────────────────────────────────────── */}
-      {data && data.recentOrders.length > 0 && (
+      {/* Org-scoped recent activity — admissions + invoices instead
+          of platform marketing lists. Only renders for org admins. */}
+      {data?.scope === "org" && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-4">
+              <h2 className="text-[15px] font-bold text-slate-900">Recent admissions</h2>
+              <p className="text-[11px] text-slate-500">Latest five admissions in your org</p>
+            </div>
+            {data.recentAdmissions && data.recentAdmissions.length > 0 ? (
+              <ul className="divide-y divide-slate-100">
+                {data.recentAdmissions.map((a) => (
+                  <li key={a.id} className="px-5 py-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">Patient {a.patientId}</p>
+                        <p className="text-xs text-slate-500">
+                          {a.chiefComplaint || "—"}
+                          {a.currentWardId && <> · ward {a.currentWardId}</>}
+                          {a.currentBedId && <> · bed {a.currentBedId}</>}
+                        </p>
+                      </div>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${a.status === "admitted" ? "bg-rose-100 text-rose-800" : "bg-emerald-100 text-emerald-800"}`}>{a.status}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="px-5 py-8 text-center text-sm text-slate-400">No admissions yet.</p>
+            )}
+          </div>
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-4">
+              <h2 className="text-[15px] font-bold text-slate-900">Recent invoices</h2>
+              <p className="text-[11px] text-slate-500">Most recent five</p>
+            </div>
+            {data.recentInvoices && data.recentInvoices.length > 0 ? (
+              <ul className="divide-y divide-slate-100">
+                {data.recentInvoices.map((inv) => (
+                  <li key={inv.id} className="px-5 py-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">{inv.invoiceNumber}</p>
+                        <p className="text-xs text-slate-500">Patient {inv.patientId}{inv.issuedAt ? ` · ${new Date(inv.issuedAt).toLocaleDateString()}` : ""}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold tabular-nums">₹{Math.round(inv.grandTotal).toLocaleString()}</p>
+                        {inv.balance > 0 && <p className="text-[10px] text-rose-600">Due ₹{Math.round(inv.balance).toLocaleString()}</p>}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="px-5 py-8 text-center text-sm text-slate-400">No invoices yet.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Recent orders ───────────────────────────────────────────
+          Platform-only — these are public e-commerce orders, not
+          hospital invoices. Org admins see /admin/invoices instead. */}
+      {data?.scope !== "org" && data && data.recentOrders.length > 0 && (
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-4">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-md">

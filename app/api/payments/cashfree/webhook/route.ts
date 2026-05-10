@@ -7,7 +7,7 @@
 // lets an attacker mark any order paid.
 
 import { NextRequest, NextResponse } from "next/server";
-import { verifyWebhookSignature } from "@/lib/cashfree";
+import { verifyWebhookSignatureDetailed, isWebhookReplay, markWebhookProcessed } from "@/lib/cashfree";
 import { markPaid as markConsultationPaid } from "@/lib/consultations-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
@@ -44,20 +44,32 @@ export async function POST(req: NextRequest) {
 
   // Defence: reject anything we can't authenticate. Cashfree resends
   // on 5xx so a 401 here is the polite "stop and check your config".
-  if (!verifyWebhookSignature(rawBody, signature, timestamp)) {
+  const verify = verifyWebhookSignatureDetailed(rawBody, signature, timestamp);
+  if (!verify.ok) {
     log.warn("cashfree.webhook.signature_invalid", {
+      reason: verify.reason,
       hasSignature: Boolean(signature),
       hasTimestamp: Boolean(timestamp),
       bytes: rawBody.length,
     });
-    return NextResponse.json({ ok: false, error: "invalid_signature" }, { status: 401 });
+    // Reason "timestamp_too_old" is the replay attack signal; surface it
+    // as 401 with the reason in the body so ops can see it in logs.
+    return NextResponse.json({ ok: false, error: "invalid_signature", reason: verify.reason }, { status: 401 });
   }
 
-  let evt: CashfreeWebhookEvent;
+  let evt: CashfreeWebhookEvent & { event_id?: string };
   try {
     evt = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 });
+  }
+
+  // Replay-on-our-side check: if we've already processed this event
+  // id (Cashfree retries on our 5xx), short-circuit with 200 so the
+  // webhook doesn't fire twice.
+  if (isWebhookReplay(evt.event_id)) {
+    log.info("cashfree.webhook.replay_short_circuit", { eventId: evt.event_id });
+    return NextResponse.json({ ok: true, replay: true });
   }
 
   const order = evt.data?.order;
@@ -112,6 +124,11 @@ export async function POST(req: NextRequest) {
   } else {
     log.info("cashfree.webhook.event", { type: evt.type, status, orderId });
   }
+
+  // Mark event as processed so a Cashfree retry of the same payload
+  // (after a network glitch or our slow 200) is short-circuited next
+  // time around.
+  markWebhookProcessed(evt.event_id);
 
   return NextResponse.json({ ok: true });
 }

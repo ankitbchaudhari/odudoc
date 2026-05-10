@@ -202,29 +202,81 @@ export async function getOrderStatus(orderId: string): Promise<CashfreeOrderStat
   };
 }
 
+/** Replay-protection window in seconds. Cashfree clocks aren't perfect
+ *  so we accept a 10-minute skew either side; anything older is a
+ *  captured-and-replayed webhook and gets rejected even if its
+ *  signature is valid. */
+const WEBHOOK_REPLAY_WINDOW_SEC = 10 * 60;
+
+export type VerifyReason =
+  | "missing_secret" | "missing_signature" | "missing_timestamp"
+  | "signature_mismatch" | "timestamp_too_old" | "timestamp_in_future"
+  | "verify_threw";
+
+export interface VerifyResult { ok: boolean; reason?: VerifyReason }
+
 /** Verify a webhook callback. Cashfree signs `timestamp + rawBody`
- *  with the secret key (HMAC-SHA256, base64). Constant-time compare
- *  to thwart timing attacks. Returns false on any malformed input. */
+ *  with the secret key (HMAC-SHA256, base64). We additionally check
+ *  the timestamp is within a ±10-minute replay window so a captured
+ *  webhook can't be replayed forever. */
+export function verifyWebhookSignatureDetailed(
+  rawBody: string,
+  signatureHeader: string | null,
+  timestampHeader: string | null,
+): VerifyResult {
+  const secret = process.env.CASHFREE_SECRET_KEY || "";
+  if (!secret) return { ok: false, reason: "missing_secret" };
+  if (!signatureHeader) return { ok: false, reason: "missing_signature" };
+  if (!timestampHeader) return { ok: false, reason: "missing_timestamp" };
+  // Reject anything outside the replay window.
+  const ts = Number(timestampHeader);
+  if (Number.isFinite(ts)) {
+    const nowSec = Math.floor(Date.now() / 1000);
+    const skew = nowSec - ts;
+    if (skew > WEBHOOK_REPLAY_WINDOW_SEC) return { ok: false, reason: "timestamp_too_old" };
+    if (skew < -WEBHOOK_REPLAY_WINDOW_SEC) return { ok: false, reason: "timestamp_in_future" };
+  }
+  try {
+    const data = `${timestampHeader}${rawBody}`;
+    const expected = crypto.createHmac("sha256", secret).update(data).digest("base64");
+    const a = Buffer.from(signatureHeader);
+    const b = Buffer.from(expected);
+    if (a.length !== b.length) return { ok: false, reason: "signature_mismatch" };
+    return crypto.timingSafeEqual(a, b) ? { ok: true } : { ok: false, reason: "signature_mismatch" };
+  } catch (err) {
+    log.error("cashfree.signature_verify_threw", err);
+    return { ok: false, reason: "verify_threw" };
+  }
+}
+
+/** Backwards-compat wrapper. New code should prefer the detailed
+ *  variant for the reason-code in ops logs. */
 export function verifyWebhookSignature(
   rawBody: string,
   signatureHeader: string | null,
   timestampHeader: string | null,
 ): boolean {
-  const secret = process.env.CASHFREE_SECRET_KEY || "";
-  if (!secret || !signatureHeader || !timestampHeader) return false;
-  try {
-    const data = `${timestampHeader}${rawBody}`;
-    const expected = crypto
-      .createHmac("sha256", secret)
-      .update(data)
-      .digest("base64");
-    const a = Buffer.from(signatureHeader);
-    const b = Buffer.from(expected);
-    if (a.length !== b.length) return false;
-    return crypto.timingSafeEqual(a, b);
-  } catch (err) {
-    log.error("cashfree.signature_verify_threw", err);
-    return false;
+  return verifyWebhookSignatureDetailed(rawBody, signatureHeader, timestampHeader).ok;
+}
+
+// ── Webhook event idempotency ─────────────────────────────────────
+// In-memory ring of processed webhook event ids. Cashfree retries
+// failed webhooks; remembering the last N event ids stops a retry
+// from double-marking the same order paid if our 5xx came after we
+// successfully wrote state.
+const processedEvents = new Map<string, number>();
+const MAX_PROCESSED_EVENTS = 1000;
+
+export function isWebhookReplay(eventId: string | undefined | null): boolean {
+  if (!eventId) return false;
+  return processedEvents.has(eventId);
+}
+export function markWebhookProcessed(eventId: string | undefined | null): void {
+  if (!eventId) return;
+  processedEvents.set(eventId, Date.now());
+  if (processedEvents.size > MAX_PROCESSED_EVENTS) {
+    const first = processedEvents.keys().next().value;
+    if (first !== undefined) processedEvents.delete(first);
   }
 }
 

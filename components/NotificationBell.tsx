@@ -49,11 +49,21 @@ export default function NotificationBell({ className = "" }: { className?: strin
       const r = await fetch("/api/notifications", { cache: "no-store" });
       if (r.ok) {
         const d = await r.json();
-        setItems(d.notifications || []);
+        const next: Notification[] = d.notifications || [];
+        // If a fresh org-modules-changed event lands (one we hadn't
+        // seen before), dispatch a global event so the admin layout
+        // refetches its tenant context. Drives "modules apply
+        // immediately" without waiting on the 60s polling interval.
+        const seenIds = new Set(items.map((n) => n.id));
+        const newOrgModules = next.find((n) => !seenIds.has(n.id) && n.reference?.startsWith("org_modules:"));
+        if (newOrgModules && typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("odudoc:org-modules-changed"));
+        }
+        setItems(next);
         setUnread(d.unread || 0);
       }
     } catch { /* best-effort */ }
-  }, []);
+  }, [items]);
 
   useEffect(() => {
     load();

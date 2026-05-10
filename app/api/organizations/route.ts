@@ -13,7 +13,8 @@ import {
   type OrgStatus,
   type Organization,
 } from "@/lib/organizations-store";
-import { deleteMembershipsForOrg, reloadMemberships } from "@/lib/memberships-store";
+import { deleteMembershipsForOrg, getMembershipsForOrg, reloadMemberships } from "@/lib/memberships-store";
+import { pushNotification } from "@/lib/notifications/store";
 import { deleteTransfersForOrg } from "@/lib/inter-org-transfers-store";
 import { deleteBedSnapshot } from "@/lib/inter-org-beds-store";
 import { deletePreauthsForOrg } from "@/lib/insurance/preauth-store";
@@ -196,6 +197,28 @@ export async function PATCH(req: NextRequest) {
       summary: `Modules: ${moduleDiffs.join(", ")}`,
       meta: { diff: moduleDiffs, before: snapshot.modules, after: updated.modules },
     });
+    // Push a notification to every member of the org so the bell on
+    // their admin panel lights up + their next /api/admin/context
+    // poll picks up the new module set. Idempotent on the diff hash
+    // so re-running an identical update doesn't spam the inbox.
+    const enabled = moduleDiffs.filter((d) => d.includes("→ on")).map((d) => d.split(":")[0]);
+    const disabled = moduleDiffs.filter((d) => d.includes("→ off")).map((d) => d.split(":")[0]);
+    const summary = [
+      enabled.length ? `${enabled.length} new module${enabled.length === 1 ? "" : "s"} enabled` : "",
+      disabled.length ? `${disabled.length} disabled` : "",
+    ].filter(Boolean).join(" · ");
+    const ref = `org_modules:${updated.id}:${moduleDiffs.length}:${moduleDiffs[0]}`;
+    for (const m of getMembershipsForOrg(updated.id)) {
+      pushNotification({
+        userId: m.userId,
+        kind: "system",
+        severity: enabled.length ? "success" : "info",
+        title: `Your org's modules were updated`,
+        body: summary || moduleDiffs.slice(0, 3).join(" · "),
+        link: "/admin",
+        reference: ref,
+      });
+    }
   }
   // Catch-all for field edits that don't have their own action code, so
   // contact-info changes aren't silently invisible.

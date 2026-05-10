@@ -1034,36 +1034,58 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/admin/context", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (cancelled || !data) return;
-        setCtx({
-          isSuperAdmin: !!data.isSuperAdmin,
-          modules: data.modules ?? null,
-          organizationName: data.organizationName ?? null,
-          activeOrgName: data.activeOrgName ?? data.organizationName ?? undefined,
-          activeOrgKind: data.activeOrgKind ?? undefined,
-          role: data.role ?? null,
-        });
-        // Org-admin auto-select: if the API resolved a single
-        // organization (non-super-admin with one active membership),
-        // mirror it into localStorage so the org-switcher + scoped
-        // pages pick it up without the user having to choose.
-        if (typeof window !== "undefined" && !data.isSuperAdmin && data.activeOrgId) {
-          const cur = localStorage.getItem("odudoc:active-org");
-          if (cur !== data.activeOrgId) {
-            localStorage.setItem("odudoc:active-org", data.activeOrgId);
-            window.dispatchEvent(new CustomEvent("odudoc:active-org-changed"));
+    // Pull tenant context. Refetched on tab focus + every 60s so a
+    // super-admin module-flip propagates to the org admin's sidebar
+    // without them needing to hard-refresh.
+    const fetchCtx = () => {
+      fetch("/api/admin/context", { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (cancelled || !data) return;
+          setCtx({
+            isSuperAdmin: !!data.isSuperAdmin,
+            modules: data.modules ?? null,
+            organizationName: data.organizationName ?? null,
+            activeOrgName: data.activeOrgName ?? data.organizationName ?? undefined,
+            activeOrgKind: data.activeOrgKind ?? undefined,
+            role: data.role ?? null,
+          });
+          // Org-admin auto-select: mirror resolved org into localStorage
+          // so org-scoped pages pick it up without the user choosing.
+          if (typeof window !== "undefined" && !data.isSuperAdmin && data.activeOrgId) {
+            const cur = localStorage.getItem("odudoc:active-org");
+            if (cur !== data.activeOrgId) {
+              localStorage.setItem("odudoc:active-org", data.activeOrgId);
+              window.dispatchEvent(new CustomEvent("odudoc:active-org-changed"));
+            }
           }
-        }
-      })
-      .catch(() => {
-        // Failed to load context — leave ctx null so the sidebar stays empty
-        // rather than flashing super-admin surfaces to a tenant admin.
-      });
+        })
+        .catch(() => {
+          // Failed to load context — leave ctx unchanged so the sidebar
+          // doesn't flash empty during a transient outage.
+        });
+    };
+    fetchCtx();
+    // Visibility-aware polling: refetch on tab focus (catches the
+    // "I just got my modules upgraded by support" case) + on a
+    // 60s interval as a safety net. Both cheap — context route is
+    // a couple of small reads.
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") fetchCtx();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    const interval = setInterval(fetchCtx, 60_000);
+    // Custom event lets the org-update flow push an immediate refetch
+    // without waiting for the interval. /api/organizations PATCH
+    // dispatches "odudoc:org-modules-changed" via the notification
+    // bell on the next poll; layouts subscribed here pick it up.
+    const onModulesChanged = () => fetchCtx();
+    window.addEventListener("odudoc:org-modules-changed", onModulesChanged);
     return () => {
       cancelled = true;
+      document.removeEventListener("visibilitychange", onVisibility);
+      clearInterval(interval);
+      window.removeEventListener("odudoc:org-modules-changed", onModulesChanged);
     };
   }, []);
 

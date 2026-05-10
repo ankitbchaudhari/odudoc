@@ -4,9 +4,9 @@ import AppDownloadBadges from "@/components/AppDownloadBadges";
 import { getPublicStats } from "@/lib/public-stats";
 
 export const metadata = {
-  title: "For Doctors — AI EMR + telemedicine, free for India's doctors",
+  title: "For Doctors — AI EMR + telemedicine, in every country",
   description:
-    "AI ambient scribe, drug-interaction safety, ICD-10 auto-coder, prescriptions in 22 Indian languages. Zero monthly fees — we only earn when you do.",
+    "AI ambient scribe, drug-interaction safety, ICD-10 auto-coder, multi-language prescriptions, country-aware tax engine, ABHA / NHS / regional health-ID integrations. Zero monthly fees — we only earn when you do.",
 };
 
 // Stats are pulled live from getPublicStats() at render time. The
@@ -164,7 +164,7 @@ export default async function ForDoctorsPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <span className="inline-block rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-wider">
-              ✨ AI-powered EMR · Free for India&apos;s doctors
+              ✨ AI-powered EMR · Free for doctors worldwide
             </span>
             <h1 className="mt-4 text-4xl font-bold md:text-6xl">
               The AI EMR that does your{" "}
@@ -185,9 +185,11 @@ export default async function ForDoctorsPage() {
               <span>·</span>
               <span>🧠 Differential diagnosis</span>
               <span>·</span>
-              <span>📖 Medical dictionary + Indian drug catalog</span>
+              <span>📖 Global drug + brand-generic dictionary</span>
               <span>·</span>
-              <span>🌏 22 Indian languages</span>
+              <span>🌏 11 languages</span>
+              <span>·</span>
+              <span>🌐 19-country tax engine</span>
             </div>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link
@@ -224,6 +226,79 @@ export default async function ForDoctorsPage() {
                 <div className="mt-1 text-sm text-gray-600">{s.label}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Country coverage — sets expectations early so visitors
+          from non-IN markets don't bounce assuming this is India-only. */}
+      <section className="bg-white py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center">
+            <div>
+              <span className="inline-block rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-indigo-700">
+                🌐 Global by default
+              </span>
+              <h2 className="mt-3 text-3xl font-bold text-gray-900 md:text-4xl">
+                Available in every country
+              </h2>
+              <p className="mt-4 text-gray-600">
+                OduDoc isn&apos;t India-only. The platform handles country-specific tax (GST split, VAT, sales tax),
+                regional health-IDs (ABHA in India, NHS Number in UK, NPI in US, MyHealth in SG), local medical-council
+                lookups, and 11 UI languages with RTL flip for Arabic. Pick your country at signup; the right rules apply automatically.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {[
+                  "🇮🇳 India · GST split · ABHA",
+                  "🇬🇧 United Kingdom · VAT · NHS",
+                  "🇺🇸 United States · State sales tax",
+                  "🇦🇪 UAE · 5% VAT",
+                  "🇸🇦 Saudi Arabia · 15% VAT",
+                  "🇸🇬 Singapore · 9% GST",
+                  "🇦🇺 Australia · 10% GST",
+                  "🇨🇦 Canada · 5% VAT",
+                  "🇩🇪 Germany · 19% VAT",
+                  "🇫🇷 France · 20% VAT",
+                  "🇿🇦 South Africa · 15% VAT",
+                  "🇳🇬 Nigeria · 7.5% VAT",
+                  "🇰🇪 Kenya · 16% VAT",
+                  "🇧🇩 Bangladesh · 15% VAT",
+                  "🇵🇰 Pakistan · 18% VAT",
+                  "🇱🇰 Sri Lanka · 18% VAT",
+                  "🇮🇩 Indonesia · 11% VAT",
+                  "🇵🇭 Philippines · 12% VAT",
+                  "🇯🇵 Japan · 10% VAT",
+                ].map((c) => (
+                  <span key={c} className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
+                    {c}
+                  </span>
+                ))}
+              </div>
+              <p className="mt-4 text-xs text-gray-500">
+                Country missing? <Link href="/contact" className="font-semibold text-indigo-600 hover:underline">Tell us</Link> — adding a new country is one row in the tax-engine config.
+              </p>
+            </div>
+            <div className="rounded-2xl bg-gradient-to-br from-indigo-50 via-white to-emerald-50 p-6 ring-1 ring-indigo-100">
+              <p className="text-xs font-bold uppercase tracking-widest text-indigo-700">What auto-localizes</p>
+              <ul className="mt-3 space-y-3 text-sm">
+                {[
+                  ["💰", "Currency + tax", "Invoices render in your local currency with the right tax line (CGST/SGST/IGST in India, VAT elsewhere). Healthcare-services-exempt where the law allows."],
+                  ["🆔", "Health-ID linking", "ABHA in India, NHS Number in UK, NPI for US doctors, regional equivalents elsewhere. Patient records port across providers."],
+                  ["📞", "Voice + SMS provider", "Twilio (international), Exotel (India), Vonage (EU/global). Same booking bot, your local numbering."],
+                  ["🌍", "Language", "11 UI languages with RTL support. Voice IVR speaks in your selected locale (en-IN, en-GB, en-US, ar-SA, etc.)."],
+                  ["💵", "Payments", "Cashfree (India + global), Stripe (everywhere else). Wallet works in your local currency."],
+                  ["⚖️", "Compliance", "DPDP (India) + GDPR (EU) + HIPAA-aligned controls. Right-to-erasure on every store."],
+                ].map(([icon, title, body]) => (
+                  <li key={title} className="flex items-start gap-3">
+                    <span className="text-xl">{icon}</span>
+                    <div>
+                      <p className="font-semibold text-gray-900">{title}</p>
+                      <p className="text-xs text-gray-600">{body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>

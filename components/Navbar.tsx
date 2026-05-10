@@ -21,10 +21,12 @@ export default function Navbar() {
   const { totalItems } = useCart();
 
   const links = [
+    { href: "/features", label: "Features" },
     { href: "/doctors", label: t("nav.doctors") },
     { href: "/consult", label: t("nav.videoConsult") },
+    { href: "/verify-medicine", label: "Verify Medicine" },
+    { href: "/jobs", label: "Jobs" },
     { href: "/blog", label: t("nav.blog") },
-    { href: "/shop", label: t("nav.shop") },
     { href: "/about", label: t("nav.about") },
     { href: "/corporate", label: "For Hospitals" },
   ];

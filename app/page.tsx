@@ -51,6 +51,34 @@ export default async function Home() {
       />
       <HeroWithTextSlider />
 
+      {/* Feature catalogue teaser — single CTA strip directing
+          visitors to the comprehensive /features page. Compact
+          enough to sit between hero and AI showcase without
+          burying the main scroll. */}
+      <section className="bg-white py-10">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
+          <div className="flex-1 min-w-[260px]">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-indigo-700">One stack · 8 audiences</p>
+            <h2 className="mt-2 text-2xl font-extrabold text-slate-900 md:text-3xl">
+              80+ capabilities across the entire healthcare ecosystem
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm text-slate-600">
+              Patient app, doctor consult, hospital ops, lab + diagnostic marketplace, pharmacy fulfilment,
+              pharma anti-counterfeit, insurance cashless, education partners — all on one platform.
+            </p>
+          </div>
+          <Link
+            href="/features"
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/30 transition-transform hover:-translate-y-0.5"
+          >
+            See all features
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
+        </div>
+      </section>
+
       {/* Differentiator first — visitors land on the homepage and see
           the AI features within one scroll. Other clinic-management
           apps lead with "online appointments + digital prescriptions"

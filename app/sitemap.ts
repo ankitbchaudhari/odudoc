@@ -18,8 +18,11 @@ const STATIC_ROUTES: Array<{
   priority: number;
 }> = [
   { path: "/", changeFrequency: "daily", priority: 1.0 },
+  { path: "/features", changeFrequency: "weekly", priority: 0.95 },
   { path: "/consult", changeFrequency: "daily", priority: 0.95 },
   { path: "/doctors", changeFrequency: "daily", priority: 0.9 },
+  { path: "/verify-medicine", changeFrequency: "monthly", priority: 0.85 },
+  { path: "/jobs", changeFrequency: "daily", priority: 0.85 },
   { path: "/corporate", changeFrequency: "weekly", priority: 0.9 },
   { path: "/for-doctors", changeFrequency: "weekly", priority: 0.9 },
   { path: "/for-doctors/guide", changeFrequency: "monthly", priority: 0.75 },

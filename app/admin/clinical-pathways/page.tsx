@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard, TabSwitch } from "@/components/admin/PageShell";
 import type {
   PathwayDefinition, PathwayEnrollment, PathwayStep, StepProgress,
   PathwayCategory, PathwayStatus, EnrollmentStatus, StepStatus,
@@ -68,33 +69,36 @@ export default function ClinicalPathwaysPage() {
   const filteredDefs = useMemo(() => defs.filter((d) => (fStatus ? d.status === fStatus : true)), [defs, fStatus]);
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Clinical Pathways</h1>
-          <p className="text-sm text-slate-500">Evidence-based protocols · Enrollment · Step compliance</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => { setEditDef(null); setShowDef(true); }} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Pathway</button>
-          <button onClick={() => { setEditEnr(null); setShowEnr(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Enrollment</button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="📋"
+        eyebrow="Protocols"
+        title="Clinical Pathways"
+        subtitle="Evidence-based protocols · Enrollment · Step compliance"
+        tone="emerald"
+        secondaryAction={{ label: "+ Pathway", onClick: () => { setEditDef(null); setShowDef(true); } }}
+        primaryAction={{ label: "+ Enrollment", onClick: () => { setEditEnr(null); setShowEnr(true); } }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-          <StatTile label="Active pathways" value={stats.activeDefinitions} tone="emerald" />
-          <StatTile label="Drafts" value={stats.draftDefinitions} tone="amber" />
-          <StatTile label="Active enrollments" value={stats.activeEnrollments} tone="indigo" />
-          <StatTile label="Completed (month)" value={stats.completedMonth} tone="slate" />
-          <StatTile label="Compliance %" value={stats.complianceRate} tone="emerald" />
-          <StatTile label="Deviations (month)" value={stats.deviationsMonth} tone="rose" />
-        </div>
+        <StatGrid cols={6}>
+          <StatCard label="Active pathways" value={stats.activeDefinitions} tone="emerald" icon="✓" />
+          <StatCard label="Drafts" value={stats.draftDefinitions} tone="amber" icon="✎" />
+          <StatCard label="Active enrollments" value={stats.activeEnrollments} tone="indigo" icon="●" />
+          <StatCard label="Completed (mo)" value={stats.completedMonth} tone="teal" icon="🏁" />
+          <StatCard label="Compliance %" value={stats.complianceRate} tone="violet" icon="%" />
+          <StatCard label="Deviations (mo)" value={stats.deviationsMonth} tone="rose" icon="⚠" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex items-center gap-2">
-        <TabBtn active={tab === "pathways"} onClick={() => setTab("pathways")}>Pathways ({defs.length})</TabBtn>
-        <TabBtn active={tab === "enrollments"} onClick={() => setTab("enrollments")}>Enrollments ({enrolls.length})</TabBtn>
-      </div>
+      <TabSwitch
+        active={tab}
+        onSelect={(k) => setTab(k as "pathways" | "enrollments")}
+        tabs={[
+          { key: "pathways", label: "Pathways", count: defs.length },
+          { key: "enrollments", label: "Enrollments", count: enrolls.length },
+        ]}
+      />
 
       {tab === "pathways" && (
         <>

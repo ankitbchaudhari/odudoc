@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard, FilterChip } from "@/components/admin/PageShell";
 import type {
   MortalityAudit, AuditStatus, AuditType, Preventability, CareQuality, RCAStatus, ActionItem,
 } from "@/lib/hospital/mortality-audit-store";
@@ -69,35 +70,36 @@ export default function MortalityAuditPage() {
   );
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Morbidity & Mortality Audit</h1>
-          <p className="text-sm text-slate-500">Death reviews · Sentinel events · RCA · CAPA (privileged)</p>
-        </div>
-        <button onClick={() => { setEdit(null); setShow(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ New audit</button>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="⚕️"
+        eyebrow="Quality"
+        title="Morbidity & Mortality Audit"
+        subtitle="Death reviews · Sentinel events · RCA · CAPA (privileged)"
+        tone="rose"
+        primaryAction={{ label: "+ New audit", onClick: () => { setEdit(null); setShow(true); } }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-8">
-          <StatTile label="Total" value={stats.totalAudits} tone="slate" />
-          <StatTile label="Mortality (month)" value={stats.mortalityMonth} tone="rose" />
-          <StatTile label="Sentinel (YTD)" value={stats.sentinelYtd} tone="rose" />
-          <StatTile label="Preventable (YTD)" value={stats.preventableYtd} tone="rose" />
-          <StatTile label="Open actions" value={stats.openActions} tone="amber" />
-          <StatTile label="Pending review" value={stats.pendingReview} tone="amber" />
-          <StatTile label="Committee queue" value={stats.awaitingCommittee} tone="indigo" />
-          <StatTile label="Closed (month)" value={stats.closedMonth} tone="emerald" />
-        </div>
+        <StatGrid cols={7}>
+          <StatCard label="Total" value={stats.totalAudits} tone="slate" icon="∑" />
+          <StatCard label="Mortality (mo)" value={stats.mortalityMonth} tone="rose" icon="💀" />
+          <StatCard label="Sentinel (YTD)" value={stats.sentinelYtd} tone="orange" icon="🚨" />
+          <StatCard label="Preventable (YTD)" value={stats.preventableYtd} tone="amber" icon="⚠" />
+          <StatCard label="Open actions" value={stats.openActions} tone="indigo" icon="○" />
+          <StatCard label="Pending review" value={stats.pendingReview} tone="violet" icon="⏳" />
+          <StatCard label="Committee queue" value={stats.awaitingCommittee} tone="fuchsia" icon="👥" />
+          <StatCard label="Closed (mo)" value={stats.closedMonth} tone="emerald" icon="✓" />
+        </StatGrid>
       )}
 
-      <div className="mb-3 flex flex-wrap gap-2">
-        <FilterPill active={fStatus === ""} onClick={() => setFStatus("")}>All status</FilterPill>
-        {STATUSES.map((s) => <FilterPill key={s} active={fStatus === s} onClick={() => setFStatus(s)}>{STATUS_LABEL[s]}</FilterPill>)}
+      <div className="flex flex-wrap gap-2">
+        <FilterChip active={fStatus === ""} onClick={() => setFStatus("")}>All status</FilterChip>
+        {STATUSES.map((s) => <FilterChip key={s} active={fStatus === s} onClick={() => setFStatus(s)}>{STATUS_LABEL[s]}</FilterChip>)}
       </div>
-      <div className="mb-3 flex flex-wrap gap-2">
-        <FilterPill active={fType === ""} onClick={() => setFType("")}>All types</FilterPill>
-        {TYPES.map((t) => <FilterPill key={t} active={fType === t} onClick={() => setFType(t)}>{AUDIT_TYPE_LABEL[t]}</FilterPill>)}
+      <div className="flex flex-wrap gap-2">
+        <FilterChip active={fType === ""} onClick={() => setFType("")}>All types</FilterChip>
+        {TYPES.map((t) => <FilterChip key={t} active={fType === t} onClick={() => setFType(t)}>{AUDIT_TYPE_LABEL[t]}</FilterChip>)}
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">

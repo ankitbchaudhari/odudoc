@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard, TabSwitch, FilterChip } from "@/components/admin/PageShell";
 import type {
   GasAsset, GasLog, GasType, AssetType, AssetStatus, LogKind, AlarmSeverity,
 } from "@/lib/hospital/medical-gas-store";
@@ -67,46 +68,49 @@ export default function MedicalGasPage() {
   );
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Medical Gas Management</h1>
-          <p className="text-sm text-slate-500">O₂ · N₂O · Medical air · Vacuum · Pipelines & cylinders</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => { setEditA(null); setShowA(true); }} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Asset</button>
-          <button onClick={() => { setEditL(null); setShowL(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Log</button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="🫁"
+        eyebrow="Facilities"
+        title="Medical Gas Management"
+        subtitle="O₂ · N₂O · Medical air · Vacuum · Pipelines & cylinders"
+        tone="indigo"
+        secondaryAction={{ label: "+ Asset", onClick: () => { setEditA(null); setShowA(true); } }}
+        primaryAction={{ label: "+ Log", onClick: () => { setEditL(null); setShowL(true); } }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-5 lg:grid-cols-9">
-          <StatTile label="Total assets" value={stats.totalAssets} tone="slate" />
-          <StatTile label="In service" value={stats.inService} tone="emerald" />
-          <StatTile label="Empty" value={stats.empty} tone="amber" />
-          <StatTile label="Alarm active" value={stats.alarmActive} tone="rose" />
-          <StatTile label="Refill ≤7d" value={stats.refillsDueSoon} tone="amber" />
-          <StatTile label="PM ≤7d" value={stats.maintenanceDueSoon} tone="amber" />
-          <StatTile label="Contract ≤7d" value={stats.contractExpiringSoon} tone="amber" />
-          <StatTile label="Critical alarms 30d" value={stats.criticalAlarms30d} tone="rose" />
-          <StatTile label="Refills (month)" value={stats.refillsMonth} tone="slate" />
-        </div>
+        <StatGrid cols={6}>
+          <StatCard label="Total assets" value={stats.totalAssets} tone="slate" icon="🏷️" />
+          <StatCard label="In service" value={stats.inService} tone="emerald" icon="✓" />
+          <StatCard label="Empty" value={stats.empty} tone="amber" icon="○" />
+          <StatCard label="Alarm active" value={stats.alarmActive} tone="rose" icon="🚨" />
+          <StatCard label="Refill ≤7d" value={stats.refillsDueSoon} tone="orange" icon="⏳" />
+          <StatCard label="PM ≤7d" value={stats.maintenanceDueSoon} tone="amber" icon="🔧" />
+          <StatCard label="Contract ≤7d" value={stats.contractExpiringSoon} tone="violet" icon="📄" />
+          <StatCard label="Critical alarms 30d" value={stats.criticalAlarms30d} tone="rose" icon="⚠" />
+          <StatCard label="Refills (month)" value={stats.refillsMonth} tone="teal" icon="🛢" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex items-center gap-2">
-        <TabBtn active={tab === "assets"} onClick={() => setTab("assets")}>Assets ({assets.length})</TabBtn>
-        <TabBtn active={tab === "logs"} onClick={() => setTab("logs")}>Logs ({logs.length})</TabBtn>
-      </div>
+      <TabSwitch
+        active={tab}
+        onSelect={(k) => setTab(k as "assets" | "logs")}
+        tabs={[
+          { key: "assets", label: "Assets", count: assets.length },
+          { key: "logs", label: "Logs", count: logs.length },
+        ]}
+      />
 
       {tab === "assets" && (
         <>
           <div className="mb-3 flex flex-wrap gap-2">
-            <FilterPill active={fGas === ""} onClick={() => setFGas("")}>All gas</FilterPill>
-            {GAS_TYPES.map((g) => <FilterPill key={g} active={fGas === g} onClick={() => setFGas(g)}>{GAS_TYPE_LABEL[g]}</FilterPill>)}
+            <FilterChip active={fGas === ""} onClick={() => setFGas("")}>All gas</FilterChip>
+            {GAS_TYPES.map((g) => <FilterChip key={g} active={fGas === g} onClick={() => setFGas(g)}>{GAS_TYPE_LABEL[g]}</FilterChip>)}
           </div>
           <div className="mb-3 flex flex-wrap gap-2">
-            <FilterPill active={fStatus === ""} onClick={() => setFStatus("")}>All status</FilterPill>
-            {STATUSES.map((s) => <FilterPill key={s} active={fStatus === s} onClick={() => setFStatus(s)}>{STATUS_LABEL[s]}</FilterPill>)}
+            <FilterChip active={fStatus === ""} onClick={() => setFStatus("")}>All status</FilterChip>
+            {STATUSES.map((s) => <FilterChip key={s} active={fStatus === s} onClick={() => setFStatus(s)}>{STATUS_LABEL[s]}</FilterChip>)}
           </div>
           <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
             <table className="w-full text-sm">

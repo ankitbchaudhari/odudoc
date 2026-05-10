@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard, TabSwitch } from "@/components/admin/PageShell";
 import type {
   TumorBoardMeeting, TumorBoardCase, Attendee,
   CancerSite, CaseIntent, TreatmentModality, MeetingStatus, CaseStatus, PerformanceStatus,
@@ -82,33 +83,36 @@ export default function TumorBoardPage() {
     [cases, fSite, fCaseStatus]);
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Tumor Board / MDT</h1>
-          <p className="text-sm text-slate-500">Multidisciplinary case review · Cancer staging · Treatment planning</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => { setEditMeet(null); setShowMeet(true); }} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Meeting</button>
-          <button onClick={() => { setEditCase(null); setShowCase(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Case</button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="🎗️"
+        eyebrow="Multidisciplinary"
+        title="Tumor Board / MDT"
+        subtitle="Multidisciplinary case review · Cancer staging · Treatment planning"
+        tone="fuchsia"
+        secondaryAction={{ label: "+ Meeting", onClick: () => { setEditMeet(null); setShowMeet(true); } }}
+        primaryAction={{ label: "+ Case", onClick: () => { setEditCase(null); setShowCase(true); } }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-          <StatTile label="Upcoming meetings" value={stats.upcomingMeetings} tone="indigo" />
-          <StatTile label="Completed (month)" value={stats.completedMeetingsMonth} tone="emerald" />
-          <StatTile label="New cases" value={stats.newCases} tone="amber" />
-          <StatTile label="Discussed (month)" value={stats.casesDiscussedMonth} tone="emerald" />
-          <StatTile label="Deferred" value={stats.deferred} tone="rose" />
-          <StatTile label="Trial referrals" value={stats.trialReferralsMonth} tone="slate" />
-        </div>
+        <StatGrid cols={6}>
+          <StatCard label="Upcoming meetings" value={stats.upcomingMeetings} tone="indigo" icon="📅" />
+          <StatCard label="Completed (month)" value={stats.completedMeetingsMonth} tone="emerald" icon="✓" />
+          <StatCard label="New cases" value={stats.newCases} tone="amber" icon="⊕" />
+          <StatCard label="Discussed (month)" value={stats.casesDiscussedMonth} tone="teal" icon="💬" />
+          <StatCard label="Deferred" value={stats.deferred} tone="rose" icon="⏸" />
+          <StatCard label="Trial referrals" value={stats.trialReferralsMonth} tone="violet" icon="🧪" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex items-center gap-2">
-        <TabBtn active={tab === "meetings"} onClick={() => setTab("meetings")}>Meetings ({meetings.length})</TabBtn>
-        <TabBtn active={tab === "cases"} onClick={() => setTab("cases")}>Cases ({cases.length})</TabBtn>
-      </div>
+      <TabSwitch
+        active={tab}
+        onSelect={(k) => setTab(k as "meetings" | "cases")}
+        tabs={[
+          { key: "meetings", label: "Meetings", count: meetings.length },
+          { key: "cases", label: "Cases", count: cases.length },
+        ]}
+      />
 
       {tab === "meetings" && (
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">

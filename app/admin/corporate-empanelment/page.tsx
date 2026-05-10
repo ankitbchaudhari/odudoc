@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard, TabSwitch } from "@/components/admin/PageShell";
 import type {
   CorporateClient, Preauthorization, ClientStatus, ClientType, BillingMode, PreauthStatus,
 } from "@/lib/hospital/corporate-empanelment-store";
@@ -79,35 +80,38 @@ export default function CorporateEmpanelmentPage() {
   );
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Corporate Empanelment</h1>
-          <p className="text-sm text-slate-500">TPA / insurer contracts, tariffs, and cashless preauthorizations</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => { setEditClient(null); setShowClient(true); }} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Client</button>
-          <button onClick={() => { setEditPreauth(null); setShowPreauth(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Preauth</button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="🏢"
+        eyebrow="Insurance"
+        title="Corporate Empanelment"
+        subtitle="TPA / insurer contracts, tariffs, and cashless preauthorizations"
+        tone="indigo"
+        secondaryAction={{ label: "+ Client", onClick: () => { setEditClient(null); setShowClient(true); } }}
+        primaryAction={{ label: "+ Preauth", onClick: () => { setEditPreauth(null); setShowPreauth(true); } }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-8">
-          <StatTile label="Active clients" value={stats.activeClients} tone="emerald" />
-          <StatTile label="Prospects" value={stats.prospects} tone="indigo" />
-          <StatTile label="Expiring ≤30d" value={stats.expiringSoon} tone="amber" />
-          <StatTile label="Total lives" value={stats.totalLives} tone="slate" />
-          <StatTile label="Pending preauth" value={stats.pendingPreauths} tone="amber" />
-          <StatTile label="Approved (mth)" value={stats.approvedMonth} tone="emerald" />
-          <StatTile label="Approved ₹ (mth)" value={stats.approvedAmountMonth} tone="slate" />
-          <StatTile label="Denied (mth)" value={stats.deniedMonth} tone="rose" />
-        </div>
+        <StatGrid cols={7}>
+          <StatCard label="Active clients" value={stats.activeClients} tone="emerald" icon="✓" />
+          <StatCard label="Prospects" value={stats.prospects} tone="indigo" icon="🎯" />
+          <StatCard label="Expiring ≤30d" value={stats.expiringSoon} tone="amber" icon="⏳" />
+          <StatCard label="Total lives" value={stats.totalLives} tone="sky" icon="👥" />
+          <StatCard label="Pending preauth" value={stats.pendingPreauths} tone="violet" icon="📑" />
+          <StatCard label="Approved (mth)" value={stats.approvedMonth} tone="teal" icon="✓" />
+          <StatCard label="Approved ₹ (mth)" value={stats.approvedAmountMonth} tone="fuchsia" icon="₹" />
+          <StatCard label="Denied (mth)" value={stats.deniedMonth} tone="rose" icon="✕" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex items-center gap-2">
-        <TabBtn active={tab === "clients"} onClick={() => setTab("clients")}>Clients ({clients.length})</TabBtn>
-        <TabBtn active={tab === "preauths"} onClick={() => setTab("preauths")}>Preauthorizations ({preauths.length})</TabBtn>
-      </div>
+      <TabSwitch
+        active={tab}
+        onSelect={(k) => setTab(k as "clients" | "preauths")}
+        tabs={[
+          { key: "clients", label: "Clients", count: clients.length },
+          { key: "preauths", label: "Preauthorizations", count: preauths.length },
+        ]}
+      />
 
       {tab === "clients" && (
         <>

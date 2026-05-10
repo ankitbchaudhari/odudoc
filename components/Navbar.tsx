@@ -20,15 +20,21 @@ export default function Navbar() {
 
   const { totalItems } = useCart();
 
-  const links = [
+  // Top-level public nav. We dropped the standalone Video Consult and
+  // Verify Medicine entries — both are surfaced as feature cards on
+  // /features anyway, and the bar was getting overcrowded. In their
+  // place we promote the two pages that actually drive partner
+  // signups: hospital pharmacies onboarding to OduDoc, and the
+  // doctor's onboarding guide.
+  const links: Array<{ href: string; label: string; emphasized?: boolean }> = [
     { href: "/features", label: "Features" },
     { href: "/doctors", label: t("nav.doctors") },
-    { href: "/consult", label: t("nav.videoConsult") },
-    { href: "/verify-medicine", label: "Verify Medicine" },
+    { href: "/for-doctors/guide", label: "Doctor's Guide" },
+    { href: "/corporate", label: "For Hospitals" },
+    { href: "/pharmacy-partners", label: "Your Pharmacy on OduDoc", emphasized: true },
     { href: "/jobs", label: "Jobs" },
     { href: "/blog", label: t("nav.blog") },
     { href: "/about", label: t("nav.about") },
-    { href: "/corporate", label: "For Hospitals" },
   ];
 
   // Close dropdowns when clicking outside
@@ -88,34 +94,45 @@ export default function Navbar() {
   }, [session?.user?.email]);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+    <nav className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/85 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/70">
+      {/* Hairline gradient under the nav for a subtle "floating" feel */}
+      <div className="pointer-events-none absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-primary-300/60 to-transparent" />
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-3 sm:px-6 lg:px-8">
         {/* Logo */}
         <Logo size="sm" />
 
-        {/* Desktop Nav */}
-        <div className="hidden items-center gap-1 md:flex">
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-primary-600"
-            >
-              {l.label}
-            </Link>
-          ))}
+        {/* Desktop Nav — pill-grouped links so the bar reads like a
+            modern shadcn/Vercel-style top-nav, with one emphasised CTA
+            to drive pharmacy onboarding. */}
+        <div className="hidden flex-1 items-center justify-center md:flex">
+          <div className="flex items-center gap-0.5 rounded-full border border-slate-200/70 bg-slate-50/70 p-1 shadow-inner shadow-slate-200/40">
+            {links.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={
+                  l.emphasized
+                    ? "group relative inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary-600 via-primary-500 to-emerald-500 px-3.5 py-1.5 text-[13px] font-semibold text-white shadow-sm shadow-primary-500/30 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary-500/40"
+                    : "rounded-full px-3.5 py-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:bg-white hover:text-primary-700 hover:shadow-sm"
+                }
+              >
+                {l.emphasized && <span aria-hidden>💊</span>}
+                <span className="whitespace-nowrap">{l.label}</span>
+              </Link>
+            ))}
+          </div>
         </div>
 
         {/* Desktop Auth Buttons / User Menu */}
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-1.5 md:flex">
           {/* Search Icon */}
           <button
             onClick={() => setSearchOpen(true)}
-            className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-50 hover:text-primary-600"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-primary-600"
             aria-label="Search (Ctrl+K)"
             title="Search (Ctrl+K)"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>
@@ -124,7 +141,7 @@ export default function Navbar() {
           {/* Cart Icon */}
           <Link
             href="/cart"
-            className="relative rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-50 hover:text-primary-600"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-primary-600"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />

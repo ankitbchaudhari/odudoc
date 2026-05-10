@@ -1063,6 +1063,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             if (cur !== data.activeOrgId) {
               localStorage.setItem("odudoc:active-org", data.activeOrgId);
               window.dispatchEvent(new CustomEvent("odudoc:active-org-changed"));
+              // Also persist server-side so the active-org cookie is
+              // set — without it, requireOrg() in API routes throws
+              // no_active_org and pages like /admin/appointments come
+              // up empty. Fire-and-forget; getTenantContext also has a
+              // single-membership fallback as a safety net.
+              fetch("/api/tenant/switch", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ orgId: data.activeOrgId }),
+              }).catch(() => {});
             }
           }
         })

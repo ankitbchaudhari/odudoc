@@ -75,10 +75,26 @@ export async function getTenantContext(): Promise<TenantContext> {
   const userId = session?.user?.id ?? null;
   const superAdmin = isSuperAdmin(email);
 
-  const activeOrgId = await getActiveOrgId();
+  let activeOrgId = await getActiveOrgId();
   let organization: Organization | null = null;
   let membership: Membership | null = null;
   let role: OrgRole | "super_admin" | null = superAdmin ? "super_admin" : null;
+
+  // Auto-resolve for org admins who haven't picked an org yet. The
+  // active-org cookie only gets set when someone clicks the OrgSwitcher
+  // (super-admin only) or hits /api/tenant/switch — meaning a fresh
+  // session for a single-org admin would otherwise fail every API
+  // route with `no_active_org`. When the user belongs to exactly one
+  // org, fall back to that membership; if they belong to multiple,
+  // pick the first deterministically (the OrgSwitcher will let them
+  // override). Super-admins skip this — they explicitly opt into an
+  // org via impersonation.
+  if (!activeOrgId && userId && !superAdmin) {
+    const mems = getMembershipsForUser(userId);
+    if (mems.length > 0) {
+      activeOrgId = mems[0].organizationId;
+    }
+  }
 
   if (activeOrgId) {
     organization = getOrganizationById(activeOrgId);

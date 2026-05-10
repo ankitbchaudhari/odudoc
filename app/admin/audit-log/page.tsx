@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { AuditEntry, AuditAction, Severity } from "@/lib/hospital/audit-log-store";
+import { PageHero, StatGrid, StatCard, FilterChip } from "@/components/admin/PageShell";
 
 // Inlined from audit-log-store — see documents/page.tsx comment for why.
 const ACTION_LABEL: Record<AuditAction, string> = {
@@ -35,28 +36,32 @@ export default function AuditLogPage() {
   async function del(id: string) { if (!confirm("Delete?")) return; await fetch("/api/hospital/audit-log", { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ id }) }); load(); }
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-slate-900">Audit Log</h1><p className="text-sm text-slate-500">Tamper-evident activity ledger · {list.length} entries shown (max 500)</p></div>
-        <button onClick={() => setShow(true)} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white">+ Manual entry</button>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="🛡️"
+        eyebrow="Compliance"
+        title="Audit Log"
+        subtitle={`Tamper-evident activity ledger · ${list.length} entries shown (max 500)`}
+        tone="rose"
+        primaryAction={{ label: "+ Manual entry", onClick: () => setShow(true) }}
+      />
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-6">
-          <StatTile label="Total" value={stats.total} tone="slate" />
-          <StatTile label="Today" value={stats.today} tone="indigo" />
-          <StatTile label="Critical" value={stats.critical} tone="rose" />
-          <StatTile label="Warnings" value={stats.warnings} tone="amber" />
-          <StatTile label="Deletes today" value={stats.deletesToday} tone="rose" />
-          <StatTile label="Logins today" value={stats.loginsToday} tone="emerald" />
-        </div>
+        <StatGrid cols={6}>
+          <StatCard label="Total" value={stats.total} tone="slate" icon="∑" />
+          <StatCard label="Today" value={stats.today} tone="indigo" icon="🕐" />
+          <StatCard label="Critical" value={stats.critical} tone="rose" icon="🚨" />
+          <StatCard label="Warnings" value={stats.warnings} tone="amber" icon="⚠" />
+          <StatCard label="Deletes today" value={stats.deletesToday} tone="orange" icon="🗑" />
+          <StatCard label="Logins today" value={stats.loginsToday} tone="emerald" icon="🔓" />
+        </StatGrid>
       )}
-      <div className="mb-3 flex flex-wrap gap-2">
-        <FilterPill active={fAction === ""} onClick={() => setFAction("")}>All actions</FilterPill>
-        {ACTIONS.map((a) => <FilterPill key={a} active={fAction === a} onClick={() => setFAction(a)}>{ACTION_LABEL[a]}</FilterPill>)}
+      <div className="flex flex-wrap gap-2">
+        <FilterChip active={fAction === ""} onClick={() => setFAction("")}>All actions</FilterChip>
+        {ACTIONS.map((a) => <FilterChip key={a} active={fAction === a} onClick={() => setFAction(a)}>{ACTION_LABEL[a]}</FilterChip>)}
       </div>
-      <div className="mb-3 flex flex-wrap gap-2">
-        <FilterPill active={fSev === ""} onClick={() => setFSev("")}>All severities</FilterPill>
-        {SEVERITIES.map((s) => <FilterPill key={s} active={fSev === s} onClick={() => setFSev(s)}>{SEVERITY_LABEL[s]}</FilterPill>)}
+      <div className="flex flex-wrap gap-2">
+        <FilterChip active={fSev === ""} onClick={() => setFSev("")}>All severities</FilterChip>
+        {SEVERITIES.map((s) => <FilterChip key={s} active={fSev === s} onClick={() => setFSev(s)}>{SEVERITY_LABEL[s]}</FilterChip>)}
       </div>
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="w-full text-sm">

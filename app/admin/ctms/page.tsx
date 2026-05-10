@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Trial, TrialEnrollment, TrialPhase, TrialStatus, EnrollmentStatus, Sponsor } from "@/lib/hospital/ctms-store";
+import { PageHero, StatGrid, StatCard, TabSwitch } from "@/components/admin/PageShell";
 
 // Inlined from ctms-store — see documents/page.tsx comment for why.
 const PHASE_LABEL: Record<TrialPhase, string> = { preclinical: "Preclinical", phase1: "Phase I", phase2: "Phase II", phase3: "Phase III", phase4: "Phase IV", observational: "Observational", registry: "Registry" };
@@ -38,26 +39,37 @@ export default function CtmsPage() {
   async function delEnr(id: string) { if (!confirm("Delete?")) return; await fetch("/api/hospital/ctms", { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ id, kind: "enrollment" }) }); load(); }
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-slate-900">Clinical Trials (CTMS)</h1><p className="text-sm text-slate-500">Protocols · IRB · Subject enrollments · SAEs</p></div>
-        {tab === "trials" ? <button onClick={() => { setEditTrial(null); setShowTrial(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white">+ Trial</button>
-          : <button onClick={() => { setEditEnr(null); setShowEnr(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white">+ Enrollment</button>}
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="🧪"
+        eyebrow="Research"
+        title="Clinical Trials (CTMS)"
+        subtitle="Protocols · IRB · Subject enrollments · SAEs"
+        tone="violet"
+        primaryAction={
+          tab === "trials"
+            ? { label: "+ Trial", onClick: () => { setEditTrial(null); setShowTrial(true); } }
+            : { label: "+ Enrollment", onClick: () => { setEditEnr(null); setShowEnr(true); } }
+        }
+      />
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-6">
-          <StatTile label="Trials" value={stats.totalTrials} tone="slate" />
-          <StatTile label="Active" value={stats.activeTrials} tone="emerald" />
-          <StatTile label="Enrolling" value={stats.enrolling} tone="indigo" />
-          <StatTile label="Subjects" value={stats.totalEnrollments} tone="slate" />
-          <StatTile label="Active subj." value={stats.activeSubjects} tone="emerald" />
-          <StatTile label="SAEs" value={stats.saeCount} tone="rose" />
-        </div>
+        <StatGrid cols={6}>
+          <StatCard label="Trials" value={stats.totalTrials} tone="slate" icon="🧪" />
+          <StatCard label="Active" value={stats.activeTrials} tone="emerald" icon="✓" />
+          <StatCard label="Enrolling" value={stats.enrolling} tone="indigo" icon="↑" />
+          <StatCard label="Subjects" value={stats.totalEnrollments} tone="sky" icon="👥" />
+          <StatCard label="Active subj." value={stats.activeSubjects} tone="teal" icon="●" />
+          <StatCard label="SAEs" value={stats.saeCount} tone="rose" icon="⚠" />
+        </StatGrid>
       )}
-      <div className="mb-4 flex gap-2">
-        <TabBtn active={tab === "trials"} onClick={() => setTab("trials")}>Trials ({trials.length})</TabBtn>
-        <TabBtn active={tab === "enrollments"} onClick={() => setTab("enrollments")}>Enrollments ({enrolls.length})</TabBtn>
-      </div>
+      <TabSwitch
+        active={tab}
+        onSelect={(k) => setTab(k as "trials" | "enrollments")}
+        tabs={[
+          { key: "trials", label: "Trials", count: trials.length },
+          { key: "enrollments", label: "Enrollments", count: enrolls.length },
+        ]}
+      />
       {tab === "trials" && (
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
           <table className="w-full text-sm">

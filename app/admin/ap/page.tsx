@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { VendorInvoice, VendorPayment, InvoiceLine, InvoiceStatus, PaymentMethod } from "@/lib/hospital/ap-store";
+import { PageHero, StatGrid, StatCard, TabSwitch } from "@/components/admin/PageShell";
 
 // Inlined from ap-store — see documents/page.tsx comment for why.
 const INVOICE_STATUS_LABEL: Record<InvoiceStatus, string> = {
@@ -40,33 +41,36 @@ export default function APPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Accounts Payable</h1>
-          <p className="text-sm text-slate-500">Vendor invoices · Payment runs · Overdue tracking</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => { setEditInv(null); setShowInv(true); }} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Invoice</button>
-          <button onClick={() => { setEditPay(null); setShowPay(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Payment</button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="🧾"
+        eyebrow="Finance"
+        title="Accounts Payable"
+        subtitle="Vendor invoices · Payment runs · Overdue tracking"
+        tone="amber"
+        secondaryAction={{ label: "+ Invoice", onClick: () => { setEditInv(null); setShowInv(true); } }}
+        primaryAction={{ label: "+ Payment", onClick: () => { setEditPay(null); setShowPay(true); } }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-          <StatTile label="Open invoices" value={stats.openInvoices} tone="slate" />
-          <StatTile label="Pending approval" value={stats.pendingApproval} tone="amber" />
-          <StatTile label="Overdue count" value={stats.overdueCount} tone="rose" />
-          <StatTile label="Overdue ₹" value={stats.overdueAmount} tone="rose" />
-          <StatTile label="Paid (mo) ₹" value={stats.paidMonth} tone="emerald" />
-          <StatTile label="Total payable ₹" value={stats.payableTotal} tone="indigo" />
-        </div>
+        <StatGrid cols={6}>
+          <StatCard label="Open invoices" value={stats.openInvoices} tone="slate" icon="📄" />
+          <StatCard label="Pending approval" value={stats.pendingApproval} tone="amber" icon="⏳" />
+          <StatCard label="Overdue count" value={stats.overdueCount} tone="rose" icon="⚠" />
+          <StatCard label="Overdue ₹" value={stats.overdueAmount} tone="orange" icon="₹" />
+          <StatCard label="Paid (mo) ₹" value={stats.paidMonth} tone="emerald" icon="✓" />
+          <StatCard label="Total payable ₹" value={stats.payableTotal} tone="indigo" icon="∑" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex gap-2">
-        <TabBtn active={tab === "invoices"} onClick={() => setTab("invoices")}>Invoices ({invoices.length})</TabBtn>
-        <TabBtn active={tab === "payments"} onClick={() => setTab("payments")}>Payments ({payments.length})</TabBtn>
-      </div>
+      <TabSwitch
+        active={tab}
+        onSelect={(k) => setTab(k as "invoices" | "payments")}
+        tabs={[
+          { key: "invoices", label: "Invoices", count: invoices.length },
+          { key: "payments", label: "Payments", count: payments.length },
+        ]}
+      />
 
       {tab === "invoices" && (
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">

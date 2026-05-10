@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard, TabSwitch } from "@/components/admin/PageShell";
 import type {
   AntibioticAgent, StewardshipReview,
   AgentClass, RestrictionTier, AgentRoute,
@@ -88,35 +89,38 @@ export default function AntimicrobialStewardshipPage() {
   const filteredReviews = useMemo(() => reviews.filter((r) => (fStatus ? r.status === fStatus : true)), [reviews, fStatus]);
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Antimicrobial Stewardship</h1>
-          <p className="text-sm text-slate-500">Formulary restrictions · Prescribing review · De-escalation · IV→PO switch</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => { setEditAgent(null); setShowAgent(true); }} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Agent</button>
-          <button onClick={() => { setEditReview(null); setShowReview(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Review</button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="🦠"
+        eyebrow="Stewardship"
+        title="Antimicrobial Stewardship"
+        subtitle="Formulary restrictions · Prescribing review · De-escalation · IV→PO switch"
+        tone="emerald"
+        secondaryAction={{ label: "+ Agent", onClick: () => { setEditAgent(null); setShowAgent(true); } }}
+        primaryAction={{ label: "+ Review", onClick: () => { setEditReview(null); setShowReview(true); } }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-8">
-          <StatTile label="Active formulary" value={stats.formularyActive} tone="slate" />
-          <StatTile label="Restricted / Reserve" value={stats.restrictedCount} tone="rose" />
-          <StatTile label="Pending" value={stats.pending} tone="amber" />
-          <StatTile label="Approved (mo)" value={stats.approvedMonth} tone="emerald" />
-          <StatTile label="De-escalations" value={stats.deEscMonth} tone="emerald" />
-          <StatTile label="IV→PO" value={stats.ivPoMonth} tone="indigo" />
-          <StatTile label="Acceptance %" value={stats.acceptanceRate} tone="emerald" />
-          <StatTile label="Savings (mo)" value={Math.round(stats.costSavedMonth)} tone="slate" />
-        </div>
+        <StatGrid cols={7}>
+          <StatCard label="Active formulary" value={stats.formularyActive} tone="slate" icon="💊" />
+          <StatCard label="Restricted / Reserve" value={stats.restrictedCount} tone="rose" icon="🔒" />
+          <StatCard label="Pending" value={stats.pending} tone="amber" icon="⏳" />
+          <StatCard label="Approved (mo)" value={stats.approvedMonth} tone="emerald" icon="✓" />
+          <StatCard label="De-escalations" value={stats.deEscMonth} tone="teal" icon="↓" />
+          <StatCard label="IV→PO" value={stats.ivPoMonth} tone="indigo" icon="→" />
+          <StatCard label="Acceptance %" value={stats.acceptanceRate} tone="violet" icon="%" />
+          <StatCard label="Savings (mo)" value={Math.round(stats.costSavedMonth)} tone="fuchsia" icon="₹" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex items-center gap-2">
-        <TabBtn active={tab === "reviews"} onClick={() => setTab("reviews")}>Reviews ({reviews.length})</TabBtn>
-        <TabBtn active={tab === "agents"} onClick={() => setTab("agents")}>Formulary ({agents.length})</TabBtn>
-      </div>
+      <TabSwitch
+        active={tab}
+        onSelect={(k) => setTab(k as "reviews" | "agents")}
+        tabs={[
+          { key: "reviews", label: "Reviews", count: reviews.length },
+          { key: "agents", label: "Formulary", count: agents.length },
+        ]}
+      />
 
       {tab === "agents" && (
         <>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Account, JournalEntry, JournalLine, AccountType, JournalStatus } from "@/lib/hospital/gl-store";
+import { PageHero, StatGrid, StatCard, TabSwitch } from "@/components/admin/PageShell";
 // Inlined from gl-store — importing runtime values pulls persistent-array → Postgres into the client bundle and crashes the page.
 const ACCOUNT_TYPE_LABEL: Record<AccountType, string> = {
   asset: "Asset", liability: "Liability", equity: "Equity", income: "Income", expense: "Expense",
@@ -37,35 +38,38 @@ export default function GLPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">General Ledger</h1>
-          <p className="text-sm text-slate-500">Chart of accounts · Journal entries · Double-entry bookkeeping</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => { setEditAcc(null); setShowAcc(true); }} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Account</button>
-          <button onClick={() => { setEditJrn(null); setShowJrn(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Journal</button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="📒"
+        eyebrow="Finance"
+        title="General Ledger"
+        subtitle="Chart of accounts · Journal entries · Double-entry bookkeeping"
+        tone="emerald"
+        secondaryAction={{ label: "+ Account", onClick: () => { setEditAcc(null); setShowAcc(true); } }}
+        primaryAction={{ label: "+ Journal", onClick: () => { setEditJrn(null); setShowJrn(true); } }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-8">
-          <StatTile label="Active accounts" value={stats.accountsActive} tone="slate" />
-          <StatTile label="Drafts" value={stats.drafts} tone="amber" />
-          <StatTile label="Posted (mo)" value={stats.postedMonth} tone="emerald" />
-          <StatTile label="Debit (mo)" value={stats.debitMonth} tone="indigo" />
-          <StatTile label="Assets" value={stats.balanceAsset} tone="emerald" />
-          <StatTile label="Liabilities" value={stats.balanceLiability} tone="rose" />
-          <StatTile label="Income" value={stats.balanceIncome} tone="emerald" />
-          <StatTile label="Expense" value={stats.balanceExpense} tone="amber" />
-        </div>
+        <StatGrid cols={7}>
+          <StatCard label="Active accounts" value={stats.accountsActive} tone="slate" icon="📁" />
+          <StatCard label="Drafts" value={stats.drafts} tone="amber" icon="✎" />
+          <StatCard label="Posted (mo)" value={stats.postedMonth} tone="emerald" icon="✓" />
+          <StatCard label="Debit (mo)" value={stats.debitMonth} tone="indigo" icon="↑" />
+          <StatCard label="Assets" value={stats.balanceAsset} tone="teal" icon="◆" />
+          <StatCard label="Liabilities" value={stats.balanceLiability} tone="rose" icon="◇" />
+          <StatCard label="Income" value={stats.balanceIncome} tone="emerald" icon="₹" />
+          <StatCard label="Expense" value={stats.balanceExpense} tone="orange" icon="−" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex gap-2">
-        <TabBtn active={tab === "journals"} onClick={() => setTab("journals")}>Journals ({journals.length})</TabBtn>
-        <TabBtn active={tab === "accounts"} onClick={() => setTab("accounts")}>Accounts ({accounts.length})</TabBtn>
-      </div>
+      <TabSwitch
+        active={tab}
+        onSelect={(k) => setTab(k as "journals" | "accounts")}
+        tabs={[
+          { key: "journals", label: "Journals", count: journals.length },
+          { key: "accounts", label: "Accounts", count: accounts.length },
+        ]}
+      />
 
       {tab === "accounts" && (
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">

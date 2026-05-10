@@ -147,6 +147,52 @@ export async function signedPlaybackUrl(videoId: string, opts: { ttlSeconds?: nu
   return { ok: true, url: `https://${subdomain}/${j.result.token}/manifest/video.m3u8` };
 }
 
+/** GET /accounts/:id/stream/live_inputs — admin reconcile tool
+ *  uses this to compare Cloudflare's state against our session
+ *  table. Returns the trimmed shape we surface; Cloudflare's
+ *  response carries more fields we don't need here. */
+export interface CloudflareLiveInput {
+  uid: string;
+  created?: string;
+  modified?: string;
+  enabled?: boolean;
+  deleteRecordingAfterDays?: number;
+  meta?: Record<string, unknown>;
+}
+
+export async function listLiveInputs(): Promise<{ ok: true; inputs: CloudflareLiveInput[]; total?: number } | { ok: false; error: string }> {
+  const cfg = getConfig();
+  if (!cfg) return { ok: false, error: "cloudflare_not_configured" };
+  const r = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${cfg.accountId}/stream/live_inputs?include_counts=true`,
+    { headers: { Authorization: `Bearer ${cfg.apiToken}` } },
+  );
+  if (!r.ok) {
+    const txt = await r.text().catch(() => "");
+    return { ok: false, error: `cloudflare_${r.status}: ${txt.slice(0, 200)}` };
+  }
+  const j = await r.json().catch(() => null) as
+    | { result?: { liveInputs?: CloudflareLiveInput[]; total?: number } }
+    | null;
+  return { ok: true, inputs: j?.result?.liveInputs ?? [], total: j?.result?.total };
+}
+
+/** DELETE /accounts/:id/stream/live_inputs/:uid — clean up an
+ *  orphaned input that no longer maps to an OduDoc session. */
+export async function deleteLiveInput(uid: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const cfg = getConfig();
+  if (!cfg) return { ok: false, error: "cloudflare_not_configured" };
+  const r = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${cfg.accountId}/stream/live_inputs/${uid}`,
+    { method: "DELETE", headers: { Authorization: `Bearer ${cfg.apiToken}` } },
+  );
+  if (!r.ok) {
+    const txt = await r.text().catch(() => "");
+    return { ok: false, error: `cloudflare_${r.status}: ${txt.slice(0, 200)}` };
+  }
+  return { ok: true };
+}
+
 /** Cloudflare's webhook signature uses HMAC-SHA-256 of the body
  *  with a secret you configure when you create the webhook. We
  *  read the secret from CLOUDFLARE_STREAM_WEBHOOK_SECRET. */

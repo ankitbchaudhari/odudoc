@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard, FilterChip } from "@/components/admin/PageShell";
 import type { OphthExam, ExamStatus, ExamType, EyeMetrics, LensType } from "@/lib/hospital/ophthalmology-store";
 // Inlined from ophthalmology-store — importing runtime values pulls persistent-array → Postgres into the client bundle and crashes the page.
 const EXAM_TYPE_LABEL: Record<ExamType, string> = {
@@ -48,30 +49,31 @@ export default function OphthPage() {
   useEffect(() => { loadPatients(); }, []);
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Ophthalmology</h1>
-          <p className="text-sm text-slate-500">Refraction, IOP, fundus — per-eye exam records</p>
-        </div>
-        <button onClick={() => setShowCreate(true)} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ New exam</button>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="👁"
+        eyebrow="Vision"
+        title="Ophthalmology"
+        subtitle="Refraction, IOP, fundus — per-eye exam records"
+        tone="indigo"
+        primaryAction={{ label: "+ New exam", onClick: () => setShowCreate(true) }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
-          <StatTile label="Today" value={stats.scheduledToday} tone="slate" />
-          <StatTile label="In progress" value={stats.inProgress} tone="amber" />
-          <StatTile label="Completed / mo" value={stats.completedMonth} tone="emerald" />
-          <StatTile label="Referrals / mo" value={stats.referralsMonth} tone="indigo" />
-          <StatTile label="IOP ≥22 alerts" value={stats.highIopAlerts} tone="rose" />
-          <StatTile label="CDR ≥0.6" value={stats.suspiciousCdr} tone="rose" />
-          <StatTile label="Refractions / mo" value={stats.refractionMonth} tone="slate" />
-        </div>
+        <StatGrid cols={7}>
+          <StatCard label="Today" value={stats.scheduledToday} tone="slate" icon="📅" />
+          <StatCard label="In progress" value={stats.inProgress} tone="amber" icon="●" />
+          <StatCard label="Completed / mo" value={stats.completedMonth} tone="emerald" icon="✓" />
+          <StatCard label="Referrals / mo" value={stats.referralsMonth} tone="indigo" icon="↗" />
+          <StatCard label="IOP ≥22 alerts" value={stats.highIopAlerts} tone="rose" icon="🚨" />
+          <StatCard label="CDR ≥0.6" value={stats.suspiciousCdr} tone="orange" icon="⚠" />
+          <StatCard label="Refractions / mo" value={stats.refractionMonth} tone="violet" icon="🔍" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Pill active={statusFilter === ""} onClick={() => setStatusFilter("")}>All</Pill>
-        {STATUSES.map((s) => <Pill key={s} active={statusFilter === s} onClick={() => setStatusFilter(s)}>{STATUS_LABEL[s]}</Pill>)}
+      <div className="flex flex-wrap items-center gap-2">
+        <FilterChip active={statusFilter === ""} onClick={() => setStatusFilter("")}>All</FilterChip>
+        {STATUSES.map((s) => <FilterChip key={s} active={statusFilter === s} onClick={() => setStatusFilter(s)}>{STATUS_LABEL[s]}</FilterChip>)}
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm">

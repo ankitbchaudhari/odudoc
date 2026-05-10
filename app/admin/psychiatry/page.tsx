@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard, TabSwitch } from "@/components/admin/PageShell";
 import type { PsychSession, TherapyPlan, SessionStatus, SessionType, PlanStatus, TherapyModality, RiskLevel, ScaleScore, PlanGoal } from "@/lib/hospital/psychiatry-store";
 // Inlined from psychiatry-store — importing runtime values pulls persistent-array → Postgres into the client bundle and crashes the page.
 const SESSION_STATUS_LABEL: Record<SessionStatus, string> = {
@@ -70,34 +71,37 @@ export default function PsychPage() {
   useEffect(() => { load(); loadPatients(); }, []);
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Psychiatry</h1>
-          <p className="text-sm text-slate-500">MSE, PHQ-9 / GAD-7, risk assessment, therapy plans</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowSession(true)} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Session</button>
-          <button onClick={() => setShowPlan(true)} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Therapy plan</button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="🧠"
+        eyebrow="Mental health"
+        title="Psychiatry"
+        subtitle="MSE, PHQ-9 / GAD-7, risk assessment, therapy plans"
+        tone="violet"
+        secondaryAction={{ label: "+ Session", onClick: () => setShowSession(true) }}
+        primaryAction={{ label: "+ Therapy plan", onClick: () => setShowPlan(true) }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
-          <StatTile label="Today" value={stats.scheduledToday} tone="slate" />
-          <StatTile label="Completed / mo" value={stats.completedMonth} tone="emerald" />
-          <StatTile label="No-show rate" value={`${stats.noShowRate}%`} tone="amber" />
-          <StatTile label="Active plans" value={stats.activePlans} tone="emerald" />
-          <StatTile label="High-risk alerts" value={stats.highRiskAlerts} tone="rose" />
-          <StatTile label="Severe PHQ-9" value={stats.severeDepression} tone="rose" />
-          <StatTile label="Severe GAD-7" value={stats.severeAnxiety} tone="rose" />
-        </div>
+        <StatGrid cols={7}>
+          <StatCard label="Today" value={stats.scheduledToday} tone="slate" icon="📅" />
+          <StatCard label="Completed / mo" value={stats.completedMonth} tone="emerald" icon="✓" />
+          <StatCard label="No-show rate" value={`${stats.noShowRate}%`} tone="amber" icon="✕" />
+          <StatCard label="Active plans" value={stats.activePlans} tone="indigo" icon="📋" />
+          <StatCard label="High-risk alerts" value={stats.highRiskAlerts} tone="rose" icon="🚨" />
+          <StatCard label="Severe PHQ-9" value={stats.severeDepression} tone="orange" icon="⚠" />
+          <StatCard label="Severe GAD-7" value={stats.severeAnxiety} tone="fuchsia" icon="❗" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex items-center gap-2 border-b border-slate-200">
-        <TabBtn active={tab === "sessions"} onClick={() => setTab("sessions")}>Sessions ({sessions.length})</TabBtn>
-        <TabBtn active={tab === "plans"} onClick={() => setTab("plans")}>Therapy plans ({plans.length})</TabBtn>
-      </div>
+      <TabSwitch
+        active={tab}
+        onSelect={(k) => setTab(k as "sessions" | "plans")}
+        tabs={[
+          { key: "sessions", label: "Sessions", count: sessions.length },
+          { key: "plans", label: "Therapy plans", count: plans.length },
+        ]}
+      />
 
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
         {tab === "sessions" ? (

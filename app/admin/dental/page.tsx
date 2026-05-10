@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard, TabSwitch } from "@/components/admin/PageShell";
 import type { ChartRecord, TreatmentPlan, ToothFinding, ToothCondition, PlanStatus, PlanProcedure, ProcedureStatus } from "@/lib/hospital/dental-store";
 // Inlined from dental-store — importing runtime values pulls persistent-array → Postgres into the client bundle and crashes the page.
 const CONDITION_LABEL: Record<ToothCondition, string> = {
@@ -60,34 +61,37 @@ export default function DentalPage() {
   useEffect(() => { load(); loadPatients(); }, []);
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Dental</h1>
-          <p className="text-sm text-slate-500">FDI tooth chart • treatment plans with per-tooth procedures</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowChart(true)} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Chart exam</button>
-          <button onClick={() => setShowPlan(true)} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Treatment plan</button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="🦷"
+        eyebrow="Oral health"
+        title="Dental"
+        subtitle="FDI tooth chart • treatment plans with per-tooth procedures"
+        tone="emerald"
+        secondaryAction={{ label: "+ Chart exam", onClick: () => setShowChart(true) }}
+        primaryAction={{ label: "+ Treatment plan", onClick: () => setShowPlan(true) }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
-          <StatTile label="Charts / mo" value={stats.chartsMonth} tone="slate" />
-          <StatTile label="Proposed" value={stats.proposedPlans} tone="amber" />
-          <StatTile label="Active plans" value={stats.activePlans} tone="emerald" />
-          <StatTile label="Completed / mo" value={stats.completedMonth} tone="emerald" />
-          <StatTile label="Revenue / mo" value={`₹${stats.revenueMonth.toLocaleString()}`} tone="indigo" />
-          <StatTile label="Caries + RCT needed" value={stats.cariesFindings} tone="rose" />
-          <StatTile label="Extractions" value={stats.extractions} tone="slate" />
-        </div>
+        <StatGrid cols={7}>
+          <StatCard label="Charts / mo" value={stats.chartsMonth} tone="slate" icon="📋" />
+          <StatCard label="Proposed" value={stats.proposedPlans} tone="amber" icon="✎" />
+          <StatCard label="Active plans" value={stats.activePlans} tone="emerald" icon="●" />
+          <StatCard label="Completed / mo" value={stats.completedMonth} tone="teal" icon="✓" />
+          <StatCard label="Revenue / mo" value={`₹${stats.revenueMonth.toLocaleString()}`} tone="indigo" icon="₹" />
+          <StatCard label="Caries + RCT" value={stats.cariesFindings} tone="rose" icon="⚠" />
+          <StatCard label="Extractions" value={stats.extractions} tone="orange" icon="✂" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex items-center gap-2 border-b border-slate-200">
-        <TabBtn active={tab === "charts"} onClick={() => setTab("charts")}>Chart exams ({charts.length})</TabBtn>
-        <TabBtn active={tab === "plans"} onClick={() => setTab("plans")}>Treatment plans ({plans.length})</TabBtn>
-      </div>
+      <TabSwitch
+        active={tab}
+        onSelect={(k) => setTab(k as "charts" | "plans")}
+        tabs={[
+          { key: "charts", label: "Chart exams", count: charts.length },
+          { key: "plans", label: "Treatment plans", count: plans.length },
+        ]}
+      />
 
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
         {tab === "charts" ? (

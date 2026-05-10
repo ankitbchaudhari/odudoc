@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard, FilterChip } from "@/components/admin/PageShell";
 import type { EntExam, EntVisitType, EntStatus, EntRegion, EarFinding } from "@/lib/hospital/ent-store";
 // Inlined from ent-store — importing runtime values pulls persistent-array → Postgres into the client bundle and crashes the page.
 const VISIT_LABEL: Record<EntVisitType, string> = {
@@ -57,33 +58,35 @@ export default function EntPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">ENT / Otolaryngology</h1>
-          <p className="text-sm text-slate-500">Ear, Nose, Throat, Head & Neck + Audiology (PTA / Tympanometry)</p>
-        </div>
-        <button onClick={() => { setEditing(null); setShowModal(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ New ENT exam</button>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="👂"
+        eyebrow="Otolaryngology"
+        title="ENT / Otolaryngology"
+        subtitle="Ear, Nose, Throat, Head & Neck + Audiology (PTA / Tympanometry)"
+        tone="indigo"
+        primaryAction={{ label: "+ New ENT exam", onClick: () => { setEditing(null); setShowModal(true); } }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
-          <StatTile label="Scheduled today" value={stats.scheduledToday} tone="slate" />
-          <StatTile label="In progress" value={stats.inProgress} tone="amber" />
-          <StatTile label="Completed (month)" value={stats.completedMonth} tone="emerald" />
-          <StatTile label="Audiology (month)" value={stats.audiologyMonth} tone="indigo" />
-          <StatTile label="Referrals (month)" value={stats.referralsMonth} tone="slate" />
-          <StatTile label="Hearing loss flags" value={stats.hearingLossFlags} tone="rose" />
-          <StatTile label="Emergency (month)" value={stats.emergencyMonth} tone="rose" />
-        </div>
+        <StatGrid cols={7}>
+          <StatCard label="Scheduled today" value={stats.scheduledToday} tone="slate" icon="📅" />
+          <StatCard label="In progress" value={stats.inProgress} tone="amber" icon="●" />
+          <StatCard label="Completed (mo)" value={stats.completedMonth} tone="emerald" icon="✓" />
+          <StatCard label="Audiology (mo)" value={stats.audiologyMonth} tone="indigo" icon="🎧" />
+          <StatCard label="Referrals (mo)" value={stats.referralsMonth} tone="violet" icon="↗" />
+          <StatCard label="Hearing loss flags" value={stats.hearingLossFlags} tone="rose" icon="🔇" />
+          <StatCard label="Emergency (mo)" value={stats.emergencyMonth} tone="orange" icon="🚨" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <FilterPill active={filterStatus === ""} onClick={() => setFilterStatus("")}>All status</FilterPill>
-        {STATUSES.map((s) => <FilterPill key={s} active={filterStatus === s} onClick={() => setFilterStatus(s)}>{STATUS_LABEL[s]}</FilterPill>)}
-        <span className="mx-2 h-4 w-px bg-slate-300" />
-        <FilterPill active={filterRegion === ""} onClick={() => setFilterRegion("")}>All regions</FilterPill>
-        {REGIONS.map((r) => <FilterPill key={r} active={filterRegion === r} onClick={() => setFilterRegion(r)}>{REGION_LABEL[r]}</FilterPill>)}
+      <div className="flex flex-wrap items-center gap-2">
+        <FilterChip active={filterStatus === ""} onClick={() => setFilterStatus("")}>All status</FilterChip>
+        {STATUSES.map((s) => <FilterChip key={s} active={filterStatus === s} onClick={() => setFilterStatus(s)}>{STATUS_LABEL[s]}</FilterChip>)}
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <FilterChip active={filterRegion === ""} onClick={() => setFilterRegion("")}>All regions</FilterChip>
+        {REGIONS.map((r) => <FilterChip key={r} active={filterRegion === r} onClick={() => setFilterRegion(r)}>{REGION_LABEL[r]}</FilterChip>)}
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm">

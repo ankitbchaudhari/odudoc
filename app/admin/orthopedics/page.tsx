@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero, StatGrid, StatCard, TabSwitch } from "@/components/admin/PageShell";
 import type {
   OrthoCase, FractureRecord, CaseType, CaseStatus, Region, BodySide,
   FractureType, FractureStatus, ImmobilizationType,
@@ -84,36 +85,39 @@ export default function OrthoPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Orthopedics</h1>
-          <p className="text-sm text-slate-500">Cases, exam, ROM, imaging, fracture tracking (AO / Gustilo)</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => { setEditCase(null); setShowCase(true); }} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">+ Case</button>
-          <button onClick={() => { setEditFx(null); setShowFx(true); }} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">+ Fracture</button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="🦴"
+        eyebrow="Skeletal"
+        title="Orthopedics"
+        subtitle="Cases, exam, ROM, imaging, fracture tracking (AO / Gustilo)"
+        tone="amber"
+        secondaryAction={{ label: "+ Case", onClick: () => { setEditCase(null); setShowCase(true); } }}
+        primaryAction={{ label: "+ Fracture", onClick: () => { setEditFx(null); setShowFx(true); } }}
+      />
 
       {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-5 lg:grid-cols-9">
-          <StatTile label="Open cases" value={stats.openCases} tone="amber" />
-          <StatTile label="In treatment" value={stats.inTreatment} tone="slate" />
-          <StatTile label="Post-op" value={stats.postOp} tone="indigo" />
-          <StatTile label="Rehab" value={stats.rehab} tone="indigo" />
-          <StatTile label="New / week" value={stats.newCasesWeek} tone="slate" />
-          <StatTile label="Acute Fx" value={stats.acuteFractures} tone="amber" />
-          <StatTile label="Open Fx" value={stats.openFractures} tone="rose" />
-          <StatTile label="Nonunion" value={stats.nonunion} tone="rose" />
-          <StatTile label="Healed / month" value={stats.healedMonth} tone="emerald" />
-        </div>
+        <StatGrid cols={6}>
+          <StatCard label="Open cases" value={stats.openCases} tone="amber" icon="📁" />
+          <StatCard label="In treatment" value={stats.inTreatment} tone="slate" icon="●" />
+          <StatCard label="Post-op" value={stats.postOp} tone="indigo" icon="✂" />
+          <StatCard label="Rehab" value={stats.rehab} tone="violet" icon="🏃" />
+          <StatCard label="New / week" value={stats.newCasesWeek} tone="sky" icon="⊕" />
+          <StatCard label="Acute Fx" value={stats.acuteFractures} tone="orange" icon="⚡" />
+          <StatCard label="Open Fx" value={stats.openFractures} tone="rose" icon="❗" />
+          <StatCard label="Nonunion" value={stats.nonunion} tone="fuchsia" icon="⚠" />
+          <StatCard label="Healed / mo" value={stats.healedMonth} tone="emerald" icon="✓" />
+        </StatGrid>
       )}
 
-      <div className="mb-4 flex items-center gap-2 border-b border-slate-200">
-        <TabBtn active={tab === "cases"} onClick={() => setTab("cases")}>Cases ({cases.length})</TabBtn>
-        <TabBtn active={tab === "fractures"} onClick={() => setTab("fractures")}>Fractures ({fractures.length})</TabBtn>
-      </div>
+      <TabSwitch
+        active={tab}
+        onSelect={(k) => setTab(k as "cases" | "fractures")}
+        tabs={[
+          { key: "cases", label: "Cases", count: cases.length },
+          { key: "fractures", label: "Fractures", count: fractures.length },
+        ]}
+      />
 
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
         {tab === "cases" ? (

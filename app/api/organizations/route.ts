@@ -17,6 +17,8 @@ import { deleteMembershipsForOrg, reloadMemberships } from "@/lib/memberships-st
 import { deleteTransfersForOrg } from "@/lib/inter-org-transfers-store";
 import { deleteBedSnapshot } from "@/lib/inter-org-beds-store";
 import { deletePreauthsForOrg } from "@/lib/insurance/preauth-store";
+// (No org-cascade for rx-fulfillment — orders are scoped to patients
+//  + pharmacies, not orgs.)
 import { recordAudit, type AuditAction } from "@/lib/audit-log-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { getActiveOrgId, setActiveOrgId } from "@/lib/tenant";

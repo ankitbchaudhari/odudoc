@@ -177,6 +177,11 @@ export default function DashboardPage() {
         <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {[
             { label: "Find Doctors", href: "/doctors", icon: "👨‍⚕️", bg: "from-sky-100 to-blue-100", ring: "ring-sky-200" },
+            { label: "Health Timeline", href: "/dashboard/timeline", icon: "🗓️", bg: "from-violet-100 to-indigo-100", ring: "ring-violet-200" },
+            { label: "My Vitals", href: "/dashboard/vitals", icon: "❤️", bg: "from-rose-100 to-pink-100", ring: "ring-rose-200" },
+            { label: "Today's Meds", href: "/dashboard/adherence", icon: "💊", bg: "from-emerald-100 to-teal-100", ring: "ring-emerald-200" },
+            { label: "Documents", href: "/dashboard/documents", icon: "📁", bg: "from-amber-100 to-orange-100", ring: "ring-amber-200" },
+            { label: "Notifications", href: "/dashboard/notifications", icon: "🔔", bg: "from-fuchsia-100 to-purple-100", ring: "ring-fuchsia-200" },
             { label: "Health Passport", href: "/dashboard/health-passport", icon: "🪪", bg: "from-emerald-100 to-teal-100", ring: "ring-emerald-200" },
             { label: "My Family", href: "/dashboard/family", icon: "👨‍👩‍👧‍👦", bg: "from-pink-100 to-rose-100", ring: "ring-pink-200" },
             { label: "Shop Medicines", href: "/shop", icon: "💊", bg: "from-rose-100 to-orange-100", ring: "ring-rose-200" },
@@ -191,6 +196,7 @@ export default function DashboardPage() {
             { label: "ABHA / ABDM", href: "/dashboard/abha", icon: "🇮🇳", bg: "from-yellow-100 to-orange-100", ring: "ring-yellow-200" },
             { label: "Privacy & Consent", href: "/dashboard/privacy", icon: "🔐", bg: "from-slate-100 to-zinc-100", ring: "ring-slate-200" },
             { label: "My Profile", href: "/profile", icon: "⚙️", bg: "from-violet-100 to-fuchsia-100", ring: "ring-violet-200" },
+            { label: "Get Started", href: "/dashboard/onboarding", icon: "🚀", bg: "from-lime-100 to-green-100", ring: "ring-lime-200" },
           ].map((a) => (
             <Link
               key={a.label}

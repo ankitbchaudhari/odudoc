@@ -20,8 +20,10 @@ export const dynamic = "force-dynamic";
 const VALID_PAYERS: ReferralPayer[] = ["pharmacy", "lab", "diagnostic", "insurer", "hospital"];
 const VALID_SCOPES: ReferralScope[] = ["consultation", "rx_fulfilment", "lab_order", "policy_sale", "admission"];
 
-function actorKey(session: Awaited<ReturnType<typeof getServerSession>>): string | null {
-  return session?.user?.email || (session?.user as { id?: string } | undefined)?.id || null;
+function actorKey(session: Awaited<ReturnType<typeof getServerSession>> | null): string | null {
+  // getServerSession types are loose; narrow defensively.
+  const u = (session as { user?: { email?: string | null; id?: string | null } } | null)?.user;
+  return u?.email || u?.id || null;
 }
 
 export async function GET(req: NextRequest) {

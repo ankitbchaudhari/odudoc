@@ -33,14 +33,17 @@ export async function GET() {
   // Pull last 30 days of readings once, then evaluate each target
   // against the relevant subset.
   const since = new Date(); since.setDate(since.getDate() - 30);
+  // VitalKind ⊋ VitalTarget["kind"] (respiration isn't a target).
+  // Drop respiration readings up front so the cast lands cleanly.
+  const TARGET_KINDS = new Set(["bp", "weight", "glucose", "heart_rate", "spo2", "temperature"] as const);
+  type TargetKind = "bp" | "weight" | "glucose" | "heart_rate" | "spo2" | "temperature";
   const readings = listReadings(userId)
     .filter((r) => new Date(r.takenAt) >= since)
+    .filter((r): r is typeof r & { kind: TargetKind } => TARGET_KINDS.has(r.kind as TargetKind))
     .map((r) => ({ kind: r.kind, value: r.value, value2: r.value2, takenAt: r.takenAt }));
   const enriched = plans.map((p) => ({
     ...p,
     compliance: p.targets.map((t) =>
-      // evaluateTarget only consumes the kind we ask about; TS narrowing
-      // here is awkward because VitalTarget["kind"] is a subset of VitalKind.
       evaluateTarget(t, readings.filter((r) => r.kind === t.kind))
     ),
   }));

@@ -22,12 +22,27 @@ export interface BedAssignment {
   to?: string; // ISO; open-ended while current
 }
 
+export interface GeoPoint {
+  /** WGS-84 latitude. */
+  lat: number;
+  /** WGS-84 longitude. */
+  lng: number;
+  /** Browser-reported accuracy in meters. */
+  accuracyM?: number;
+  /** ISO timestamp when the device captured the fix. */
+  capturedAt: string;
+}
+
 export interface Admission {
   id: string;
   organizationId: string;
   patientId: string;
   admittingDoctor?: string;
   admittingDepartment?: string;
+  /** Email keys of doctors / specialists currently assigned to this
+   *  patient. Vital-sign alerts route to everyone on this list.
+   *  Reception or admin can add/remove via assignDoctor / unassignDoctor. */
+  assignedDoctorEmails?: string[];
   encounterId?: string;
   chiefComplaint?: string;
   provisionalDiagnosis?: string;
@@ -45,7 +60,11 @@ export interface Admission {
   currentBedId?: string;
   status: AdmissionStatus;
   admittedAt: string;
+  /** GPS fix captured at admit time, if the device permitted. We
+   *  fall back to server time when geolocation is denied. */
+  admittedAtLocation?: GeoPoint;
   dischargedAt?: string;
+  dischargedAtLocation?: GeoPoint;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -94,6 +113,11 @@ export interface AdmissionInput {
   chiefComplaint?: string;
   provisionalDiagnosis?: string;
   admittedAt?: string;
+  /** Captured client-side via navigator.geolocation. Optional —
+   *  geolocation is permission-gated and may simply be denied. */
+  admittedAtLocation?: GeoPoint;
+  /** Email of the admitting doctor — also seeds assignedDoctorEmails. */
+  assignedDoctorEmails?: string[];
   notes?: string;
 }
 
@@ -128,6 +152,12 @@ export function admitPatient(
     currentBedId: hit.bed.id,
     status: "admitted",
     admittedAt,
+    admittedAtLocation: input.admittedAtLocation,
+    // Seed assigned doctors with the admitting doctor + any explicit list.
+    assignedDoctorEmails: Array.from(new Set([
+      ...(input.assignedDoctorEmails || []),
+      ...(input.admittingDoctor ? [input.admittingDoctor.trim()] : []),
+    ].filter(Boolean))),
     notes: input.notes?.trim() || undefined,
     createdAt: now,
     updatedAt: now,
@@ -181,6 +211,7 @@ export interface DischargeInput {
   finalDiagnosis?: string;
   dischargeDisposition?: Admission["dischargeDisposition"];
   dischargedAt?: string;
+  dischargedAtLocation?: GeoPoint;
 }
 
 export function dischargePatient(
@@ -200,6 +231,7 @@ export function dischargePatient(
   if (prior && !prior.to) prior.to = when;
   a.status = "discharged";
   a.dischargedAt = when;
+  a.dischargedAtLocation = input.dischargedAtLocation || a.dischargedAtLocation;
   a.dischargeSummary = input.dischargeSummary?.trim() || a.dischargeSummary;
   a.finalDiagnosis = input.finalDiagnosis?.trim() || a.finalDiagnosis;
   a.dischargeDisposition = input.dischargeDisposition || a.dischargeDisposition;
@@ -208,6 +240,38 @@ export function dischargePatient(
   a.updatedAt = now;
   flush();
   return a;
+}
+
+/** Add or replace the assigned-doctor list for an admission. Used
+ *  by the reception duty-roster panel and shift-handover flow. */
+export function assignDoctors(
+  id: string,
+  organizationId: string,
+  doctorEmails: string[],
+): Admission | null {
+  const a = admissions.find((x) => x.id === id && x.organizationId === organizationId);
+  if (!a) return null;
+  a.assignedDoctorEmails = Array.from(new Set(doctorEmails.map((e) => e.trim()).filter(Boolean)));
+  a.updatedAt = new Date().toISOString();
+  flush();
+  return a;
+}
+
+export function addAssignedDoctor(id: string, organizationId: string, email: string): Admission | null {
+  const cur = getAdmissionById(id, organizationId)?.assignedDoctorEmails || [];
+  return assignDoctors(id, organizationId, [...cur, email]);
+}
+
+export function removeAssignedDoctor(id: string, organizationId: string, email: string): Admission | null {
+  const cur = getAdmissionById(id, organizationId)?.assignedDoctorEmails || [];
+  return assignDoctors(id, organizationId, cur.filter((e) => e.toLowerCase() !== email.toLowerCase()));
+}
+
+/** Find the active admission for a patient across all orgs the
+ *  caller has access to. Used by the vital-alert engine to route
+ *  critical readings to assigned specialists. */
+export function findActiveAdmissionForPatient(patientId: string): Admission | null {
+  return admissions.find((a) => a.patientId === patientId && a.status === "admitted") || null;
 }
 
 export function cancelAdmission(

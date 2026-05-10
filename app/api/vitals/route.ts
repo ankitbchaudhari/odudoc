@@ -12,6 +12,7 @@ import {
   addReading, deleteReading, listReadings, latestPerKind,
   classify, VitalKind,
 } from "@/lib/vitals/store";
+import { maybeAlertOnReading } from "@/lib/vitals/alerts";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
 export const runtime = "nodejs";
@@ -55,10 +56,18 @@ export async function POST(req: NextRequest) {
     context: body.context, note: body.note,
     takenAt: body.takenAt,
   });
+  // If critical AND patient is currently admitted, fan out an alert
+  // to every assigned doctor on the admission. Best-effort — the
+  // reading is already persisted at this point.
+  let alerted: string[] = [];
+  try { alerted = maybeAlertOnReading(r).alertedDoctorEmails; } catch { /* skip */ }
   try { await awaitAllFlushesStrict(); } catch {
     return NextResponse.json({ error: "saved_but_not_persisted" }, { status: 500 });
   }
-  return NextResponse.json({ reading: { ...r, severity: classify(r) } });
+  return NextResponse.json({
+    reading: { ...r, severity: classify(r) },
+    alerted,
+  });
 }
 
 export async function DELETE(req: NextRequest) {

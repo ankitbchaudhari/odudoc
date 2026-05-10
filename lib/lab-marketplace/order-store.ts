@@ -8,6 +8,7 @@
 // (when the patient checks in) and on to reported.
 
 import { bindPersistentArray } from "../persistent-array";
+import { pushNotification } from "../notifications/store";
 
 export type LabOrderStatus =
   | "placed"
@@ -186,6 +187,38 @@ export function transitionLabOrder(input: TransitionInput): LabOrder | null {
   o.events.push({ at, status: input.to, note: input.note?.trim() || undefined });
   o.updatedAt = at;
   flush();
+
+  // Patient-facing notifications. Idempotent on (userId, kind, reference)
+  // so re-running a transition doesn't double-notify.
+  if (input.to === "confirmed") {
+    pushNotification({
+      userId: o.patientUserId, kind: "lab_result_ready", severity: "info",
+      title: `Lab order confirmed`,
+      body: `${o.labName} confirmed your booking${o.scheduledFor ? ` for ${new Date(o.scheduledFor).toLocaleString()}` : ""}.`,
+      link: `/dashboard/labs`, reference: `${o.id}:confirmed`,
+    });
+  } else if (input.to === "sample_collected") {
+    pushNotification({
+      userId: o.patientUserId, kind: "lab_result_ready", severity: "success",
+      title: `Sample collected`,
+      body: `${o.labName} has your sample. Reports usually arrive within 24 hours.`,
+      link: `/dashboard/labs`, reference: `${o.id}:sample_collected`,
+    });
+  } else if (input.to === "reported") {
+    pushNotification({
+      userId: o.patientUserId, kind: "lab_result_ready", severity: "success",
+      title: `Lab results ready`,
+      body: `${o.lines.length} test${o.lines.length === 1 ? "" : "s"} from ${o.labName} reported. Tap to view.`,
+      link: o.reportUrl || `/dashboard/labs`, reference: `${o.id}:reported`,
+    });
+  } else if (input.to === "cancelled") {
+    pushNotification({
+      userId: o.patientUserId, kind: "lab_result_ready", severity: "warn",
+      title: `Lab order cancelled`,
+      body: input.note?.trim() ? `${o.labName}: ${input.note.trim()}` : `${o.labName} cancelled order ${o.id}.`,
+      link: `/dashboard/labs`, reference: `${o.id}:cancelled`,
+    });
+  }
   return o;
 }
 

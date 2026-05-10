@@ -106,9 +106,14 @@ export default function NotificationBell({ className = "" }: { className?: strin
         <div className="absolute right-0 z-50 mt-2 w-[360px] max-w-[92vw] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
             <p className="text-sm font-bold text-slate-900">Notifications</p>
-            {unread > 0 && (
-              <button onClick={markAllRead} className="text-[11px] font-semibold text-indigo-600">Mark all read</button>
-            )}
+            <div className="flex items-center gap-3">
+              {unread > 0 && (
+                <button onClick={markAllRead} className="text-[11px] font-semibold text-indigo-600">Mark all read</button>
+              )}
+              <Link href="/dashboard/notifications" onClick={() => setOpen(false)} className="text-[11px] font-semibold text-slate-500 hover:text-slate-700">
+                Open inbox
+              </Link>
+            </div>
           </div>
           {items.length === 0 ? (
             <p className="p-8 text-center text-sm text-slate-400">No notifications yet.</p>

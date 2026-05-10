@@ -23,7 +23,8 @@ export async function GET() {
   // the session role so non-admin roles collapse the sidebar to their
   // curated nav, and fall back to the membership role for tenant admins.
   const session = await getServerSession(authOptions);
-  const sessionRole = (session?.user as { role?: string } | undefined)?.role ?? null;
+  const sessionUser = session?.user as { role?: string; name?: string; email?: string } | undefined;
+  const sessionRole = sessionUser?.role ?? null;
   const effectiveRole = sessionRole && sessionRole !== "admin" && sessionRole !== "patient" && sessionRole !== "doctor"
     ? sessionRole
     : ctx.role;
@@ -47,6 +48,10 @@ export async function GET() {
     activeOrgId: ctx.organization?.id ?? null,
     activeOrgName: ctx.organization?.name ?? null,
     activeOrgKind: planLabel,
+    // The signed-in user's display name + email for the sidebar footer
+    // chip. Org admins should see their own email, not "admin@odudoc.com".
+    userName: sessionUser?.name ?? null,
+    userEmail: sessionUser?.email ?? ctx.email ?? null,
     // For super-admins with no active org selected, return null so the
     // sidebar falls back to "show everything". For tenant admins we
     // always return the org's module flags.

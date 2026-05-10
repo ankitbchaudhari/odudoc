@@ -5,6 +5,12 @@ import type {
   StaffMember,
   StaffRole,
   StaffStatus,
+  StaffModuleAccess,
+} from "@/lib/hospital/staff-store";
+import {
+  STAFF_MODULE_LABELS,
+  STAFF_ROLE_DEFAULT_ACCESS,
+  effectiveModuleAccess,
 } from "@/lib/hospital/staff-store";
 
 const ROLES: StaffRole[] = [
@@ -51,6 +57,10 @@ interface StaffForm {
   dateOfJoining: string;
   status: StaffStatus;
   notes: string;
+  // Per-module access picks — admin ticks the boxes that match this
+  // person's job. A physiotherapist gets ["physio"]; a pharmacist gets
+  // ["pharmacy", "inventory"]; an admin gets the lot.
+  moduleAccess: StaffModuleAccess[];
 }
 
 const EMPTY: StaffForm = {
@@ -66,6 +76,7 @@ const EMPTY: StaffForm = {
   dateOfJoining: "",
   status: "active",
   notes: "",
+  moduleAccess: STAFF_ROLE_DEFAULT_ACCESS["doctor"] ?? [],
 };
 
 export default function StaffPage() {
@@ -147,6 +158,7 @@ export default function StaffPage() {
       dateOfJoining: s.dateOfJoining || "",
       status: s.status,
       notes: s.notes || "",
+      moduleAccess: effectiveModuleAccess(s),
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -260,6 +272,13 @@ export default function StaffPage() {
             <div className="md:col-span-3">
               <Field label="Notes"><textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="input min-h-[50px]" /></Field>
             </div>
+            <div className="md:col-span-3">
+              <ModuleAccessPicker
+                role={form.role}
+                value={form.moduleAccess}
+                onChange={(next) => setForm({ ...form, moduleAccess: next })}
+              />
+            </div>
           </div>
           <div className="flex gap-2">
             <button type="submit" className="rounded-lg bg-gradient-to-r from-rose-500 to-pink-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-md">{editingId ? "Save" : "Create"}</button>
@@ -323,7 +342,10 @@ export default function StaffPage() {
                         {s.role}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-700">{s.department || "—"}</td>
+                    <td className="px-4 py-3 text-slate-700">
+                      <div>{s.department || "—"}</div>
+                      <AccessSummary modules={effectiveModuleAccess(s)} />
+                    </td>
                     <td className="px-4 py-3 text-xs text-slate-600">
                       {s.phone || "—"}
                       {s.email && <div>{s.email}</div>}
@@ -373,5 +395,130 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="mb-1 block text-xs font-medium text-slate-600">{label}</span>
       {children}
     </label>
+  );
+}
+
+// Per-staff module access picker. Admin ticks which sections of the
+// hospital console this person can use — a physiotherapist gets only
+// "Physiotherapy"; a pharmacist gets "Pharmacy + Inventory"; an admin
+// gets everything. The role-default + clear-all shortcuts make bulk
+// onboarding fast.
+function ModuleAccessPicker({
+  role,
+  value,
+  onChange,
+}: {
+  role: StaffRole;
+  value: StaffModuleAccess[];
+  onChange: (next: StaffModuleAccess[]) => void;
+}) {
+  const allKeys = Object.keys(STAFF_MODULE_LABELS) as StaffModuleAccess[];
+  const selected = new Set(value);
+  function toggle(k: StaffModuleAccess) {
+    const next = new Set(selected);
+    if (next.has(k)) next.delete(k);
+    else next.add(k);
+    onChange(Array.from(next));
+  }
+  function applyRoleDefault() {
+    onChange(STAFF_ROLE_DEFAULT_ACCESS[role] ?? []);
+  }
+  function selectAll() {
+    onChange(allKeys);
+  }
+  function clearAll() {
+    onChange([]);
+  }
+  return (
+    <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-indigo-50/40 to-fuchsia-50/30 p-4">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-indigo-700">
+            Module access · {value.length} of {allKeys.length}
+          </p>
+          <p className="mt-0.5 text-[11px] text-slate-500">
+            Tick the systems this staff member can open. A physiotherapist needs only Physiotherapy; an admin can keep them all.
+          </p>
+        </div>
+        <div className="flex gap-1.5">
+          <button
+            type="button"
+            onClick={applyRoleDefault}
+            className="rounded-md bg-white px-2.5 py-1 text-[11px] font-semibold text-indigo-700 ring-1 ring-indigo-200 transition hover:bg-indigo-50"
+          >
+            Use role defaults
+          </button>
+          <button
+            type="button"
+            onClick={selectAll}
+            className="rounded-md bg-white px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200 transition hover:bg-emerald-50"
+          >
+            Select all
+          </button>
+          <button
+            type="button"
+            onClick={clearAll}
+            className="rounded-md bg-white px-2.5 py-1 text-[11px] font-semibold text-rose-700 ring-1 ring-rose-200 transition hover:bg-rose-50"
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:grid-cols-4">
+        {allKeys.map((k) => {
+          const on = selected.has(k);
+          return (
+            <button
+              key={k}
+              type="button"
+              onClick={() => toggle(k)}
+              className={`flex items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-left text-[12px] font-medium transition ${
+                on
+                  ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm"
+                  : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+              }`}
+            >
+              <span className="truncate">{STAFF_MODULE_LABELS[k]}</span>
+              <span className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded ${
+                on ? "bg-white/20 text-white" : "bg-slate-100 text-slate-400"
+              }`}>
+                {on ? "✓" : ""}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Compact chip that says "Physio + 2 more" for the table — one click
+// opens edit so the admin can tweak the picks without scanning a wall
+// of toggles. Renders a "Full access" pill when every module is granted.
+function AccessSummary({ modules }: { modules: StaffModuleAccess[] }) {
+  const allKeys = Object.keys(STAFF_MODULE_LABELS) as StaffModuleAccess[];
+  if (modules.length === 0) {
+    return (
+      <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10.5px] font-medium text-slate-500">
+        🔒 No module access
+      </div>
+    );
+  }
+  if (modules.length >= allKeys.length) {
+    return (
+      <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 px-2 py-0.5 text-[10.5px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
+        🌐 Full access ({modules.length})
+      </div>
+    );
+  }
+  const first = STAFF_MODULE_LABELS[modules[0]] || modules[0];
+  const more = modules.length - 1;
+  return (
+    <div
+      className="mt-1 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-indigo-50 to-fuchsia-50 px-2 py-0.5 text-[10.5px] font-semibold text-indigo-700 ring-1 ring-indigo-200"
+      title={modules.map((m) => STAFF_MODULE_LABELS[m] || m).join(", ")}
+    >
+      🛂 {first}{more > 0 ? ` +${more} more` : ""}
+    </div>
   );
 }

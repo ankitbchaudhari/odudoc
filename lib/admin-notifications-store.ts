@@ -34,6 +34,12 @@ export interface AdminNotification {
   link: string;
   createdAt: string;
   read: boolean;
+  // Optional tenancy fan-out target. When set, only super-admins and
+  // members of that organization see the entry. Notifications created
+  // before this field existed (or platform-wide events like blog
+  // publishes) leave it undefined and remain visible to super-admins
+  // only — see listAdminNotificationsForViewer().
+  organizationId?: string;
 }
 
 const MAX_NOTIFICATIONS = 50;
@@ -57,11 +63,33 @@ export function listAdminNotifications(): AdminNotification[] {
   );
 }
 
+/**
+ * Tenant-aware listing. Super-admins see every entry (platform-wide
+ * events, plus every org's events) so they can keep tabs on the whole
+ * SaaS. Org admins see ONLY entries either tagged with their orgId
+ * or — for safety on legacy untagged events — nothing platform-only.
+ *
+ * Pass `null` for orgId to get the super-admin "see everything" view.
+ */
+export function listAdminNotificationsForViewer(opts: {
+  isSuperAdmin: boolean;
+  organizationId: string | null;
+}): AdminNotification[] {
+  const all = listAdminNotifications();
+  if (opts.isSuperAdmin) return all;
+  const orgId = opts.organizationId;
+  if (!orgId) return [];
+  return all.filter((n) => n.organizationId === orgId);
+}
+
 export function addAdminNotification(input: {
   type: AdminNotificationType;
   title: string;
   body: string;
   link: string;
+  /** When set, the notification is org-scoped — only super-admins and
+   *  members of this organization see it in the bell dropdown. */
+  organizationId?: string;
 }): AdminNotification {
   const n: AdminNotification = {
     id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -71,6 +99,7 @@ export function addAdminNotification(input: {
     link: input.link,
     createdAt: new Date().toISOString(),
     read: false,
+    organizationId: input.organizationId,
   };
   notifications.unshift(n);
   // Prune oldest.

@@ -58,6 +58,10 @@ interface AdminContext {
   // aren't distracted by surfaces they can't use anyway. Admin/doctor
   // continue to see the full grouped nav filtered by module flags.
   role: string | null;
+  // Signed-in user identity, surfaced into the sidebar footer chip so
+  // an org admin sees their own email instead of "admin@odudoc.com".
+  userName?: string | null;
+  userEmail?: string | null;
 }
 
 // Narrow nav lists for scoped roles. Each href here MUST also be in the
@@ -1049,6 +1053,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             activeOrgName: data.activeOrgName ?? data.organizationName ?? undefined,
             activeOrgKind: data.activeOrgKind ?? undefined,
             role: data.role ?? null,
+            userName: data.userName ?? null,
+            userEmail: data.userEmail ?? null,
           });
           // Org-admin auto-select: mirror resolved org into localStorage
           // so org-scoped pages pick it up without the user choosing.
@@ -1118,25 +1124,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       >
         {/* Brand */}
         <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-slate-800/60 px-4">
-          {!collapsed ? (
-            <Link href="/admin" className="flex items-center gap-2.5 overflow-hidden">
-              <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary-400 to-primary-700 text-sm font-bold text-white shadow-lg shadow-primary-900/40 ring-1 ring-white/10">
-                O
-              </span>
-              <span className="flex flex-col leading-tight">
-                <span className="text-[15px] font-bold tracking-tight text-white">OduDoc</span>
-                <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary-400">
-                  Admin Console
+          {(() => {
+            // For org admins, swap the platform brand for the org's own
+            // name so they feel they're in their hospital's console — not
+            // OduDoc's. Super-admins always see the OduDoc mark.
+            const isOrgScoped = !!ctx && !ctx.isSuperAdmin && !!ctx.activeOrgName;
+            const brandTitle = isOrgScoped ? ctx!.activeOrgName! : "OduDoc";
+            const brandInitial = (brandTitle || "O").trim().slice(0, 1).toUpperCase();
+            return !collapsed ? (
+              <Link href="/admin" className="flex items-center gap-2.5 overflow-hidden">
+                <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary-400 to-primary-700 text-sm font-bold text-white shadow-lg shadow-primary-900/40 ring-1 ring-white/10">
+                  {brandInitial}
                 </span>
-              </span>
-            </Link>
-          ) : (
-            <Link href="/admin" className="flex w-full items-center justify-center">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary-400 to-primary-700 text-sm font-bold text-white shadow-lg shadow-primary-900/40 ring-1 ring-white/10">
-                O
-              </span>
-            </Link>
-          )}
+                <span className="flex flex-col leading-tight">
+                  <span className="truncate text-[15px] font-bold tracking-tight text-white" title={brandTitle}>
+                    {brandTitle}
+                  </span>
+                  <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary-400">
+                    Admin Console
+                  </span>
+                </span>
+              </Link>
+            ) : (
+              <Link href="/admin" className="flex w-full items-center justify-center" title={brandTitle}>
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary-400 to-primary-700 text-sm font-bold text-white shadow-lg shadow-primary-900/40 ring-1 ring-white/10">
+                  {brandInitial}
+                </span>
+              </Link>
+            );
+          })()}
           {!collapsed && (
             <button
               onClick={() => setCollapsed(true)}
@@ -1289,34 +1305,45 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* User footer card */}
         <div className="flex-shrink-0 border-t border-slate-800/60 p-3">
-          {!collapsed ? (
-            <div className="flex items-center gap-2.5 rounded-lg bg-slate-800/40 px-2.5 py-2 ring-1 ring-slate-800/50">
-              <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-700 text-[13px] font-bold text-white ring-2 ring-slate-900">
-                A
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900" />
+          {(() => {
+            // Resolve the signed-in user's display name + email for the
+            // footer chip. We prefer the session's name/email so an org
+            // admin sees their own identity, not the platform default.
+            const fallbackEmail = ctx?.isSuperAdmin ? "admin@odudoc.com" : "";
+            const displayName = ctx?.userName?.trim() || (ctx?.isSuperAdmin ? "Admin" : "Org admin");
+            const displayEmail = ctx?.userEmail || fallbackEmail;
+            const initial = (displayName || displayEmail || "?").trim().slice(0, 1).toUpperCase();
+            return !collapsed ? (
+              <div className="flex items-center gap-2.5 rounded-lg bg-slate-800/40 px-2.5 py-2 ring-1 ring-slate-800/50">
+                <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-700 text-[13px] font-bold text-white ring-2 ring-slate-900">
+                  {initial}
+                  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-semibold text-white" title={displayName}>{displayName}</p>
+                  <p className="truncate text-[11px] text-slate-500" title={displayEmail || undefined}>
+                    {displayEmail || "—"}
+                  </p>
+                </div>
+                <Link
+                  href="/"
+                  className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-700/50 hover:text-red-400"
+                  title="Logout"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </Link>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[13px] font-semibold text-white">Admin</p>
-                <p className="truncate text-[11px] text-slate-500">admin@odudoc.com</p>
+            ) : (
+              <div className="flex justify-center" title={displayEmail || displayName}>
+                <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-700 text-[13px] font-bold text-white ring-2 ring-slate-900">
+                  {initial}
+                  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900" />
+                </div>
               </div>
-              <Link
-                href="/"
-                className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-700/50 hover:text-red-400"
-                title="Logout"
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-              </Link>
-            </div>
-          ) : (
-            <div className="flex justify-center">
-              <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-700 text-[13px] font-bold text-white ring-2 ring-slate-900">
-                A
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900" />
-              </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </aside>
 
@@ -1324,9 +1351,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className={`flex flex-1 flex-col transition-all duration-300 ${collapsed ? "ml-[72px]" : "ml-64"}`}>
         {/* Top bar */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white/80 px-6 backdrop-blur-md">
-          <div>
-            <h1 className="text-[15px] font-semibold text-slate-900">Admin Panel</h1>
-            <p className="text-[11px] text-slate-500">Manage your healthcare platform</p>
+          <div className="min-w-0">
+            {ctx && !ctx.isSuperAdmin && ctx.activeOrgName ? (
+              <>
+                <h1 className="truncate text-[15px] font-semibold text-slate-900" title={ctx.activeOrgName}>
+                  {ctx.activeOrgName}
+                </h1>
+                <p className="text-[11px] text-slate-500">
+                  {ctx.activeOrgKind ? `${ctx.activeOrgKind} · admin console` : "Admin console"}
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="text-[15px] font-semibold text-slate-900">Admin Panel</h1>
+                <p className="text-[11px] text-slate-500">Manage your healthcare platform</p>
+              </>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {/* Org switcher only for super-admin — tenant admins are

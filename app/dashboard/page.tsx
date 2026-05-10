@@ -25,9 +25,16 @@ export default function DashboardPage() {
   useEffect(() => {
     if (status !== "authenticated") return;
     const role = session?.user?.role;
+    // Role-based landing — keep this list as the canonical map.
+    // Each non-patient role lands on its own console; patients fall
+    // through to the rest of this page.
     if (role === "doctor") router.replace("/dashboard/doctor");
     else if (role === "admin") router.replace("/admin");
     else if (role === "staff") router.replace("/admin/products");
+    else if (role === "pharmacist") router.replace("/dashboard/rx-fulfillment");
+    else if (role === "vendor") router.replace("/admin/products");
+    else if (role === "hr") router.replace("/admin/applications");
+    else if (role === "support") router.replace("/admin/support");
   }, [status, session, router]);
 
   useEffect(() => {

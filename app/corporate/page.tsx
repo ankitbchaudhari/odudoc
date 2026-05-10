@@ -90,6 +90,79 @@ const CLINICAL_MODULE_GROUPS = [
       { id: "mortuary", name: "Mortuary" },
     ],
   },
+  // Capabilities shipped in the recent batches — surface them here so
+  // the corporate buyer sees the full surface area, not just the
+  // legacy hospital module set.
+  {
+    label: "Brand & public surfaces",
+    items: [
+      { id: "org-branding", name: "Org Branding (logo + theme)" },
+      { id: "mini-website", name: "Mini-Website at /c/<slug>" },
+      { id: "org-vacancies", name: "Vacancies + jobs board" },
+      { id: "watermarked-reports", name: "Watermarked Reports" },
+    ],
+  },
+  {
+    label: "Patient self-service",
+    items: [
+      { id: "care-plans", name: "Chronic-Condition Care Plans" },
+      { id: "symptom-log", name: "Symptom Log" },
+      { id: "vaccinations", name: "UIP Vaccination Tracker" },
+      { id: "adherence", name: "Medication Adherence" },
+      { id: "document-vault", name: "Document Vault" },
+      { id: "health-timeline", name: "Health Timeline" },
+      { id: "emergency-profile", name: "Emergency Profile" },
+      { id: "audit-log", name: "Patient Audit Log" },
+    ],
+  },
+  {
+    label: "Hospital ops add-ons",
+    items: [
+      { id: "surgery-video", name: "Surgery Video (Cloudflare/Mux)" },
+      { id: "biometric-emergency", name: "Biometric Emergency Unlock" },
+      { id: "consumables-billing", name: "Consumables Auto-Billing" },
+      { id: "vital-alerts", name: "Vital-Sign Alerts → Specialists" },
+      { id: "triage-palette", name: "Triage Color Palette" },
+      { id: "share-tokens", name: "Public Share-Link Tokens" },
+    ],
+  },
+  {
+    label: "AI metering & training",
+    items: [
+      { id: "ai-credit-pool", name: "AI Credit Pool (per-org)" },
+      { id: "ai-pricing-override", name: "AI Pricing Override" },
+      { id: "ml-training-queue", name: "ML Self-Learning Queue" },
+    ],
+  },
+  {
+    label: "Booking channels",
+    items: [
+      { id: "voice-booking-bot", name: "Voice IVR (Twilio/Exotel/Vonage)" },
+      { id: "whatsapp-booking-bot", name: "WhatsApp + SMS Booking Bot" },
+    ],
+  },
+  {
+    label: "Pharma supply chain",
+    items: [
+      { id: "pharma-catalogue", name: "Drug Catalogue + Regulatory Papers" },
+      { id: "pharma-partners", name: "Authorized Distributor Registry" },
+      { id: "pharma-promo", name: "Detailing / Promo Slots" },
+      { id: "anti-counterfeit", name: "Anti-Counterfeit Verification" },
+    ],
+  },
+  {
+    label: "Marketplace & education",
+    items: [
+      { id: "education-partner", name: "Education Partner Panel" },
+      { id: "referral-commissions", name: "Referral Commission Engine" },
+    ],
+  },
+  {
+    label: "Compliance & tax",
+    items: [
+      { id: "country-tax", name: "19-Country Tax Engine" },
+    ],
+  },
 ];
 
 const TOTAL_MODULES = CLINICAL_MODULE_GROUPS.reduce(
@@ -245,10 +318,28 @@ const differentiators = [
 ];
 
 const trustStats = [
-  { value: "12", label: "Integrated modules" },
-  { value: "HIPAA", label: "Compliance track" },
-  { value: "99.9%", label: "Target uptime" },
-  { value: "24×7", label: "Platform" },
+  { value: "100+", label: "Integrated modules" },
+  { value: "19", label: "Country tax rules" },
+  { value: "11", label: "UI languages" },
+  { value: "HIPAA / GDPR / DPDP", label: "Compliance" },
+];
+
+// Cross-cutting capabilities — apply to every org type. Shown as a
+// dedicated band below the module catalogue so corporate buyers see
+// the platform's "plumbing" alongside the per-module list.
+const PLATFORM_CAPABILITIES = [
+  { icon: "🔒", title: "Audit + watermarking", desc: "Every view of a sensitive record (lab, Rx, surgery video, invoice) logged with actor + IP + UA. Print/view UIs overlay patient ID + viewer IP + timestamp." },
+  { icon: "👁", title: "Biometric emergency unlock", desc: "WebAuthn fingerprint + face capture (browser-native, no USB SDK). HMAC hashes only. Consent-gated, audit-logged on every lookup." },
+  { icon: "🎥", title: "Live surgery video", desc: "Cloudflare Stream + Mux providers. RTMPS encoder ingest, signed HLS playback, expiring share-links for family / external observers." },
+  { icon: "📞", title: "Voice + WhatsApp + SMS booking", desc: "Twilio, Exotel, Vonage providers. Multi-turn IVR + WhatsApp Business intake walks patients through book / refill / reschedule / human handoff." },
+  { icon: "🤖", title: "Metered AI", desc: "DDx, scribe, OCR, triage, image analysis, voice transcript, Rx safety, summarize. Per-call rupee metering with auto-topup + per-org pricing override." },
+  { icon: "🧬", title: "ML self-learning", desc: "Doctor edits to AI output queue as training samples — opt-in, PII-scrubbed, GDPR/DPDP right-to-erasure built in." },
+  { icon: "💊", title: "Anti-counterfeit", desc: "Pharma registers drug + batch + regulatory papers; doctor / pharmacist scans → instant verdict. Public verify endpoint at /verify-medicine." },
+  { icon: "💰", title: "19-country tax engine", desc: "India GST split (CGST/SGST/IGST), UK/EU/GCC VAT, US sales tax. Healthcare-services-exempt where the law allows." },
+  { icon: "🌐", title: "Multi-region health-IDs", desc: "ABHA (India), NHS (UK), NPI (US). Records port across providers via the shared identity layer." },
+  { icon: "🏥", title: "Multi-tenant org hierarchy", desc: "Hospital / clinic / lab / pharmacy / pharma / insurer / education partner — same platform, role-scoped views, shared registry." },
+  { icon: "🎨", title: "Org branding cascade", desc: "Upload logo + theme + footer once. Cascades onto invoice PDFs, prescription pads, mini-site at /c/<slug>, and the white-label sub-app." },
+  { icon: "🌍", title: "11-language UI", desc: "English, Hindi, Tamil, Telugu, Marathi, Spanish, Mandarin, French, German, Portuguese, Arabic (RTL), Russian, Swahili, Hausa, Amharic." },
 ];
 
 export default function CorporatePage() {
@@ -590,6 +681,50 @@ export default function CorporatePage() {
           </div>
           <div className="mt-10">
             <EnterpriseCustomiser groups={CLINICAL_MODULE_GROUPS} />
+          </div>
+        </div>
+      </section>
+
+      {/* Platform capabilities — cross-cutting "plumbing" that applies
+          to every module above. Shown as a band below the customiser
+          so a corporate buyer sees the full picture: per-module
+          flexibility AND the cross-cutting infrastructure they get
+          regardless of which modules they pick. */}
+      <section className="bg-gradient-to-br from-indigo-50 via-white to-emerald-50 py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <span className="inline-block rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-indigo-700">
+              🛠 Platform plumbing
+            </span>
+            <h2 className="mt-3 text-3xl font-extrabold text-slate-900 sm:text-4xl">
+              Cross-cutting capabilities every module inherits
+            </h2>
+            <p className="mt-3 text-slate-600">
+              Audit logs, watermarking, biometric unlock, voice + WhatsApp booking, metered AI, anti-counterfeit
+              verification, country-aware tax — these aren&apos;t per-module add-ons. They&apos;re platform-wide
+              infrastructure that applies to whatever modules you pick.
+            </p>
+          </div>
+          <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {PLATFORM_CAPABILITIES.map((c) => (
+              <article key={c.title} className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition-shadow hover:shadow-md">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">{c.icon}</span>
+                  <div>
+                    <p className="text-base font-bold text-slate-900">{c.title}</p>
+                    <p className="mt-1 text-sm text-slate-600">{c.desc}</p>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="mt-12 text-center">
+            <Link href="/features" className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-600/30">
+              See the full feature catalogue
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
           </div>
         </div>
       </section>

@@ -93,9 +93,24 @@ export const AI_PRICING: Record<AiFeature, { perUnitRupees: number; unitLabel: s
   summarize:        { perUnitRupees: 4,  unitLabel: "1k tokens" },
 };
 
-export function quoteCost(feature: AiFeature, unitCount: number): number {
-  const p = AI_PRICING[feature];
-  return Math.max(1, Math.ceil(p.perUnitRupees * unitCount));
+/** Resolve effective per-unit cost for an owner. Per-org/-user
+ *  overrides win over the default table. Lazy import avoids a
+ *  circular dependency with /lib/ai-metering/pricing-overrides. */
+export function effectivePerUnit(feature: AiFeature, ownerKind?: "user" | "org", ownerId?: string): number {
+  const def = AI_PRICING[feature].perUnitRupees;
+  if (!ownerKind || !ownerId) return def;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require("./pricing-overrides") as typeof import("./pricing-overrides");
+    const o = mod.getOverride(ownerKind, ownerId, feature);
+    if (o) return o.perUnitRupees;
+  } catch { /* overrides module not loaded yet — fall through */ }
+  return def;
+}
+
+export function quoteCost(feature: AiFeature, unitCount: number, ownerKind?: "user" | "org", ownerId?: string): number {
+  const per = effectivePerUnit(feature, ownerKind, ownerId);
+  return Math.max(1, Math.ceil(per * unitCount));
 }
 
 function accountKey(ownerKind: "user" | "org", ownerId: string): string {
@@ -144,7 +159,7 @@ export function debitAiCredit(input: DebitInput): DebitResult {
     if (dup) return { ok: true, entry: dup, account: getAccount(input.ownerKind, input.ownerId) };
   }
   const a = getAccount(input.ownerKind, input.ownerId);
-  const cost = quoteCost(input.feature, input.unitCount);
+  const cost = quoteCost(input.feature, input.unitCount, input.ownerKind, input.ownerId);
   if (a.balanceRupees < cost) {
     return { ok: false, error: "insufficient_credit", balanceRupees: a.balanceRupees, quotedRupees: cost };
   }

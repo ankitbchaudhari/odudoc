@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
   if (action === "quote") {
     if (!FEATURES.includes(body.feature)) return NextResponse.json({ error: "invalid_feature" }, { status: 400 });
     return NextResponse.json({
-      quotedRupees: quoteCost(body.feature, Math.max(1, Number(body.unitCount) || 1)),
+      quotedRupees: quoteCost(body.feature, Math.max(1, Number(body.unitCount) || 1), ownerKind, ownerId),
     });
   }
 

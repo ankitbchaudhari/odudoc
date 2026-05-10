@@ -28,8 +28,16 @@ export interface TwilioConfig {
 export function getConfig(): TwilioConfig | null {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const fromNumber = process.env.TWILIO_FROM_NUMBER;
-  const publicBaseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.PUBLIC_BASE_URL;
+  // Accept either alias — Vercel users commonly provision
+  // TWILIO_PHONE_NUMBER (the sender used by Twilio Verify SMS),
+  // and we don't want to force a duplicate env var.
+  const fromNumber = process.env.TWILIO_FROM_NUMBER || process.env.TWILIO_PHONE_NUMBER;
+  // Fall back to NEXTAUTH_URL when neither dedicated var is set —
+  // it already points at the public origin in any normal NextAuth deploy.
+  const publicBaseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.PUBLIC_BASE_URL ||
+    process.env.NEXTAUTH_URL;
   if (!accountSid || !authToken || !fromNumber || !publicBaseUrl) return null;
   return { accountSid, authToken, fromNumber, publicBaseUrl };
 }

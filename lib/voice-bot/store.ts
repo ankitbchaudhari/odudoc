@@ -53,10 +53,15 @@ const { hydrate, flush, tombstone } = bindPersistentArray<CallSession>(
 await hydrate();
 
 export function isConfigured(): boolean {
-  // Twilio is the first real provider — it's configured if its own
-  // env trio is present, regardless of the generic VOICE_BOT_*
-  // fallback. Stub mode requires the explicit fallback.
-  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_FROM_NUMBER) return true;
+  // Twilio is the first real provider — configured if SID/token +
+  // a sender number (under either alias) are present.
+  if (
+    process.env.TWILIO_ACCOUNT_SID &&
+    process.env.TWILIO_AUTH_TOKEN &&
+    (process.env.TWILIO_FROM_NUMBER || process.env.TWILIO_PHONE_NUMBER)
+  ) {
+    return true;
+  }
   return !!(process.env.VOICE_BOT_PROVIDER && process.env.VOICE_BOT_API_KEY);
 }
 

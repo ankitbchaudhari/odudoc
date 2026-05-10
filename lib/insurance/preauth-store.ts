@@ -12,6 +12,7 @@
 // approved pre-auth (lib/insurance/claims-store.ts).
 
 import { bindPersistentArray } from "../persistent-array";
+import { pushNotification } from "../notifications/store";
 
 export type PreauthStatus =
   | "draft"             // hospital still drafting
@@ -172,6 +173,17 @@ export function submitPreauth(preauthId: string): PreauthRequest | null {
   p.submittedAt = new Date().toISOString();
   p.updatedAt = p.submittedAt;
   flush();
+  if (p.patientUserId) {
+    pushNotification({
+      userId: p.patientUserId,
+      kind: "consent_request",
+      severity: "info",
+      title: "Cashless preauth submitted",
+      body: `${p.procedureName} — sent to TPA. Decision typically within 4 hours.`,
+      link: "/dashboard/insurance",
+      reference: `preauth:${p.id}:submitted`,
+    });
+  }
   return p;
 }
 
@@ -192,6 +204,22 @@ export function decidePreauth(
   p.decidedAt = new Date().toISOString();
   p.updatedAt = p.decidedAt;
   flush();
+  if (p.patientUserId) {
+    const sev = decision === "approved" ? "success"
+              : decision === "rejected" ? "critical" : "warn";
+    const title = decision === "approved" ? `Cashless approved: ₹${(approvedAmountRupees || 0).toLocaleString("en-IN")}`
+                : decision === "rejected" ? "Cashless preauth rejected"
+                : "Cashless approved with query";
+    pushNotification({
+      userId: p.patientUserId,
+      kind: "consent_request",
+      severity: sev,
+      title,
+      body: `${p.procedureName}${tpaNote ? ` — ${tpaNote}` : ""}`,
+      link: "/dashboard/insurance",
+      reference: `preauth:${p.id}:${decision}`,
+    });
+  }
   return p;
 }
 

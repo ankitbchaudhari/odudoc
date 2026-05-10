@@ -55,14 +55,22 @@ export default function WalletPage() {
   const topup = async () => {
     setBusy(true);
     try {
-      const r = await fetch("/api/wallet", {
+      // Try the gateway-aware endpoint first; falls back to demo credit
+      // when Cashfree creds aren't configured.
+      const r = await fetch("/api/wallet/topup-create", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "topup", amountRupees: amount }),
+        body: JSON.stringify({ amountRupees: amount }),
       });
       if (r.ok) {
         const d = await r.json();
-        const bonus = d.bonus?.amountRupees || 0;
-        setToast({ kind: "ok", text: bonus > 0 ? `Topped up ₹${amount}, plus ₹${bonus} bonus credited.` : `Topped up ₹${amount}.` });
+        if (d.mode === "live" && d.paymentLink) {
+          // Hand off to Cashfree's hosted checkout. The webhook
+          // credits the wallet on payment.success.
+          window.location.href = d.paymentLink;
+          return;
+        }
+        // sandbox path — wallet credited inline
+        setToast({ kind: "ok", text: `Topped up ₹${amount} (sandbox).` });
         setShowTopup(false);
         await load();
       } else {

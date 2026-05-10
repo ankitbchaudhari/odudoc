@@ -8,6 +8,7 @@ import { useLanguage } from "@/lib/language-context";
 import GlobalSearch from "@/components/GlobalSearch";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Logo from "@/components/Logo";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -135,6 +136,8 @@ export default function Navbar() {
           {status === "loading" ? (
             <div className="h-9 w-24 animate-pulse rounded-lg bg-gray-100" />
           ) : session ? (
+            <>
+            <NotificationBell />
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -206,6 +209,7 @@ export default function Navbar() {
                 </div>
               )}
             </div>
+            </>
           ) : (
             <>
               <Link

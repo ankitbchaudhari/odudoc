@@ -138,11 +138,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // Programmatic SEO — specialty × city matrix (long-tail).
+  // We emit BOTH URL shapes: the legacy /specialty/[slug]/in/[city]
+  // form and the newer /doctors/[city]/[specialty] form. Search
+  // engines pick whichever ranks better; canonical tags on each
+  // page point at the chosen shape going forward.
   const matrixEntries: MetadataRoute.Sitemap = [];
   for (const s of SPECIALTIES) {
     for (const c of CITIES) {
       matrixEntries.push({
         url: `${SITE_URL}/specialty/${s.slug}/in/${c.slug}`,
+        lastModified: now,
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      });
+      matrixEntries.push({
+        url: `${SITE_URL}/doctors/${c.slug}/${s.slug}`,
         lastModified: now,
         changeFrequency: "weekly" as const,
         priority: 0.7,

@@ -9,6 +9,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignatureDetailed, isWebhookReplay, markWebhookProcessed } from "@/lib/cashfree";
 import { markPaid as markConsultationPaid } from "@/lib/consultations-store";
+import { applyTopUp } from "@/lib/wallet/store";
+import { pushNotification } from "@/lib/notifications/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
@@ -105,6 +107,36 @@ export async function POST(req: NextRequest) {
           clinicId: tags.clinicId,
           amount: payment?.payment_amount,
         });
+      } else if (type === "wallet_topup") {
+        // Patient funded their OduDoc wallet via Cashfree. Credit the
+        // wallet + push an in-app notification.
+        const userId = tags.userId;
+        const amount = Number(tags.amount || payment?.payment_amount || 0);
+        if (userId && amount > 0) {
+          const r = applyTopUp({
+            userId,
+            amountRupees: Math.floor(amount),
+            providerSid: String(payment?.cf_payment_id ?? ""),
+            note: `Cashfree top-up ${orderId}`,
+          });
+          if (r.ok && r.wallet) {
+            pushNotification({
+              userId,
+              kind: "wallet_topup",
+              severity: "success",
+              title: `₹${amount} added to wallet`,
+              body: r.bonus ? `Plus ₹${r.bonus.amountRupees} bonus credited. New balance ₹${r.wallet.balanceRupees + r.wallet.bonusBalanceRupees}.`
+                            : `New balance ₹${r.wallet.balanceRupees + r.wallet.bonusBalanceRupees}.`,
+              link: "/dashboard/wallet",
+              reference: orderId,
+            });
+            log.info("cashfree.webhook.wallet_topup_credited", { orderId, userId, amount });
+          } else {
+            log.warn("cashfree.webhook.wallet_topup_rejected", { orderId, error: r.error });
+          }
+        } else {
+          log.warn("cashfree.webhook.wallet_topup_missing_tags", { orderId, hasUserId: Boolean(userId), amount });
+        }
       } else {
         log.info("cashfree.webhook.unknown_type", { orderId, type });
       }

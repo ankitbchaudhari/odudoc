@@ -6,12 +6,26 @@
 // Everyone with a temporary password MUST set a new one before the
 // TTL elapses — once it does, lib/auth.ts refuses the sign-in.
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+// Next 14 requires useSearchParams() consumers to be wrapped in
+// <Suspense> at build time — without it, `next build` fails the
+// route with a "useSearchParams() should be wrapped in a suspense
+// boundary" error during the static-prerender pass. We push the
+// hook into an inner component and let the page export render the
+// shell + Suspense gate around it.
 export default function ChangePasswordPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-50" />}>
+      <ChangePasswordPageInner />
+    </Suspense>
+  );
+}
+
+function ChangePasswordPageInner() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();

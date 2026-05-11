@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type {
   StaffMember,
@@ -131,7 +131,20 @@ const EMPTY: StaffForm = {
   moduleAccess: STAFF_ROLE_DEFAULT_ACCESS["doctor"] ?? [],
 };
 
+// Next 14 fails `next build` when a page uses useSearchParams()
+// without being wrapped in Suspense — Vercel surfaces this as
+// "should be wrapped in a suspense boundary" during the static
+// prerender. Lift the page body into an inner component and gate
+// it behind Suspense at the export.
 export default function StaffPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-slate-500">Loading staff…</div>}>
+      <StaffPageInner />
+    </Suspense>
+  );
+}
+
+function StaffPageInner() {
   const [list, setList] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);

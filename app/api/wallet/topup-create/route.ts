@@ -15,11 +15,21 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { findUserById } from "@/lib/users-store";
 import { createCheckoutSession, isCashfreeConfigured } from "@/lib/cashfree";
+import { createStripeWalletCheckout, isStripeConfigured } from "@/lib/stripe-wallet";
 import { applyTopUp, getWallet } from "@/lib/wallet/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+/** Pick the gateway based on the patient's country. India → Cashfree
+ *  (UPI/RuPay first-class). Everywhere else → Stripe (global cards +
+ *  Apple Pay / Google Pay). Returns the gateway *id* — the route
+ *  branches on configuration availability after. */
+function pickGateway(country: string | null | undefined): "cashfree" | "stripe" {
+  const c = (country || "IN").toUpperCase();
+  return c === "IN" ? "cashfree" : "stripe";
+}
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -33,27 +43,66 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid_amount" }, { status: 400 });
   }
 
-  // Sandbox path — when Cashfree creds are missing, credit the wallet
-  // directly so the demo still works.
-  if (!isCashfreeConfigured()) {
+  // Route by patient country: India → Cashfree, everywhere else →
+  // Stripe. Both code paths return the same response shape so the
+  // wallet UI doesn't have to branch on gateway — it just follows
+  // `paymentLink` to the hosted checkout.
+  const gateway = pickGateway(user.country);
+  const orderId = `wt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const origin = `${req.headers.get("x-forwarded-proto") || "https"}://${req.headers.get("x-forwarded-host") || req.headers.get("host")}`;
+
+  // Sandbox path — when the chosen gateway's keys are missing,
+  // credit the wallet directly so the demo still works.
+  const gatewayConfigured = gateway === "cashfree" ? isCashfreeConfigured() : isStripeConfigured();
+  if (!gatewayConfigured) {
     const r = applyTopUp({
       userId, amountRupees: amount,
-      note: "sandbox top-up (Cashfree not configured)",
+      note: `sandbox top-up (${gateway} not configured)`,
     });
     if (!r.ok) return NextResponse.json({ error: r.error }, { status: 400 });
     try { await awaitAllFlushesStrict(); } catch { /* best-effort */ }
     return NextResponse.json({
       mode: "sandbox",
+      gateway,
       wallet: r.wallet,
       topup: r.topup,
       bonus: r.bonus,
     });
   }
 
-  // Real Cashfree path — create order with wallet_topup tag.
-  const orderId = `wt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const origin = `${req.headers.get("x-forwarded-proto") || "https"}://${req.headers.get("x-forwarded-host") || req.headers.get("host")}`;
   try {
+    if (gateway === "stripe") {
+      // Stripe Checkout — webhook credits wallet on
+      // checkout.session.completed with metadata.type=wallet_topup.
+      const order = await createStripeWalletCheckout({
+        orderId,
+        amount,
+        country: user.country,
+        customerName: user.name,
+        customerEmail: user.email,
+        customerPhone: user.phone,
+        customerId: userId,
+        description: `OduDoc Wallet top-up`,
+        successUrl: `${origin}/dashboard/wallet?topup=${orderId}&session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${origin}/dashboard/wallet?topup_cancelled=${orderId}`,
+        metadata: {
+          type: "wallet_topup",
+          userId,
+          amount: String(amount),
+          orderId,
+        },
+      });
+      return NextResponse.json({
+        mode: "live",
+        gateway: "stripe",
+        orderId,
+        paymentLink: order.paymentLink,
+        sessionId: order.sessionId,
+        wallet: getWallet(userId),
+      });
+    }
+
+    // Cashfree path — create order with wallet_topup tag.
     const order = await createCheckoutSession({
       orderId,
       amount,
@@ -73,6 +122,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({
       mode: "live",
+      gateway: "cashfree",
       orderId,
       paymentSessionId: order.paymentSessionId,
       paymentLink: order.paymentLink,
@@ -81,32 +131,43 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     const msg = (err as Error).message || "";
-    const env = (process.env.CASHFREE_ENV || "PROD").toUpperCase();
+    const env = gateway === "cashfree"
+      ? (process.env.CASHFREE_ENV || "PROD").toUpperCase()
+      : (process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_") ? "TEST" : "LIVE");
+    const gwName = gateway === "cashfree" ? "Cashfree" : "Stripe";
 
-    // Auto-fallback to sandbox when Cashfree creds are present but
-    // wrong (401) — turns a misconfigured Cashfree into a working
-    // demo top-up instead of a hard error. Opt-out by setting
-    // CASHFREE_STRICT=1 in production. Network/timeout failures are
-    // NOT covered here — those are likely transient outages and we
-    // shouldn't silently mint wallet credit for them.
-    const isAuthFailed = msg.includes("401") || /authentication.?failed|invalid.?credential/i.test(msg);
-    const strict = process.env.CASHFREE_STRICT === "1";
+    // Auto-fallback to sandbox when the gateway is present but
+    // rejects our keys (Cashfree 401 / Stripe Invalid API Key).
+    // Turns a misconfigured gateway into a working demo top-up
+    // instead of a hard error. Opt-out by setting the gateway's
+    // STRICT env var. Network / timeout failures are NOT covered —
+    // those are likely transient outages and we shouldn't silently
+    // mint wallet credit for them.
+    const isAuthFailed = gateway === "cashfree"
+      ? (msg.includes("401") || /authentication.?failed|invalid.?credential/i.test(msg))
+      : /invalid.?api.?key|no such api key|authentication/i.test(msg);
+    const strict = gateway === "cashfree"
+      ? process.env.CASHFREE_STRICT === "1"
+      : process.env.STRIPE_STRICT === "1";
     if (isAuthFailed && !strict) {
       const r = applyTopUp({
         userId, amountRupees: amount,
-        note: "sandbox top-up (Cashfree credentials invalid — see diagnostic)",
+        note: `sandbox top-up (${gateway} credentials invalid — see diagnostic)`,
       });
       if (r.ok) {
         try { await awaitAllFlushesStrict(); } catch { /* best-effort */ }
         return NextResponse.json({
           mode: "sandbox",
+          gateway,
           wallet: r.wallet,
           topup: r.topup,
           bonus: r.bonus,
           // Surface the underlying problem so ops see it in the
           // browser console without the patient seeing a scary
           // failure toast — the demo flow keeps moving.
-          diagnostic: `Cashfree 401 against ${env}. Fell back to sandbox top-up. Fix: ensure CASHFREE_APP_ID + CASHFREE_SECRET_KEY are valid and CASHFREE_ENV matches their type (SANDBOX vs PROD). Set CASHFREE_STRICT=1 to disable this fallback.`,
+          diagnostic: gateway === "cashfree"
+            ? `Cashfree 401 against ${env}. Fell back to sandbox top-up. Fix: ensure CASHFREE_APP_ID + CASHFREE_SECRET_KEY are valid and CASHFREE_ENV matches their type (SANDBOX vs PROD). Set CASHFREE_STRICT=1 to disable this fallback.`
+            : `Stripe rejected the API key (${env}). Fell back to sandbox top-up. Fix: ensure STRIPE_SECRET_KEY is valid for your account. Set STRIPE_STRICT=1 to disable this fallback.`,
         });
       }
       // applyTopUp failed too — fall through to the hard 502 below.
@@ -116,19 +177,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         error: "payment_gateway_auth_failed",
         message: "Payment gateway rejected our credentials. Please try again in a few minutes — our team has been notified.",
-        diagnostic: `Cashfree returned 401 against ${env} endpoint. If your CASHFREE_APP_ID is a SANDBOX key, set CASHFREE_ENV=SANDBOX (or swap to PROD keys).`,
+        diagnostic: gateway === "cashfree"
+          ? `Cashfree returned 401 against ${env} endpoint. If your CASHFREE_APP_ID is a SANDBOX key, set CASHFREE_ENV=SANDBOX (or swap to PROD keys).`
+          : `Stripe rejected STRIPE_SECRET_KEY (${env}). Check the key against the right account / mode.`,
       }, { status: 502 });
     }
 
-    // Upstream timeout — we cap the Cashfree fetch at 8s in
-    // lib/cashfree.ts so we can return a friendly JSON body before
-    // Vercel's edge times out at 10s and replaces our response with
-    // a bare 502 (which the UI shows as "Top-up failed (502).").
+    // Upstream timeout — both helpers cap their network call at 8s
+    // so we can return a friendly JSON body before Vercel's edge
+    // times out at 10s and replaces our response with a bare 502.
     if (/timed out|abort/i.test(msg)) {
       return NextResponse.json({
         error: "payment_gateway_timeout",
         message: "Payment gateway is slow right now. Please try again in a moment.",
-        diagnostic: `Cashfree request exceeded 8s timeout (env=${env}).`,
+        diagnostic: `${gwName} request exceeded 8s timeout (env=${env}).`,
       }, { status: 502 });
     }
 
@@ -137,7 +199,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         error: "payment_gateway_unreachable",
         message: "Couldn't reach the payment gateway. Please try again in a moment.",
-        diagnostic: `Network error talking to Cashfree (env=${env}): ${msg}`,
+        diagnostic: `Network error talking to ${gwName} (env=${env}): ${msg}`,
       }, { status: 502 });
     }
 

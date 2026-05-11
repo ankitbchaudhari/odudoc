@@ -3,6 +3,7 @@ import type Stripe from 'stripe';
 import { stripe } from '@/lib/stripe';
 import { updateBookingStatus } from '@/lib/bookings-store';
 import { upsertSubscription, getSubscriptionByStripeId, getSubscriptionByCustomerId, type PlanTier, type SubStatus } from '@/lib/hospital/subscription-store';
+import { applyTopUp } from '@/lib/wallet/store';
 import { log } from '@/lib/log';
 
 export const runtime = "nodejs";
@@ -53,6 +54,36 @@ export async function POST(request: NextRequest) {
       }
       case 'checkout.session.completed': {
         const s = event.data.object as Stripe.Checkout.Session;
+
+        // Wallet top-up branch — minted by /api/wallet/topup-create
+        // for non-India patients (India uses Cashfree). Credits the
+        // wallet via the same applyTopUp() the Cashfree webhook
+        // calls so both gateways stay symmetric.
+        if (s.metadata?.type === 'wallet_topup') {
+          const userId = s.metadata.userId;
+          const amount = Number(s.metadata.amount || '0');
+          const orderId = s.metadata.orderId || s.id;
+          if (userId && Number.isFinite(amount) && amount > 0) {
+            const r = applyTopUp({
+              userId,
+              amountRupees: amount,
+              note: `Stripe wallet top-up · session ${s.id}`,
+            });
+            if (r.ok) {
+              log.info('stripe.webhook.wallet_topup_credited', { orderId, userId, amount });
+            } else {
+              log.warn('stripe.webhook.wallet_topup_rejected', { orderId, error: r.error });
+            }
+          } else {
+            log.warn('stripe.webhook.wallet_topup_missing_meta', {
+              sessionId: s.id,
+              hasUserId: Boolean(userId),
+              amount,
+            });
+          }
+          break;
+        }
+
         const orgId = s.metadata?.organizationId;
         if (orgId && s.subscription) {
           const subId = typeof s.subscription === 'string' ? s.subscription : s.subscription.id;

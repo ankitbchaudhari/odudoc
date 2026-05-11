@@ -16,6 +16,7 @@ import {
 import {
   appendFragment, getCall, startCall, endCall,
 } from "@/lib/voice-bot/store";
+import { sendFollowupSms } from "@/lib/voice-bot/followup";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -83,6 +84,11 @@ export async function POST(req: NextRequest) {
 
   if (reply.hangup) {
     endCall({ callId: session.id, status: "completed", outcome: { intent: intent.intent, confidence: intent.confidence, finalSpeech: speech } });
+    // Fire follow-up SMS with the right deep link for the intent.
+    // Best-effort — we don't await it; the call has already hung up.
+    if (fromPhone) {
+      sendFollowupSms({ intent: intent.intent, phone: fromPhone }).catch(() => {});
+    }
   }
 
   return twimlResponse(voiceTwimlForReply(reply.reply, session.id, cfg.publicBaseUrl, { hangup: reply.hangup, lang: params.Language }));

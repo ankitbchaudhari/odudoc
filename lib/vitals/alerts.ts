@@ -14,6 +14,8 @@ import { classify, VitalReading, VITAL_LABEL } from "./store";
 import { findActiveAdmissionForPatient } from "../hospital/admissions-store";
 import { findUserByEmail } from "../users-store";
 import { pushNotification } from "../notifications/store";
+import { notifyWithFallback } from "../notifications/notify";
+import { log } from "../log";
 
 export function maybeAlertOnReading(reading: VitalReading): { alertedDoctorEmails: string[] } {
   const sev = classify(reading);
@@ -46,6 +48,36 @@ export function maybeAlertOnReading(reading: VitalReading): { alertedDoctorEmail
       link: `/admin/admissions`, // ops console for now; ward-board page comes next batch
       reference: `vital_alert:${reading.id}:${u.id}`,
     });
+
+    // Spec §7.2 — fan out to WhatsApp + SMS + email so the alert
+    // reaches the assigned doctor even if they're off the admin
+    // console. Fire-and-forget — we don't block the vital write on
+    // notification delivery, but we do log success/failure.
+    const fullBody = `🚨 ${title}\n${body}\nOpen OduDoc to acknowledge.`;
+    if (u.phone) {
+      notifyWithFallback(["whatsapp", "sms"], {
+        to: u.phone,
+        body: fullBody,
+        category: "alert",
+      })
+        .then((r) => {
+          if (!r.ok) log.warn("vital_alert.notify_failed", { email, error: r.error, channel: r.channel });
+        })
+        .catch((e) => log.error("vital_alert.notify_threw", { email, error: String(e) }));
+    }
+    if (email) {
+      notifyWithFallback(["email"], {
+        to: email,
+        subject: title,
+        body: fullBody,
+        emailFrom: "notifications",
+        category: "alert",
+      })
+        .then((r) => {
+          if (!r.ok) log.warn("vital_alert.email_failed", { email, error: r.error });
+        })
+        .catch((e) => log.error("vital_alert.email_threw", { email, error: String(e) }));
+    }
   }
   return { alertedDoctorEmails: doctors };
 }

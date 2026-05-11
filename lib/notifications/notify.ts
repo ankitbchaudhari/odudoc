@@ -128,6 +128,50 @@ export async function notifyWithFallback(
   return lastErr ?? { ok: false, channel: channels[0], error: "no_channel_configured" };
 }
 
+/** Preference-aware send: looks up the recipient's stored channel order
+ *  and category opt-outs, then delegates to notifyWithFallback. Returns
+ *  { ok: true, skipped: true } when the user has opted out of the
+ *  category (or set Do-Not-Disturb on non-override categories).
+ *
+ *  `to` is resolved per channel — pass an object so the dispatcher can
+ *  pick the right address. For SMS/WhatsApp use phone; for email use
+ *  email. Either may be undefined; channels with missing addresses are
+ *  skipped silently. */
+export async function notifyUser(opts: {
+  userId: string;
+  phone?: string;
+  email?: string;
+  subject?: string;
+  body: string;
+  html?: string;
+  emailFrom?: import("@/lib/email").Sender;
+  category: import("./preferences-store").NotifyCategory;
+}): Promise<NotifyResult> {
+  const { resolveChannels } = await import("./preferences-store");
+  const order = resolveChannels(opts.userId, opts.category);
+  if (!order) {
+    return { ok: true, channel: "email", skipped: true, error: "opted_out" };
+  }
+  let lastErr: NotifyResult | undefined;
+  for (const ch of order) {
+    if (!isChannelConfigured(ch)) continue;
+    const addr = ch === "email" ? opts.email : opts.phone;
+    if (!addr) continue;
+    const r = await notify({
+      channel: ch,
+      to: addr,
+      subject: opts.subject,
+      body: opts.body,
+      html: opts.html,
+      emailFrom: opts.emailFrom,
+      category: opts.category,
+    });
+    if (r.ok && !r.skipped) return r;
+    lastErr = r;
+  }
+  return lastErr ?? { ok: false, channel: order[0], error: "no_channel_available" };
+}
+
 function defaultEmailHtml(subject: string, body: string): string {
   const escaped = body
     .replace(/&/g, "&amp;")

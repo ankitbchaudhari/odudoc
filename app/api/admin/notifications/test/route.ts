@@ -4,8 +4,7 @@
 // POST { channel, to, subject?, body }
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getTenantContext } from "@/lib/tenant";
 import { notify, isChannelConfigured, type NotifyChannel } from "@/lib/notifications/notify";
 
 export const runtime = "nodejs";
@@ -24,9 +23,12 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || (role !== "admin" && role !== "owner")) {
+  const ctx = await getTenantContext();
+  // Allow super-admins and any tenant-admin (admin or owner role inside
+  // their active org). Other authenticated users are rejected.
+  const allowed =
+    ctx.isSuperAdmin || ctx.role === "admin" || ctx.role === "owner";
+  if (!ctx.email || !allowed) {
     return NextResponse.json({ error: "unauthorized" }, { status: 403 });
   }
   const body = await req.json().catch(() => ({}));

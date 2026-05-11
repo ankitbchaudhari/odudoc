@@ -7,6 +7,7 @@
 
 import { useState } from "react";
 import RxSafetyPanel, { type CheckResult } from "@/components/RxSafetyPanel";
+import { PageHero } from "@/components/admin/PageShell";
 
 export default function RxSafetyBenchPage() {
   const [drugInput, setDrugInput] = useState("warfarin\nibuprofen\nazithromycin");
@@ -42,13 +43,14 @@ export default function RxSafetyBenchPage() {
   };
 
   return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Rx Safety Bench</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Paste a proposed prescription + patient context. The engine checks for drug-drug interactions, allergy + cross-reactivity, pregnancy contraindications, renal/age-band advisories, and duplicate entries — in real time as you type.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="🛡️"
+        eyebrow="Drug-Drug · Allergy · Renal"
+        title="Rx Safety Bench"
+        subtitle="Paste a proposed prescription + patient context. The engine checks for drug-drug interactions, allergy + cross-reactivity, pregnancy contraindications, renal/age-band advisories, and duplicate entries — in real time as you type."
+        tone="rose"
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-4 rounded-xl bg-white p-6 shadow-sm">

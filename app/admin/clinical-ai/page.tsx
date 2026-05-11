@@ -8,6 +8,7 @@
 import { useState } from "react";
 import DifferentialPanel from "@/components/DifferentialPanel";
 import Icd10Picker from "@/components/Icd10Picker";
+import { PageHero } from "@/components/admin/PageShell";
 
 export default function ClinicalAIBenchPage() {
   // ── Differential ─────────────────────────────────────────────
@@ -30,13 +31,14 @@ export default function ClinicalAIBenchPage() {
   const [pickedCodes, setPickedCodes] = useState<Array<{ code: string; title: string }>>([]);
 
   return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Clinical AI Bench</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Two AI assists for the encounter form: a differential-diagnosis copilot that turns chief complaint + vitals into a ranked DDx with red flags, and an ICD-10 auto-coder that suggests codes from free-text diagnoses. Both are pure rule engines — transparent, auditable, no LLM dependency.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="🧠"
+        eyebrow="DDx · ICD-10"
+        title="Clinical AI Bench"
+        subtitle="Two AI assists for the encounter form: a differential-diagnosis copilot that turns chief complaint + vitals into a ranked DDx with red flags, and an ICD-10 auto-coder that suggests codes from free-text diagnoses. Both are pure rule engines — transparent, auditable, no LLM dependency."
+        tone="emerald"
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* ── DIFFERENTIAL ──────────────────────────────────── */}

@@ -5,6 +5,7 @@
 // plug into the encounter form's "Generate discharge summary" button.
 
 import { useEffect, useMemo, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 interface CodedDx { text: string; icd10?: string; icd10Title?: string }
 
@@ -137,13 +138,14 @@ export default function DischargeSummaryBenchPage() {
   };
 
   return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Auto-coded Discharge Summary</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Edit the encounter on the left; the discharge summary on the right re-renders in real time with ICD-10 codes auto-attached, medications priority-sorted, and length-of-stay computed. What consultants spend 15–30 minutes per discharge writing by hand is now a 30-second review.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="📤"
+        eyebrow="AI Auto-coding"
+        title="Auto-coded Discharge Summary"
+        subtitle="Edit the encounter on the left; the discharge summary on the right re-renders in real time with ICD-10 codes auto-attached, medications priority-sorted, and length-of-stay computed. What consultants spend 15–30 minutes per discharge writing by hand is now a 30-second review."
+        tone="indigo"
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-3 rounded-xl bg-white p-5 shadow-sm">

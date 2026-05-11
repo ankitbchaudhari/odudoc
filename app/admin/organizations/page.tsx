@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 type OrgPlan = "trial" | "starter" | "clinic" | "hospital" | "enterprise";
 type OrgStatus = "active" | "suspended" | "cancelled";
@@ -844,26 +845,22 @@ export default function AdminOrganizations() {
           </button>
         </div>
       )}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Organizations</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            {orgs.length} tenants · {orgs.filter((o) => o.status === "active").length} active
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            resetForm();
-            setSaveError(null);
-            setShowForm(!showForm);
+      <div className="mb-6">
+        <PageHero
+          icon="🏢"
+          eyebrow="Tenants"
+          title="Organizations"
+          subtitle={`${orgs.length} tenants · ${orgs.filter((o) => o.status === "active").length} active`}
+          tone="indigo"
+          primaryAction={{
+            label: showForm ? "Cancel" : "+ Add Organization",
+            onClick: () => {
+              resetForm();
+              setSaveError(null);
+              setShowForm(!showForm);
+            },
           }}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Add Organization
-        </button>
+        />
       </div>
 
       {showForm && (

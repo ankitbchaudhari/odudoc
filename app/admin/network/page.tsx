@@ -11,6 +11,7 @@
 //   - Analytics    cross-org KPIs + per-partner conversion + payouts
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 type Tab = "inbox" | "transfers" | "connections" | "doctors" | "beds" | "analytics";
 
@@ -373,11 +374,14 @@ export default function AdminNetworkPage() {
         </div>
       )}
 
-      <div className="mb-4">
-        <h2 className="text-2xl font-bold text-gray-900">Network & Transfers</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Hospitals on OduDoc work as one network — discover doctors, check live bed availability, transfer patients & records, and settle referral payouts.
-        </p>
+      <div className="mb-6">
+        <PageHero
+          icon="🔗"
+          eyebrow="Inter-Hospital"
+          title="Network & Transfers"
+          subtitle="Hospitals on OduDoc work as one network — discover doctors, check live bed availability, transfer patients & records, and settle referral payouts."
+          tone="violet"
+        />
       </div>
 
       {/* Tab strip */}

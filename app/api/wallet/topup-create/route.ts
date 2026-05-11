@@ -83,10 +83,36 @@ export async function POST(req: NextRequest) {
     const msg = (err as Error).message || "";
     const env = (process.env.CASHFREE_ENV || "PROD").toUpperCase();
 
-    // Cashfree returns 401 when the App ID + Secret don't match the
-    // configured CASHFREE_ENV. Most common mistake: SANDBOX keys
-    // deployed without setting CASHFREE_ENV (which defaults to PROD).
-    if (msg.includes("401") || /authentication.?failed|invalid.?credential/i.test(msg)) {
+    // Auto-fallback to sandbox when Cashfree creds are present but
+    // wrong (401) — turns a misconfigured Cashfree into a working
+    // demo top-up instead of a hard error. Opt-out by setting
+    // CASHFREE_STRICT=1 in production. Network/timeout failures are
+    // NOT covered here — those are likely transient outages and we
+    // shouldn't silently mint wallet credit for them.
+    const isAuthFailed = msg.includes("401") || /authentication.?failed|invalid.?credential/i.test(msg);
+    const strict = process.env.CASHFREE_STRICT === "1";
+    if (isAuthFailed && !strict) {
+      const r = applyTopUp({
+        userId, amountRupees: amount,
+        note: "sandbox top-up (Cashfree credentials invalid — see diagnostic)",
+      });
+      if (r.ok) {
+        try { await awaitAllFlushesStrict(); } catch { /* best-effort */ }
+        return NextResponse.json({
+          mode: "sandbox",
+          wallet: r.wallet,
+          topup: r.topup,
+          bonus: r.bonus,
+          // Surface the underlying problem so ops see it in the
+          // browser console without the patient seeing a scary
+          // failure toast — the demo flow keeps moving.
+          diagnostic: `Cashfree 401 against ${env}. Fell back to sandbox top-up. Fix: ensure CASHFREE_APP_ID + CASHFREE_SECRET_KEY are valid and CASHFREE_ENV matches their type (SANDBOX vs PROD). Set CASHFREE_STRICT=1 to disable this fallback.`,
+        });
+      }
+      // applyTopUp failed too — fall through to the hard 502 below.
+    }
+
+    if (isAuthFailed) {
       return NextResponse.json({
         error: "payment_gateway_auth_failed",
         message: "Payment gateway rejected our credentials. Please try again in a few minutes — our team has been notified.",

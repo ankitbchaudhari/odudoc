@@ -53,6 +53,12 @@ export default function BlogPostPage() {
 
   const post = blogPosts.find((p) => p.slug === slug);
 
+  // Track whether the hero cover image loaded successfully. When the
+  // URL is dead (or the upload was wiped) we want to fall back cleanly
+  // to the gradient instead of rendering the browser's "broken image
+  // alt text" overlay across the hero — see the conjunctivitis post
+  // bug report.
+  const [coverImgOk, setCoverImgOk] = useState(true);
   const [commentName, setCommentName] = useState("");
   const [commentEmail, setCommentEmail] = useState("");
   const [commentText, setCommentText] = useState("");
@@ -137,13 +143,19 @@ export default function BlogPostPage() {
       )}
       {/* ── Hero / Cover ── */}
       <div className={`relative overflow-hidden bg-gradient-to-br ${gradient} py-16 text-white`}>
-        {post.imageUrl && (
+        {post.imageUrl && coverImgOk && (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={post.imageUrl}
-              alt={post.title}
+              // Decorative — the article title already lives in the H1
+              // below. Empty alt prevents the browser's broken-image
+              // alt-text overlay from appearing on top of the hero
+              // when the URL 404s.
+              alt=""
+              aria-hidden="true"
               className="absolute inset-0 h-full w-full object-cover"
+              onError={() => setCoverImgOk(false)}
             />
             <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/60" />
           </>

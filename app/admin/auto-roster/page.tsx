@@ -12,6 +12,7 @@
 // in lib/roster/solver.ts and ships its own staff registry.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 type ShiftPeriod = "morning" | "afternoon" | "evening" | "night";
 type StaffRole = "doctor" | "nurse" | "receptionist" | "lab_tech" | "pharmacist" | "radiology_tech" | "ot_tech";
@@ -170,11 +171,14 @@ export default function AdminAutoRosterPage() {
         </div>
       )}
 
-      <div className="mb-4">
-        <h2 className="text-2xl font-bold text-gray-900">Auto-Roster</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Coverage rules + staff registry + leave window → solver builds a 2-week roster respecting fairness, rest gaps, and specialty mix.
-        </p>
+      <div className="mb-6">
+        <PageHero
+          icon="🗓️"
+          eyebrow="Shift Solver"
+          title="Auto-Roster"
+          subtitle="Coverage rules + staff registry + leave window → solver builds a 2-week roster respecting fairness, rest gaps, and specialty mix."
+          tone="indigo"
+        />
       </div>
 
       <div className="mb-5 flex gap-1 rounded-lg bg-slate-100 p-1">

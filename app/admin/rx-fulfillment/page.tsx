@@ -6,6 +6,7 @@
 // transitions them through the fulfillment stages.
 
 import { useCallback, useEffect, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 interface PharmacyMeta { pharmacyId: string; pharmacyName: string; city?: string; pincode?: string; itemCount: number }
 interface OrderLine { drugName: string; brand?: string; strength?: string; quantity: number; pricedRupees: number; mrpRupees: number }
@@ -93,11 +94,16 @@ export default function PharmacyOpsPage() {
         </div>
       )}
 
-      <div className="mb-4 flex items-end justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Pharmacy Operations</h2>
-          <p className="mt-1 text-sm text-gray-500">Incoming Rx fulfillment orders. Accept, pack, dispatch, and mark delivered.</p>
-        </div>
+      <div className="mb-6">
+        <PageHero
+          icon="💊"
+          eyebrow="Rx Fulfillment"
+          title="Pharmacy Operations"
+          subtitle="Incoming Rx fulfillment orders. Accept, pack, dispatch, and mark delivered."
+          tone="emerald"
+        />
+      </div>
+      <div className="mb-4 flex justify-end">
         <div>
           <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">Pharmacy</label>
           <select value={pharmacyId} onChange={(e) => setPharmacyId(e.target.value)} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">

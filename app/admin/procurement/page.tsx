@@ -7,6 +7,7 @@
 //   3. POs — purchase order queue with state transitions
 
 import { useCallback, useEffect, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 type SkuCategory = "drug" | "consumable" | "device" | "reagent" | "linen" | "office";
 type StockUnit = "strip" | "bottle" | "vial" | "pack" | "box" | "piece" | "kg" | "litre";
@@ -181,11 +182,14 @@ export default function ProcurementPage() {
         </div>
       )}
 
-      <div className="mb-4">
-        <h2 className="text-2xl font-bold text-gray-900">Procurement</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          SKU registry + auto-reorder scanner + purchase-order queue. Stock crosses reorder level → PO drafts → vendor acknowledges → goods received → stock auto-incremented.
-        </p>
+      <div className="mb-6">
+        <PageHero
+          icon="📦"
+          eyebrow="Supply Chain"
+          title="Procurement"
+          subtitle="SKU registry + auto-reorder scanner + purchase-order queue. Stock crosses reorder level → PO drafts → vendor acknowledges → goods received → stock auto-incremented."
+          tone="amber"
+        />
       </div>
 
       {/* KPIs */}

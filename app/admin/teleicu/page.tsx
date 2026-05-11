@@ -7,6 +7,7 @@
 // and inline patient/admission editing. Polls every 10s.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 interface News2Component { kind: string; value: number | string | undefined; score: number }
 interface News2 {
@@ -167,19 +168,20 @@ export default function TeleIcuPage() {
         </div>
       )}
 
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Tele-ICU command center</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Every covered ICU bed in one grid. NEWS2 score updates every 10 seconds from live wearable streams.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
-            <button onClick={() => setScope("all")} className={`rounded-md px-3 py-1.5 text-xs font-semibold ${scope === "all" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>All beds</button>
-            <button onClick={() => setScope("mine")} className={`rounded-md px-3 py-1.5 text-xs font-semibold ${scope === "mine" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>My coverage</button>
-          </div>
-          <button onClick={() => setShowCreate(true)} className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-bold text-white">+ New bed</button>
+      <div className="mb-6">
+        <PageHero
+          icon="🫀"
+          eyebrow="Critical Care Grid"
+          title="Tele-ICU Command Center"
+          subtitle="Every covered ICU bed in one grid. NEWS2 score updates every 10 seconds from live wearable streams."
+          tone="rose"
+          primaryAction={{ label: "+ New bed", onClick: () => setShowCreate(true) }}
+        />
+      </div>
+      <div className="mb-4 flex justify-end">
+        <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
+          <button onClick={() => setScope("all")} className={`rounded-md px-3 py-1.5 text-xs font-semibold ${scope === "all" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>All beds</button>
+          <button onClick={() => setScope("mine")} className={`rounded-md px-3 py-1.5 text-xs font-semibold ${scope === "mine" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>My coverage</button>
         </div>
       </div>
 

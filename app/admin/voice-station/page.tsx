@@ -11,6 +11,7 @@
 // when a patient id is supplied, so the tele-ICU dashboard updates.
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 interface SpeechRecognitionEventLike {
   resultIndex: number;
@@ -220,11 +221,14 @@ export default function VoiceStationPage() {
         </div>
       )}
 
-      <div className="mb-4">
-        <h2 className="text-2xl font-bold text-gray-900">Voice Station</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Hands-free bedside capture. Press Start, speak natural-language orders, and the parser splits them into structured vitals / meds / labs / notes for confirmation.
-        </p>
+      <div className="mb-6">
+        <PageHero
+          icon="🎤"
+          eyebrow="Bedside Capture"
+          title="Voice Station"
+          subtitle="Hands-free bedside capture. Press Start, speak natural-language orders, and the parser splits them into structured vitals / meds / labs / notes for confirmation."
+          tone="violet"
+        />
       </div>
 
       {supportError && <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">{supportError}</div>}

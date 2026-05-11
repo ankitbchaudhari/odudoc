@@ -51,10 +51,14 @@ const HR_ALLOWED_PREFIXES = [
 // them even if they guess the URL. The sidebar hides these links, but
 // middleware is the real gate. Matched by prefix so /admin/organizations/123
 // is covered too.
+// NOTE: /admin/appointments was previously listed here, which bounced
+// every org admin off their own OPD scheduling page — see the
+// reported "appointment button not working" regression. Appointments
+// is a tenant-scoped hospital ops surface (hits /api/hospital/
+// appointments, which is org-aware), so it must NOT be super-only.
 const SUPER_ONLY_PREFIXES = [
   "/admin/doctors",
   "/admin/departments",
-  "/admin/appointments",
   "/admin/prescriptions",
   "/admin/lab-tests",
   "/admin/timetable",

@@ -123,11 +123,31 @@ export async function createCheckoutSession(
     order_tags: input.metadata,
   };
 
-  const res = await fetch(`${endpointBase()}/orders`, {
-    method: "POST",
-    headers: authHeaders(),
-    body: JSON.stringify(body),
-  });
+  // Bound the upstream call so a slow / unreachable Cashfree doesn't
+  // push our serverless function past Vercel's edge timeout (which
+  // would surface as a bare 502 with no JSON body — the client then
+  // falls back to "Top-up failed (502)" and loses the diagnostic).
+  // 8s leaves comfortable headroom under the 10s Hobby limit.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8_000);
+  let res: Response;
+  try {
+    res = await fetch(`${endpointBase()}/orders`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if ((err as { name?: string }).name === "AbortError") {
+      log.error("cashfree.create_order_timeout", undefined, { orderId: input.orderId });
+      throw new Error("Cashfree create order timed out after 8s");
+    }
+    log.error("cashfree.create_order_network", err, { orderId: input.orderId });
+    throw new Error(`Cashfree create order network error: ${(err as Error).message || "unknown"}`);
+  } finally {
+    clearTimeout(timer);
+  }
   const text = await res.text();
   if (!res.ok) {
     log.error("cashfree.create_order_failed", undefined, {

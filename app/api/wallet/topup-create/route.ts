@@ -81,19 +81,47 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     const msg = (err as Error).message || "";
-    // Cashfree returns "Cashfree create order 401" when the App ID +
-    // Secret don't match the configured CASHFREE_ENV. Most common
-    // mistake: SANDBOX keys deployed without setting CASHFREE_ENV
-    // (which defaults to PROD). Surface that hint so ops can fix
-    // env without grepping logs.
+    const env = (process.env.CASHFREE_ENV || "PROD").toUpperCase();
+
+    // Cashfree returns 401 when the App ID + Secret don't match the
+    // configured CASHFREE_ENV. Most common mistake: SANDBOX keys
+    // deployed without setting CASHFREE_ENV (which defaults to PROD).
     if (msg.includes("401") || /authentication.?failed|invalid.?credential/i.test(msg)) {
-      const env = (process.env.CASHFREE_ENV || "PROD").toUpperCase();
       return NextResponse.json({
         error: "payment_gateway_auth_failed",
         message: "Payment gateway rejected our credentials. Please try again in a few minutes — our team has been notified.",
         diagnostic: `Cashfree returned 401 against ${env} endpoint. If your CASHFREE_APP_ID is a SANDBOX key, set CASHFREE_ENV=SANDBOX (or swap to PROD keys).`,
       }, { status: 502 });
     }
-    return NextResponse.json({ error: "payment_gateway_error", message: msg }, { status: 500 });
+
+    // Upstream timeout — we cap the Cashfree fetch at 8s in
+    // lib/cashfree.ts so we can return a friendly JSON body before
+    // Vercel's edge times out at 10s and replaces our response with
+    // a bare 502 (which the UI shows as "Top-up failed (502).").
+    if (/timed out|abort/i.test(msg)) {
+      return NextResponse.json({
+        error: "payment_gateway_timeout",
+        message: "Payment gateway is slow right now. Please try again in a moment.",
+        diagnostic: `Cashfree request exceeded 8s timeout (env=${env}).`,
+      }, { status: 502 });
+    }
+
+    // Network / DNS / TLS error before we got any response.
+    if (/network error|fetch failed|ENOTFOUND|ECONNRESET|EAI_AGAIN/i.test(msg)) {
+      return NextResponse.json({
+        error: "payment_gateway_unreachable",
+        message: "Couldn't reach the payment gateway. Please try again in a moment.",
+        diagnostic: `Network error talking to Cashfree (env=${env}): ${msg}`,
+      }, { status: 502 });
+    }
+
+    // Cashfree returned a non-2xx we don't recognise. Still wrap as
+    // 502 + friendly message so the wallet UI never shows the bare
+    // status code.
+    return NextResponse.json({
+      error: "payment_gateway_error",
+      message: "Couldn't start the top-up. Please try again, or contact support if this keeps happening.",
+      diagnostic: msg,
+    }, { status: 502 });
   }
 }

@@ -74,13 +74,25 @@ export default function WalletPage() {
         setShowTopup(false);
         await load();
       } else {
-        const body = await r.json().catch(() => ({}));
+        const body = await r.json().catch(() => ({} as Record<string, unknown>));
         // Surface the user-friendly message when the API provides one;
         // suppress raw Cashfree internals from the patient's view.
-        const userMsg = body.message
+        // When the response wasn't JSON (Vercel edge 502 / 504) we
+        // synthesise a plain-English fallback for the common HTTP
+        // statuses so the toast never shows just "(502)".
+        const statusFallback =
+          r.status === 502 ? "Payment gateway is unreachable right now. Please try again in a moment."
+          : r.status === 504 ? "Payment gateway took too long to respond. Please try again."
+          : r.status === 429 ? "Too many top-up attempts. Please wait a minute and try again."
+          : r.status >= 500 ? "Something went wrong on our side. Please try again in a moment."
+          : null;
+        const userMsg = (body.message as string | undefined)
           || (body.error === "payment_gateway_auth_failed" ? "Payment gateway temporarily unavailable. Please try again shortly." : null)
+          || (body.error === "payment_gateway_timeout" ? "Payment gateway is slow right now. Please try again in a moment." : null)
+          || (body.error === "payment_gateway_unreachable" ? "Couldn't reach the payment gateway. Please try again." : null)
           || (body.error === "invalid_amount" ? "Top-up must be between ₹100 and ₹50,000." : null)
-          || `Top-up failed (${body.error || r.status}).`;
+          || statusFallback
+          || `Top-up failed (${(body.error as string | undefined) || r.status}).`;
         setToast({ kind: "err", text: userMsg });
         // Operator diagnostic — only logged client-side, not shown.
         if (body.diagnostic) console.warn("[wallet topup]", body.diagnostic);

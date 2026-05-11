@@ -6,6 +6,7 @@
 // generate to avoid silent collisions. Save persists immediately.
 
 import { useCallback, useEffect, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 interface ServiceItem { title: string; description: string; icon?: string }
 interface TeamMember { name: string; role: string; photoUrl?: string; bio?: string }
@@ -65,16 +66,19 @@ export default function WebsiteAdminPage() {
   if (!orgId) return <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Pick an organization from the header.</p>;
 
   return (
-    <div>
-      <div className="mb-4 flex items-end justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Mini-website</h2>
-          <p className="mt-1 text-sm text-gray-500">Public landing page at <code>/c/&lt;slug&gt;</code>. Themed by your org branding.</p>
-        </div>
-        {site.slug && site.published && (
-          <a href={`/c/${site.slug}`} target="_blank" rel="noreferrer" className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white">Preview ↗</a>
-        )}
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="🌐"
+        eyebrow="Public Site"
+        title="Mini-website"
+        subtitle="Public landing page at /c/<slug>. Themed by your org branding."
+        tone="indigo"
+        primaryAction={
+          site.slug && site.published
+            ? { label: "Preview ↗", href: `/c/${site.slug}` }
+            : undefined
+        }
+      />
 
       {msg && <div className={`mb-4 rounded-lg border px-4 py-2.5 text-sm ${msg.kind === "ok" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-rose-200 bg-rose-50 text-rose-800"}`}>{msg.text}</div>}
 

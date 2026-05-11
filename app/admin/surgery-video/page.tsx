@@ -4,6 +4,7 @@
 // Stream live input or upload URL + monitor lifecycle.
 
 import { useCallback, useEffect, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 interface Session {
   id: string; organizationId: string;
@@ -69,26 +70,28 @@ export default function SurgeryVideoAdminPage() {
   if (!orgId) return <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Pick an organization from the header.</p>;
 
   return (
-    <div>
-      <div className="mb-4 flex items-end justify-between">
+    <div className="space-y-6">
+      <PageHero
+        icon="🎥"
+        eyebrow="Live OT"
+        title="Surgery Video"
+        subtitle="Schedule + provision live OT video. Streams ingest to Cloudflare; viewers watch via signed HLS."
+        tone="rose"
+        primaryAction={{
+          label: showForm ? "Cancel" : "+ Schedule session",
+          onClick: () => setShowForm((v) => !v),
+        }}
+      />
+      {!configured && (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
+          Cloudflare Stream not configured. Set CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_STREAM_API_TOKEN to enable.
+        </p>
+      )}
+      {configured && (
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Surgery video</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Schedule + provision live OT video. Streams ingest to Cloudflare; viewers watch via signed HLS.
-          </p>
-          {!configured && (
-            <p className="mt-1 inline-block rounded-md bg-amber-50 px-2 py-1 text-[10px] text-amber-800 ring-1 ring-amber-200">
-              Cloudflare Stream not configured. Set CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_STREAM_API_TOKEN to enable.
-            </p>
-          )}
+          <ReconcileButton />
         </div>
-        <div className="flex items-center gap-2">
-          {configured && <ReconcileButton />}
-          <button onClick={() => setShowForm((v) => !v)} className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white">
-            {showForm ? "Cancel" : "+ Schedule session"}
-          </button>
-        </div>
-      </div>
+      )}
 
       {showForm && <ScheduleForm orgId={orgId} onSaved={() => { setShowForm(false); load(); }} />}
 

@@ -12,6 +12,7 @@
 // the verdict — verified / warning / counterfeit_risk.
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 type Verdict = "verified" | "warning" | "counterfeit_risk";
 interface VerifyResponse {
@@ -120,13 +121,14 @@ export default function AntiCounterfeitKioskPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <div className="mb-4">
-        <h2 className="text-2xl font-bold text-gray-900">Anti-counterfeit kiosk</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Pharmacist scans the strip barcode or types brand + batch. The verdict draws from the pharma company's own registry on OduDoc.
-        </p>
-      </div>
+    <div className="mx-auto max-w-2xl space-y-6">
+      <PageHero
+        icon="🛡️"
+        eyebrow="Pharma Verify"
+        title="Anti-Counterfeit Kiosk"
+        subtitle="Pharmacist scans the strip barcode or types brand + batch. The verdict draws from the pharma company's own registry on OduDoc."
+        tone="emerald"
+      />
 
       {!supported && (
         <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">

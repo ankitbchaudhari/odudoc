@@ -19,6 +19,7 @@
 // the POST without it.
 
 import { useEffect, useRef, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 type Mode = "fingerprint" | "face";
 
@@ -202,17 +203,17 @@ export default function BiometricKioskPage() {
   if (!orgId) return <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Pick an organization from the header.</p>;
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="mb-4">
-        <h2 className="text-2xl font-bold text-gray-900">Biometric kiosk</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Browser-native enrollment using WebAuthn + getUserMedia. No USB SDK or vendor driver required.
-          Hospital reception captures one biometric per patient, gated on a signed consent record.
-        </p>
-        <p className="mt-1 rounded-lg bg-amber-50 px-3 py-2 text-[10px] text-amber-800 ring-1 ring-amber-200">
-          Demo limitation: face capture stores a pixel hash that's brittle to lighting/angle. Production deployment swaps in a face-embedding model (FaceNet/ArcFace) before HMAC. Fingerprint via WebAuthn is production-grade.
-        </p>
-      </div>
+    <div className="mx-auto max-w-3xl space-y-6">
+      <PageHero
+        icon="🔒"
+        eyebrow="Emergency Unlock"
+        title="Biometric Kiosk"
+        subtitle="Browser-native enrollment using WebAuthn + getUserMedia. No USB SDK or vendor driver required. Hospital reception captures one biometric per patient, gated on a signed consent record."
+        tone="violet"
+      />
+      <p className="rounded-lg bg-amber-50 px-3 py-2 text-[11px] text-amber-800 ring-1 ring-amber-200">
+        ⚠️ Demo limitation: face capture stores a pixel hash that's brittle to lighting/angle. Production deployment swaps in a face-embedding model (FaceNet/ArcFace) before HMAC. Fingerprint via WebAuthn is production-grade.
+      </p>
 
       {msg && <div className={`mb-4 rounded-lg border px-4 py-2.5 text-sm ${msg.kind === "ok" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-rose-200 bg-rose-50 text-rose-800"}`}>{msg.text}</div>}
 

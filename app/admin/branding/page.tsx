@@ -7,6 +7,7 @@
 // so demos and small deployments work without S3.
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 interface Branding {
   organizationId: string;
@@ -83,13 +84,14 @@ export default function BrandingAdminPage() {
   }
 
   return (
-    <div>
-      <div className="mb-4">
-        <h2 className="text-2xl font-bold text-gray-900">Branding</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Logo + theme + invoice footer for this org. Used on dashboards, billing PDFs, prescription pads, patient files, and the white-label sub-app.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="🎨"
+        eyebrow="White-label"
+        title="Branding"
+        subtitle="Logo + theme + invoice footer for this org. Used on dashboards, billing PDFs, prescription pads, patient files, and the white-label sub-app."
+        tone="fuchsia"
+      />
 
       {msg && (
         <div className={`mb-4 rounded-lg border px-4 py-2.5 text-sm ${msg.kind === "ok" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-rose-200 bg-rose-50 text-rose-800"}`}>

@@ -11,118 +11,32 @@
 
 import { bindPersistentArray } from "../persistent-array";
 
-export type StaffRole =
-  | "doctor"
-  | "resident"
-  | "nurse"
-  | "technician"
-  | "pharmacist"
-  | "radiographer"
-  | "admin"
-  | "housekeeping"
-  | "other";
+// StaffRole now lives in ./staff-roles so client components can
+// import it cleanly. Re-export here so existing server-side imports
+// from this file keep working.
+export type { StaffRole } from "./staff-roles";
+export { STAFF_ROLES } from "./staff-roles";
+import type { StaffRole } from "./staff-roles";
 
 export type StaffStatus = "active" | "on_leave" | "inactive";
 
-// Module-level access switches — the org admin ticks the boxes that
-// match this person's job (e.g. a physiotherapist gets only "physio";
-// a pharmacist gets "pharmacy" + "inventory"). The ids here mirror the
-// admin sidebar groupings so the UI mapping is one-to-one. Treat as a
-// soft hint until middleware enforcement lands; the staff list shows a
-// summary chip so the admin can see at-a-glance who can do what.
-export type StaffModuleAccess =
-  | "patients"
-  | "appointments"
-  | "opd"
-  | "ipd"
-  | "ot"
-  | "pharmacy"
-  | "lab"
-  | "radiology"
-  | "billing"
-  | "inventory"
-  | "telemedicine"
-  | "physio"
-  | "dental"
-  | "cardiology"
-  | "icu"
-  | "wards"
-  | "ambulance"
-  | "blood-bank"
-  | "mortuary"
-  | "housekeeping"
-  | "reports";
-
-export const STAFF_MODULE_LABELS: Record<StaffModuleAccess, string> = {
-  patients: "Patients",
-  appointments: "Appointments",
-  opd: "OPD Queue",
-  ipd: "Admissions / IPD",
-  ot: "Surgery / OT",
-  pharmacy: "Pharmacy",
-  lab: "Lab Orders",
-  radiology: "Radiology",
-  billing: "Invoices & Billing",
-  inventory: "Inventory",
-  telemedicine: "Telemedicine",
-  physio: "Physiotherapy",
-  dental: "Dental",
-  cardiology: "Cardiology",
-  icu: "ICU / Critical Care",
-  wards: "Wards & Beds",
-  ambulance: "Ambulance",
-  "blood-bank": "Blood Bank",
-  mortuary: "Mortuary",
-  housekeeping: "Housekeeping",
-  reports: "Reports & Audit",
-};
-
-/** Resolve the effective module-access list for a staff record. Legacy
- *  rows that pre-date the picker have no `moduleAccess` field — for
- *  those, fall back to the role-based default so the UI doesn't display
- *  "no access" for everyone overnight. */
-export function effectiveModuleAccess(s: Pick<StaffMember, "moduleAccess" | "role">): StaffModuleAccess[] {
-  if (Array.isArray(s.moduleAccess)) return s.moduleAccess;
-  return STAFF_ROLE_DEFAULT_ACCESS[s.role] ?? [];
-}
-
-/** Drop unknown values + dedupe so a malicious / stale client can't
- *  smuggle bogus module ids into the persisted record. */
-export function sanitizeModuleAccess(values: unknown[]): StaffModuleAccess[] {
-  const valid = new Set(Object.keys(STAFF_MODULE_LABELS) as StaffModuleAccess[]);
-  const seen = new Set<StaffModuleAccess>();
-  for (const v of values) {
-    if (typeof v === "string" && valid.has(v as StaffModuleAccess)) {
-      seen.add(v as StaffModuleAccess);
-    }
-  }
-  return Array.from(seen);
-}
-
-// Sensible defaults so a freshly-created staff member doesn't end up
-// locked out. Adjust per role — admin gets everything, doctor/nurse a
-// clinical bundle, pharmacist pharmacy-only, etc.
-export const STAFF_ROLE_DEFAULT_ACCESS: Record<StaffRole, StaffModuleAccess[]> = {
-  doctor: [
-    "patients", "appointments", "opd", "ipd", "ot", "lab", "radiology",
-    "telemedicine", "cardiology", "icu", "wards",
-  ],
-  resident: [
-    "patients", "appointments", "opd", "ipd", "lab", "radiology", "wards",
-  ],
-  nurse: ["patients", "wards", "ipd", "icu", "appointments"],
-  technician: ["lab", "radiology", "inventory"],
-  pharmacist: ["pharmacy", "inventory"],
-  radiographer: ["radiology"],
-  admin: [
-    "patients", "appointments", "opd", "ipd", "ot", "pharmacy", "lab",
-    "radiology", "billing", "inventory", "telemedicine", "physio", "dental",
-    "cardiology", "icu", "wards", "ambulance", "blood-bank", "mortuary",
-    "housekeeping", "reports",
-  ],
-  housekeeping: ["housekeeping"],
-  other: [],
-};
+// Module-access catalog lives in its own file so client components
+// (notably /admin/staff which is a "use client" page) can import the
+// types and constants without dragging the Postgres / persistent-
+// array dependency chain into the client bundle. Re-export the
+// public surface here so legacy server imports from
+// "@/lib/hospital/staff-store" keep working.
+export type {
+  StaffModuleAccess,
+} from "./staff-modules";
+export {
+  STAFF_MODULE_LABELS,
+  STAFF_ROLE_DEFAULT_ACCESS,
+  effectiveModuleAccess,
+  sanitizeModuleAccess,
+} from "./staff-modules";
+import type { StaffModuleAccess } from "./staff-modules";
+import { sanitizeModuleAccess, STAFF_ROLE_DEFAULT_ACCESS } from "./staff-modules";
 
 export interface StaffMember {
   id: string;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 interface Kpi { label: string; value: number | string; tone: "slate" | "emerald" | "amber" | "rose" | "indigo"; unit?: string; }
 interface Section { title: string; kpis: Kpi[]; }
@@ -161,11 +162,15 @@ export default function KpiDashboardPage() {
   useEffect(() => { load(); }, []);
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-slate-900">KPI Dashboard</h1><p className="text-sm text-slate-500">Executive overview · live aggregation across all modules{updatedAt ? ` · updated ${updatedAt}` : ""}</p></div>
-        <button onClick={load} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white">Refresh</button>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHero
+        icon="📊"
+        eyebrow="Executive"
+        title="KPI Dashboard"
+        subtitle={`Live aggregation across all modules${updatedAt ? ` · updated ${updatedAt}` : ""}`}
+        tone="indigo"
+        primaryAction={{ label: "🔄 Refresh", onClick: load }}
+      />
       {loading && <div className="rounded-xl bg-white p-8 text-center text-sm text-slate-500">Loading metrics...</div>}
       {!loading && sections.map((sec) => (
         <div key={sec.title} className="mb-8">
@@ -188,6 +193,21 @@ function num(obj: Record<string, unknown> | null, key: string): number {
 }
 
 function KpiTile({ label, value, tone, unit }: Kpi) {
-  const t: Record<string, string> = { slate: "bg-slate-50 text-slate-700", amber: "bg-amber-50 text-amber-700", rose: "bg-rose-50 text-rose-700", emerald: "bg-emerald-50 text-emerald-700", indigo: "bg-indigo-50 text-indigo-700" };
-  return <div className={`rounded-xl p-4 ${t[tone]}`}><div className="text-xs font-semibold uppercase tracking-wide opacity-80">{label}</div><div className="mt-1 text-2xl font-bold">{value}{unit || ""}</div></div>;
+  const t: Record<string, { bg: string; ring: string; text: string; iconBg: string }> = {
+    slate:   { bg: "from-slate-50 to-slate-100/60",     ring: "ring-slate-200/70",   text: "text-slate-700",   iconBg: "from-slate-500 to-slate-600" },
+    amber:   { bg: "from-amber-50 to-orange-100/60",    ring: "ring-amber-200/70",   text: "text-amber-700",   iconBg: "from-amber-500 to-orange-500" },
+    rose:    { bg: "from-rose-50 to-pink-100/60",       ring: "ring-rose-200/70",    text: "text-rose-700",    iconBg: "from-rose-500 to-pink-600" },
+    emerald: { bg: "from-emerald-50 to-teal-100/60",    ring: "ring-emerald-200/70", text: "text-emerald-700", iconBg: "from-emerald-500 to-teal-600" },
+    indigo:  { bg: "from-indigo-50 to-violet-100/60",   ring: "ring-indigo-200/70",  text: "text-indigo-700",  iconBg: "from-indigo-500 to-violet-600" },
+  };
+  const c = t[tone] || t.slate;
+  return (
+    <div className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${c.bg} p-4 ring-1 ${c.ring} transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg`}>
+      <div className={`pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gradient-to-br ${c.iconBg} opacity-15 blur-xl transition-opacity group-hover:opacity-30`} />
+      <div className="relative">
+        <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-slate-600">{label}</p>
+        <p className={`mt-2 text-3xl font-extrabold tabular-nums ${c.text}`}>{value}{unit || ""}</p>
+      </div>
+    </div>
+  );
 }

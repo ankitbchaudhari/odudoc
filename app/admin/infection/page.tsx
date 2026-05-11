@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
 
 type HAIType = "clabsi" | "cauti" | "vap" | "ssi" | "mdro" | "cdiff" | "other";
 type HAIOrganism =
@@ -353,33 +354,25 @@ export default function InfectionPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Infection Control</h1>
-          <p className="text-sm text-slate-500">
-            HAI surveillance (CLABSI / CAUTI / VAP / SSI / MDRO) and WHO 5-moments hand hygiene compliance.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {tab === "hai" && (
-            <button onClick={() => openEventForm()} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">
-              + New HAI Event
-            </button>
-          )}
-          {tab === "hh" && (
-            <button onClick={() => openAuditForm()} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">
-              + New Audit
-            </button>
-          )}
-        </div>
-      </div>
+      <PageHero
+        icon="🦠"
+        eyebrow="HAI Surveillance"
+        title="Infection Control"
+        subtitle="HAI surveillance (CLABSI / CAUTI / VAP / SSI / MDRO) and WHO 5-moments hand hygiene compliance"
+        tone="rose"
+        primaryAction={
+          tab === "hai"
+            ? { label: "+ New HAI Event", onClick: () => openEventForm() }
+            : { label: "+ New Audit", onClick: () => openAuditForm() }
+        }
+      />
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        <Stat label="Active HAI" value={stats.active} tone={stats.active > 0 ? "red" : "slate"} />
-        <Stat label="Events this month" value={stats.mtd} tone="amber" />
-        <Stat label="Active MDRO" value={stats.mdro} tone={stats.mdro > 0 ? "red" : "slate"} />
-        <Stat label="HH compliance (MTD)" value={stats.hhAvg === null ? "—" : `${stats.hhAvg}%`} tone={stats.hhAvg === null ? "slate" : stats.hhAvg >= 80 ? "emerald" : stats.hhAvg >= 60 ? "amber" : "red"} />
-      </div>
+      <StatGrid cols={4}>
+        <StatCard label="Active HAI" value={stats.active} tone={stats.active > 0 ? "rose" : "slate"} icon="🔴" />
+        <StatCard label="Events this month" value={stats.mtd} tone={stats.mtd > 0 ? "amber" : "slate"} icon="📅" />
+        <StatCard label="Active MDRO" value={stats.mdro} tone={stats.mdro > 0 ? "rose" : "emerald"} icon="⚠️" />
+        <StatCard label="HH compliance (MTD)" value={stats.hhAvg === null ? "—" : `${stats.hhAvg}%`} tone={stats.hhAvg === null ? "slate" : stats.hhAvg >= 80 ? "emerald" : stats.hhAvg >= 60 ? "amber" : "rose"} icon="🧼" />
+      </StatGrid>
 
       <div className="flex gap-1 border-b border-slate-200">
         {(["hai", "hh"] as const).map((t) => (

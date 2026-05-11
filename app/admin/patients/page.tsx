@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 import type { Patient, Gender, BloodGroup } from "@/lib/patients-store";
 
 const GENDERS: Gender[] = ["male", "female", "other", "unknown"];
@@ -192,21 +193,18 @@ export default function AdminPatientsPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Patients</h1>
-          <p className="text-sm text-gray-500">
-            Tenant-scoped medical records. MRN is auto-assigned per organization.
-          </p>
-        </div>
-        <button
-          onClick={() => (showForm ? resetForm() : setShowForm(true))}
-          className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700"
-        >
-          {showForm ? "Cancel" : "+ New patient"}
-        </button>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
+      <PageHero
+        icon="🧑‍⚕️"
+        eyebrow="Medical Records"
+        title="Patients"
+        subtitle="Tenant-scoped medical records. MRN is auto-assigned per organization"
+        tone="indigo"
+        primaryAction={{
+          label: showForm ? "✕ Cancel" : "+ New patient",
+          onClick: () => (showForm ? resetForm() : setShowForm(true)),
+        }}
+      />
 
       {showForm && (
         <form

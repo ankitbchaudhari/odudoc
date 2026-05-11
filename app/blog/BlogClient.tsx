@@ -27,6 +27,7 @@ export default function BlogClient({ initialPosts }: { initialPosts: BlogPost[] 
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [showAllTags, setShowAllTags] = useState(false);
   // Hydrate with server-provided posts (falls back to the static seed if the
   // server couldn't reach the database) then re-fetch in the background in
   // case the admin published something between the server render and mount.
@@ -206,7 +207,7 @@ export default function BlogClient({ initialPosts }: { initialPosts: BlogPost[] 
         )}
 
         {/* ── Main Content + Sidebar ── */}
-        <div className="flex flex-col gap-8 lg:flex-row">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
 
           {/* Left: Posts */}
           <div className="flex-1 min-w-0">
@@ -308,6 +309,34 @@ export default function BlogClient({ initialPosts }: { initialPosts: BlogPost[] 
                 </button>
               </div>
             )}
+
+            {/* Banner CTA — fills any remaining vertical space below the
+                post grid so the page doesn't show a tall blank column next
+                to the sidebar. */}
+            <div className="mt-10 overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 via-teal-600 to-emerald-600 p-8 text-white shadow-lg sm:p-10">
+              <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="max-w-xl">
+                  <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider">
+                    Talk to a doctor
+                  </span>
+                  <h3 className="mt-3 text-2xl font-bold leading-snug sm:text-3xl">
+                    Have questions about your health?
+                  </h3>
+                  <p className="mt-2 text-sm text-white/85 sm:text-base">
+                    Book a verified doctor on OduDoc in minutes — video, audio, or chat consultations, available 24/7.
+                  </p>
+                </div>
+                <a
+                  href="/consult"
+                  className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-primary-700 shadow-md transition-transform hover:-translate-y-0.5 hover:shadow-lg"
+                >
+                  Find a doctor
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </a>
+              </div>
+            </div>
           </div>
 
           {/* ── Sidebar ── */}
@@ -388,7 +417,7 @@ export default function BlogClient({ initialPosts }: { initialPosts: BlogPost[] 
                 Tags
               </h3>
               <div className="flex flex-wrap gap-2">
-                {allTags.map((tag) => (
+                {(showAllTags ? allTags : allTags.slice(0, 18)).map((tag) => (
                   <button
                     key={tag}
                     onClick={() => { setSearchQuery(tag); setCurrentPage(1); }}
@@ -402,6 +431,14 @@ export default function BlogClient({ initialPosts }: { initialPosts: BlogPost[] 
                   </button>
                 ))}
               </div>
+              {allTags.length > 18 && (
+                <button
+                  onClick={() => setShowAllTags((v) => !v)}
+                  className="mt-4 text-xs font-semibold text-primary-600 hover:text-primary-700"
+                >
+                  {showAllTags ? "Show fewer ↑" : `Show all ${allTags.length} tags ↓`}
+                </button>
+              )}
             </div>
           </aside>
         </div>

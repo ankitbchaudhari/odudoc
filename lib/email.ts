@@ -1372,3 +1372,56 @@ export async function sendVendorNewOrderEmail(params: {
     replyTo: `notifications@${DOMAIN}`,
   });
 }
+
+// Staff welcome email — sent by lib/staff-user-bootstrap.ts when an
+// org admin adds a new doctor/nurse/pharmacist/etc. from the admin
+// console. Pattern mirrors sendOrgAdminWelcomeEmail above but the
+// copy is tuned for non-admin staff (they land on /auth/login, not
+// /corporate/login) and surfaces the org name + role title.
+export async function sendStaffWelcomeEmail(params: {
+  to: string;
+  name: string;
+  orgName: string;
+  roleLabel: string;
+  tempPassword: string;
+  expiresAt: string;
+  loginUrl?: string;
+}): Promise<SendEmailResult> {
+  const expires = new Date(params.expiresAt);
+  const expiresLabel = isNaN(expires.getTime())
+    ? "3 days"
+    : expires.toLocaleString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+  const loginUrl = params.loginUrl || `${SITE_URL}/auth/login`;
+
+  const html = renderShell({
+    preheader: `Your ${params.orgName} staff account on ${BRAND} is ready.`,
+    heading: `Welcome to ${escapeHtml(params.orgName)}, ${escapeHtml(params.name)}`,
+    bodyHtml: `
+      <p>You've been added as <strong>${escapeHtml(params.roleLabel)}</strong> at <strong>${escapeHtml(params.orgName)}</strong> on ${BRAND}. Sign in now with the credentials below to access your console:</p>
+      <p style="margin:16px 0;padding:14px 18px;background:#f3f4f6;border:1px dashed #9ca3af;border-radius:8px;font-family:monospace;font-size:14px;line-height:1.8;">
+        <strong>Username:</strong> ${escapeHtml(params.to)}<br/>
+        <strong>Temporary password:</strong> ${escapeHtml(params.tempPassword)}
+      </p>
+      <p><strong>You must change this password within 3 days</strong> (by ${escapeHtml(expiresLabel)}). After that the temp password expires and you'll be locked out until your hospital admin re-issues a fresh one.</p>
+      <p>Once you're signed in head to <em>Account → Change password</em> to set your own password.</p>
+    `,
+    ctaLabel: "Sign in & change password",
+    ctaUrl: loginUrl,
+    footerNote: "If you weren't expecting this invitation, reply to this email and we'll investigate.",
+  });
+
+  return sendEmail({
+    from: "admin",
+    to: params.to,
+    subject: `Welcome to ${BRAND} — ${params.orgName} staff account ready`,
+    html,
+    replyTo: `admin@${DOMAIN}`,
+  });
+}

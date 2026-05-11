@@ -8,6 +8,7 @@ import type { Consultation } from "@/lib/consultations-store";
 import SharedBadge from "@/components/StatusBadge";
 import type { PrescriptionRecord } from "@/lib/prescriptions-store";
 import FamilySwitcher from "@/components/FamilySwitcher";
+import TempPasswordBanner from "@/components/TempPasswordBanner";
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -122,6 +123,9 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/40 to-fuchsia-50/30">
+      {/* Temp-password warning — staff added by an org admin land
+          here on first login with a 3-day TTL password. */}
+      <TempPasswordBanner />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Hero Welcome */}
         <div className="relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-br from-primary-600 via-indigo-600 to-purple-600 p-8 text-white shadow-xl">

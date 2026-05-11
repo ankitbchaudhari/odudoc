@@ -10,6 +10,8 @@ import {
   type StaffStatus,
 } from "@/lib/hospital/staff-store";
 import { deleteAppointmentsForStaff } from "@/lib/hospital/appointments-store";
+import { bootstrapStaffUser } from "@/lib/staff-user-bootstrap";
+import { getOrganizationById } from "@/lib/organizations-store";
 
 import { parseJson, z } from "@/lib/validate";
 export const runtime = "nodejs";
@@ -51,7 +53,46 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "missing_fields" }, { status: 400 });
     }
     const s = createStaff(orgId, body);
-    return NextResponse.json({ staff: s });
+
+    // Auto-provision the auth account + send credentials when the
+    // staff record has an email. Username = their email, temp
+    // password expires in 3 days (lib/auth.ts enforces the block).
+    // Failures here MUST NOT roll back the staff record — the admin
+    // can re-trigger delivery from /admin/staff later.
+    let bootstrap: Awaited<ReturnType<typeof bootstrapStaffUser>> | null = null;
+    if (body.email && typeof body.email === "string" && body.email.includes("@")) {
+      try {
+        const org = getOrganizationById(orgId);
+        bootstrap = await bootstrapStaffUser({
+          orgId,
+          orgName: org?.name || "your hospital",
+          staffName: `${s.firstName} ${s.lastName}`.trim(),
+          staffEmail: body.email,
+          staffPhone: body.phone,
+          staffRole: s.role,
+        });
+      } catch (err) {
+        // Swallow — surface a `delivery: { failed: ... }` so the
+        // admin sees what happened without losing the staff record.
+        bootstrap = null;
+      }
+    }
+
+    return NextResponse.json({
+      staff: s,
+      // Surfaced only on create so the org admin can copy the temp
+      // password if SMS / email delivery silently fails. The UI
+      // shows a one-time "credentials" panel when present.
+      credentials: bootstrap
+        ? {
+            email: bootstrap.email,
+            tempPassword: bootstrap.tempPassword,
+            expiresAt: bootstrap.expiresAt,
+            userCreated: bootstrap.userCreated,
+            delivery: bootstrap.delivery,
+          }
+        : null,
+    });
   } catch (e) {
     return handleError(e);
   }

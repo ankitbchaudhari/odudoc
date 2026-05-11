@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type {
   StaffMember,
   StaffRole,
@@ -167,6 +168,32 @@ export default function StaffPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Auto-open the create form when arriving from the dashboard
+  // Quick add card (deep-links here with ?new=1). Saves the admin a
+  // click and keeps the "Add staff" flow at one tap.
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams?.get("new") === "1") {
+      setShowForm(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  // Credentials panel: API surfaces `{ tempPassword, expiresAt,
+  // delivery }` on staff create when an email was provided. We hold
+  // it here briefly so the admin can copy the password before it
+  // disappears — it's only ever in memory, never persisted.
+  const [credentials, setCredentials] = useState<{
+    email: string;
+    tempPassword: string;
+    expiresAt: string;
+    userCreated: boolean;
+    delivery: {
+      email: { sent: boolean; reason?: string };
+      sms: { sent: boolean; reason?: string };
+    };
+  } | null>(null);
+
   function reset() {
     setForm(EMPTY);
     setEditingId(null);
@@ -189,6 +216,12 @@ export default function StaffPage() {
     if (!res.ok) {
       alert(data.error);
       return;
+    }
+    // Capture credentials surfaced by POST when the new staff record
+    // had an email — these include the one-time temp password the
+    // admin may need to relay if SMS/email delivery silently fails.
+    if (!editingId && data.credentials) {
+      setCredentials(data.credentials);
     }
     reset();
     load();
@@ -268,6 +301,13 @@ export default function StaffPage() {
           </button>
         </div>
       </div>
+
+      {credentials && (
+        <CredentialsPanel
+          credentials={credentials}
+          onDismiss={() => setCredentials(null)}
+        />
+      )}
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         {TILE_THEMES.map((t) => (
@@ -571,5 +611,121 @@ function AccessSummary({ modules }: { modules: StaffModuleAccess[] }) {
     >
       🛂 {first}{more > 0 ? ` +${more} more` : ""}
     </div>
+  );
+}
+
+// One-time credentials panel shown immediately after the org admin
+// creates a staff member who has an email on file. The new auth
+// account auto-receives an email + SMS with the username (their
+// email) and a 3-day temporary password; this panel surfaces the
+// same temp password locally so the admin can copy it if the
+// SMTP/Twilio delivery silently fails. Dismissable; never persisted.
+function CredentialsPanel({
+  credentials,
+  onDismiss,
+}: {
+  credentials: {
+    email: string;
+    tempPassword: string;
+    expiresAt: string;
+    userCreated: boolean;
+    delivery: {
+      email: { sent: boolean; reason?: string };
+      sms: { sent: boolean; reason?: string };
+    };
+  };
+  onDismiss: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  function copyTemp() {
+    navigator.clipboard.writeText(credentials.tempPassword).then(
+      () => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1800);
+      },
+      () => {},
+    );
+  }
+  const expiresLabel = new Date(credentials.expiresAt).toLocaleString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-700 to-cyan-700 p-5 text-white shadow-lg">
+      <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-12 left-1/2 h-44 w-44 -translate-x-1/2 rounded-full bg-yellow-300/20 blur-3xl" />
+      <div className="relative flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[10.5px] font-bold uppercase tracking-[0.18em] backdrop-blur">
+            🔑 Login credentials issued
+          </div>
+          <h2 className="mt-2 text-lg font-bold">
+            {credentials.userCreated ? "Account created" : "Existing account refreshed"} for{" "}
+            <span className="underline-offset-2">{credentials.email}</span>
+          </h2>
+          <p className="mt-1 max-w-2xl text-sm text-white/85">
+            Email + SMS with the username (their email) and the temporary password below have been dispatched. They must change this password within 3 days — expires <strong>{expiresLabel}</strong> — or login is blocked until you reissue.
+          </p>
+        </div>
+        <button
+          onClick={onDismiss}
+          className="rounded-lg p-1.5 text-white/80 transition-colors hover:bg-white/15"
+          aria-label="Dismiss credentials panel"
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div className="relative mt-4 grid gap-3 md:grid-cols-2">
+        <div className="rounded-xl bg-white/10 px-4 py-3 ring-1 ring-white/20 backdrop-blur">
+          <p className="text-[10.5px] font-bold uppercase tracking-wider text-white/75">Username</p>
+          <p className="mt-0.5 font-mono text-sm">{credentials.email}</p>
+        </div>
+        <div className="rounded-xl bg-white/10 px-4 py-3 ring-1 ring-white/20 backdrop-blur">
+          <p className="text-[10.5px] font-bold uppercase tracking-wider text-white/75">Temporary password · 3-day TTL</p>
+          <div className="mt-0.5 flex items-center justify-between gap-2">
+            <p className="font-mono text-sm">{credentials.tempPassword}</p>
+            <button
+              type="button"
+              onClick={copyTemp}
+              className="rounded-md bg-white px-2.5 py-1 text-[11px] font-bold text-emerald-700 shadow transition-transform hover:-translate-y-0.5"
+            >
+              {copied ? "Copied" : "Copy"}
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className="relative mt-3 flex flex-wrap gap-2 text-[11px]">
+        <DeliveryChip kind="📧 Email" ok={credentials.delivery.email.sent} reason={credentials.delivery.email.reason} />
+        <DeliveryChip kind="📱 SMS" ok={credentials.delivery.sms.sent} reason={credentials.delivery.sms.reason} />
+      </div>
+    </div>
+  );
+}
+
+function DeliveryChip({
+  kind,
+  ok,
+  reason,
+}: {
+  kind: string;
+  ok: boolean;
+  reason?: string;
+}) {
+  const cls = ok
+    ? "bg-emerald-100/90 text-emerald-800 ring-emerald-200"
+    : "bg-amber-100/90 text-amber-800 ring-amber-200";
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-semibold ring-1 ${cls}`}
+      title={reason || undefined}
+    >
+      {kind}
+      <span>{ok ? "sent" : reason === "no_phone" ? "no phone" : "queued / skipped"}</span>
+    </span>
   );
 }

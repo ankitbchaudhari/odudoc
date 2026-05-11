@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import OrgSwitcher from "@/components/admin/OrgSwitcher";
 import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
 import RequestModulesCard from "@/components/admin/RequestModulesCard";
+import TempPasswordBanner from "@/components/TempPasswordBanner";
 
 // Visibility rules for each nav entry:
 //   "super"        → only super-admins see it (SaaS-operator-only surfaces)
@@ -1423,6 +1424,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Content */}
         <ImpersonationBanner />
+        {/* Temp-password warning: shows up only when the signed-in
+            user is still on an admin-issued temporary password and
+            counts down to the 3-day expiry — they're auto-locked out
+            after that by lib/auth.ts. */}
+        <TempPasswordBanner />
         <main className="flex-1 p-6">{children}</main>
       </div>
 

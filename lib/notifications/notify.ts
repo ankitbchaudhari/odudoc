@@ -57,7 +57,12 @@ export interface NotifyResult {
 export function isChannelConfigured(channel: NotifyChannel): boolean {
   switch (channel) {
     case "sms":
-      return isSmsConfigured() && !!process.env.TWILIO_FROM_NUMBER;
+      // sendSms() in lib/sms.ts falls back to TWILIO_PHONE_NUMBER when
+      // TWILIO_FROM_NUMBER is unset, so accept either.
+      return (
+        isSmsConfigured() &&
+        !!(process.env.TWILIO_FROM_NUMBER || process.env.TWILIO_PHONE_NUMBER)
+      );
     case "whatsapp":
       return isSmsConfigured() && !!process.env.TWILIO_WHATSAPP_FROM;
     case "email":

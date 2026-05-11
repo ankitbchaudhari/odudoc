@@ -9,6 +9,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { buildInvoiceRender } from "@/lib/invoice-render/build";
 import { clientIpFromHeaders, recordAuditEvent } from "@/lib/audit/store";
+import { buildReportWatermark } from "@/lib/report-watermark";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -44,12 +45,18 @@ export async function GET(req: NextRequest) {
 
   // Watermark hint mirrors what /api/documents returns — print page
   // renders identical diagonal text encoding userId · ip · time.
+  // denyDownload is true when a corporate role views the report; UI
+  // must hide download buttons. Per Spec §13: only patients can
+  // download their own reports.
+  const actorRole = (session?.user as { role?: string } | undefined)?.role;
+  const wm = buildReportWatermark({
+    patientUserId: render.invoice.patientId,
+    req,
+    actorRole,
+  });
   return NextResponse.json({
     render,
-    watermark: {
-      patientUserId: render.invoice.patientId,
-      ip: clientIpFromHeaders(req.headers),
-      viewedAt: new Date().toISOString(),
-    },
+    watermark: wm.data,
+    denyDownload: wm.denyDownload,
   });
 }

@@ -15,6 +15,7 @@ import {
 } from "@/lib/documents/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { recordAuditEvent, clientIpFromHeaders } from "@/lib/audit/store";
+import { buildReportWatermark } from "@/lib/report-watermark";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,13 +50,17 @@ export async function GET(req: NextRequest) {
       ip,
       userAgent: req.headers.get("user-agent") || undefined,
     });
+    // Watermark + corporate-role download gate (Spec §13).
+    const actorRole = (session?.user as { role?: string } | undefined)?.role;
+    const wm = buildReportWatermark({ patientUserId: userId, req, actorRole });
     return NextResponse.json({
       document: doc,
       // Watermark hint — the client overlays patient ID + IP +
       // timestamp on every render of the document. The ip echoed
       // here matches what audit logged so the watermark and the log
       // tell the same story.
-      watermark: { patientUserId: userId, ip, viewedAt: new Date().toISOString() },
+      watermark: wm.data,
+      denyDownload: wm.denyDownload,
     });
   }
   const list = listDocuments(userId, category && VALID_CATEGORIES.includes(category) ? category : undefined);

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { PageHero, StatGrid, StatCard } from "@/components/admin/PageShell";
+import { StatusBadge } from "@/components/admin/StatusBadge";
 import type {
   ICUStay,
   ICUObservation,
@@ -429,7 +430,7 @@ function StayCard({
                 </span>
               )}
               {critical && stay.status === "active" && (
-                <span className="rounded-full bg-rose-200 px-2 py-0.5 text-[11px] font-bold text-rose-900">⚠ Critical</span>
+                <StatusBadge color="red" domain="patient" label="⚠ Critical" pulse size="sm" />
               )}
             </div>
             <div className="mt-1.5 text-[15px] font-semibold text-slate-900">{stay.patientName}</div>

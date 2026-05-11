@@ -25,16 +25,17 @@ export default function Navbar() {
   // /features anyway, and the bar was getting overcrowded. In their
   // place we promote the two pages that actually drive partner
   // signups: hospital pharmacies onboarding to OduDoc, and the
-  // doctor's onboarding guide.
-  const links: Array<{ href: string; label: string; emphasized?: boolean }> = [
-    { href: "/features", label: "Features" },
-    { href: "/doctors", label: t("nav.doctors") },
-    { href: "/for-doctors/guide", label: "Doctor's Guide" },
-    { href: "/corporate", label: "For Hospitals" },
-    { href: "/pharmacy-partners", label: "Your Pharmacy on OduDoc", emphasized: true },
-    { href: "/jobs", label: "Jobs" },
-    { href: "/blog", label: t("nav.blog") },
-    { href: "/about", label: t("nav.about") },
+  // doctor's onboarding guide. Each link carries an emoji so the bar
+  // skims like an app launcher rather than a wall of text.
+  const links: Array<{ href: string; label: string; emoji: string; emphasized?: boolean }> = [
+    { href: "/features", label: "Features", emoji: "✨" },
+    { href: "/doctors", label: t("nav.doctors"), emoji: "🩺" },
+    { href: "/for-doctors/guide", label: "Doctor's Guide", emoji: "📘" },
+    { href: "/corporate", label: "For Hospitals", emoji: "🏥" },
+    { href: "/pharmacy-partners", label: "Your Pharmacy on OduDoc", emoji: "💊", emphasized: true },
+    { href: "/jobs", label: "Jobs", emoji: "💼" },
+    { href: "/blog", label: t("nav.blog"), emoji: "📰" },
+    { href: "/about", label: t("nav.about"), emoji: "💚" },
   ];
 
   // Close dropdowns when clicking outside
@@ -113,10 +114,10 @@ export default function Navbar() {
                 className={
                   l.emphasized
                     ? "group relative inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary-600 via-primary-500 to-emerald-500 px-3.5 py-1.5 text-[13px] font-semibold text-white shadow-sm shadow-primary-500/30 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary-500/40"
-                    : "rounded-full px-3.5 py-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:bg-white hover:text-primary-700 hover:shadow-sm"
+                    : "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:bg-white hover:text-primary-700 hover:shadow-sm"
                 }
               >
-                {l.emphasized && <span aria-hidden>💊</span>}
+                <span aria-hidden className="text-[15px] leading-none">{l.emoji}</span>
                 <span className="whitespace-nowrap">{l.label}</span>
               </Link>
             ))}
@@ -281,9 +282,14 @@ export default function Navbar() {
               key={l.href}
               href={l.href}
               onClick={() => setMobileOpen(false)}
-              className="block rounded-lg px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600"
+              className={
+                l.emphasized
+                  ? "mt-1 flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary-600 via-primary-500 to-emerald-500 px-3 py-3 text-sm font-semibold text-white shadow-sm shadow-primary-500/30"
+                  : "flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600"
+              }
             >
-              {l.label}
+              <span aria-hidden className="text-base leading-none">{l.emoji}</span>
+              <span>{l.label}</span>
             </Link>
           ))}
           <div className="mt-3 border-t border-gray-100 pt-3">

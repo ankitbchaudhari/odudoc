@@ -8,6 +8,7 @@
 // composer at the bottom + a "send template" picker for outbound.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 interface Message {
   id: string; direction: "outbound" | "inbound";
@@ -111,14 +112,15 @@ export default function AdminWhatsAppPage() {
         </div>
       )}
 
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">WhatsApp inbox</h2>
-          <p className="mt-0.5 text-sm text-gray-500">
-            Two-way conversations. Inbound replies are auto-classified and the bot responds — staff can take over any thread by sending a manual reply.
-          </p>
-        </div>
-        <button onClick={() => setShowTemplate(true)} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white">+ Send template</button>
+      <div className="mb-6">
+        <PageHero
+          icon="💬"
+          eyebrow="Patient Engagement"
+          title="WhatsApp Inbox"
+          subtitle="Two-way conversations. Inbound replies are auto-classified and the bot responds — staff can take over any thread by sending a manual reply."
+          tone="emerald"
+          primaryAction={{ label: "+ Send template", onClick: () => setShowTemplate(true) }}
+        />
       </div>
 
       <div className="grid h-[70vh] gap-3 overflow-hidden lg:grid-cols-[300px_1fr]">

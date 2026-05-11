@@ -19,6 +19,7 @@
 
 import { useEffect, useState } from "react";
 import LiveTranscriber from "@/components/LiveTranscriber";
+import { PageHero } from "@/components/admin/PageShell";
 import SoapNotePanel, { type SOAPNote } from "@/components/SoapNotePanel";
 import DifferentialPanel from "@/components/DifferentialPanel";
 import RxSafetyPanel from "@/components/RxSafetyPanel";
@@ -83,13 +84,14 @@ export default function AmbientBenchPage() {
   const newDrugs = (note?.medications || []).map((m) => ({ name: m.drugName, strength: m.strength }));
 
   return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Ambient Scribe Bench</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Live mic capture (browser-native — no audio leaves your device) → deterministic SOAP structurer → fans out into the DDx copilot, ICD-10 picker, and Rx Safety guardrail in one continuous flow. Hit Start, speak to the patient, and watch every clinical-AI primitive light up.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="🎙️"
+        eyebrow="Live Capture"
+        title="Ambient Scribe Bench"
+        subtitle="Live mic capture (browser-native — no audio leaves your device) → deterministic SOAP structurer → fans out into the DDx copilot, ICD-10 picker, and Rx Safety guardrail in one continuous flow. Hit Start, speak to the patient, and watch every clinical-AI primitive light up."
+        tone="fuchsia"
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-4">

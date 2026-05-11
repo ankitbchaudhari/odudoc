@@ -10,6 +10,7 @@
 // before pulling the trigger.
 
 import { useCallback, useEffect, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 type ErasureStatus = "pending_review" | "cooling_off" | "approved" | "completed" | "rejected" | "cancelled";
 
@@ -65,10 +66,13 @@ export default function PrivacyRequestsPage() {
       )}
 
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Privacy requests</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Pending right-to-erasure requests under DPDP §13. Review each for legal-hold conflicts before approving; cooling-off must elapse before completion.
-        </p>
+        <PageHero
+          icon="🔐"
+          eyebrow="DPDP §13"
+          title="Privacy Requests"
+          subtitle="Pending right-to-erasure requests under DPDP §13. Review each for legal-hold conflicts before approving; cooling-off must elapse before completion."
+          tone="rose"
+        />
       </div>
 
       {loading ? (

@@ -5,6 +5,7 @@
 // invoice-level claims): this is the front-desk pre-admission flow.
 
 import { useCallback, useEffect, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 interface TpaEntry { id: string; name: string; shortCode: string; kind: string; preauthSlaHours: number }
 interface Empanelment {
@@ -122,9 +123,14 @@ export default function AdminCashlessPage() {
         </div>
       )}
 
-      <div className="mb-4">
-        <h2 className="text-2xl font-bold text-gray-900">Cashless desk</h2>
-        <p className="mt-1 text-sm text-gray-500">Pre-authorisation queue + TPA empanelment. Submit pre-auths, track TPA decisions, and configure which insurers your hospital is signed up with.</p>
+      <div className="mb-6">
+        <PageHero
+          icon="💳"
+          eyebrow="TPA Workflow"
+          title="Cashless Desk"
+          subtitle="Pre-authorisation queue + TPA empanelment. Submit pre-auths, track TPA decisions, and configure which insurers your hospital is signed up with."
+          tone="amber"
+        />
       </div>
 
       <div className="mb-5 flex gap-1 rounded-lg bg-slate-100 p-1">

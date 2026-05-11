@@ -11,6 +11,7 @@
 // phone to grant. On success we render the bundle.
 
 import { useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 interface BundleResp {
   bundle: {
@@ -69,13 +70,14 @@ export default function PassportScanPage() {
   };
 
   return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Health Passport Scanner</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Scan or paste the patient&apos;s QR token. If they&apos;ve granted you access we&apos;ll surface their consented bundle. Otherwise you&apos;ll get a deep-link to send them so they can grant access from their phone.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="🛂"
+        eyebrow="Consent Bundle"
+        title="Health Passport Scanner"
+        subtitle="Scan or paste the patient's QR token. If they've granted you access we'll surface their consented bundle. Otherwise you'll get a deep-link to send them so they can grant access from their phone."
+        tone="violet"
+      />
 
       <div className="rounded-xl bg-white p-5 shadow-sm">
         <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Patient passport token</p>

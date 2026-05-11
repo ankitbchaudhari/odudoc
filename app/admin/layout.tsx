@@ -16,9 +16,50 @@ import TempPasswordBanner from "@/components/TempPasswordBanner";
 // Unset on a section means it inherits from items. Sections with
 // `requires: "super"` are hidden entirely from tenant admins.
 
+// Every module flag the organizations store knows about (99-key
+// modules record on Organization). Sidebar gates need to accept ALL
+// of them — previously this list was only ~11 keys, so super-admin
+// toggles on Physiotherapy / Cardiology / Blood Bank / Dialysis /
+// Housekeeping / Infection Control / Emergency Codes / etc. silently
+// did nothing because no nav item referenced their flag.
 type OrgModuleKey =
-  | "patient" | "opd" | "ipd" | "lab" | "pharmacy" | "billing"
-  | "surgery" | "inventory" | "radiology" | "telemedicine" | "aiVoice";
+  // Core clinical
+  | "patient" | "opd" | "ipd" | "appointments" | "encounters"
+  | "hospitalRx" | "medicalRecords" | "referrals" | "consentForms"
+  | "dischargeSummaries" | "allergiesProblems" | "immunizations"
+  | "vitalsEws" | "lab" | "pathology" | "pharmacy" | "pharmacyDispense"
+  | "pharmacyInventory" | "billing" | "invoices" | "surgery"
+  | "inventory" | "radiology" | "telemedicine" | "aiVoice"
+  // Inpatient & surgical
+  | "bedManagement" | "otScheduling" | "preAnesthesia" | "icu"
+  | "laborDelivery" | "woundCare" | "painManagement" | "oncology"
+  | "cardiology" | "endoscopy" | "bloodBank" | "ambulance"
+  | "maternity" | "nicu" | "dialysis" | "physiotherapy" | "diet"
+  | "cssd"
+  // Front-office & engagement
+  | "opdQueue" | "patientFeedback" | "visitors"
+  // Workforce
+  | "hrPayroll" | "medicalStaff" | "shiftRoster" | "staffScheduling"
+  | "dutyHandover"
+  // Facilities & compliance
+  | "procurement" | "insurance" | "assetManagement" | "biomedical"
+  | "biomedicalWaste" | "housekeeping" | "linenLaundry"
+  | "infectionControl" | "incidentReports" | "emergencyCodes"
+  | "mortuary" | "multiBranch" | "analytics" | "audit"
+  // Patient engagement
+  | "patientPortal" | "whatsappEngagement"
+  // Platform / White-label
+  | "apiAccess" | "whiteLabel"
+  // New capabilities (Q3 2026 batch)
+  | "orgBranding" | "miniWebsite" | "surgeryVideo" | "biometricEmergency"
+  | "antiCounterfeit" | "pharmaCatalogue" | "pharmaPartners"
+  | "pharmaPromo" | "orgVacancies" | "educationPartner"
+  | "voiceBookingBot" | "whatsappBookingBot" | "aiCreditPool"
+  | "aiPricingOverride" | "mlTrainingQueue" | "carePlans" | "symptomLog"
+  | "vaccinations" | "documentVault" | "auditLog" | "emergencyProfile"
+  | "vitalAlerts" | "consumablesBilling" | "countryTax"
+  | "watermarkedReports" | "referralCommissions" | "healthTimeline"
+  | "adherence" | "shareTokens" | "triagePalette";
 
 type Visibility = "super" | "core" | OrgModuleKey;
 
@@ -294,19 +335,19 @@ const navSections: NavSection[] = [
       {
         href: "/admin/appointments",
         label: "Appointments",
-        requires: "opd",
+        requires: "appointments",
         icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
       },
       {
         href: "/admin/encounters",
         label: "Encounters",
-        requires: "opd",
+        requires: "encounters",
         icon: "M19 14l-7 7m0 0l-7-7m7 7V3",
       },
       {
         href: "/admin/hospital-rx",
         label: "Hospital Rx",
-        requires: "opd",
+        requires: "hospitalRx",
         icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
       },
       {
@@ -318,7 +359,7 @@ const navSections: NavSection[] = [
       {
         href: "/admin/invoices",
         label: "Invoices",
-        requires: "billing",
+        requires: "invoices",
         icon: "M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21l-7-4-7 4V5a2 2 0 012-2h10a2 2 0 012 2v16z",
       },
       {
@@ -330,13 +371,13 @@ const navSections: NavSection[] = [
       {
         href: "/admin/dispensing",
         label: "Pharmacy Dispense",
-        requires: "pharmacy",
+        requires: "pharmacyDispense",
         icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1",
       },
       {
         href: "/admin/wards",
         label: "Wards & Beds",
-        requires: "ipd",
+        requires: "bedManagement",
         icon: "M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M3 7l2-3h14l2 3M3 7h18M9 21V11h6v10",
       },
       {
@@ -348,7 +389,7 @@ const navSections: NavSection[] = [
       {
         href: "/admin/surgeries",
         label: "Surgery / OT",
-        requires: "surgery",
+        requires: "otScheduling",
         icon: "M12 6v6m0 0v6m0-6h6m-6 0H6",
       },
       {
@@ -360,13 +401,13 @@ const navSections: NavSection[] = [
       {
         href: "/admin/staff",
         label: "Medical Staff",
-        requires: "core",
+        requires: "medicalStaff",
         icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z",
       },
       {
         href: "/admin/roster",
         label: "Shift Roster",
-        requires: "core",
+        requires: "shiftRoster",
         icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
       },
       {
@@ -378,205 +419,205 @@ const navSections: NavSection[] = [
       {
         href: "/admin/blood-bank",
         label: "Blood Bank",
-        requires: "lab",
+        requires: "bloodBank",
         icon: "M12 2l-5.5 9a6 6 0 1011 0L12 2z",
       },
       {
         href: "/admin/vitals",
         label: "Vitals & EWS",
-        requires: "ipd",
+        requires: "vitalsEws",
         icon: "M3 12h4l3-8 4 16 3-8h4",
       },
       {
         href: "/admin/insurance",
         label: "Insurance / TPA",
-        requires: "billing",
+        requires: "insurance",
         icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
       },
       {
         href: "/admin/consent",
         label: "Consent Forms",
-        requires: "opd",
+        requires: "consentForms",
         icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
       },
       {
         href: "/admin/discharge",
         label: "Discharge Summaries",
-        requires: "ipd",
+        requires: "dischargeSummaries",
         icon: "M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1",
       },
       {
         href: "/admin/immunizations",
         label: "Immunizations",
-        requires: "patient",
+        requires: "immunizations",
         icon: "M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z",
       },
       {
         href: "/admin/problems",
         label: "Allergies & Problems",
-        requires: "patient",
+        requires: "allergiesProblems",
         icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z",
       },
       {
         href: "/admin/referrals",
         label: "Referrals",
-        requires: "patient",
+        requires: "referrals",
         icon: "M17 8l4 4m0 0l-4 4m4-4H3",
       },
       {
         href: "/admin/incidents",
         label: "Incident Reports",
-        requires: "core",
+        requires: "incidentReports",
         icon: "M12 8v4m0 4h.01M4.062 19h15.876c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L2.33 16c-.77 1.333.192 3 1.732 3z",
       },
       {
         href: "/admin/biomedical",
         label: "Biomedical",
-        requires: "inventory",
+        requires: "biomedical",
         icon: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10",
       },
       {
         href: "/admin/dietary",
         label: "Dietary Orders",
-        requires: "ipd",
+        requires: "diet",
         icon: "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z",
       },
       {
         href: "/admin/cssd",
         label: "CSSD Sterilization",
-        requires: "surgery",
+        requires: "cssd",
         icon: "M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z",
       },
       {
         href: "/admin/pharmacy-inventory",
         label: "Pharmacy Inventory",
-        requires: "pharmacy",
+        requires: "pharmacyInventory",
         icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4",
       },
       {
         href: "/admin/staff-schedule",
         label: "Staff Scheduling",
-        requires: "core",
+        requires: "staffScheduling",
         icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
       },
       {
         href: "/admin/biowaste",
         label: "Biomedical Waste",
-        requires: "inventory",
+        requires: "biomedicalWaste",
         icon: "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16",
       },
       {
         href: "/admin/ambulance",
         label: "Ambulance Dispatch",
-        requires: "ipd",
+        requires: "ambulance",
         icon: "M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4",
       },
       {
         href: "/admin/infection",
         label: "Infection Control",
-        requires: "ipd",
+        requires: "infectionControl",
         icon: "M12 2a10 10 0 100 20 10 10 0 000-20zm0 4v4m0 4h.01M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83m0-14.14l-2.83 2.83M7.76 16.24l-2.83 2.83",
       },
       {
         href: "/admin/queue",
         label: "OPD Queue",
-        requires: "opd",
+        requires: "opdQueue",
         icon: "M4 6h16M4 12h16M4 18h7",
       },
       {
         href: "/admin/mortuary",
         label: "Mortuary",
-        requires: "ipd",
+        requires: "mortuary",
         icon: "M5 8h14M5 8a2 2 0 00-2 2v8a2 2 0 002 2h14a2 2 0 002-2v-8a2 2 0 00-2-2M5 8V6a2 2 0 012-2h10a2 2 0 012 2v2M9 12h6",
       },
       {
         href: "/admin/feedback",
         label: "Patient Feedback",
-        requires: "patient",
+        requires: "patientFeedback",
         icon: "M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z",
       },
       {
         href: "/admin/housekeeping",
         label: "Housekeeping",
-        requires: "ipd",
+        requires: "housekeeping",
         icon: "M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z",
       },
       {
         href: "/admin/visitors",
         label: "Visitors",
-        requires: "ipd",
+        requires: "visitors",
         icon: "M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V4a2 2 0 012-2h0a2 2 0 012 2v2m-4 0h4m-4 6a3 3 0 106 0 3 3 0 00-6 0z",
       },
       {
         href: "/admin/handover",
         label: "Duty Handover",
-        requires: "ipd",
+        requires: "dutyHandover",
         icon: "M8 7h12m0 0l-4-4m4 4l-4 4m-8 6H4m0 0l4 4m-4-4l4-4",
       },
       {
         href: "/admin/laundry",
         label: "Linen & Laundry",
-        requires: "inventory",
+        requires: "linenLaundry",
         icon: "M12 3l1.5 3L17 7l-2.5 2.5L15 13l-3-1.5L9 13l.5-3.5L7 7l3.5-1L12 3zM6 20h12a2 2 0 002-2v-2H4v2a2 2 0 002 2z",
       },
       {
         href: "/admin/dialysis",
         label: "Dialysis",
-        requires: "ipd",
+        requires: "dialysis",
         icon: "M12 2v4M8 6h8M6 10h12l-1 10a2 2 0 01-2 2H9a2 2 0 01-2-2L6 10zM10 14v4m4-4v4",
       },
       {
         href: "/admin/emergency-codes",
         label: "Emergency Codes",
-        requires: "ipd",
+        requires: "emergencyCodes",
         icon: "M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0l-7.1 12.25A2 2 0 005 19z",
       },
       {
         href: "/admin/maternity",
         label: "Labor & Delivery",
-        requires: "ipd",
+        requires: "laborDelivery",
         icon: "M12 14a4 4 0 100-8 4 4 0 000 8zm0 0v7m-4-4h8",
       },
       {
         href: "/admin/physio",
         label: "Physiotherapy",
-        requires: "ipd",
+        requires: "physiotherapy",
         icon: "M13 10V3L4 14h7v7l9-11h-7z",
       },
       {
         href: "/admin/oncology",
         label: "Oncology & Chemo",
-        requires: "ipd",
+        requires: "oncology",
         icon: "M7 11a4 4 0 118 0 4 4 0 01-8 0zm4-7v2m0 14v2m7-9h2M2 11h2m13.07-5.07l1.42 1.42M4.93 17.07l1.42-1.42m11.31 0l1.42 1.42M4.93 4.93l1.42 1.42",
       },
       {
         href: "/admin/icu",
         label: "ICU / Critical Care",
-        requires: "ipd",
+        requires: "icu",
         icon: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
       },
       {
         href: "/admin/wound-care",
         label: "Wound Care",
-        requires: "ipd",
+        requires: "woundCare",
         icon: "M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364zM8 10l2 2m4-4l2 2",
       },
       {
         href: "/admin/endoscopy",
         label: "Endoscopy",
-        requires: "surgery",
+        requires: "endoscopy",
         icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4",
       },
       {
         href: "/admin/cardiology",
         label: "Cardiology",
-        requires: "ipd",
+        requires: "cardiology",
         icon: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
       },
       {
         href: "/admin/pathology",
         label: "Pathology",
-        requires: "lab",
+        requires: "pathology",
         icon: "M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z",
       },
       {
@@ -588,13 +629,13 @@ const navSections: NavSection[] = [
       {
         href: "/admin/pac",
         label: "Pre-Anesthesia",
-        requires: "surgery",
+        requires: "preAnesthesia",
         icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
       },
       {
         href: "/admin/pain",
         label: "Pain Management",
-        requires: "ipd",
+        requires: "painManagement",
         icon: "M3 12h4l3-8 4 16 3-8h4",
       },
       {

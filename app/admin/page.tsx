@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import type { CurrencyInfo } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
+import QuickAddPanel from "@/components/admin/QuickAddPanel";
 
 interface Stats {
   posts: number;
@@ -74,6 +77,13 @@ interface DashboardResp {
   // "platform" → super-admin global view; "org" → tenant-scoped.
   scope?: "platform" | "org";
   organizationId?: string;
+  organizationName?: string | null;
+  /** ISO-2 country code on the org record. Drives the currency. */
+  country?: string | null;
+  /** Resolved currency descriptor — populated server-side by
+   *  currencyForCountry() so the dashboard never has to know the
+   *  mapping table. */
+  currency?: CurrencyInfo;
   stats: Stats;
   revenue: number;
   subscribers: Subscriber[];
@@ -189,6 +199,13 @@ export default function AdminDashboard() {
 
   const stats = data?.stats;
   const revenue = data?.revenue ?? 0;
+  // Currency descriptor — resolved server-side from the org's country,
+  // defaults to USD for the platform view. Used everywhere on the
+  // dashboard that renders money so an Indian hospital sees ₹ and a
+  // US one sees $.
+  const currency = data?.currency;
+  const money = (n: number | null | undefined, opts?: { compact?: boolean }) =>
+    formatMoney(n ?? 0, currency, opts);
 
   const today = useMemo(
     () =>
@@ -219,11 +236,14 @@ export default function AdminDashboard() {
               Live · {today}
             </div>
             <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              Welcome back, Admin 👋
+              {data?.scope === "org" && data.organizationName
+                ? `Welcome back, ${data.organizationName} 👋`
+                : "Welcome back, Admin 👋"}
             </h1>
             <p className="mt-2 max-w-xl text-sm text-white/70">
-              Here is what is happening across OduDoc today — revenue, new signups,
-              pending reviews and everything in between.
+              {data?.scope === "org"
+                ? `Here's what's happening at your hospital today — admissions, invoices${currency ? ` in ${currency.code}` : ""}, and your team at a glance.`
+                : "Here is what is happening across OduDoc today — revenue, new signups, pending reviews and everything in between."}
             </p>
           </div>
 
@@ -266,7 +286,7 @@ export default function AdminDashboard() {
         {/* Top-level KPI strip (revenue / orders / bookings / forms) */}
         <div className="relative mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { label: "Revenue", value: `$${revenue.toFixed(2)}`, hint: "Gross online sales" },
+            { label: "Revenue", value: money(revenue, { compact: true }), hint: `Gross${currency ? ` (${currency.code})` : ""}` },
             { label: "Orders", value: stats?.orders ?? 0, hint: "Across all vendors" },
             { label: "Bookings", value: stats?.bookings ?? 0, hint: "Confirmed appointments" },
             { label: "Form Responses", value: stats?.formResponses ?? 0, hint: "Contact + demo" },
@@ -293,6 +313,12 @@ export default function AdminDashboard() {
           {error}
         </div>
       )}
+
+      {/* Org-admin quick-add strip — surface the actions an org admin
+          actually performs most often (add staff, admit a patient,
+          schedule appointment, raise invoice) without forcing a
+          sidebar navigation. Hidden for the platform/super view. */}
+      {data?.scope === "org" && <QuickAddPanel onChange={refresh} />}
 
       {/* ── KPI cards ─────────────────────────────────────────────── */}
       <div>
@@ -347,16 +373,16 @@ export default function AdminDashboard() {
               icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
             />
             <KpiCard
-              label="Outstanding (₹)"
-              value={stats?.outstandingBalance ? Math.round(stats.outstandingBalance).toLocaleString() : "—"}
+              label={`Outstanding${currency ? ` (${currency.code})` : ""}`}
+              value={stats?.outstandingBalance ? money(stats.outstandingBalance) : "—"}
               href="/admin/invoices?filter=unpaid"
               tint="from-rose-50 to-pink-100/40 text-rose-900"
               iconBg="bg-gradient-to-br from-rose-500 to-pink-600 shadow-rose-500/30"
               icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
             />
             <KpiCard
-              label="Revenue (₹)"
-              value={data?.revenue ? Math.round(data.revenue).toLocaleString() : "—"}
+              label={`Revenue${currency ? ` (${currency.code})` : ""}`}
+              value={data?.revenue ? money(data.revenue) : "—"}
               href="/admin/invoices"
               tint="from-teal-50 to-emerald-100/40 text-teal-900"
               iconBg="bg-gradient-to-br from-teal-500 to-emerald-600 shadow-teal-500/30"
@@ -642,8 +668,8 @@ export default function AdminDashboard() {
                         <p className="text-xs text-slate-500">Patient {inv.patientId}{inv.issuedAt ? ` · ${new Date(inv.issuedAt).toLocaleDateString()}` : ""}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-bold tabular-nums">₹{Math.round(inv.grandTotal).toLocaleString()}</p>
-                        {inv.balance > 0 && <p className="text-[10px] text-rose-600">Due ₹{Math.round(inv.balance).toLocaleString()}</p>}
+                        <p className="text-sm font-bold tabular-nums">{money(inv.grandTotal)}</p>
+                        {inv.balance > 0 && <p className="text-[10px] text-rose-600">Due {money(inv.balance)}</p>}
                       </div>
                     </div>
                   </li>

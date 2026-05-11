@@ -11,6 +11,8 @@ import { getTenantContext } from "@/lib/tenant";
 import { listStaff } from "@/lib/hospital/staff-store";
 import { listAdmissions } from "@/lib/hospital/admissions-store";
 import { listInvoices } from "@/lib/hospital/invoices-store";
+import { getOrganizationById } from "@/lib/organizations-store";
+import { currencyForCountry } from "@/lib/currency";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -97,9 +99,18 @@ async function orgScopedHandler(organizationId: string) {
   // returns. Non-applicable counters (posts, subscribers, comments)
   // are zeroed out and the front-end hides the cards when both
   // count + label are absent.
+  // Pull the org's country so the dashboard renders the correct
+  // currency symbol — INR for India, USD for US, etc. Falls back to
+  // USD when the field is unset (safer global default than ₹).
+  const org = getOrganizationById(organizationId);
+  const currency = currencyForCountry(org?.country);
+
   return NextResponse.json({
     scope: "org",
     organizationId,
+    organizationName: org?.name ?? null,
+    country: org?.country ?? null,
+    currency,
     stats: {
       // Hospital-relevant tiles
       staff: staff.length,
@@ -181,6 +192,9 @@ async function platformWideHandler() {
     scope: "platform",
     stats,
     revenue,
+    // Platform marketplace is USD-denominated; org admins get their
+    // local symbol via the org-scoped branch.
+    currency: currencyForCountry("US"),
     subscribers,
     comments,
     recentOrders: orders.slice(0, 5),

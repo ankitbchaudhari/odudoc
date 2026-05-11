@@ -1165,15 +1165,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="admin-shell flex">
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 z-40 flex h-full flex-col border-r border-slate-800/60 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-slate-300 shadow-2xl transition-all duration-300 ${
+        className={`admin-sidebar fixed left-0 top-0 z-40 flex h-full flex-col border-r border-indigo-900/40 shadow-2xl shadow-indigo-950/30 transition-all duration-300 ${
           collapsed ? "w-[72px]" : "w-64"
         }`}
       >
         {/* Brand */}
-        <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-slate-800/60 px-4">
+        <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-white/10 px-4">
           {(() => {
             // For org admins, swap the platform brand for the org's own
             // name so they feel they're in their hospital's console — not
@@ -1183,21 +1183,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             const brandInitial = (brandTitle || "O").trim().slice(0, 1).toUpperCase();
             return !collapsed ? (
               <Link href="/admin" className="flex items-center gap-2.5 overflow-hidden">
-                <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary-400 to-primary-700 text-sm font-bold text-white shadow-lg shadow-primary-900/40 ring-1 ring-white/10">
+                <span className="relative flex h-9 w-9 items-center justify-center admin-brand-logo rounded-xl text-sm font-bold">
                   {brandInitial}
                 </span>
                 <span className="flex flex-col leading-tight">
                   <span className="truncate text-[15px] font-bold tracking-tight text-white" title={brandTitle}>
                     {brandTitle}
                   </span>
-                  <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary-400">
+                  <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-violet-300">
                     Admin Console
                   </span>
                 </span>
               </Link>
             ) : (
               <Link href="/admin" className="flex w-full items-center justify-center" title={brandTitle}>
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary-400 to-primary-700 text-sm font-bold text-white shadow-lg shadow-primary-900/40 ring-1 ring-white/10">
+                <span className="flex h-9 w-9 items-center justify-center admin-brand-logo rounded-xl text-sm font-bold">
                   {brandInitial}
                 </span>
               </Link>
@@ -1206,7 +1206,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {!collapsed && (
             <button
               onClick={() => setCollapsed(true)}
-              className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-white"
+              className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
               aria-label="Collapse sidebar"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1220,7 +1220,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {collapsed && (
           <button
             onClick={() => setCollapsed(false)}
-            className="mx-3 mt-3 flex items-center justify-center rounded-lg border border-slate-800 bg-slate-800/50 p-2 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+            className="mx-3 mt-3 flex items-center justify-center rounded-lg border border-white/10 bg-white/5 p-2 text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
             aria-label="Expand sidebar"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1234,11 +1234,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {visibleSections.map((section) => (
             <div key={section.title} className="mb-3">
               {!collapsed && (
-                <div className="mb-1 px-5 pt-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <div className="mb-1 px-5 pt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-300/70">
                   {section.title}
                 </div>
               )}
-              {collapsed && <div className="mx-4 my-3 h-px bg-slate-800/70" />}
+              {collapsed && <div className="mx-4 my-3 h-px bg-gradient-to-r from-transparent via-violet-400/30 to-transparent" />}
 
               {section.items.map((item) => {
                 const isActive =
@@ -1255,13 +1255,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         onClick={() => toggleGroup(item.href)}
                         className={`group relative mx-2 mb-0.5 flex w-[calc(100%-16px)] items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all ${
                           isGroupActive
-                            ? "bg-slate-800/70 text-white"
-                            : "text-slate-400 hover:bg-slate-800/50 hover:text-white"
+                            ? "bg-white/10 text-white ring-1 ring-violet-400/30"
+                            : "text-slate-300 hover:bg-white/5 hover:text-white"
                         }`}
                         title={collapsed ? item.label : undefined}
                       >
                         {isGroupActive && (
-                          <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-primary-400" />
+                          <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-gradient-to-b from-indigo-400 to-violet-400" />
                         )}
                         <svg className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d={item.icon} />
@@ -1290,8 +1290,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 href={child.href}
                                 className={`block rounded-md px-3 py-1.5 text-[12.5px] transition-colors ${
                                   childActive
-                                    ? "font-semibold text-primary-300"
-                                    : "text-slate-500 hover:text-slate-200"
+                                    ? "font-semibold text-violet-300"
+                                    : "text-slate-400 hover:text-slate-100"
                                 }`}
                               >
                                 {child.label}
@@ -1310,8 +1310,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     href={item.href}
                     className={`group relative mx-2 mb-0.5 flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all ${
                       isActive
-                        ? "bg-gradient-to-r from-primary-600/90 to-primary-500/80 text-white shadow-lg shadow-primary-900/30"
-                        : "text-slate-400 hover:bg-slate-800/50 hover:text-white"
+                        ? "bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white shadow-lg shadow-indigo-900/40"
+                        : "text-slate-300 hover:bg-white/5 hover:text-white"
                     }`}
                     title={collapsed ? item.label : undefined}
                   >
@@ -1330,7 +1330,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       <>
                         <span className="flex-1">{item.label}</span>
                         {item.badge && (
-                          <span className="rounded-full bg-primary-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-primary-300">
+                          <span className="rounded-full bg-emerald-500/25 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-200">
                             {item.badge}
                           </span>
                         )}
@@ -1348,13 +1348,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             Scoped roles don't own module purchasing either, so hide for
             them too. */}
         {ctx && !ctx.isSuperAdmin && !scopedNav && (
-          <div className="flex-shrink-0 border-t border-slate-800/60 pt-3">
+          <div className="flex-shrink-0 border-t border-white/10 pt-3">
             <RequestModulesCard collapsed={collapsed} enabledModules={ctx.modules} />
           </div>
         )}
 
         {/* User footer card */}
-        <div className="flex-shrink-0 border-t border-slate-800/60 p-3">
+        <div className="flex-shrink-0 border-t border-white/10 p-3">
           {(() => {
             // Resolve the signed-in user's display name + email for the
             // footer chip. We prefer the session's name/email so an org
@@ -1364,8 +1364,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             const displayEmail = ctx?.userEmail || fallbackEmail;
             const initial = (displayName || displayEmail || "?").trim().slice(0, 1).toUpperCase();
             return !collapsed ? (
-              <div className="flex items-center gap-2.5 rounded-lg bg-slate-800/40 px-2.5 py-2 ring-1 ring-slate-800/50">
-                <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-700 text-[13px] font-bold text-white ring-2 ring-slate-900">
+              <div className="flex items-center gap-2.5 rounded-lg bg-white/5 px-2.5 py-2 ring-1 ring-violet-400/20 backdrop-blur-sm">
+                <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 via-violet-500 to-fuchsia-500 text-[13px] font-bold text-white shadow-lg shadow-violet-900/40 ring-2 ring-slate-900">
                   {initial}
                   <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900" />
                 </div>
@@ -1387,7 +1387,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
             ) : (
               <div className="flex justify-center" title={displayEmail || displayName}>
-                <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-primary-700 text-[13px] font-bold text-white ring-2 ring-slate-900">
+                <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 via-violet-500 to-fuchsia-500 text-[13px] font-bold text-white shadow-lg shadow-violet-900/40 ring-2 ring-slate-900">
                   {initial}
                   <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900" />
                 </div>
@@ -1400,7 +1400,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main area */}
       <div className={`flex flex-1 flex-col transition-all duration-300 ${collapsed ? "ml-[72px]" : "ml-64"}`}>
         {/* Top bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white/80 px-6 backdrop-blur-md">
+        <header className="admin-header">
           <div className="min-w-0">
             {ctx && !ctx.isSuperAdmin && ctx.activeOrgName ? (
               <>
@@ -1430,7 +1430,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <input
                 type="text"
                 placeholder="Search…"
-                className="w-60 rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-700 placeholder-slate-400 outline-none transition focus:border-primary-400 focus:bg-white focus:ring-2 focus:ring-primary-100"
+                className="w-60 rounded-lg border border-indigo-100 bg-indigo-50/40 py-2 pl-9 pr-3 text-sm text-slate-700 placeholder-slate-400 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-200"
               />
             </div>
             <button className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700" title="View site">
@@ -1444,8 +1444,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="mx-1 h-6 w-px bg-slate-200" />
             <div className="flex items-center gap-2.5 rounded-lg px-2 py-1.5">
               <div className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white shadow-sm ${
-                ctx?.isSuperAdmin ? "bg-gradient-to-br from-primary-400 to-primary-700"
-                                  : "bg-gradient-to-br from-indigo-400 to-indigo-700"
+                ctx?.isSuperAdmin ? "bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500"
+                                  : "bg-gradient-to-br from-emerald-500 to-teal-500"
               }`}>
                 {ctx?.isSuperAdmin ? "A" : (ctx?.activeOrgName || "Org").slice(0, 1).toUpperCase()}
               </div>

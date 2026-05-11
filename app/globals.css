@@ -158,3 +158,76 @@ body {
 .notranslate {
   white-space: pre-wrap;
 }
+
+/* =========================================================================
+   Admin console theme — scoped under `.admin-shell` so the public site is
+   unaffected. Palette: indigo-600 (primary), emerald-500 (secondary),
+   violet-500 (accent).
+   ========================================================================= */
+@layer components {
+  .admin-shell {
+    @apply min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/40 to-violet-50/30;
+  }
+  .admin-sidebar {
+    @apply bg-gradient-to-b from-slate-900 via-indigo-950 to-violet-950 text-slate-200;
+  }
+  .admin-sidebar-active {
+    @apply bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-900/40;
+  }
+  .admin-brand-logo {
+    @apply bg-gradient-to-br from-indigo-400 via-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-900/40 ring-1 ring-white/20;
+  }
+  .admin-btn-gradient {
+    @apply inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-900/20 transition-all hover:from-indigo-700 hover:via-violet-700 hover:to-fuchsia-700 hover:shadow-lg hover:shadow-indigo-900/30 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2;
+  }
+  .admin-btn-emerald {
+    @apply inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-emerald-900/20 transition-all hover:from-emerald-600 hover:to-teal-600 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2;
+  }
+  .admin-stat-card {
+    @apply relative overflow-hidden rounded-2xl border border-white/60 bg-white p-5 shadow-md shadow-slate-200/60 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-200/50;
+  }
+  .admin-stat-card-indigo  { @apply admin-stat-card; }
+  .admin-stat-card-indigo::before {
+    content: "";
+    @apply absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 to-violet-500;
+  }
+  .admin-stat-card-emerald { @apply admin-stat-card; }
+  .admin-stat-card-emerald::before {
+    content: "";
+    @apply absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500;
+  }
+  .admin-stat-card-violet  { @apply admin-stat-card; }
+  .admin-stat-card-violet::before {
+    content: "";
+    @apply absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 to-fuchsia-500;
+  }
+  .admin-stat-card-amber   { @apply admin-stat-card; }
+  .admin-stat-card-amber::before {
+    content: "";
+    @apply absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 to-orange-500;
+  }
+  .admin-empty-callout {
+    @apply relative overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-white via-indigo-50/60 to-violet-50/60 p-6 text-sm text-slate-700 shadow-sm;
+  }
+  .admin-empty-callout::before {
+    content: "";
+    @apply absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-indigo-500 via-violet-500 to-fuchsia-500;
+  }
+  .admin-header {
+    @apply sticky top-0 z-30 flex h-16 items-center justify-between border-b border-indigo-100/70 bg-white/70 px-6 backdrop-blur-md;
+  }
+  .admin-chip-super {
+    @apply bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500;
+  }
+}
+
+/* Custom scrollbar for admin sidebar */
+.admin-scroll::-webkit-scrollbar { width: 6px; }
+.admin-scroll::-webkit-scrollbar-track { background: transparent; }
+.admin-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, rgba(99,102,241,0.4), rgba(139,92,246,0.4));
+  border-radius: 3px;
+}
+.admin-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, rgba(99,102,241,0.7), rgba(139,92,246,0.7));
+}

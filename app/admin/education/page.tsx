@@ -73,7 +73,7 @@ export default function EducationAdminPage() {
     load();
   };
 
-  if (!orgId) return <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Pick an organization from the header.</p>;
+  if (!orgId) return <p className="admin-empty-callout">Pick an organization from the header.</p>;
 
   return (
     <div className="space-y-6">

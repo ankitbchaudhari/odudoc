@@ -7,6 +7,7 @@
 // localStorage (org-switcher convention).
 
 import { useCallback, useEffect, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 type Kind = "full_time" | "part_time" | "locum" | "contract" | "internship" | "fellowship" | "residency" | "volunteer";
 type Status = "open" | "filled" | "closed" | "draft";
@@ -58,16 +59,18 @@ export default function VacanciesAdminPage() {
   if (!orgId) return <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Pick an organization from the header.</p>;
 
   return (
-    <div>
-      <div className="mb-4 flex items-end justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Vacancies</h2>
-          <p className="mt-1 text-sm text-gray-500">Open roles — surfaced on /jobs and your /c/&lt;slug&gt; mini-site.</p>
-        </div>
-        <button onClick={() => setShowForm((v) => !v)} className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white">
-          {showForm ? "Cancel" : "+ New vacancy"}
-        </button>
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="💼"
+        eyebrow="Hiring"
+        title="Vacancies"
+        subtitle="Open roles — surfaced on /jobs and your /c/<slug> mini-site."
+        tone="amber"
+        primaryAction={{
+          label: showForm ? "Cancel" : "+ New vacancy",
+          onClick: () => setShowForm((v) => !v),
+        }}
+      />
 
       {showForm && <VacancyForm orgId={orgId} onSaved={() => { setShowForm(false); load(); }} />}
 

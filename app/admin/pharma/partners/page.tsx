@@ -7,6 +7,7 @@
 // reseller before purchase.
 
 import { useCallback, useEffect, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 type Kind = "distributor" | "retailer" | "stockist" | "agent";
 
@@ -63,16 +64,18 @@ export default function PartnersAdminPage() {
   if (!orgId) return <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Pick an organization from the header.</p>;
 
   return (
-    <div>
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Authorized partners</h2>
-          <p className="mt-1 text-sm text-gray-500">Distributors, retailers, stockists, agents you've authorized to sell your brands. Doctors verify against this registry.</p>
-        </div>
-        <button onClick={() => setShowForm((v) => !v)} className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white">
-          {showForm ? "Cancel" : "+ New partner"}
-        </button>
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="🤝"
+        eyebrow="Supply Chain"
+        title="Authorized Partners"
+        subtitle="Distributors, retailers, stockists, agents you've authorized to sell your brands. Doctors verify against this registry."
+        tone="indigo"
+        primaryAction={{
+          label: showForm ? "Cancel" : "+ New partner",
+          onClick: () => setShowForm((v) => !v),
+        }}
+      />
 
       {showForm && <PartnerForm orgId={orgId} onSaved={() => { setShowForm(false); load(); }} />}
 

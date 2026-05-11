@@ -3,6 +3,7 @@
 // Pharma promo / detailing slot admin.
 
 import { useCallback, useEffect, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 interface Slot {
   id: string; organizationId: string;
@@ -48,18 +49,18 @@ export default function PromoAdminPage() {
   if (!orgId) return <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Pick an organization from the header.</p>;
 
   return (
-    <div>
-      <div className="mb-4 flex items-end justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Drug promotions</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Promo cards shown to doctors filtered by specialty + city. Compliance varies by jurisdiction — verify your use of these slots is legal in your region.
-          </p>
-        </div>
-        <button onClick={() => setShowForm((v) => !v)} className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white">
-          {showForm ? "Cancel" : "+ New promo"}
-        </button>
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="📣"
+        eyebrow="Detailing"
+        title="Drug Promotions"
+        subtitle="Promo cards shown to doctors filtered by specialty + city. Compliance varies by jurisdiction — verify your use of these slots is legal in your region."
+        tone="fuchsia"
+        primaryAction={{
+          label: showForm ? "Cancel" : "+ New promo",
+          onClick: () => setShowForm((v) => !v),
+        }}
+      />
 
       {showForm && <PromoForm orgId={orgId} onSaved={() => { setShowForm(false); load(); }} />}
 

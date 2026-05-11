@@ -7,6 +7,7 @@
 // org (read from localStorage as elsewhere).
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 type Form = "tablet" | "capsule" | "syrup" | "injection" | "topical" | "inhaler" | "drops" | "patch" | "other";
 type Schedule = "OTC" | "H" | "H1" | "X" | "G" | "K";
@@ -56,16 +57,18 @@ export default function DrugsAdminPage() {
   if (!orgId) return <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Pick an organization from the header.</p>;
 
   return (
-    <div>
-      <div className="mb-4 flex items-end justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Drug catalogue</h2>
-          <p className="mt-1 text-sm text-gray-500">Register each SKU + batches + regulatory papers. Doctors verify against this before prescribing.</p>
-        </div>
-        <button onClick={() => setShowForm((v) => !v)} className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white">
-          {showForm ? "Cancel" : "+ New SKU"}
-        </button>
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="💊"
+        eyebrow="Pharma Catalogue"
+        title="Drug Catalogue"
+        subtitle="Register each SKU + batches + regulatory papers. Doctors verify against this before prescribing."
+        tone="violet"
+        primaryAction={{
+          label: showForm ? "Cancel" : "+ New SKU",
+          onClick: () => setShowForm((v) => !v),
+        }}
+      />
 
       {showForm && <DrugForm orgId={orgId} onSaved={() => { setShowForm(false); load(); }} />}
 

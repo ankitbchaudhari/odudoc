@@ -3,6 +3,7 @@
 // Education partner admin — courses + placement-request inbox.
 
 import { useCallback, useEffect, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 type Level = "certificate" | "diploma" | "undergrad" | "postgrad" | "fellowship" | "cme" | "workshop";
 type Mode = "in_person" | "online_self_paced" | "online_live" | "online_one_on_one" | "hybrid";
@@ -75,18 +76,19 @@ export default function EducationAdminPage() {
   if (!orgId) return <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Pick an organization from the header.</p>;
 
   return (
-    <div>
-      <div className="mb-4 flex items-end justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Education</h2>
-          <p className="mt-1 text-sm text-gray-500">Course catalogue + student placement requests.</p>
-        </div>
-        {tab === "courses" && (
-          <button onClick={() => setShowForm((v) => !v)} className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white">
-            {showForm ? "Cancel" : "+ New course"}
-          </button>
-        )}
-      </div>
+    <div className="space-y-6">
+      <PageHero
+        icon="🎓"
+        eyebrow="Academic"
+        title="Education Partners"
+        subtitle="Course catalogue + student placement requests."
+        tone="emerald"
+        primaryAction={
+          tab === "courses"
+            ? { label: showForm ? "Cancel" : "+ New course", onClick: () => setShowForm((v) => !v) }
+            : undefined
+        }
+      />
 
       {/* Tabs */}
       <div className="mb-6 flex gap-2">

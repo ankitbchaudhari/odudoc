@@ -100,6 +100,27 @@ export default function WalletPage() {
     } finally { setBusy(false); }
   };
 
+  // Self-serve cleanup for the bogus sandbox credits the earlier
+  // auto-fallback minted on every Cashfree 401. Wipes the patient's
+  // own wallet only (server checks the session). Rebuilds a fresh
+  // ₹0 account so the UI re-renders without a second fetch.
+  const resetWallet = async () => {
+    if (!confirm("Reset wallet to ₹0? This clears any sandbox / test credits that were added without a real payment. This can't be undone.")) {
+      return;
+    }
+    setBusy(true);
+    try {
+      const r = await fetch("/api/wallet/reset", { method: "POST" });
+      if (r.ok) {
+        setToast({ kind: "ok", text: "Wallet reset to zero." });
+        await load();
+      } else {
+        const body = await r.json().catch(() => ({}));
+        setToast({ kind: "err", text: (body as { message?: string }).message || "Couldn't reset the wallet." });
+      }
+    } finally { setBusy(false); }
+  };
+
   if (!wallet) return <div className="mx-auto max-w-3xl p-6"><p className="text-sm text-slate-400">Loading…</p></div>;
 
   const totalSpendable = wallet.balanceRupees + wallet.bonusBalanceRupees;
@@ -138,6 +159,16 @@ export default function WalletPage() {
         <button onClick={() => setShowTopup(true)} className="mt-4 w-full rounded-lg bg-white px-4 py-3 text-sm font-bold text-indigo-700 shadow-md">
           + Add money
         </button>
+        {totalSpendable > 0 && (
+          <button
+            onClick={resetWallet}
+            disabled={busy}
+            className="mt-2 w-full rounded-lg border border-white/30 bg-white/10 px-4 py-2 text-[12px] font-semibold text-white/90 backdrop-blur transition-colors hover:bg-white/20 disabled:opacity-60"
+            title="Wipe sandbox / test credits that were added without a real payment"
+          >
+            Reset wallet (clear sandbox credits)
+          </button>
+        )}
       </div>
 
       {/* Lifetime stats */}

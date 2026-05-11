@@ -136,50 +136,26 @@ export async function POST(req: NextRequest) {
       : (process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_") ? "TEST" : "LIVE");
     const gwName = gateway === "cashfree" ? "Cashfree" : "Stripe";
 
-    // Auto-fallback to sandbox when the gateway is present but
-    // rejects our keys (Cashfree 401 / Stripe Invalid API Key).
-    // Turns a misconfigured gateway into a working demo top-up
-    // instead of a hard error. Opt-out by setting the gateway's
-    // STRICT env var. Network / timeout failures are NOT covered —
-    // those are likely transient outages and we shouldn't silently
-    // mint wallet credit for them.
+    // SAFETY: never auto-mint wallet credit when the gateway is
+    // present but rejects our keys. Earlier versions of this route
+    // silently fell back to sandbox on 401, which credited the
+    // wallet without an actual payment — a real bug if the deploy
+    // had invalid keys (every "+ Add money" click became free
+    // money). Auth failures are now hard 502s with a clear
+    // diagnostic for ops. The only way to get a sandbox credit now
+    // is to NOT configure the gateway at all (the early
+    // `!gatewayConfigured` branch above), which is the real
+    // "dev mode" signal.
     const isAuthFailed = gateway === "cashfree"
       ? (msg.includes("401") || /authentication.?failed|invalid.?credential/i.test(msg))
       : /invalid.?api.?key|no such api key|authentication/i.test(msg);
-    const strict = gateway === "cashfree"
-      ? process.env.CASHFREE_STRICT === "1"
-      : process.env.STRIPE_STRICT === "1";
-    if (isAuthFailed && !strict) {
-      const r = applyTopUp({
-        userId, amountRupees: amount,
-        note: `sandbox top-up (${gateway} credentials invalid — see diagnostic)`,
-      });
-      if (r.ok) {
-        try { await awaitAllFlushesStrict(); } catch { /* best-effort */ }
-        return NextResponse.json({
-          mode: "sandbox",
-          gateway,
-          wallet: r.wallet,
-          topup: r.topup,
-          bonus: r.bonus,
-          // Surface the underlying problem so ops see it in the
-          // browser console without the patient seeing a scary
-          // failure toast — the demo flow keeps moving.
-          diagnostic: gateway === "cashfree"
-            ? `Cashfree 401 against ${env}. Fell back to sandbox top-up. Fix: ensure CASHFREE_APP_ID + CASHFREE_SECRET_KEY are valid and CASHFREE_ENV matches their type (SANDBOX vs PROD). Set CASHFREE_STRICT=1 to disable this fallback.`
-            : `Stripe rejected the API key (${env}). Fell back to sandbox top-up. Fix: ensure STRIPE_SECRET_KEY is valid for your account. Set STRIPE_STRICT=1 to disable this fallback.`,
-        });
-      }
-      // applyTopUp failed too — fall through to the hard 502 below.
-    }
-
     if (isAuthFailed) {
       return NextResponse.json({
         error: "payment_gateway_auth_failed",
-        message: "Payment gateway rejected our credentials. Please try again in a few minutes — our team has been notified.",
+        message: "Payment gateway is misconfigured — please contact support. No money was charged.",
         diagnostic: gateway === "cashfree"
-          ? `Cashfree returned 401 against ${env} endpoint. If your CASHFREE_APP_ID is a SANDBOX key, set CASHFREE_ENV=SANDBOX (or swap to PROD keys).`
-          : `Stripe rejected STRIPE_SECRET_KEY (${env}). Check the key against the right account / mode.`,
+          ? `Cashfree returned 401 against ${env} endpoint. If your CASHFREE_APP_ID is a SANDBOX key, set CASHFREE_ENV=SANDBOX (or swap to PROD keys). To get a true dev sandbox (wallet credit without payment), UNSET CASHFREE_APP_ID + CASHFREE_SECRET_KEY entirely.`
+          : `Stripe rejected STRIPE_SECRET_KEY (${env}). Check the key against the right account / mode. To get a true dev sandbox, UNSET STRIPE_SECRET_KEY entirely.`,
       }, { status: 502 });
     }
 

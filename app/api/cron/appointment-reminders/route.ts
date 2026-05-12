@@ -20,6 +20,7 @@ import {
 } from "@/lib/bookings-store";
 import { sendEmail } from "@/lib/email";
 import { sendToUser, sendToEmail } from "@/lib/fcm";
+import { notify } from "@/lib/notifications/notify";
 
 import { log } from "@/lib/log";
 const SITE_URL = "https://www.odudoc.com";
@@ -82,6 +83,13 @@ export async function GET(req: Request) {
       });
       (c as typeof c & { reminder24hSentAt?: string }).reminder24hSentAt = new Date().toISOString();
       sent++;
+      // SMS reminder — patients without the mobile app and with cluttered
+      // inboxes rely on this. Best-effort; failures don't block the cron.
+      if (c.patientPhone) {
+        const sms = `OduDoc reminder: video consult with ${c.doctorName} tomorrow at ${c.timeSlot}. Open ${SITE_URL}/dashboard/consultations`;
+        notify({ channel: "sms", to: c.patientPhone, body: sms, category: "reminder" })
+          .catch((err) => log.warn("cron.appointment_reminders.sms_failed", { id: c.id, err: String(err) }));
+      }
       // Best-effort FCM push — only fires for users who have logged into
       // the mobile app at least once. Falls back to email-keyed lookup
       // when we don't have a userId on the consultation record.

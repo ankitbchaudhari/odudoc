@@ -14,6 +14,7 @@ import {
 import { verifyMobileOtp } from "@/lib/mobile-otp-store";
 import { signMobileToken } from "@/lib/mobile-auth";
 import { addSubscriber } from "@/lib/subscribers-store";
+import { sendWelcomeEmail } from "@/lib/email";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 import { parseJson, z, emailSchema } from "@/lib/validate";
 import { log } from "@/lib/log";
@@ -57,6 +58,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "account_banned" }, { status: 403 });
     }
 
+    // Snapshot verification state BEFORE markEmailVerified() so we can
+    // distinguish first-time activation from a re-verify.
+    const isFirstVerification = !user.emailVerified;
     markEmailVerified(user.email);
     touchLastLogin(user.email);
 
@@ -67,6 +71,14 @@ export async function POST(request: NextRequest) {
       addSubscriber(user.email, "mobile-signup");
     } catch (err) {
       log.error("mobile-verify.auto_subscribe_failed", err, { email: user.email });
+    }
+
+    // Welcome email on first verification only — re-verifies (a user
+    // re-running mobile-register after expiry) shouldn't get a duplicate
+    // welcome. Best-effort; never block the JWT response on email delivery.
+    if (isFirstVerification) {
+      sendWelcomeEmail({ to: user.email, name: user.name })
+        .catch((err) => log.error("mobile-verify.welcome_email_failed", err, { email: user.email }));
     }
 
     const { token, expiresAt } = await signMobileToken({

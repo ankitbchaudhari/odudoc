@@ -12,6 +12,8 @@
 
 import { bindPersistentArray } from "../persistent-array";
 import { pushNotification } from "../notifications/store";
+import { notify } from "../notifications/notify";
+import { log } from "../log";
 
 export type FulfillmentStatus =
   | "placed"
@@ -198,6 +200,13 @@ export function transitionOrder(
         body: `${o.pharmacyName}'s rider is on the way. ETA usually 30-60 minutes.`,
         link: "/dashboard/rx-fulfillment", reference: ref,
       });
+      // SMS for high-impact transitions — patients without the app open
+      // need to know a rider is on the way so they're available to receive.
+      if (o.patientPhone) {
+        const sms = `OduDoc: ${o.pharmacyName}'s rider is on the way with your medicines. ETA 30-60 min.`;
+        notify({ channel: "sms", to: o.patientPhone, body: sms, category: "result" })
+          .catch((err) => log.error("rx.ofd_sms_failed", err, { orderId: o.id }));
+      }
     } else if (to === "delivered") {
       pushNotification({
         userId: o.patientUserId, kind: "rx_ready", severity: "success",
@@ -205,6 +214,11 @@ export function transitionOrder(
         body: `${o.pharmacyName} delivered your order. Tap to view receipt.`,
         link: "/dashboard/rx-fulfillment", reference: ref,
       });
+      if (o.patientPhone) {
+        const sms = `OduDoc: your medicines from ${o.pharmacyName} have been delivered. Receipt in app.`;
+        notify({ channel: "sms", to: o.patientPhone, body: sms, category: "result" })
+          .catch((err) => log.error("rx.delivered_sms_failed", err, { orderId: o.id }));
+      }
     } else if (to === "cancelled" || to === "rejected") {
       pushNotification({
         userId: o.patientUserId, kind: "rx_ready", severity: "warn",

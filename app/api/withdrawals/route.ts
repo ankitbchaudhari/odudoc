@@ -9,6 +9,8 @@ import {
 import { addAdminNotification } from "@/lib/admin-notifications-store";
 import { findDoctorByEmail } from "@/lib/doctors-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
+import { notify } from "@/lib/notifications/notify";
+import { findUserByEmail } from "@/lib/users-store";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -133,6 +135,28 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     log.error("withdrawals.admin_notification_failed", err);
   }
+
+  // Acknowledge to the doctor via SMS + email. They just submitted a
+  // money request; silence is the wrong response. Best-effort.
+  const ackMsg = `OduDoc: we received your withdrawal request for $${record.amount.toLocaleString()}. We'll email you when an admin reviews it (usually within 2 business days).`;
+  const doctor = findUserByEmail(record.doctorEmail);
+  if (doctor?.phone) {
+    notify({
+      channel: "sms",
+      to: doctor.phone,
+      body: ackMsg,
+      category: "billing",
+    }).catch((err) => log.error("withdrawals.ack_sms_failed", err));
+  }
+  notify({
+    channel: "email",
+    to: record.doctorEmail,
+    subject: "Withdrawal request received — OduDoc",
+    body: ackMsg,
+    html: `<p>Hi Dr. ${record.doctorName},</p><p>We received your withdrawal request for <strong>$${record.amount.toLocaleString()}</strong>.</p><p>An admin will review and process it (usually within 2 business days). You'll get another email when the status changes.</p><p>— OduDoc</p>`,
+    emailFrom: "admin",
+    category: "billing",
+  }).catch((err) => log.error("withdrawals.ack_email_failed", err));
 
   return NextResponse.json({ withdrawal: record }, { status: 201 });
 }

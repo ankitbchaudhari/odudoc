@@ -39,6 +39,10 @@ export interface LabTestItem {
 export interface LabOrder {
   id: string;
   organizationId: string;
+  /** Display name of the lab — surfaced in result-ready notifications.
+   *  Optional for backward compatibility with existing records; new
+   *  orders should be created with this populated. */
+  labName?: string;
   patientId: string;
   encounterId?: string;
   orderingDoctor?: string;
@@ -113,6 +117,7 @@ export interface LabOrderInput {
   orderingDoctor?: string;
   priority?: LabPriority;
   clinicalNotes?: string;
+  labName?: string;
   items: Array<Omit<LabTestItem, "id"> & { id?: string }>;
   orderedAt?: string;
 }
@@ -125,6 +130,7 @@ export function createLabOrder(
   const o: LabOrder = {
     id: `lab-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
     organizationId,
+    labName: input.labName?.trim() || undefined,
     patientId: input.patientId,
     encounterId: input.encounterId || undefined,
     orderingDoctor: input.orderingDoctor?.trim() || undefined,
@@ -164,6 +170,8 @@ export function updateLabOrder(
     o.clinicalNotes = patch.clinicalNotes?.trim() || undefined;
   if (patch.encounterId !== undefined)
     o.encounterId = patch.encounterId || undefined;
+  if (patch.labName !== undefined)
+    o.labName = patch.labName?.trim() || undefined;
   if (patch.items !== undefined) {
     o.items = patch.items
       .filter((i) => i.testName?.trim())

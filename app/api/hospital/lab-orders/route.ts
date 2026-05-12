@@ -106,7 +106,7 @@ export async function PATCH(req: NextRequest) {
       if (!wasCompleted && updated.status === "completed") {
         const patient = getPatientById(updated.patientId, orgId);
         if (patient) {
-          const labName = "OduDoc Lab";
+          const labName = updated.labName || "OduDoc Lab";
           const link = `https://www.odudoc.com/dashboard/labs`;
           const smsBody = `OduDoc: your lab results from ${labName} are ready. View at ${link}`;
           const emailHtml = `<p>Hello ${patient.firstName || "Patient"},</p><p>Your lab results from <strong>${labName}</strong> are ready.</p><p><a href="${link}">View results</a> or open the OduDoc app.</p>`;

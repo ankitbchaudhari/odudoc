@@ -5,8 +5,9 @@ interface LogoProps {
   size?: "sm" | "md" | "lg" | "xl";
   link?: boolean;
   className?: string;
-  /** Force a specific variant regardless of theme. Useful inside fixed
-   *  dark surfaces (e.g. always-dark hero) where the auto-swap is wrong. */
+  /** Force a specific wordmark color regardless of theme. Useful inside
+   *  fixed dark surfaces (e.g. always-dark hero) where the auto-swap is
+   *  wrong. */
   variant?: "auto" | "light" | "dark";
 }
 
@@ -17,69 +18,60 @@ const sizes: Record<string, string> = {
   xl: "h-24",
 };
 
+// Inlining the SVG (not <img src>) so the wordmark's `fill="currentColor"`
+// inherits from the parent's text color — which lets Tailwind's `dark:`
+// variants drive the swap with a single asset instead of two.
+//
+// Light mode parent: text-[#0F3570] → dark navy wordmark.
+// Dark  mode parent: text-white     → white wordmark.
+// The gradient icon (rounded square + cross) stays the same in both.
 export default function Logo({
   size = "sm",
   link = true,
   className = "",
   variant = "auto",
 }: LogoProps) {
-  // Plain <img> rather than next/image: the logo is a vector SVG and
-  // Next's image optimizer rasterizes it to a low-DPI PNG on mobile,
-  // which looks soft on Retina iPhones. <img> + SVG = crisp at any DPR.
-  //
-  // For the "auto" variant we render BOTH images and use Tailwind's
-  // `dark:` class to flip visibility. This avoids a JS round-trip and
-  // means SSR ships the correct logo for both themes — the wrong one
-  // is just hidden via CSS.
   const sizeClass = sizes[size];
 
-  if (variant === "light") {
-    // eslint-disable-next-line @next/next/no-img-element
-    const img = (
-      <img
-        src="/images/logo-light.svg"
-        alt="OduDoc"
-        width={338}
-        height={64}
-        className={`${sizeClass} w-auto object-contain ${className}`}
-      />
-    );
-    return link ? <Link href="/">{img}</Link> : img;
-  }
-  if (variant === "dark") {
-    // eslint-disable-next-line @next/next/no-img-element
-    const img = (
-      <img
-        src="/images/logo-dark.svg"
-        alt="OduDoc"
-        width={338}
-        height={64}
-        className={`${sizeClass} w-auto object-contain ${className}`}
-      />
-    );
-    return link ? <Link href="/">{img}</Link> : img;
-  }
+  // Pick a color class. "auto" honours the theme via Tailwind dark:.
+  // "light" / "dark" force one regardless of theme.
+  const colorClass =
+    variant === "light"
+      ? "text-[#0F3570]"
+      : variant === "dark"
+        ? "text-white"
+        : "text-[#0F3570] dark:text-white";
 
-  // Auto: render both, CSS hides the inactive one.
-  const both = (
-    <span className={`inline-flex ${sizeClass} w-auto ${className}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/images/logo-light.svg"
-        alt="OduDoc"
-        width={338}
-        height={64}
-        className={`${sizeClass} w-auto object-contain dark:hidden`}
-      />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/images/logo-dark.svg"
-        alt="OduDoc"
-        width={338}
-        height={64}
-        className={`hidden ${sizeClass} w-auto object-contain dark:inline-block`}
-      />
-    </span>
+  const svg = (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 338 64"
+      role="img"
+      aria-label="OduDoc"
+      className={`${sizeClass} w-auto ${colorClass} ${className}`}
+    >
+      <defs>
+        <linearGradient id="odudoc-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#22C98A" />
+          <stop offset="100%" stopColor="#0EA5A0" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="64" height="64" rx="18" fill="url(#odudoc-logo-gradient)" />
+      <rect x="25" y="12" width="14" height="40" rx="5" fill="white" />
+      <rect x="12" y="25" width="40" height="14" rx="5" fill="white" />
+      <text
+        x="70"
+        y="46"
+        fontFamily="'Nunito','Poppins','Comfortaa','Arial Rounded MT Bold',Arial,sans-serif"
+        fontSize="52"
+        fontWeight="800"
+        letterSpacing="-1"
+        fill="currentColor"
+      >
+        OduDoc
+      </text>
+    </svg>
   );
-  return link ? <Link href="/">{both}</Link> : both;
+
+  return link ? <Link href="/">{svg}</Link> : svg;
 }

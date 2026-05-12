@@ -57,11 +57,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid_amount" }, { status: 400 });
   }
 
-  // Route by patient country: India → Cashfree, everywhere else →
-  // Stripe. Both code paths return the same response shape so the
-  // wallet UI doesn't have to branch on gateway — it just follows
-  // `paymentLink` to the hosted checkout.
-  const gateway = pickGateway(user.country);
+  // Gateway selection priority:
+  //   1. Explicit user choice from the client (body.gateway).
+  //   2. Country-based natural pick (IN → Cashfree, else → Stripe).
+  //   3. Fall back to whichever gateway is configured.
+  // Honors the user's choice as long as that gateway is actually
+  // configured. If they pick "stripe" but Stripe isn't wired up,
+  // we transparently fall through to Cashfree (and vice versa).
+  const clientChoice =
+    body.gateway === "cashfree" || body.gateway === "stripe"
+      ? (body.gateway as "cashfree" | "stripe")
+      : null;
+  let gateway: "cashfree" | "stripe";
+  if (clientChoice) {
+    if (clientChoice === "cashfree" && isCashfreeConfigured()) gateway = "cashfree";
+    else if (clientChoice === "stripe" && isStripeConfigured()) gateway = "stripe";
+    else gateway = pickGateway(user.country); // requested gateway not configured — use fallback chain
+  } else {
+    gateway = pickGateway(user.country);
+  }
   const orderId = `wt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const origin = `${req.headers.get("x-forwarded-proto") || "https"}://${req.headers.get("x-forwarded-host") || req.headers.get("host")}`;
 

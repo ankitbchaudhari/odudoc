@@ -52,14 +52,15 @@ export default function WalletPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const topup = async () => {
+  const topup = async (gateway?: "cashfree" | "stripe") => {
     setBusy(true);
     try {
-      // Try the gateway-aware endpoint first; falls back to demo credit
-      // when Cashfree creds aren't configured.
+      // Pass the user-selected gateway through to the route. Falls
+      // back to country-based auto-pick on the server when no
+      // explicit choice is sent.
       const r = await fetch("/api/wallet/topup-create", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amountRupees: amount }),
+        body: JSON.stringify({ amountRupees: amount, gateway }),
       });
       if (r.ok) {
         const d = await r.json();
@@ -239,13 +240,32 @@ export default function WalletPage() {
               </div>
             </div>
 
-            <p className="mt-3 text-[10px] text-slate-500 dark:text-slate-400">In production this would route through Cashfree / Stripe. Demo credits the wallet directly.</p>
+            <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
+              Choose your payment method. UPI / RuPay / Indian cards are best on Cashfree. International cards and Apple Pay / Google Pay work via Stripe.
+            </p>
 
-            <div className="mt-4 flex justify-end gap-2">
-              <button onClick={() => setShowTopup(false)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Cancel</button>
-              <button onClick={topup} disabled={busy || amount < 100 || amount > 50000} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">
-                {busy ? "Adding…" : `Pay ${fmtINR(amount)}`}
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <button
+                onClick={() => topup("cashfree")}
+                disabled={busy || amount < 100 || amount > 50000}
+                className="flex flex-col items-center justify-center rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3 text-sm font-bold text-white shadow-md transition hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50"
+              >
+                <span className="text-[11px] font-medium uppercase tracking-wider opacity-80">Pay with</span>
+                <span className="text-base">💳 Cashfree</span>
+                <span className="mt-0.5 text-[10px] opacity-75">UPI · RuPay · Indian cards</span>
               </button>
+              <button
+                onClick={() => topup("stripe")}
+                disabled={busy || amount < 100 || amount > 50000}
+                className="flex flex-col items-center justify-center rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-3 text-sm font-bold text-white shadow-md transition hover:from-indigo-700 hover:to-violet-700 disabled:opacity-50"
+              >
+                <span className="text-[11px] font-medium uppercase tracking-wider opacity-80">Pay with</span>
+                <span className="text-base">💎 Stripe</span>
+                <span className="mt-0.5 text-[10px] opacity-75">Intl cards · Apple Pay · GPay</span>
+              </button>
+            </div>
+            <div className="mt-3 flex justify-end">
+              <button onClick={() => setShowTopup(false)} className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 dark:border-slate-700">Cancel</button>
             </div>
           </div>
         </div>

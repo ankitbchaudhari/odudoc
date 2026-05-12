@@ -11,11 +11,14 @@ interface LogoProps {
   variant?: "auto" | "light" | "dark";
 }
 
-const sizes: Record<string, string> = {
-  sm: "h-9",
-  md: "h-11",
-  lg: "h-16",
-  xl: "h-24",
+// Each size sets BOTH width and height in pixels so the SVG can't render
+// at 0×0. The viewBox aspect ratio is 338:64 (~5.28:1), so width is
+// height × 5.28 rounded.
+const sizePx: Record<NonNullable<LogoProps["size"]>, { w: number; h: number }> = {
+  sm: { w: 190, h: 36 },
+  md: { w: 232, h: 44 },
+  lg: { w: 338, h: 64 },
+  xl: { w: 507, h: 96 },
 };
 
 // Inlining the SVG (not <img src>) so the wordmark's `fill="currentColor"`
@@ -31,7 +34,7 @@ export default function Logo({
   className = "",
   variant = "auto",
 }: LogoProps) {
-  const sizeClass = sizes[size];
+  const { w, h } = sizePx[size];
 
   // Pick a color class. "auto" honours the theme via Tailwind dark:.
   // "light" / "dark" force one regardless of theme.
@@ -46,9 +49,11 @@ export default function Logo({
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 338 64"
+      width={w}
+      height={h}
       role="img"
       aria-label="OduDoc"
-      className={`${sizeClass} w-auto ${colorClass} ${className}`}
+      className={`block ${colorClass} ${className}`}
     >
       <defs>
         <linearGradient id="odudoc-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">

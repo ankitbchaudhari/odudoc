@@ -99,7 +99,7 @@ export default function NotificationBell({ className = "" }: { className?: strin
     <div ref={ref} className={`relative ${className}`}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:bg-slate-900"
+        className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
         aria-label="Notifications"
       >
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -134,7 +134,7 @@ export default function NotificationBell({ className = "" }: { className?: strin
                   <Link
                     href={n.link || "#"}
                     onClick={() => { setOpen(false); markRead(n.id); }}
-                    className={`flex items-start gap-3 px-4 py-3 ${SEVERITY_TONE[n.severity] || ""} hover:bg-slate-50 dark:bg-slate-900`}
+                    className={`flex items-start gap-3 px-4 py-3 ${SEVERITY_TONE[n.severity] || ""} hover:bg-slate-50 dark:hover:bg-slate-800`}
                   >
                     <span className="text-xl">{KIND_EMOJI[n.kind] || "🔔"}</span>
                     <div className="flex-1 min-w-0">

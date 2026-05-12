@@ -108,7 +108,7 @@ export default function ClinicInventoryPage() {
               {items.map((i) => {
                 const low = i.stock <= i.reorderLevel;
                 return (
-                  <tr key={i.id} className={low ? "bg-red-50/40 hover:bg-red-50" : "hover:bg-gray-50 dark:bg-slate-900"}>
+                  <tr key={i.id} className={low ? "bg-red-50/40 hover:bg-red-50" : "hover:bg-gray-50 dark:hover:bg-slate-800"}>
                     <td className="px-4 py-3 font-medium text-gray-900 dark:text-slate-100">{i.name}</td>
                     <td className="px-4 py-3 text-gray-600 dark:text-slate-300">{i.category}</td>
                     <td className="px-4 py-3">

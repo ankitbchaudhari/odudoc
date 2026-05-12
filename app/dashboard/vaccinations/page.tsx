@@ -117,7 +117,7 @@ export default function VaccinationsPage() {
             key={s.subjectKey}
             onClick={() => setActiveSubject(s)}
             className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
-              activeSubject?.subjectKey === s.subjectKey ? "bg-indigo-600 text-white shadow-sm" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:bg-slate-900"
+              activeSubject?.subjectKey === s.subjectKey ? "bg-indigo-600 text-white shadow-sm" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
             }`}
           >
             {s.subjectName}
@@ -128,7 +128,7 @@ export default function VaccinationsPage() {
         ))}
         <button
           onClick={() => setShowSubjectForm((v) => !v)}
-          className="rounded-xl bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-dashed ring-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+          className="rounded-xl bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-dashed ring-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
         >
           + Add subject
         </button>
@@ -229,7 +229,7 @@ function Chip({ active, onClick, children, count }: { active: boolean; onClick: 
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${active ? "bg-indigo-600 text-white" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:bg-slate-900"}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${active ? "bg-indigo-600 text-white" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
     >
       {children}
       <span className={`rounded-full px-1.5 text-[10px] font-bold ${active ? "bg-white/20" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}>{count}</span>

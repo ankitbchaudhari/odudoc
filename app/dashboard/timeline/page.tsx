@@ -130,7 +130,7 @@ export default function TimelinePage() {
               key={k}
               onClick={() => setFilter(k)}
               className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-                active ? "bg-indigo-600 text-white shadow-sm" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:bg-slate-900"
+                active ? "bg-indigo-600 text-white shadow-sm" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
               }`}
             >
               {k === "all" ? "All" : `${KIND_EMOJI[k]} ${KIND_LABEL[k]}`}
@@ -188,7 +188,7 @@ export default function TimelinePage() {
 
 function EventCard({ event }: { event: TimelineEvent }) {
   const inner = (
-    <div className="rounded-xl bg-white dark:bg-slate-900 p-3 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 transition-colors hover:bg-slate-50 dark:bg-slate-900">
+    <div className="rounded-xl bg-white dark:bg-slate-900 p-3 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">

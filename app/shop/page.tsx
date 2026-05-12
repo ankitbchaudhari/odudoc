@@ -112,7 +112,7 @@ export default function ShopPage() {
               className={`block w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                 selectedCategory === cat
                   ? "bg-primary-50 font-medium text-primary-700"
-                  : "text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+                  : "text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
               }`}
             >
               {cat}
@@ -157,7 +157,7 @@ export default function ShopPage() {
               className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                 minRating === r.value
                   ? "bg-primary-50 font-medium text-primary-700"
-                  : "text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+                  : "text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
               }`}
             >
               {r.value > 0 && (
@@ -178,7 +178,7 @@ export default function ShopPage() {
       {/* Availability */}
       <div>
         <h3 className="mb-3 text-sm font-semibold text-gray-900 dark:text-slate-100">Availability</h3>
-        <label className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900">
+        <label className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800">
           <input
             type="checkbox"
             checked={inStockOnly}
@@ -229,7 +229,7 @@ export default function ShopPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileFilterOpen(true)}
-              className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900 lg:hidden"
+              className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 lg:hidden"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -265,7 +265,7 @@ export default function ShopPage() {
               <div className="absolute bottom-0 left-0 right-0 max-h-[80vh] overflow-y-auto rounded-t-2xl bg-white dark:bg-slate-900 p-6">
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Filters</h2>
-                  <button onClick={() => setMobileFilterOpen(false)} className="rounded-lg p-2 hover:bg-gray-100 dark:bg-slate-800">
+                  <button onClick={() => setMobileFilterOpen(false)} className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-slate-800">
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -416,7 +416,7 @@ export default function ShopPage() {
                     <button
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900 disabled:opacity-50"
+                      className="rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50"
                     >
                       Previous
                     </button>
@@ -427,7 +427,7 @@ export default function ShopPage() {
                         className={`h-10 w-10 rounded-lg text-sm font-medium transition-colors ${
                           page === i + 1
                             ? "bg-primary-600 text-white"
-                            : "border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+                            : "border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                         }`}
                       >
                         {i + 1}
@@ -436,7 +436,7 @@ export default function ShopPage() {
                     <button
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900 disabled:opacity-50"
+                      className="rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50"
                     >
                       Next
                     </button>

@@ -152,7 +152,7 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
           </a>
           <a
             href="/"
-            className="rounded-lg border border-gray-300 dark:border-slate-700 px-6 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+            className="rounded-lg border border-gray-300 dark:border-slate-700 px-6 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
           >
             Back to Home
           </a>

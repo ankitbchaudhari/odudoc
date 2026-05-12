@@ -50,7 +50,7 @@ export default function DoctorGuidePage() {
             </Link>
             <Link
               href="/dashboard/doctor"
-              className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+              className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Back to dashboard
             </Link>

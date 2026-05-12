@@ -259,7 +259,7 @@ export default function BlogPostPage() {
                 >in</a>
                 <button
                   onClick={handleCopyLink}
-                  className="flex h-9 items-center gap-1.5 rounded-full border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 px-3 text-xs font-medium text-gray-600 dark:text-slate-300 transition-colors hover:bg-gray-100 dark:bg-slate-800"
+                  className="flex h-9 items-center gap-1.5 rounded-full border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 px-3 text-xs font-medium text-gray-600 dark:text-slate-300 transition-colors hover:bg-gray-100 dark:hover:bg-slate-800"
                 >
                   {copied ? (
                     <><svg className="h-3.5 w-3.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>Copied!</>
@@ -399,7 +399,7 @@ export default function BlogPostPage() {
                 </p>
                 <Link
                   href="/doctors"
-                  className="mt-4 block rounded-xl bg-white dark:bg-slate-900 px-4 py-2.5 text-center text-sm font-bold text-primary-700 hover:bg-gray-50 dark:bg-slate-900"
+                  className="mt-4 block rounded-xl bg-white dark:bg-slate-900 px-4 py-2.5 text-center text-sm font-bold text-primary-700 hover:bg-gray-50 dark:hover:bg-slate-800"
                 >
                   Find Doctors →
                 </Link>

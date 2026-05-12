@@ -105,7 +105,7 @@ function SuccessContent() {
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link
             href="/"
-            className="rounded-lg border border-gray-300 dark:border-slate-700 px-6 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+            className="rounded-lg border border-gray-300 dark:border-slate-700 px-6 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
           >
             Go to Homepage
           </Link>

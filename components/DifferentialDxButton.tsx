@@ -107,7 +107,7 @@ export default function DifferentialDxButton({
                 <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Differential diagnosis</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">Decision support — your assessment is final.</p>
               </div>
-              <button onClick={() => setOpen(false)} className="rounded-lg p-2 hover:bg-slate-100 dark:bg-slate-800">
+              <button onClick={() => setOpen(false)} className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>

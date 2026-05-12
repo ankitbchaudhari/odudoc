@@ -132,7 +132,7 @@ export default function SurgeriesPage() {
             </Link>
             <a
               href="tel:+15550001234"
-              className="rounded-xl border-2 border-primary-200 bg-white/80 px-8 py-3 text-sm font-semibold text-primary-700 backdrop-blur transition-all hover:bg-white dark:bg-slate-900 hover:shadow-md"
+              className="rounded-xl border-2 border-primary-200 bg-white/80 px-8 py-3 text-sm font-semibold text-primary-700 backdrop-blur transition-all hover:bg-white dark:hover:bg-slate-800 hover:shadow-md"
             >
               Call: +1 (555) 000-1234
             </a>

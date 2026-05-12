@@ -42,7 +42,7 @@ export default function CareersPage() {
           </p>
           <button
             onClick={() => openApply(null)}
-            className="mt-8 inline-block rounded-lg bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-primary-700 transition-colors hover:bg-gray-100 dark:bg-slate-800"
+            className="mt-8 inline-block rounded-lg bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-primary-700 transition-colors hover:bg-gray-100 dark:hover:bg-slate-800"
           >
             Send General Application
           </button>
@@ -101,7 +101,7 @@ export default function CareersPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setSelectedJob(job)}
-                    className="rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:bg-slate-900"
+                    className="rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:hover:bg-slate-800"
                   >
                     View Details
                   </button>
@@ -140,7 +140,7 @@ export default function CareersPage() {
               </div>
               <button
                 onClick={() => setSelectedJob(null)}
-                className="rounded-lg p-1 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800"
+                className="rounded-lg p-1 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:hover:bg-slate-800"
               >
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -289,7 +289,7 @@ function ApplicationForm({
               </div>
               <button
                 onClick={onClose}
-                className="rounded-lg p-1 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800"
+                className="rounded-lg p-1 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:hover:bg-slate-800"
               >
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

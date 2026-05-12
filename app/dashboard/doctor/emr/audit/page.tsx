@@ -173,7 +173,7 @@ export default function AuditLogPage() {
               setFilterResource("");
               setFilterSince("");
             }}
-            className="rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800"
+            className="rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
           >
             Clear
           </button>

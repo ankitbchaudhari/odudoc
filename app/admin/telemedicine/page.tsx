@@ -162,7 +162,7 @@ function ConsultCard({ c, expanded, onToggle, onEdit, onComplete, onTransition, 
         </div>
       </div>
       {expanded && (
-        <div className="border-t border-slate-100 bg-slate-50/50 p-3 text-sm text-slate-700 space-y-2">
+        <div className="border-t border-slate-100 bg-slate-50/50 dark:bg-slate-800/30 p-3 text-sm text-slate-700 space-y-2">
           {c.historyNote && <div><span className="font-medium">History:</span> {c.historyNote}</div>}
           {c.examNote && <div><span className="font-medium">Exam:</span> {c.examNote}</div>}
           {c.assessment && <div><span className="font-medium">Assessment:</span> {c.assessment}</div>}

@@ -230,7 +230,7 @@ export default function ConsultGateModal({ open, onClose, doctor, onVerified }: 
           <button
             onClick={onClose}
             disabled={busy}
-            className="rounded-lg p-1 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300 disabled:opacity-50"
+            className="rounded-lg p-1 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-600 dark:text-slate-300 disabled:opacity-50"
             aria-label="Close"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

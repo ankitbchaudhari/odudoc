@@ -610,7 +610,7 @@ export default function AdminDoctors() {
                   return (
                     <tr
                       key={d.id}
-                      className="border-b border-slate-50 transition-colors hover:bg-slate-50/70"
+                      className="border-b border-slate-50 transition-colors hover:bg-slate-50/70 dark:bg-slate-800/40"
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">

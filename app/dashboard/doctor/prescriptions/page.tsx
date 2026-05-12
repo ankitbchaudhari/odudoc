@@ -403,7 +403,7 @@ function WritePrescriptionModal({
             </h2>
             <button
               onClick={onClose}
-              className="rounded-lg p-2 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
+              className="rounded-lg p-2 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
             >
               <svg
                 className="h-5 w-5"
@@ -758,7 +758,7 @@ function WritePrescriptionModal({
               <button
                 onClick={handleSaveAsPdf}
                 disabled={!isValid || saving}
-                className="flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:bg-slate-900 disabled:opacity-40"
+                className="flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-40"
                 title="Save as PDF (choose 'Save as PDF' as the destination in the print dialog)"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -769,7 +769,7 @@ function WritePrescriptionModal({
               <button
                 onClick={handleShare}
                 disabled={!isValid || saving}
-                className="flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:bg-slate-900 disabled:opacity-40"
+                className="flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-40"
                 title="Share a link to this prescription"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1133,7 +1133,7 @@ export default function DoctorPrescriptionsPage() {
                   className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold capitalize transition-all ${
                     active
                       ? "bg-gradient-to-r from-primary-600 to-indigo-600 text-white shadow-md"
-                      : "text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+                      : "text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                   }`}
                 >
                   {s === "all" ? "All Styles" : STYLE_LABELS[s] || s}
@@ -1203,7 +1203,7 @@ export default function DoctorPrescriptionsPage() {
                 </button>
                 <button
                   onClick={() => setPreviewId(null)}
-                  className="rounded-lg p-2 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:bg-slate-800"
+                  className="rounded-lg p-2 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800"
                 >
                   <svg
                     className="h-5 w-5"
@@ -1337,7 +1337,7 @@ function TemplateCard({
         <div className="absolute inset-0 flex items-center justify-center gap-2 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 transition-all duration-300 group-hover:opacity-100">
           <button
             onClick={onPreview}
-            className="rounded-lg bg-white/95 px-4 py-2 text-xs font-semibold text-gray-900 dark:text-slate-100 shadow-lg backdrop-blur hover:bg-white dark:bg-slate-900"
+            className="rounded-lg bg-white/95 px-4 py-2 text-xs font-semibold text-gray-900 dark:text-slate-100 shadow-lg backdrop-blur hover:bg-white dark:hover:bg-slate-800"
           >
             👁 Preview
           </button>

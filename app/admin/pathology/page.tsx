@@ -162,7 +162,7 @@ function SpecimenCard({ s, expanded, onToggle, onEdit, onSignOut, onTransition, 
         </div>
       </div>
       {expanded && (
-        <div className="border-t border-slate-100 bg-slate-50/50 p-3 text-sm text-slate-700 space-y-2">
+        <div className="border-t border-slate-100 bg-slate-50/50 dark:bg-slate-800/30 p-3 text-sm text-slate-700 space-y-2">
           {s.clinicalInfo && <div><span className="font-medium">Clinical info:</span> {s.clinicalInfo}</div>}
           {s.grossDescription && <div><span className="font-medium">Gross:</span> {s.grossDescription}</div>}
           {s.microscopicDescription && <div><span className="font-medium">Microscopy:</span> {s.microscopicDescription}</div>}

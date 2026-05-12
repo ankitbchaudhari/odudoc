@@ -99,7 +99,7 @@ export default function FamilySwitcher({ className = "" }: { className?: string 
 
           <button
             onClick={() => switchTo(null)}
-            className={`flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm transition hover:bg-slate-50 dark:bg-slate-900 ${active.kind === "self" ? "bg-indigo-50/40" : ""}`}
+            className={`flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm transition hover:bg-slate-50 dark:hover:bg-slate-800 ${active.kind === "self" ? "bg-indigo-50/40" : ""}`}
           >
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 text-sm font-bold text-white">You</div>
@@ -118,7 +118,7 @@ export default function FamilySwitcher({ className = "" }: { className?: string 
                 <button
                   key={d.id}
                   onClick={() => switchTo(d.id)}
-                  className={`flex w-full items-center justify-between gap-2 border-t border-slate-50 px-4 py-2.5 text-left text-sm transition hover:bg-slate-50 dark:bg-slate-900 ${isActive ? "bg-emerald-50/40" : ""}`}
+                  className={`flex w-full items-center justify-between gap-2 border-t border-slate-50 px-4 py-2.5 text-left text-sm transition hover:bg-slate-50 dark:hover:bg-slate-800 ${isActive ? "bg-emerald-50/40" : ""}`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-base">{REL_EMOJI[d.relationship]}</div>
@@ -133,7 +133,7 @@ export default function FamilySwitcher({ className = "" }: { className?: string 
             })}
           </div>
 
-          <Link href="/dashboard/family" onClick={() => setOpen(false)} className="block border-t border-slate-100 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-center text-xs font-semibold text-indigo-700 hover:bg-slate-100 dark:bg-slate-800">
+          <Link href="/dashboard/family" onClick={() => setOpen(false)} className="block border-t border-slate-100 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-center text-xs font-semibold text-indigo-700 hover:bg-slate-100 dark:hover:bg-slate-800">
             + Manage family
           </Link>
         </div>

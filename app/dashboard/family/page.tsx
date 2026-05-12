@@ -181,7 +181,7 @@ export default function FamilyPage() {
         {active?.kind === "self" ? (
           <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">✓ Active</span>
         ) : (
-          <button onClick={() => switchTo(null)} className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900">Switch to self</button>
+          <button onClick={() => switchTo(null)} className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">Switch to self</button>
         )}
       </div>
 
@@ -227,7 +227,7 @@ export default function FamilyPage() {
                     {!isActive && (
                       <button onClick={() => switchTo(d.id)} className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700">Book for {d.name.split(" ")[0]}</button>
                     )}
-                    <button onClick={() => open(d)} className="rounded-md border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900">Edit</button>
+                    <button onClick={() => open(d)} className="rounded-md border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">Edit</button>
                     <button onClick={() => remove(d)} className="rounded-md border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50">Remove</button>
                   </div>
                 </div>

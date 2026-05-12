@@ -130,7 +130,7 @@ export default function AdherencePage() {
                       <button
                         onClick={() => log(d, "skipped")}
                         className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
-                          isSkipped ? "bg-slate-700 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+                          isSkipped ? "bg-slate-700 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                         }`}
                       >
                         Skip

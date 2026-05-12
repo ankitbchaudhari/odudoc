@@ -220,7 +220,7 @@ export default function ProductDetailPage() {
               <div className="flex items-center rounded-lg border border-gray-200 dark:border-slate-800">
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="px-3 py-2 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+                  className="px-3 py-2 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                 >
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -229,7 +229,7 @@ export default function ProductDetailPage() {
                 <span className="w-12 text-center text-sm font-medium">{quantity}</span>
                 <button
                   onClick={() => setQuantity((q) => q + 1)}
-                  className="px-3 py-2 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+                  className="px-3 py-2 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                 >
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

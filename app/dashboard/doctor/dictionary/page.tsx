@@ -117,13 +117,13 @@ export default function DictionaryPage() {
       <div className="mb-4 inline-flex rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1 shadow-sm">
         <button
           onClick={() => setMode("term")}
-          className={`rounded-lg px-4 py-1.5 text-sm font-semibold ${mode === "term" ? "bg-violet-600 text-white shadow-md" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"}`}
+          className={`rounded-lg px-4 py-1.5 text-sm font-semibold ${mode === "term" ? "bg-violet-600 text-white shadow-md" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
         >
           Clinical term
         </button>
         <button
           onClick={() => setMode("drug")}
-          className={`rounded-lg px-4 py-1.5 text-sm font-semibold ${mode === "drug" ? "bg-emerald-600 text-white shadow-md" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"}`}
+          className={`rounded-lg px-4 py-1.5 text-sm font-semibold ${mode === "drug" ? "bg-emerald-600 text-white shadow-md" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
         >
           Drug
         </button>

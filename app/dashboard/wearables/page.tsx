@@ -140,9 +140,9 @@ export default function WearablesPage() {
         <div className="mb-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 dark:bg-slate-900 p-4 text-sm">
           <p className="text-slate-700 dark:text-slate-300"><strong>Try a demo persona:</strong></p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <button onClick={() => seed("diabetic_hypertensive")} className="rounded-md bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-100 dark:bg-slate-800">🩸 Diabetic + hypertensive (60yo)</button>
-            <button onClick={() => seed("athlete")} className="rounded-md bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-100 dark:bg-slate-800">🏃 Athlete (28yo)</button>
-            <button onClick={() => seed("post_op")} className="rounded-md bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-100 dark:bg-slate-800">🩺 Post-op recovery</button>
+            <button onClick={() => seed("diabetic_hypertensive")} className="rounded-md bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">🩸 Diabetic + hypertensive (60yo)</button>
+            <button onClick={() => seed("athlete")} className="rounded-md bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">🏃 Athlete (28yo)</button>
+            <button onClick={() => seed("post_op")} className="rounded-md bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">🩺 Post-op recovery</button>
           </div>
         </div>
       )}

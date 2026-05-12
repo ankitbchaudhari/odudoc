@@ -25,7 +25,7 @@ export default function DoctorCard({ doctor, hidePhoto = false }: { doctor: Doct
               </div>
               <Link
                 href={`/auth/login?callbackUrl=/consult`}
-                className="absolute inset-x-3 bottom-12 flex items-center justify-center gap-1.5 rounded-lg bg-white/95 px-3 py-1.5 text-[11px] font-semibold text-primary-700 shadow-sm backdrop-blur-sm transition-colors hover:bg-white dark:bg-slate-900"
+                className="absolute inset-x-3 bottom-12 flex items-center justify-center gap-1.5 rounded-lg bg-white/95 px-3 py-1.5 text-[11px] font-semibold text-primary-700 shadow-sm backdrop-blur-sm transition-colors hover:bg-white dark:hover:bg-slate-800"
                 onClick={(e) => e.stopPropagation()}
               >
                 <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

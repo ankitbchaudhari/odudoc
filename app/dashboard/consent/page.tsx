@@ -148,7 +148,7 @@ export default function ConsentPage() {
                 No consents on file yet.
               </p>
             ) : consents.map((c) => (
-              <div key={c.id} className={`rounded-2xl border p-4 ${c.revokedAt ? "border-slate-200 dark:border-slate-800 bg-slate-50/50" : "border-emerald-200 bg-emerald-50/40"}`}>
+              <div key={c.id} className={`rounded-2xl border p-4 ${c.revokedAt ? "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30" : "border-emerald-200 bg-emerald-50/40"}`}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">

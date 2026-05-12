@@ -32,7 +32,7 @@ export default function CtaSection() {
               </Link>
               <Link
                 href="/consult"
-                className="inline-flex items-center rounded-xl border-2 border-white px-8 py-3.5 text-sm font-semibold text-white transition-all duration-300 hover:bg-white dark:bg-slate-900 hover:text-primary-600"
+                className="inline-flex items-center rounded-xl border-2 border-white px-8 py-3.5 text-sm font-semibold text-white transition-all duration-300 hover:bg-white dark:hover:bg-slate-800 hover:text-primary-600"
               >
                 Consult Online
               </Link>

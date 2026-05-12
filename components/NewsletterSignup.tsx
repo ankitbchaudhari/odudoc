@@ -46,7 +46,7 @@ export default function NewsletterSignup() {
           />
           <button
             type="submit"
-            className="mt-3 w-full rounded-lg bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-semibold text-primary-600 shadow-sm transition-all hover:bg-gray-50 dark:bg-slate-900 hover:shadow-md"
+            className="mt-3 w-full rounded-lg bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-semibold text-primary-600 shadow-sm transition-all hover:bg-gray-50 dark:hover:bg-slate-800 hover:shadow-md"
           >
             Subscribe
           </button>

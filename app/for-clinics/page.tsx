@@ -216,13 +216,13 @@ export default function ForClinicsPage() {
             </Link>
             <Link
               href="/for-doctors/register"
-              className="rounded-xl border-2 border-gray-300 dark:border-slate-700 bg-white/70 px-8 py-3.5 text-sm font-bold text-gray-800 dark:text-slate-200 backdrop-blur-sm transition-colors hover:border-primary-400 hover:bg-white dark:bg-slate-900"
+              className="rounded-xl border-2 border-gray-300 dark:border-slate-700 bg-white/70 px-8 py-3.5 text-sm font-bold text-gray-800 dark:text-slate-200 backdrop-blur-sm transition-colors hover:border-primary-400 hover:bg-white dark:hover:bg-slate-800"
             >
               Start Free Trial
             </Link>
             <Link
               href="/contact"
-              className="rounded-xl border-2 border-gray-300 dark:border-slate-700 bg-white/70 px-8 py-3.5 text-sm font-bold text-gray-800 dark:text-slate-200 backdrop-blur-sm transition-colors hover:border-primary-400 hover:bg-white dark:bg-slate-900"
+              className="rounded-xl border-2 border-gray-300 dark:border-slate-700 bg-white/70 px-8 py-3.5 text-sm font-bold text-gray-800 dark:text-slate-200 backdrop-blur-sm transition-colors hover:border-primary-400 hover:bg-white dark:hover:bg-slate-800"
             >
               Request a Demo
             </Link>

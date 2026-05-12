@@ -139,7 +139,7 @@ export default function DoctorPayoutPage() {
                     className={`rounded-xl border px-3 py-3 text-sm font-semibold transition ${
                       details.method === m
                         ? "border-emerald-400 bg-emerald-50 text-emerald-700 ring-2 ring-emerald-200"
-                        : "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:border-slate-700 hover:bg-gray-50 dark:bg-slate-900"
+                        : "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800"
                     }`}
                   >
                     {labelFor(m)}
@@ -332,7 +332,7 @@ export default function DoctorPayoutPage() {
               </button>
               <Link
                 href="/dashboard/doctor"
-                className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+                className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
               >
                 Cancel
               </Link>

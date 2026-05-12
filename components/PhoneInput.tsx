@@ -300,7 +300,7 @@ export default function PhoneInput({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
-        className="flex shrink-0 items-center gap-1 rounded-l-lg border border-r-0 border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/30 disabled:opacity-60"
+        className="flex shrink-0 items-center gap-1 rounded-l-lg border border-r-0 border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/30 disabled:opacity-60"
         aria-haspopup="listbox"
         aria-expanded={open}
       >
@@ -346,7 +346,7 @@ export default function PhoneInput({
                     setOpen(false);
                     setSearch("");
                   }}
-                  className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50 dark:bg-slate-900 ${
+                  className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-slate-800 ${
                     c.iso === country.iso ? "bg-primary-50/60" : ""
                   }`}
                 >

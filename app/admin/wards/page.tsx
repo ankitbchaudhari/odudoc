@@ -287,7 +287,7 @@ export default function WardsPage() {
                   </div>
                 </div>
                 {isOpen && (
-                  <div className="border-t border-slate-100 bg-slate-50/50 p-4">
+                  <div className="border-t border-slate-100 bg-slate-50/50 dark:bg-slate-800/30 p-4">
                     <div className="mb-3 flex items-end gap-2">
                       <Field label="Bed #">
                         <input

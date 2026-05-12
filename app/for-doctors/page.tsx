@@ -194,7 +194,7 @@ export default async function ForDoctorsPage() {
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link
                 href="/for-doctors/register"
-                className="rounded-lg bg-white dark:bg-slate-900 px-8 py-3 font-semibold text-primary-700 hover:bg-gray-100 dark:bg-slate-800"
+                className="rounded-lg bg-white dark:bg-slate-900 px-8 py-3 font-semibold text-primary-700 hover:bg-gray-100 dark:hover:bg-slate-800"
               >
                 Join as a Doctor →
               </Link>
@@ -677,7 +677,7 @@ export default async function ForDoctorsPage() {
           </p>
           <Link
             href="/for-doctors/register"
-            className="mt-8 inline-block rounded-lg bg-white dark:bg-slate-900 px-8 py-3 font-semibold text-primary-700 hover:bg-gray-100 dark:bg-slate-800"
+            className="mt-8 inline-block rounded-lg bg-white dark:bg-slate-900 px-8 py-3 font-semibold text-primary-700 hover:bg-gray-100 dark:hover:bg-slate-800"
           >
             Start Your Application
           </Link>

@@ -529,7 +529,7 @@ export default function DispensingPage() {
                       </td>
                     </tr>
                     {isOpen && (
-                      <tr key={d.id + "-detail"} className="bg-slate-50/50">
+                      <tr key={d.id + "-detail"} className="bg-slate-50/50 dark:bg-slate-800/30">
                         <td colSpan={6} className="px-4 py-4">
                           <table className="w-full text-xs">
                             <thead className="bg-slate-100 text-left text-[10px] uppercase tracking-wider text-slate-500">

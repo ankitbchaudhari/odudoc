@@ -198,7 +198,7 @@ export default function IdentityVerificationCard() {
           {identity.medicalId && (
             <button
               onClick={copyId}
-              className="rounded-md border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 py-1 text-xs font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+              className="rounded-md border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 py-1 text-xs font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
             >
               {copied ? "Copied!" : "Copy"}
             </button>

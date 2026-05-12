@@ -188,7 +188,7 @@ export default function EmrLandingPage() {
             <div className="flex flex-wrap items-center gap-2">
               <Link
                 href="/dashboard/doctor"
-                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:border-emerald-300 hover:bg-white dark:bg-slate-900 hover:text-emerald-700"
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:border-emerald-300 hover:bg-white dark:hover:bg-slate-800 hover:text-emerald-700"
               >
                 ← Dashboard
               </Link>
@@ -196,13 +196,13 @@ export default function EmrLandingPage() {
                 <>
                   <Link
                     href="/dashboard/doctor/emr/staff"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:border-indigo-300 hover:bg-white dark:bg-slate-900 hover:text-indigo-700"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:border-indigo-300 hover:bg-white dark:hover:bg-slate-800 hover:text-indigo-700"
                   >
                     Staff
                   </Link>
                   <Link
                     href="/dashboard/doctor/emr/audit"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:border-violet-300 hover:bg-white dark:bg-slate-900 hover:text-violet-700"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:border-violet-300 hover:bg-white dark:hover:bg-slate-800 hover:text-violet-700"
                   >
                     Audit log
                   </Link>
@@ -210,7 +210,7 @@ export default function EmrLandingPage() {
               )}
               <button
                 onClick={() => setShowImport(true)}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/80 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:border-emerald-300 hover:bg-white dark:bg-slate-900 hover:text-emerald-700"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/80 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:border-emerald-300 hover:bg-white dark:hover:bg-slate-800 hover:text-emerald-700"
                 title="Bulk-import existing patients from a CSV — doesn't count toward the monthly cap"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
@@ -601,7 +601,7 @@ function ImportPatientsModal({
               <div className="mt-5 flex items-center justify-end gap-2">
                 <button
                   onClick={onClose}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                   Cancel
                 </button>
@@ -646,7 +646,7 @@ function ImportPatientsModal({
                     setResult(null);
                     setFile(null);
                   }}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                   Import another file
                 </button>
@@ -865,7 +865,7 @@ function PaywallModal({
           <div className="mt-5 flex flex-col-reverse items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end">
             <button
               onClick={onClose}
-              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Close
             </button>
@@ -1173,7 +1173,7 @@ function NewPatientModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:bg-slate-900"
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Cancel
             </button>

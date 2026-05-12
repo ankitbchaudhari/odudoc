@@ -181,7 +181,7 @@ export default function PharmacyPicker({ medicines, onPick }: PharmacyPickerProp
           </button>
           <button
             onClick={useFallback}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
           >
             Show online delivery pharmacies
           </button>
@@ -206,7 +206,7 @@ export default function PharmacyPicker({ medicines, onPick }: PharmacyPickerProp
                 className={`rounded-md px-3 py-1.5 ${
                   !deliveryOnly
                     ? "bg-primary-600 text-white"
-                    : "text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+                    : "text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                 }`}
               >
                 Pickup or delivery
@@ -216,7 +216,7 @@ export default function PharmacyPicker({ medicines, onPick }: PharmacyPickerProp
                 className={`rounded-md px-3 py-1.5 ${
                   deliveryOnly
                     ? "bg-primary-600 text-white"
-                    : "text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+                    : "text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                 }`}
               >
                 Delivery only

@@ -191,7 +191,7 @@ function ItemRow({ item: it, expanded, onToggle, lots, moves, onEdit, onDelete, 
         </div>
       </div>
       {expanded && (
-        <div className="grid gap-3 border-t border-slate-100 bg-slate-50/50 p-3 md:grid-cols-2">
+        <div className="grid gap-3 border-t border-slate-100 bg-slate-50/50 dark:bg-slate-800/30 p-3 md:grid-cols-2">
           <div>
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Lots ({lots.length})</div>
             <div className="mt-1 space-y-1">

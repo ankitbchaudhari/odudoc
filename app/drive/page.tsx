@@ -46,7 +46,7 @@ export default function DrivePage() {
           <p className="mt-4 text-lg text-blue-200">
             HIPAA-compliant cloud storage for medical records. Store, organize, and share patient files securely.
           </p>
-          <Link href="/for-doctors/register" className="mt-8 inline-block rounded-xl bg-white dark:bg-slate-900 px-8 py-3 text-sm font-semibold text-blue-700 shadow-lg hover:bg-gray-50 dark:bg-slate-900">
+          <Link href="/for-doctors/register" className="mt-8 inline-block rounded-xl bg-white dark:bg-slate-900 px-8 py-3 text-sm font-semibold text-blue-700 shadow-lg hover:bg-gray-50 dark:hover:bg-slate-800">
             Get 5 GB Free
           </Link>
         </div>
@@ -92,7 +92,7 @@ export default function DrivePage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/for-doctors/register" className={`block rounded-lg py-2.5 text-center text-sm font-semibold ${i === 1 ? "bg-blue-600 text-white hover:bg-blue-700" : "border border-gray-200 dark:border-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"}`}>
+                <Link href="/for-doctors/register" className={`block rounded-lg py-2.5 text-center text-sm font-semibold ${i === 1 ? "bg-blue-600 text-white hover:bg-blue-700" : "border border-gray-200 dark:border-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"}`}>
                   Get Started
                 </Link>
               </div>

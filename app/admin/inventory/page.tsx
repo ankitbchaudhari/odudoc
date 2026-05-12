@@ -546,7 +546,7 @@ export default function InventoryPage() {
                       </td>
                     </tr>
                     {isOpen && (
-                      <tr key={it.id + "-detail"} className="bg-slate-50/50">
+                      <tr key={it.id + "-detail"} className="bg-slate-50/50 dark:bg-slate-800/30">
                         <td colSpan={6} className="px-4 py-4">
                           {rowMode === "receive" ? (
                             <div className="space-y-3 rounded-lg border border-emerald-200 bg-white p-4">

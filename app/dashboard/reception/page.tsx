@@ -258,7 +258,7 @@ export default function ReceptionDashboard() {
               <button
                 type="button"
                 onClick={() => setShowNew(false)}
-                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
               >
                 Cancel
               </button>
@@ -373,19 +373,19 @@ export default function ReceptionDashboard() {
             Maintain this list under <Link href="/dashboard/doctor/staff" className="text-cyan-600 hover:underline">Staff</Link>; reception keeps it visible for inquiries.
           </p>
           <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-            <li className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-2 text-sm">
+            <li className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/50 dark:bg-slate-800/30 px-3 py-2 text-sm">
               <span className="text-lg">📞</span> <span className="font-semibold text-slate-900 dark:text-slate-100">Admin</span>
               <span className="ml-auto text-xs text-slate-500 dark:text-slate-400">Set in Staff settings</span>
             </li>
-            <li className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-2 text-sm">
+            <li className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/50 dark:bg-slate-800/30 px-3 py-2 text-sm">
               <span className="text-lg">🩺</span> <span className="font-semibold text-slate-900 dark:text-slate-100">On-call doctor</span>
               <span className="ml-auto text-xs text-slate-500 dark:text-slate-400">Set in Staff settings</span>
             </li>
-            <li className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-2 text-sm">
+            <li className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/50 dark:bg-slate-800/30 px-3 py-2 text-sm">
               <span className="text-lg">🧪</span> <span className="font-semibold text-slate-900 dark:text-slate-100">Laboratory</span>
               <span className="ml-auto text-xs text-slate-500 dark:text-slate-400">Ext / direct line</span>
             </li>
-            <li className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-2 text-sm">
+            <li className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/50 dark:bg-slate-800/30 px-3 py-2 text-sm">
               <span className="text-lg">💊</span> <span className="font-semibold text-slate-900 dark:text-slate-100">Pharmacy</span>
               <span className="ml-auto text-xs text-slate-500 dark:text-slate-400">Ext / direct line</span>
             </li>
@@ -422,7 +422,7 @@ function Btn({
     ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-sm hover:-translate-y-0.5 hover:shadow"
     : t === "danger"
       ? "border border-rose-200 bg-white dark:bg-slate-900 text-rose-700 hover:bg-rose-50"
-      : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900";
+      : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800";
   return (
     <button onClick={onClick} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${cls}`}>
       {children}

@@ -255,7 +255,7 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
                     data-index={idx}
                     onClick={onClose}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${
-                      idx === activeIndex ? "bg-primary-50 text-primary-700" : "text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+                      idx === activeIndex ? "bg-primary-50 text-primary-700" : "text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                     }`}
                   >
                     {getIcon(item.icon)}

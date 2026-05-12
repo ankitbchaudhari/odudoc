@@ -479,7 +479,7 @@ export default function AIChatbot() {
           <button
             onClick={() => setShowMenu((s) => !s)}
             className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
-              showMenu ? "bg-primary-600 text-white" : "text-gray-600 dark:text-slate-300 hover:bg-white dark:bg-slate-900"
+              showMenu ? "bg-primary-600 text-white" : "text-gray-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800"
             }`}
             aria-label="Main menu"
           >
@@ -490,7 +490,7 @@ export default function AIChatbot() {
           </button>
           <button
             onClick={goToMainMenu}
-            className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-gray-600 dark:text-slate-300 hover:bg-white dark:bg-slate-900"
+            className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-gray-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800"
             aria-label="Go to main menu"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -501,7 +501,7 @@ export default function AIChatbot() {
           <button
             onClick={goBack}
             disabled={messages.length <= 1}
-            className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-gray-600 dark:text-slate-300 hover:bg-white dark:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-gray-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Go back"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -511,7 +511,7 @@ export default function AIChatbot() {
           </button>
           <button
             onClick={clearChat}
-            className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-gray-600 dark:text-slate-300 hover:bg-white dark:bg-slate-900"
+            className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-gray-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800"
             aria-label="Clear chat"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

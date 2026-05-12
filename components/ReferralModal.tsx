@@ -139,7 +139,7 @@ export default function ReferralModal({
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
+            className="rounded-lg p-2 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -186,7 +186,7 @@ export default function ReferralModal({
                           type="button"
                           onClick={() => setSelectedId(d.id)}
                           className={`flex w-full items-center gap-3 p-3 text-left transition-colors ${
-                            isSelected ? "bg-primary-50" : "hover:bg-gray-50 dark:bg-slate-900"
+                            isSelected ? "bg-primary-50" : "hover:bg-gray-50 dark:hover:bg-slate-800"
                           }`}
                         >
                           <div
@@ -259,7 +259,7 @@ export default function ReferralModal({
                         : u === "urgent"
                         ? "border-amber-500 bg-amber-50 text-amber-700"
                         : "border-primary-500 bg-primary-50 text-primary-700"
-                      : "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+                      : "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                   }`}
                 >
                   {u}
@@ -276,7 +276,7 @@ export default function ReferralModal({
         <div className="flex items-center justify-end gap-2 border-t border-gray-100 bg-gray-50 dark:bg-slate-900 p-4">
           <button
             onClick={onClose}
-            className="rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:bg-slate-800"
+            className="rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800"
           >
             Cancel
           </button>

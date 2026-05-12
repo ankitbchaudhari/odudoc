@@ -285,7 +285,7 @@ export default function DoctorProfilePage() {
         </p>
         <Link
           href="/dashboard/doctor"
-          className="mt-4 inline-block rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+          className="mt-4 inline-block rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
         >
           Back to dashboard
         </Link>
@@ -394,7 +394,7 @@ export default function DoctorProfilePage() {
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:bg-slate-900"
+                  className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                   Upload photo
                 </button>
@@ -625,7 +625,7 @@ export default function DoctorProfilePage() {
                 <button
                   type="button"
                   onClick={copyMondayToWeek}
-                  className="rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+                  className="rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                   Copy Mon → Mon-Fri
                 </button>
@@ -730,7 +730,7 @@ export default function DoctorProfilePage() {
           <div className="flex items-center gap-2">
             <Link
               href="/dashboard/doctor"
-              className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+              className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Back
             </Link>

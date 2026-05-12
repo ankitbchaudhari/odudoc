@@ -349,7 +349,7 @@ export default function AdmissionsPage() {
                       </td>
                     </tr>
                     {isOpen && (
-                      <tr key={a.id + "-d"} className="bg-slate-50/50">
+                      <tr key={a.id + "-d"} className="bg-slate-50/50 dark:bg-slate-800/30">
                         <td colSpan={6} className="px-4 py-4">
                           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                             <div>

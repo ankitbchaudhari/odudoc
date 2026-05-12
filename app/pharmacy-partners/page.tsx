@@ -124,7 +124,7 @@ export default function PharmacyPartnersPage() {
                 </Link>
                 <Link
                   href="/contact?topic=pharmacy"
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-50 dark:bg-slate-900 hover:shadow-md"
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-50 dark:hover:bg-slate-800 hover:shadow-md"
                 >
                   Talk to partnerships
                 </Link>
@@ -164,7 +164,7 @@ export default function PharmacyPartnersPage() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 p-3">
+                <div className="mt-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-3">
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="font-semibold text-slate-600 dark:text-slate-300">⏱ New e-prescription · 2 min ago</span>
                     <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-bold text-emerald-700">Ready</span>

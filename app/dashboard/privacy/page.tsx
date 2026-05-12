@@ -244,7 +244,7 @@ export default function PrivacyPage() {
                             </div>
                           </div>
                           <div className="flex flex-col gap-1">
-                            <button onClick={() => downloadReceipt(c)} className="rounded-md border border-slate-300 px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900">
+                            <button onClick={() => downloadReceipt(c)} className="rounded-md border border-slate-300 px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
                               📄 Receipt
                             </button>
                             {c.status === "granted" && (

@@ -43,7 +43,7 @@ export default function ClinicLayout({ children }: { children: React.ReactNode }
                     className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                       active
                         ? "bg-primary-50 text-primary-700"
-                        : "text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+                        : "text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                     }`}
                   >
                     <span className="text-base">{item.icon}</span>

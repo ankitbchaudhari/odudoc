@@ -251,6 +251,6 @@ function Inp(p: { label: string; value: string; onChange: (v: string) => void; r
 function Btn({ onClick, children, tone = "primary" }: { onClick: () => void; children: React.ReactNode; tone?: "primary" | "ghost" }) {
   const cls = tone === "primary"
     ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-sm hover:-translate-y-0.5"
-    : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900";
+    : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800";
   return <button onClick={onClick} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${cls}`}>{children}</button>;
 }

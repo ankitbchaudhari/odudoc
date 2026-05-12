@@ -70,7 +70,7 @@ export default function ConsentGate({ roomId, onContinue, doctorName }: ConsentG
         </p>
 
         <div className="mt-5 space-y-4">
-          <label className="flex items-start gap-3 rounded-lg border border-gray-200 dark:border-slate-800 p-3 hover:bg-gray-50 dark:bg-slate-900">
+          <label className="flex items-start gap-3 rounded-lg border border-gray-200 dark:border-slate-800 p-3 hover:bg-gray-50 dark:hover:bg-slate-800">
             <input
               type="checkbox"
               checked={ready}
@@ -84,7 +84,7 @@ export default function ConsentGate({ roomId, onContinue, doctorName }: ConsentG
             </span>
           </label>
 
-          <label className="flex items-start gap-3 rounded-lg border border-gray-200 dark:border-slate-800 p-3 hover:bg-gray-50 dark:bg-slate-900">
+          <label className="flex items-start gap-3 rounded-lg border border-gray-200 dark:border-slate-800 p-3 hover:bg-gray-50 dark:hover:bg-slate-800">
             <input
               type="checkbox"
               checked={transcript}

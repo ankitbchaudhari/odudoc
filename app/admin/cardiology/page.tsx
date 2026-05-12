@@ -171,7 +171,7 @@ function StudyCard({ s, expanded, onToggle, onEdit, onReport, onTransition, onDe
         </div>
       </div>
       {expanded && (
-        <div className="border-t border-slate-100 bg-slate-50/50 p-3 text-sm text-slate-700 space-y-2">
+        <div className="border-t border-slate-100 bg-slate-50/50 dark:bg-slate-800/30 p-3 text-sm text-slate-700 space-y-2">
           {s.findings && <div><span className="font-medium">Findings:</span> {s.findings}</div>}
           {s.recommendation && <div><span className="font-medium">Recommendation:</span> {s.recommendation}</div>}
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">

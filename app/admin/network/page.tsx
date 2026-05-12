@@ -687,7 +687,7 @@ export default function AdminNetworkPage() {
                   </tr>
                 ))}
                 {outboundReq.map((c) => (
-                  <tr key={c.id} className="border-t border-slate-100 bg-slate-50/50">
+                  <tr key={c.id} className="border-t border-slate-100 bg-slate-50/50 dark:bg-slate-800/30">
                     <td className="px-3 py-2"><p className="font-medium text-slate-900">{c.partner.name}</p><p className="text-xs text-slate-500">awaiting their acceptance</p></td>
                     <td className="px-3 py-2"><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_PILL[c.status]}`}>pending</span></td>
                     <td className="px-3 py-2 text-xs text-slate-400">—</td>

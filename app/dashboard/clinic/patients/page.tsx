@@ -146,7 +146,7 @@ export default function ClinicPatientsPage() {
                   </p>
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => startEdit(p)} className="rounded p-1.5 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:bg-slate-800 hover:text-primary-600" aria-label="Edit">
+                  <button onClick={() => startEdit(p)} className="rounded p-1.5 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-primary-600" aria-label="Edit">
                     ✎
                   </button>
                   <button onClick={() => remove(p.id)} className="rounded p-1.5 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:bg-red-50 hover:text-red-600" aria-label="Delete">

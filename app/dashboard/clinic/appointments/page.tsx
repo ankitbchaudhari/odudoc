@@ -83,7 +83,7 @@ export default function ClinicAppointmentsPage() {
                 .slice()
                 .sort((a, b) => (a.date + a.time > b.date + b.time ? -1 : 1))
                 .map((a) => (
-                  <tr key={a.id} className="hover:bg-gray-50 dark:bg-slate-900">
+                  <tr key={a.id} className="hover:bg-gray-50 dark:hover:bg-slate-800">
                     <td className="px-4 py-3 font-medium text-gray-900 dark:text-slate-100">{a.patientName}</td>
                     <td className="px-4 py-3 text-gray-600 dark:text-slate-300">{a.doctorName}</td>
                     <td className="px-4 py-3 text-gray-600 dark:text-slate-300">{a.date} · {a.time}</td>

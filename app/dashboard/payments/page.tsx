@@ -80,7 +80,7 @@ export default function PaymentsPage() {
               className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                 filter === s
                   ? "bg-primary-600 text-white"
-                  : "bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:bg-slate-800"
+                  : "bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800"
               }`}
             >
               {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
@@ -136,7 +136,7 @@ export default function PaymentsPage() {
                     return (
                       <tr
                         key={booking.id}
-                        className="transition-colors hover:bg-gray-50 dark:bg-slate-900"
+                        className="transition-colors hover:bg-gray-50 dark:hover:bg-slate-800"
                       >
                         <td className="px-6 py-4 text-sm font-mono font-medium text-primary-600">
                           {booking.id}

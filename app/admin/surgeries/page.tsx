@@ -541,7 +541,7 @@ export default function SurgeriesPage() {
                       </td>
                     </tr>
                     {isOpen && (
-                      <tr key={b.id + "-d"} className="bg-slate-50/50">
+                      <tr key={b.id + "-d"} className="bg-slate-50/50 dark:bg-slate-800/30">
                         <td colSpan={7} className="px-4 py-4">
                           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             {/* Pre-op checklist */}

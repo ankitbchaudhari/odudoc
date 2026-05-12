@@ -293,7 +293,7 @@ export default function AdminDepartments() {
                   return (
                     <tr
                       key={dept.id}
-                      className="border-b border-slate-50 transition-colors hover:bg-slate-50/70"
+                      className="border-b border-slate-50 transition-colors hover:bg-slate-50/70 dark:bg-slate-800/40"
                     >
                       <td className="px-4 py-3">
                         <svg className="h-5 w-5 cursor-grab text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">

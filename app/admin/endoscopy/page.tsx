@@ -412,7 +412,7 @@ function ProcedureCard({
         </div>
       </div>
       {expanded && p.findings.length > 0 && (
-        <div className="border-t border-slate-100 bg-slate-50/50 p-4">
+        <div className="border-t border-slate-100 bg-slate-50/50 dark:bg-slate-800/30 p-4">
           <div className="space-y-2">
             {p.findings.map((f, idx) => (
               <FindingRow key={idx} finding={f} />

@@ -154,7 +154,7 @@ export default function ClinicBillingPage() {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
               {items.map((inv: ClinicInvoice) => (
-                <tr key={inv.id} className="hover:bg-gray-50 dark:bg-slate-900">
+                <tr key={inv.id} className="hover:bg-gray-50 dark:hover:bg-slate-800">
                   <td className="px-4 py-3 font-medium text-gray-900 dark:text-slate-100">{inv.invoiceNumber}</td>
                   <td className="px-4 py-3 text-gray-600 dark:text-slate-300">{inv.patientName}</td>
                   <td className="px-4 py-3 text-gray-600 dark:text-slate-300">{new Date(inv.issuedAt).toLocaleDateString()}</td>

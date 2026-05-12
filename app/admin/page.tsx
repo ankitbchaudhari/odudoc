@@ -703,7 +703,7 @@ export default function AdminDashboard() {
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-100 text-sm">
-              <thead className="bg-slate-50/50">
+              <thead className="bg-slate-50/50 dark:bg-slate-800/30">
                 <tr>
                   <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Order</th>
                   <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Customer</th>

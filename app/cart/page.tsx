@@ -166,7 +166,7 @@ export default function CartPage() {
                       <div className="flex items-center rounded-lg border border-gray-200 dark:border-slate-800">
                         <button
                           onClick={() => updateQuantity(product.id, quantity - 1)}
-                          className="px-2.5 py-1.5 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+                          className="px-2.5 py-1.5 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                         >
                           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -175,7 +175,7 @@ export default function CartPage() {
                         <span className="w-8 text-center text-sm font-medium">{quantity}</span>
                         <button
                           onClick={() => updateQuantity(product.id, quantity + 1)}
-                          className="px-2.5 py-1.5 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
+                          className="px-2.5 py-1.5 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                         >
                           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

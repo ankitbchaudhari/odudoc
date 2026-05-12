@@ -90,7 +90,7 @@ export default function ClinicStaffPage() {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
               {items.map((s) => (
-                <tr key={s.id} className="hover:bg-gray-50 dark:bg-slate-900">
+                <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-slate-800">
                   <td className="px-4 py-3 font-medium text-gray-900 dark:text-slate-100">{s.name}</td>
                   <td className="px-4 py-3 text-gray-600 dark:text-slate-300">{s.role}</td>
                   <td className="px-4 py-3 text-gray-600 dark:text-slate-300">{s.joinedAt}</td>

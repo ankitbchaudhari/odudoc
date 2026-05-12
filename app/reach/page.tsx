@@ -35,7 +35,7 @@ export default function ReachPage() {
           <p className="mt-4 text-lg text-emerald-100">
             Grow your practice online. Get more patients through your digital presence.
           </p>
-          <Link href="/for-doctors/register" className="mt-8 inline-block rounded-xl bg-white dark:bg-slate-900 px-8 py-3 text-sm font-semibold text-emerald-700 shadow-lg hover:bg-gray-50 dark:bg-slate-900">
+          <Link href="/for-doctors/register" className="mt-8 inline-block rounded-xl bg-white dark:bg-slate-900 px-8 py-3 text-sm font-semibold text-emerald-700 shadow-lg hover:bg-gray-50 dark:hover:bg-slate-800">
             Get Started Free
           </Link>
         </div>

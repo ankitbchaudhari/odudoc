@@ -652,7 +652,7 @@ export default function CorporatePage() {
                   className={`mt-8 block w-full rounded-xl px-4 py-3 text-center text-sm font-bold transition-colors ${
                     p.highlight
                       ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                      : "border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-slate-100 hover:bg-gray-50 dark:bg-slate-900"
+                      : "border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-slate-100 hover:bg-gray-50 dark:hover:bg-slate-800"
                   }`}
                 >
                   {p.cta}

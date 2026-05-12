@@ -127,7 +127,7 @@ function PlanCard({ plan, onDelete, onToggle }: { plan: CarePlan; onDelete: () =
           </p>
         </div>
         <div className="flex flex-none gap-1">
-          <button onClick={onToggle} className="rounded-lg bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-50 dark:bg-slate-900">
+          <button onClick={onToggle} className="rounded-lg bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
             {plan.active ? "Pause" : "Reactivate"}
           </button>
           <button onClick={onDelete} className="rounded-lg p-1.5 text-rose-500 hover:bg-rose-50" aria-label="Delete plan">

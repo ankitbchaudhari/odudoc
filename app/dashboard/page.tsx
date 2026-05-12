@@ -291,7 +291,7 @@ export default function DashboardPage() {
                     <li key={c.id}>
                       <Link
                         href={`/dashboard/consultations/${c.id}`}
-                        className="flex items-center justify-between py-3 transition-colors hover:bg-gray-50 dark:bg-slate-900"
+                        className="flex items-center justify-between py-3 transition-colors hover:bg-gray-50 dark:hover:bg-slate-800"
                       >
                         <div>
                           <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{c.doctorName}</p>
@@ -326,7 +326,7 @@ export default function DashboardPage() {
                     <li key={p.id}>
                       <Link
                         href="/dashboard/prescriptions"
-                        className="flex items-center justify-between py-3 transition-colors hover:bg-gray-50 dark:bg-slate-900"
+                        className="flex items-center justify-between py-3 transition-colors hover:bg-gray-50 dark:hover:bg-slate-800"
                       >
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium text-gray-900 dark:text-slate-100">

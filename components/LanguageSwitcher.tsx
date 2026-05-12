@@ -115,7 +115,7 @@ export default function LanguageSwitcher() {
     <div className="relative" ref={ref}>
       <button
         onClick={handleOpen}
-        className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:bg-slate-900 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+        className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
         aria-label="Change language"
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -153,7 +153,7 @@ export default function LanguageSwitcher() {
                   <button
                     key={l.code}
                     onClick={() => handlePick(l.code)}
-                    className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:bg-slate-900 ${
+                    className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 ${
                       isActive ? "bg-primary-50 font-semibold text-primary-600" : "text-gray-700 dark:text-slate-300"
                     }`}
                   >

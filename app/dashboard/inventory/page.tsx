@@ -295,6 +295,6 @@ function Sel({ label, value, onChange, children }: { label: string; value: strin
 function Btn({ onClick, children, tone = "primary" }: { onClick: () => void; children: React.ReactNode; tone?: "primary" | "ghost" }) {
   const cls = tone === "primary"
     ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-sm hover:-translate-y-0.5"
-    : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900";
+    : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800";
   return <button onClick={onClick} className={`rounded-md px-2.5 py-1 text-[11px] font-semibold transition ${cls}`}>{children}</button>;
 }

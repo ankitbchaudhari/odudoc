@@ -128,7 +128,7 @@ export default function DoctorPatientsPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard/doctor"
-              className="rounded-lg p-2 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
+              className="rounded-lg p-2 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -173,7 +173,7 @@ export default function DoctorPatientsPage() {
               className={`inline-flex items-center gap-2 self-start rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
                 onlineOnly
                   ? "bg-green-600 text-white shadow-sm"
-                  : "bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 ring-1 ring-gray-200 dark:ring-slate-800 hover:bg-gray-50 dark:bg-slate-900"
+                  : "bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 ring-1 ring-gray-200 dark:ring-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800"
               }`}
             >
               <span className={`inline-block h-2 w-2 rounded-full ${onlineOnly ? "bg-white dark:bg-slate-900" : "bg-green-500"}`} />

@@ -62,7 +62,7 @@ export default function FAQPage() {
               className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                 activeCategory === cat
                   ? "bg-primary-600 text-white"
-                  : "bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 shadow-sm hover:bg-gray-100 dark:bg-slate-800"
+                  : "bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 shadow-sm hover:bg-gray-100 dark:hover:bg-slate-800"
               }`}
             >
               {cat}

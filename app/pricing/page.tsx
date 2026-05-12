@@ -36,7 +36,7 @@ export default function PricingPage() {
               className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all ${
                 audience === "clinics"
                   ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md"
-                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
               }`}
             >
               For clinics &amp; doctors
@@ -46,7 +46,7 @@ export default function PricingPage() {
               className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all ${
                 audience === "patients"
                   ? "bg-gradient-to-r from-sky-600 to-blue-600 text-white shadow-md"
-                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
               }`}
             >
               For patients
@@ -274,7 +274,7 @@ export default function PricingPage() {
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center rounded-lg bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-primary-600 shadow-sm transition-all hover:bg-gray-50 dark:bg-slate-900"
+              className="inline-flex items-center justify-center rounded-lg bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-primary-600 shadow-sm transition-all hover:bg-gray-50 dark:hover:bg-slate-800"
             >
               Contact Sales
             </Link>

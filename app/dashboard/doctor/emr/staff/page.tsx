@@ -186,7 +186,7 @@ export default function StaffPage() {
 
           {/* Plan + usage cards */}
           {quota && (
-            <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-5">
+            <div className="border-b border-slate-100 bg-slate-50/50 dark:bg-slate-800/30 px-6 py-5">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                   {quota.unlocked
@@ -388,7 +388,7 @@ export default function StaffPage() {
               <button
                 type="button"
                 onClick={() => setShowInvite(false)}
-                className="rounded-xl border border-slate-200 dark:border-slate-800 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+                className="rounded-xl border border-slate-200 dark:border-slate-800 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
               >
                 Cancel
               </button>
@@ -491,7 +491,7 @@ export default function StaffPage() {
             <div className="border-t border-slate-100 bg-slate-50/60 px-6 py-3 text-right">
               <button
                 onClick={() => setShowPaywall(null)}
-                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
               >
                 Close
               </button>

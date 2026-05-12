@@ -51,7 +51,7 @@ export default function ForDoctorsGuidePage() {
             </Link>
             <Link
               href="/auth/login"
-              className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+              className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Already a doctor? Sign in
             </Link>
@@ -77,7 +77,7 @@ export default function ForDoctorsGuidePage() {
             </Link>
             <Link
               href="/contact"
-              className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+              className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Talk to our team
             </Link>

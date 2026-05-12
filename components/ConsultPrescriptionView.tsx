@@ -211,7 +211,7 @@ export default function ConsultPrescriptionView({ rx, showPharmacyOptions = true
               className={`rounded-xl border-2 p-4 text-left transition-all ${
                 choice === "odudoc"
                   ? "border-primary-600 bg-primary-50"
-                  : "border-gray-200 dark:border-slate-800 hover:border-primary-300 hover:bg-gray-50 dark:bg-slate-900"
+                  : "border-gray-200 dark:border-slate-800 hover:border-primary-300 hover:bg-gray-50 dark:hover:bg-slate-800"
               }`}
             >
               <div className="flex items-center gap-3">
@@ -231,7 +231,7 @@ export default function ConsultPrescriptionView({ rx, showPharmacyOptions = true
               className={`rounded-xl border-2 p-4 text-left transition-all ${
                 choice === "offline"
                   ? "border-primary-600 bg-primary-50"
-                  : "border-gray-200 dark:border-slate-800 hover:border-primary-300 hover:bg-gray-50 dark:bg-slate-900"
+                  : "border-gray-200 dark:border-slate-800 hover:border-primary-300 hover:bg-gray-50 dark:hover:bg-slate-800"
               }`}
             >
               <div className="flex items-center gap-3">

@@ -981,7 +981,7 @@ export default function PatientDetailPage({
                     setVisitForm(EMPTY_VISIT);
                     setVisitFormOpen(false);
                   }}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                   Cancel
                 </button>
@@ -1257,7 +1257,7 @@ export default function PatientDetailPage({
                     setInvoiceForm(EMPTY_INVOICE_FORM);
                     setInvoiceFormOpen(false);
                   }}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                   Cancel
                 </button>
@@ -1326,7 +1326,7 @@ export default function PatientDetailPage({
                             {inv.publicToken && (
                               <button
                                 onClick={() => rotatePaymentLink(inv)}
-                                className="rounded-lg px-1.5 py-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800"
+                                className="rounded-lg px-1.5 py-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                                 title="Rotate the payment link (invalidates the old URL)"
                               >
                                 ↻
@@ -1353,7 +1353,7 @@ export default function PatientDetailPage({
                         {inv.status !== "void" && inv.status !== "paid" && (
                           <button
                             onClick={() => setInvoiceStatus(inv.id, "void")}
-                            className="rounded-lg px-2.5 py-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800"
+                            className="rounded-lg px-2.5 py-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                           >
                             Void
                           </button>
@@ -1499,7 +1499,7 @@ export default function PatientDetailPage({
                     setCertForm(EMPTY_CERT_FORM);
                     setCertFormOpen(false);
                   }}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                   Cancel
                 </button>

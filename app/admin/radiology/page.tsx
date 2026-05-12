@@ -479,7 +479,7 @@ export default function RadiologyPage() {
                       </td>
                     </tr>
                     {isOpen && (
-                      <tr key={o.id + "-d"} className="bg-slate-50/50">
+                      <tr key={o.id + "-d"} className="bg-slate-50/50 dark:bg-slate-800/30">
                         <td colSpan={7} className="px-4 py-4 space-y-3">
                           {o.clinicalIndication && (
                             <div className="text-xs text-slate-600">

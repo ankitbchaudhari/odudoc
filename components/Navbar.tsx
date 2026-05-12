@@ -129,8 +129,10 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Desktop Auth Buttons / User Menu */}
-        <div className="hidden items-center gap-1.5 md:flex">
+        {/* Desktop Auth Buttons / User Menu — flex-shrink-0 reserves
+            space so the middle pill (flex-1) can't crowd it off the
+            right edge. */}
+        <div className="hidden shrink-0 items-center gap-1.5 md:flex">
           {/* Search Icon */}
           <button
             onClick={() => setSearchOpen(true)}
@@ -240,11 +242,14 @@ export default function Navbar() {
             <>
               <Link
                 href="/auth/login"
-                className="rounded-lg px-4 py-2 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50"
+                className="rounded-lg px-4 py-2 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50 dark:text-primary-300 dark:hover:bg-slate-800"
               >
                 {t("common.login")}
               </Link>
-              <Link href="/auth/register" className="btn-primary !py-2 !text-sm">
+              <Link
+                href="/auth/register"
+                className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary-700 hover:shadow-md dark:bg-primary-500 dark:hover:bg-primary-400"
+              >
                 {t("common.signUp")}
               </Link>
             </>

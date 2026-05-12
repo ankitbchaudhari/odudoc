@@ -109,9 +109,12 @@ export default function Navbar() {
 
         {/* Desktop Nav — pill-grouped links so the bar reads like a
             modern shadcn/Vercel-style top-nav, with one emphasised CTA
-            to drive pharmacy onboarding. */}
-        <div className="hidden flex-1 items-center justify-center md:flex">
-          <div className="flex items-center gap-0.5 rounded-full border border-slate-200 dark:border-slate-800/70 bg-slate-50/70 dark:bg-slate-800/40 p-1 shadow-inner shadow-slate-200/40 dark:shadow-slate-900/40">
+            to drive pharmacy onboarding. min-w-0 lets the pill shrink
+            when the total nav width exceeds the container, so the
+            right-side block (Login / Sign Up / theme toggle / cart)
+            never gets pushed off-screen by an over-wide pill. */}
+        <div className="hidden min-w-0 flex-1 items-center justify-center md:flex">
+          <div className="flex max-w-full items-center gap-0.5 overflow-x-auto rounded-full border border-slate-200 dark:border-slate-800/70 bg-slate-50/70 dark:bg-slate-800/40 p-1 shadow-inner shadow-slate-200/40 dark:shadow-slate-900/40 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {links.map((l) => (
               <Link
                 key={l.href}

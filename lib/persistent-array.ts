@@ -59,6 +59,41 @@ export async function loadJson<T>(key: string, fallback: T): Promise<T> {
   }
 }
 
+/**
+ * Strict load — distinguishes "row missing" from "DB unavailable" so the
+ * caller can decide whether to seed-and-save or skip.
+ *
+ *   { ok: true, found: true, data }    — row exists, return data
+ *   { ok: true, found: false }         — row missing, caller may seed
+ *   { ok: false, error }               — DB unreachable, DO NOT overwrite
+ *
+ * Critical for hydrate(): the previous `loadJson(key, null)` couldn't
+ * tell these apart, so a transient DB blip on cold start would seed
+ * with the bootstrap defaults and then `saveJson(key, ref)` would
+ * overwrite the real Postgres data with seeds, wiping every user /
+ * order / record for that key. This is the bug that surfaced as
+ * "Email verified — you can sign in now" followed by login replying
+ * "No account found with this email".
+ */
+export type LoadResult<T> =
+  | { ok: true; found: true; data: T }
+  | { ok: true; found: false }
+  | { ok: false; error: Error };
+
+export async function loadJsonStrict<T>(key: string): Promise<LoadResult<T>> {
+  try {
+    await kvReady();
+    const rows = (await sql`SELECT data FROM app_kv WHERE key = ${key} LIMIT 1`) as Array<{
+      data: unknown;
+    }>;
+    if (!rows[0]) return { ok: true, found: false };
+    return { ok: true, found: true, data: rows[0].data as T };
+  } catch (err) {
+    log.error("persistent_array.load_failed", err, { key });
+    return { ok: false, error: err instanceof Error ? err : new Error(String(err)) };
+  }
+}
+
 // Lightweight count: pulls a single integer from Postgres instead of the
 // entire JSON blob. Used by dashboard/list endpoints that only need
 // `arr.length` — hydrating a 1000-row store just to call .length burns
@@ -249,23 +284,36 @@ export function bindPersistentArray<T>(
     if (hydrated) return;
     if (!hydrating) {
       hydrating = (async () => {
-        const loaded = await loadJson<T[] | null>(key, null);
+        const result = await loadJsonStrict<T[]>(key);
         suspendFlush = true;
         try {
-          if (loaded === null) {
+          if (result.ok && result.found && Array.isArray(result.data)) {
+            // Happy path — real data in Postgres, load it.
+            ref.splice(0, ref.length, ...result.data);
+          } else if (result.ok && !result.found) {
+            // Row genuinely missing (fresh DB) — seed and persist once.
             const initial = seed();
             ref.splice(0, ref.length, ...initial);
-          } else if (Array.isArray(loaded)) {
-            ref.splice(0, ref.length, ...loaded);
+            await saveJson(key, ref);
           }
+          // result.ok === false → DB unreachable. DO NOT seed, DO NOT
+          // save. Leave ref empty (or whatever its current state) and
+          // let subsequent requests retry. Mark not-hydrated so the
+          // next request attempts hydration again instead of blindly
+          // operating on a phantom empty array.
         } finally {
           suspendFlush = false;
         }
-        if (loaded === null) await saveJson(key, ref);
-        hydrated = true;
+        // Only mark hydrated when we successfully reached Postgres. A
+        // transient DB error means we don't know the true state — let
+        // the next request try again rather than caching a wrong view.
+        hydrated = result.ok;
       })().catch((err) => {
         log.error("persistent_array.hydrate_failed", err, { key });
-        hydrated = true;
+        // Don't set hydrated=true here either. Let the next call retry.
+      })
+      .finally(() => {
+        hydrating = null;
       });
     }
     await hydrating;
@@ -331,16 +379,24 @@ export function bindPersistentArray<T>(
   async function reload(): Promise<void> {
     try {
       await flushPromise;
-      const loaded = await loadJson<T[] | null>(key, null);
-      suspendFlush = true;
-      try {
-        if (Array.isArray(loaded)) {
-          ref.splice(0, ref.length, ...loaded);
+      const result = await loadJsonStrict<T[]>(key);
+      // Mirrors hydrate(): only mutate ref on a successful read. DB
+      // failure → leave ref intact and don't mark hydrated; next call
+      // retries instead of operating on a stale phantom view.
+      if (result.ok && result.found && Array.isArray(result.data)) {
+        suspendFlush = true;
+        try {
+          ref.splice(0, ref.length, ...result.data);
+        } finally {
+          suspendFlush = false;
         }
-      } finally {
-        suspendFlush = false;
+        hydrated = true;
+      } else if (result.ok && !result.found) {
+        // Row missing on a reload (rare — usually a deletion at the DB
+        // level). Don't seed here; reload() is for refresh, not init.
+        hydrated = true;
       }
-      hydrated = true;
+      // result.ok === false → leave ref alone, don't update hydrated.
     } catch (err) {
       log.error("persistent_array.reload_failed", err, { key });
     }

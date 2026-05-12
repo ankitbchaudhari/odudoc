@@ -55,14 +55,14 @@ export default async function Home() {
           visitors to the comprehensive /features page. Compact
           enough to sit between hero and AI showcase without
           burying the main scroll. */}
-      <section className="bg-white py-10">
+      <section className="bg-white dark:bg-slate-900 py-10">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
           <div className="flex-1 min-w-[260px]">
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-indigo-700">One stack · 8 audiences</p>
-            <h2 className="mt-2 text-2xl font-extrabold text-slate-900 md:text-3xl">
+            <h2 className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-slate-100 md:text-3xl">
               80+ capabilities across the entire healthcare ecosystem
             </h2>
-            <p className="mt-1 max-w-2xl text-sm text-slate-600">
+            <p className="mt-1 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
               Patient app, doctor consult, hospital ops, lab + diagnostic marketplace, pharmacy fulfilment,
               pharma anti-counterfeit, insurance cashless, education partners — all on one platform.
             </p>
@@ -105,13 +105,13 @@ export default async function Home() {
             <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary-100 to-teal-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-primary-700">
               👨‍⚕️ Our Team
             </span>
-            <h2 className="mt-4 text-3xl font-bold text-gray-900 md:text-5xl">
+            <h2 className="mt-4 text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-5xl">
               Our{" "}
               <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-emerald-500 bg-clip-text text-transparent">
                 Expert Doctors
               </span>
             </h2>
-            <p className="mt-3 text-gray-500">Meet the professionals behind your care</p>
+            <p className="mt-3 text-gray-500 dark:text-slate-400">Meet the professionals behind your care</p>
           </div>
 
           {isSignedIn ? (
@@ -134,7 +134,7 @@ export default async function Home() {
               </div>
             </>
           ) : (
-            <div className="mx-auto mt-12 max-w-2xl overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+            <div className="mx-auto mt-12 max-w-2xl overflow-hidden rounded-3xl border border-gray-100 bg-white dark:bg-slate-900 shadow-sm">
               <div className="bg-gradient-to-br from-primary-600 via-indigo-600 to-purple-600 px-8 py-12 text-center text-white">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/15 ring-4 ring-white/20">
                   <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -149,7 +149,7 @@ export default async function Home() {
                 <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
                   <Link
                     href="/auth/register?callbackUrl=/doctors"
-                    className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-primary-700 shadow-lg transition-transform hover:scale-105"
+                    className="inline-flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-primary-700 shadow-lg transition-transform hover:scale-105"
                   >
                     Create free account →
                   </Link>
@@ -161,18 +161,18 @@ export default async function Home() {
                   </Link>
                 </div>
               </div>
-              <div className="grid grid-cols-3 divide-x divide-gray-100 bg-white text-center">
+              <div className="grid grid-cols-3 divide-x divide-gray-100 dark:divide-slate-800 bg-white dark:bg-slate-900 text-center">
                 <div className="px-2 py-4">
-                  <p className="text-lg font-bold text-gray-900">{doctors.length}+</p>
-                  <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Verified doctors</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-slate-100">{doctors.length}+</p>
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400">Verified doctors</p>
                 </div>
                 <div className="px-2 py-4">
-                  <p className="text-lg font-bold text-gray-900">24/7</p>
-                  <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Availability</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-slate-100">24/7</p>
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400">Availability</p>
                 </div>
                 <div className="px-2 py-4">
-                  <p className="text-lg font-bold text-gray-900">Free</p>
-                  <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">To sign up</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-slate-100">Free</p>
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400">To sign up</p>
                 </div>
               </div>
             </div>
@@ -181,14 +181,14 @@ export default async function Home() {
       </section>
 
       {/* Specialty rail — drives deep indexable pages + long-tail SEO. */}
-      <section className="bg-white py-14">
+      <section className="bg-white dark:bg-slate-900 py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 md:text-3xl">
                 Consult a specialist online
               </h2>
-              <p className="mt-2 text-gray-600">
+              <p className="mt-2 text-gray-600 dark:text-slate-300">
                 Pick the right specialist for your symptoms — video consultations in minutes.
               </p>
             </div>
@@ -204,7 +204,7 @@ export default async function Home() {
               <Link
                 key={s.slug}
                 href={`/specialty/${s.slug}`}
-                className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-center text-sm font-medium text-gray-700 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:text-primary-700 hover:shadow-md"
+                className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-slate-300 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:text-primary-700 hover:shadow-md"
               >
                 {s.displayName}
               </Link>
@@ -214,14 +214,14 @@ export default async function Home() {
       </section>
 
       {/* City rail — same treatment, geo-intent. */}
-      <section className="bg-gray-50 py-14">
+      <section className="bg-gray-50 dark:bg-slate-900 py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 md:text-3xl">
                 Doctors in your city
               </h2>
-              <p className="mt-2 text-gray-600">
+              <p className="mt-2 text-gray-600 dark:text-slate-300">
                 Video consultations work everywhere. Browse by city for local pricing and availability.
               </p>
             </div>
@@ -237,7 +237,7 @@ export default async function Home() {
               <Link
                 key={c.slug}
                 href={`/doctors-in/${c.slug}`}
-                className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:border-primary-400 hover:text-primary-700"
+                className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-1.5 text-sm font-medium text-gray-700 dark:text-slate-300 transition-colors hover:border-primary-400 hover:text-primary-700"
               >
                 {c.displayName}
               </Link>
@@ -261,7 +261,7 @@ export default async function Home() {
 
       {/* App download — patient app on iOS/Android. Universal links
           back to /p/* keep the experience continuous from web → app. */}
-      <section className="bg-white py-16">
+      <section className="bg-white dark:bg-slate-900 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AppDownloadBadges variant="patient" tone="primary" />
         </div>
@@ -276,13 +276,13 @@ export default async function Home() {
               <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-100 to-purple-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-indigo-700">
                 ❓ Got Questions?
               </span>
-              <h2 className="mt-4 text-3xl font-bold text-gray-900 md:text-5xl">
+              <h2 className="mt-4 text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-5xl">
                 Frequently Asked{" "}
                 <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                   Questions
                 </span>
               </h2>
-              <p className="mt-4 leading-relaxed text-gray-600">
+              <p className="mt-4 leading-relaxed text-gray-600 dark:text-slate-300">
                 Find answers to common questions about our services, appointments,
                 insurance, and more. Still need help? Our support team is available
                 around the clock.
@@ -299,7 +299,7 @@ export default async function Home() {
                 </Link>
                 <Link
                   href="/contact"
-                  className="inline-flex items-center gap-2 rounded-xl border-2 border-indigo-200 bg-white px-6 py-3 text-sm font-semibold text-indigo-700 transition-all hover:bg-indigo-50"
+                  className="inline-flex items-center gap-2 rounded-xl border-2 border-indigo-200 bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-indigo-700 transition-all hover:bg-indigo-50"
                 >
                   Contact Support
                 </Link>

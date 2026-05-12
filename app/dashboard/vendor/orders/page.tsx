@@ -49,17 +49,17 @@ export default function VendorOrdersPage() {
   const grossRevenue = orders.reduce((s, o) => s + o.vendorSubtotal, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
             <Link href="/dashboard/vendor" className="text-sm text-primary-600 hover:underline">← Back to dashboard</Link>
-            <h1 className="mt-1 text-2xl font-bold text-gray-900">Orders</h1>
-            <p className="text-sm text-gray-500">Orders containing your products. Only your line items are shown.</p>
+            <h1 className="mt-1 text-2xl font-bold text-gray-900 dark:text-slate-100">Orders</h1>
+            <p className="text-sm text-gray-500 dark:text-slate-400">Orders containing your products. Only your line items are shown.</p>
           </div>
-          <div className="rounded-xl bg-white px-5 py-3 shadow-sm">
-            <p className="text-xs text-gray-500">Gross revenue ({filter})</p>
-            <p className="text-lg font-bold text-gray-900">${grossRevenue.toFixed(2)}</p>
+          <div className="rounded-xl bg-white dark:bg-slate-900 px-5 py-3 shadow-sm">
+            <p className="text-xs text-gray-500 dark:text-slate-400">Gross revenue ({filter})</p>
+            <p className="text-lg font-bold text-gray-900 dark:text-slate-100">${grossRevenue.toFixed(2)}</p>
           </div>
         </div>
 
@@ -67,7 +67,7 @@ export default function VendorOrdersPage() {
           {STATUS_FILTERS.map((s) => (
             <button key={s} onClick={() => setFilter(s)}
               className={`rounded-full px-3 py-1.5 text-xs font-medium ${
-                filter === s ? "bg-primary-600 text-white" : "bg-white text-gray-700 border border-gray-200"
+                filter === s ? "bg-primary-600 text-white" : "bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-800"
               }`}>
               {s}
             </button>
@@ -77,20 +77,20 @@ export default function VendorOrdersPage() {
         {err && <p className="mb-4 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">{err}</p>}
 
         {loading ? (
-          <div className="rounded-2xl bg-white p-12 text-center text-sm text-gray-400 shadow-sm">Loading…</div>
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-12 text-center text-sm text-gray-400 dark:text-slate-500 shadow-sm">Loading…</div>
         ) : orders.length === 0 ? (
-          <div className="rounded-2xl bg-white p-12 text-center text-sm text-gray-400 shadow-sm">
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-12 text-center text-sm text-gray-400 dark:text-slate-500 shadow-sm">
             No orders in this view yet.
           </div>
         ) : (
           <div className="space-y-3">
             {orders.map((o) => (
-              <div key={o.id} className="rounded-xl bg-white p-5 shadow-sm">
+              <div key={o.id} className="rounded-xl bg-white dark:bg-slate-900 p-5 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <p className="text-base font-bold text-gray-900">{o.orderNumber}</p>
-                    <p className="text-xs text-gray-500">{o.customer} · {o.email} · {o.phone}</p>
-                    <p className="text-xs text-gray-500">{o.shippingAddress}</p>
+                    <p className="text-base font-bold text-gray-900 dark:text-slate-100">{o.orderNumber}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">{o.customer} · {o.email} · {o.phone}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">{o.shippingAddress}</p>
                   </div>
                   <div className="text-right">
                     <StatusBadge
@@ -103,8 +103,8 @@ export default function VendorOrdersPage() {
                       }
                       label={o.orderStatus}
                     />
-                    <p className="mt-1 text-xs text-gray-400">Placed {new Date(o.createdAt).toLocaleDateString()}</p>
-                    <p className="mt-0.5 text-xs text-gray-400">Payment: {o.paymentStatus}</p>
+                    <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">Placed {new Date(o.createdAt).toLocaleDateString()}</p>
+                    <p className="mt-0.5 text-xs text-gray-400 dark:text-slate-500">Payment: {o.paymentStatus}</p>
                   </div>
                 </div>
 
@@ -112,7 +112,7 @@ export default function VendorOrdersPage() {
                   <div className="overflow-x-auto">
                   <table className="w-full min-w-[480px] text-sm">
                     <thead>
-                      <tr className="text-left text-xs text-gray-500">
+                      <tr className="text-left text-xs text-gray-500 dark:text-slate-400">
                         <th className="py-1">Product</th>
                         <th className="py-1 text-center">Qty</th>
                         <th className="py-1 text-right">Price</th>
@@ -122,17 +122,17 @@ export default function VendorOrdersPage() {
                     <tbody>
                       {o.items.map((it, idx) => (
                         <tr key={idx} className="border-t border-gray-50">
-                          <td className="py-2 font-medium text-gray-900">{it.name}</td>
-                          <td className="py-2 text-center text-gray-700">{it.quantity}</td>
-                          <td className="py-2 text-right text-gray-700">${it.price.toFixed(2)}</td>
-                          <td className="py-2 text-right font-medium text-gray-900">${(it.price * it.quantity).toFixed(2)}</td>
+                          <td className="py-2 font-medium text-gray-900 dark:text-slate-100">{it.name}</td>
+                          <td className="py-2 text-center text-gray-700 dark:text-slate-300">{it.quantity}</td>
+                          <td className="py-2 text-right text-gray-700 dark:text-slate-300">${it.price.toFixed(2)}</td>
+                          <td className="py-2 text-right font-medium text-gray-900 dark:text-slate-100">${(it.price * it.quantity).toFixed(2)}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                   </div>
-                  <div className="mt-3 flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-gray-500">
-                    <span>Your revenue: <span className="font-semibold text-gray-900">${o.vendorSubtotal.toFixed(2)}</span></span>
+                  <div className="mt-3 flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-slate-400">
+                    <span>Your revenue: <span className="font-semibold text-gray-900 dark:text-slate-100">${o.vendorSubtotal.toFixed(2)}</span></span>
                     <span>· Full order total: ${o.orderTotal.toFixed(2)}</span>
                   </div>
                 </div>

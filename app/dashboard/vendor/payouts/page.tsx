@@ -43,11 +43,11 @@ export default function VendorPayoutsPage() {
   }, [filter]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <Link href="/dashboard/vendor" className="text-sm text-primary-600 hover:underline">← Back to dashboard</Link>
-        <h1 className="mt-1 text-2xl font-bold text-gray-900">Payouts</h1>
-        <p className="text-sm text-gray-500">Platform commission {commission}%. Net is what you&apos;ll receive per paid order.</p>
+        <h1 className="mt-1 text-2xl font-bold text-gray-900 dark:text-slate-100">Payouts</h1>
+        <p className="text-sm text-gray-500 dark:text-slate-400">Platform commission {commission}%. Net is what you&apos;ll receive per paid order.</p>
 
         <div className="mt-5 grid grid-cols-2 gap-4">
           <div className="rounded-xl bg-amber-50 p-5 text-amber-900">
@@ -64,7 +64,7 @@ export default function VendorPayoutsPage() {
           {FILTERS.map((s) => (
             <button key={s} onClick={() => setFilter(s)}
               className={`rounded-full px-3 py-1.5 text-xs font-medium ${
-                filter === s ? "bg-primary-600 text-white" : "bg-white text-gray-700 border border-gray-200"
+                filter === s ? "bg-primary-600 text-white" : "bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-800"
               }`}>
               {s}
             </button>
@@ -73,15 +73,15 @@ export default function VendorPayoutsPage() {
 
         {err && <p className="mt-4 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">{err}</p>}
 
-        <div className="mt-3 overflow-hidden rounded-2xl bg-white shadow-sm">
+        <div className="mt-3 overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-sm">
           {loading ? (
-            <div className="p-12 text-center text-sm text-gray-400">Loading…</div>
+            <div className="p-12 text-center text-sm text-gray-400 dark:text-slate-500">Loading…</div>
           ) : payouts.length === 0 ? (
-            <div className="p-12 text-center text-sm text-gray-400">No payout entries yet. Entries are created when orders are paid.</div>
+            <div className="p-12 text-center text-sm text-gray-400 dark:text-slate-500">No payout entries yet. Entries are created when orders are paid.</div>
           ) : (
             <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">
-              <thead className="bg-gray-50 text-left text-xs text-gray-500">
+              <thead className="bg-gray-50 dark:bg-slate-900 text-left text-xs text-gray-500 dark:text-slate-400">
                 <tr>
                   <th className="py-3 pl-4">Order</th>
                   <th className="py-3 text-right">Gross</th>
@@ -94,19 +94,19 @@ export default function VendorPayoutsPage() {
               <tbody>
                 {payouts.map((p) => (
                   <tr key={p.id} className="border-t border-gray-100">
-                    <td className="py-3 pl-4 font-medium text-gray-900">{p.orderNumber}</td>
-                    <td className="py-3 text-right text-gray-700">${p.grossAmount.toFixed(2)}</td>
-                    <td className="py-3 text-right text-gray-500">
+                    <td className="py-3 pl-4 font-medium text-gray-900 dark:text-slate-100">{p.orderNumber}</td>
+                    <td className="py-3 text-right text-gray-700 dark:text-slate-300">${p.grossAmount.toFixed(2)}</td>
+                    <td className="py-3 text-right text-gray-500 dark:text-slate-400">
                       -${p.commissionAmount.toFixed(2)}
-                      <span className="ml-1 text-xs text-gray-400">({p.commissionPercent}%)</span>
+                      <span className="ml-1 text-xs text-gray-400 dark:text-slate-500">({p.commissionPercent}%)</span>
                     </td>
-                    <td className="py-3 text-right font-semibold text-gray-900">${p.netAmount.toFixed(2)}</td>
+                    <td className="py-3 text-right font-semibold text-gray-900 dark:text-slate-100">${p.netAmount.toFixed(2)}</td>
                     <td className="py-3">
                       <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                         p.status === "paid" ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"
                       }`}>{p.status}</span>
                     </td>
-                    <td className="py-3 pr-4 text-xs text-gray-400">
+                    <td className="py-3 pr-4 text-xs text-gray-400 dark:text-slate-500">
                       {new Date(p.createdAt).toLocaleDateString()}
                       {p.paidAt && <span className="block text-[10px]">paid {new Date(p.paidAt).toLocaleDateString()}</span>}
                     </td>

@@ -16,14 +16,14 @@ const STATUS_LABELS: Record<
   ConsultationStatus,
   { label: string; cls: string; ringDot: string }
 > = {
-  pending_payment: { label: "Pending payment", cls: "bg-slate-100 text-slate-600",   ringDot: "bg-slate-400" },
+  pending_payment: { label: "Pending payment", cls: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300",   ringDot: "bg-slate-400" },
   awaiting_doctor: { label: "Awaiting you",    cls: "bg-amber-100 text-amber-800",   ringDot: "bg-amber-500" },
   approved:        { label: "Approved",        cls: "bg-emerald-100 text-emerald-800", ringDot: "bg-emerald-500" },
   rejected:        { label: "Rejected",        cls: "bg-rose-100 text-rose-700",     ringDot: "bg-rose-500" },
   rescheduled:     { label: "Rescheduled",     cls: "bg-sky-100 text-sky-800",       ringDot: "bg-sky-500" },
   in_progress:     { label: "In progress",     cls: "bg-indigo-100 text-indigo-800", ringDot: "bg-indigo-500" },
   completed:       { label: "Completed",       cls: "bg-teal-100 text-teal-800",     ringDot: "bg-teal-500" },
-  cancelled:       { label: "Cancelled",       cls: "bg-slate-100 text-slate-500",   ringDot: "bg-slate-400" },
+  cancelled:       { label: "Cancelled",       cls: "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400",   ringDot: "bg-slate-400" },
   refunded:        { label: "Refunded",        cls: "bg-fuchsia-100 text-fuchsia-800", ringDot: "bg-fuchsia-500" },
 };
 
@@ -168,16 +168,16 @@ export default function DoctorConsultationsPage() {
               {pool.map((c) => (
                 <div
                   key={c.id}
-                  className="flex items-center gap-3 rounded-2xl bg-white p-3 ring-1 ring-emerald-100 transition hover:ring-emerald-300"
+                  className="flex items-center gap-3 rounded-2xl bg-white dark:bg-slate-900 p-3 ring-1 ring-emerald-100 transition hover:ring-emerald-300"
                 >
                   <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${avatarColour(c.patientName || "")} text-sm font-bold text-white shadow-md`}>
                     {(c.patientName || "??").slice(0, 2).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-bold text-slate-900">
+                    <p className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">
                       {c.patientName}
                     </p>
-                    <p className="truncate text-xs text-slate-600">
+                    <p className="truncate text-xs text-slate-600 dark:text-slate-300">
                       {c.medicalHistory?.chiefComplaint || c.specialty}
                     </p>
                     <p className="mt-0.5 text-[11px] text-slate-400">
@@ -215,7 +215,7 @@ export default function DoctorConsultationsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by patient or complaint"
-              className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm shadow-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2 pl-9 pr-3 text-sm shadow-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
             />
           </div>
         </div>
@@ -224,15 +224,15 @@ export default function DoctorConsultationsPage() {
         {loading ? (
           <div className="space-y-3">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-20 animate-pulse rounded-2xl bg-white shadow-sm" />
+              <div key={i} className="h-20 animate-pulse rounded-2xl bg-white dark:bg-slate-900 shadow-sm" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-3xl border border-slate-100 bg-white p-12 text-center shadow-sm">
+          <div className="rounded-3xl border border-slate-100 bg-white dark:bg-slate-900 p-12 text-center shadow-sm">
             <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-100 to-indigo-100 text-2xl">
               📋
             </div>
-            <p className="text-sm font-semibold text-slate-700">
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
               {search.trim()
                 ? "No consultations match your search."
                 : filter === "all"
@@ -251,7 +251,7 @@ export default function DoctorConsultationsPage() {
                 <Link
                   key={c.id}
                   href={`/dashboard/doctor/consultations/${c.id}`}
-                  className="group flex flex-wrap items-center gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-lg hover:shadow-violet-500/10"
+                  className="group flex flex-wrap items-center gap-4 rounded-2xl border border-slate-100 bg-white dark:bg-slate-900 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-lg hover:shadow-violet-500/10"
                 >
                   <div className="relative">
                     <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${avatarColour(c.patientName || "")} text-sm font-bold text-white shadow-md`}>
@@ -262,14 +262,14 @@ export default function DoctorConsultationsPage() {
 
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-bold text-slate-900">{c.patientName}</p>
+                      <p className="font-bold text-slate-900 dark:text-slate-100">{c.patientName}</p>
                       <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${meta.cls}`}>
                         <span className={`h-1.5 w-1.5 rounded-full ${meta.ringDot}`} />
                         {meta.label}
                       </span>
                       <PatientPresenceBadge patientKey={c.patientEmail} />
                     </div>
-                    <p className="mt-1 line-clamp-1 text-sm text-slate-600">
+                    <p className="mt-1 line-clamp-1 text-sm text-slate-600 dark:text-slate-300">
                       {c.medicalHistory?.chiefComplaint || (
                         <span className="italic text-slate-400">No chief complaint provided</span>
                       )}
@@ -290,7 +290,7 @@ export default function DoctorConsultationsPage() {
                   </div>
 
                   <div className="flex flex-col items-end gap-1">
-                    <p className="text-base font-bold text-slate-900">
+                    <p className="text-base font-bold text-slate-900 dark:text-slate-100">
                       {c.fee != null ? `${c.currency || "$"}${c.fee}` : "—"}
                     </p>
                     <span className="inline-flex items-center gap-1 text-xs font-semibold text-violet-600 transition group-hover:gap-2">
@@ -349,13 +349,13 @@ function FilterChip({
       className={`group inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
         active
           ? activeBg[accent]
-          : "border border-slate-200 bg-white text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
+          : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
       }`}
     >
       {label}
       <span
         className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-          active ? "bg-white/25 text-white" : "bg-slate-100 text-slate-600 group-hover:bg-violet-100 group-hover:text-violet-700"
+          active ? "bg-white/25 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 group-hover:bg-violet-100 group-hover:text-violet-700"
         }`}
       >
         {count}

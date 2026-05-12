@@ -396,14 +396,14 @@ function WritePrescriptionModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Left: Form */}
-        <div className="w-full overflow-y-auto bg-white p-6 lg:w-1/2">
+        <div className="w-full overflow-y-auto bg-white dark:bg-slate-900 p-6 lg:w-1/2">
           <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">
               Write Prescription
             </h2>
             <button
               onClick={onClose}
-              className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              className="rounded-lg p-2 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
             >
               <svg
                 className="h-5 w-5"
@@ -513,8 +513,8 @@ function WritePrescriptionModal({
             </fieldset>
 
             {/* Patient Info */}
-            <fieldset className="rounded-xl border border-gray-200 p-4">
-              <legend className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <fieldset className="rounded-xl border border-gray-200 dark:border-slate-800 p-4">
+              <legend className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                 Patient Details
               </legend>
               <div className="grid grid-cols-2 gap-3">
@@ -531,13 +531,13 @@ function WritePrescriptionModal({
                   placeholder="34 years"
                 />
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-600">
+                  <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">
                     Gender
                   </label>
                   <select
                     value={form.patientGender}
                     onChange={(e) => set("patientGender", e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                    className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                   >
                     <option>Male</option>
                     <option>Female</option>
@@ -557,7 +557,7 @@ function WritePrescriptionModal({
                     placeholder="patient@example.com"
                     required
                   />
-                  <p className="mt-1 text-[11px] text-gray-500">
+                  <p className="mt-1 text-[11px] text-gray-500 dark:text-slate-400">
                     Must match the email they use to sign in — this is how the
                     patient&apos;s dashboard finds this prescription.
                   </p>
@@ -566,8 +566,8 @@ function WritePrescriptionModal({
             </fieldset>
 
             {/* Clinical */}
-            <fieldset className="rounded-xl border border-gray-200 p-4">
-              <legend className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <fieldset className="rounded-xl border border-gray-200 dark:border-slate-800 p-4">
+              <legend className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                 Clinical Information
               </legend>
               <div className="space-y-4">
@@ -602,15 +602,15 @@ function WritePrescriptionModal({
             </fieldset>
 
             {/* Medications */}
-            <fieldset className="rounded-xl border border-gray-200 p-4">
-              <legend className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <fieldset className="rounded-xl border border-gray-200 dark:border-slate-800 p-4">
+              <legend className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                 Medications
               </legend>
               <div className="space-y-3">
                 {form.medications.map((med, i) => (
                   <div
                     key={i}
-                    className="relative rounded-lg border border-gray-100 bg-gray-50 p-3"
+                    className="relative rounded-lg border border-gray-100 bg-gray-50 dark:bg-slate-900 p-3"
                   >
                     {form.medications.length > 1 && (
                       <button
@@ -676,7 +676,7 @@ function WritePrescriptionModal({
                 <button
                   type="button"
                   onClick={addMed}
-                  className="w-full rounded-lg border border-dashed border-gray-300 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50"
+                  className="w-full rounded-lg border border-dashed border-gray-300 dark:border-slate-700 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50"
                 >
                   + Add Medication
                 </button>
@@ -684,8 +684,8 @@ function WritePrescriptionModal({
             </fieldset>
 
             {/* Tests */}
-            <fieldset className="rounded-xl border border-gray-200 p-4">
-              <legend className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <fieldset className="rounded-xl border border-gray-200 dark:border-slate-800 p-4">
+              <legend className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                 Tests Recommended
               </legend>
               <div className="flex flex-wrap gap-2">
@@ -708,12 +708,12 @@ function WritePrescriptionModal({
                   onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTest())}
                   placeholder="CBC, X-Ray..."
                   list="dl-tests"
-                  className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                  className="flex-1 rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                 />
                 <button
                   type="button"
                   onClick={addTest}
-                  className="rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+                  className="rounded-lg bg-gray-100 dark:bg-slate-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-200"
                 >
                   Add
                 </button>
@@ -721,8 +721,8 @@ function WritePrescriptionModal({
             </fieldset>
 
             {/* Advice & Follow-up */}
-            <fieldset className="rounded-xl border border-gray-200 p-4">
-              <legend className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <fieldset className="rounded-xl border border-gray-200 dark:border-slate-800 p-4">
+              <legend className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                 Advice & Follow-up
               </legend>
               <div className="space-y-3">
@@ -744,10 +744,10 @@ function WritePrescriptionModal({
         </div>
 
         {/* Right: Live Preview */}
-        <div className="hidden border-l border-gray-200 bg-gray-100 lg:flex lg:w-1/2 lg:flex-col">
-          <div className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
+        <div className="hidden border-l border-gray-200 dark:border-slate-800 bg-gray-100 dark:bg-slate-800 lg:flex lg:w-1/2 lg:flex-col">
+          <div className="flex items-center justify-between border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-3">
             <div>
-              <h3 className="text-sm font-semibold text-gray-700">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-300">
                 Live Preview
               </h3>
               {saveError && (
@@ -758,7 +758,7 @@ function WritePrescriptionModal({
               <button
                 onClick={handleSaveAsPdf}
                 disabled={!isValid || saving}
-                className="flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-40"
+                className="flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:bg-slate-900 disabled:opacity-40"
                 title="Save as PDF (choose 'Save as PDF' as the destination in the print dialog)"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -769,7 +769,7 @@ function WritePrescriptionModal({
               <button
                 onClick={handleShare}
                 disabled={!isValid || saving}
-                className="flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-40"
+                className="flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:bg-slate-900 disabled:opacity-40"
                 title="Share a link to this prescription"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -800,7 +800,7 @@ function WritePrescriptionModal({
           <div className="flex-1 overflow-y-auto p-6">
             <div
               ref={printRef}
-              className="mx-auto w-full max-w-[210mm] bg-white shadow-lg"
+              className="mx-auto w-full max-w-[210mm] bg-white dark:bg-slate-900 shadow-lg"
               style={{ minHeight: "297mm" }}
             >
               <PrescriptionRenderer template={template} data={form} />
@@ -833,7 +833,7 @@ function Input({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-gray-600">
+      <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">
         {label}
       </label>
       <input
@@ -842,7 +842,7 @@ function Input({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         list={listId}
-        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+        className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
       />
     </div>
   );
@@ -872,7 +872,7 @@ function ReadOnlyField({
       <div
         aria-readonly="true"
         className={`flex min-h-[38px] items-center rounded-lg border border-emerald-200 bg-white/80 px-3 py-2 text-sm ${
-          hasValue ? "text-slate-800" : "text-slate-400 italic"
+          hasValue ? "text-slate-800 dark:text-slate-200" : "text-slate-400 italic"
         }`}
       >
         {hasValue ? value : empty || "—"}
@@ -914,7 +914,7 @@ function ChipPicker({
           key={opt}
           type="button"
           onClick={() => onPick(opt)}
-          className="rounded-full border border-gray-200 bg-white px-2.5 py-0.5 text-[11px] text-gray-600 hover:border-primary-400 hover:bg-primary-50 hover:text-primary-700"
+          className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 py-0.5 text-[11px] text-gray-600 dark:text-slate-300 hover:border-primary-400 hover:bg-primary-50 hover:text-primary-700"
         >
           + {opt}
         </button>
@@ -947,7 +947,7 @@ function TextArea({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-gray-600">
+      <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">
         {label}
       </label>
       <textarea
@@ -955,7 +955,7 @@ function TextArea({
         rows={rows || 3}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+        className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
       />
     </div>
   );
@@ -1033,7 +1033,7 @@ export default function DoctorPrescriptionsPage() {
             </div>
             <button
               onClick={() => setWriting(true)}
-              className="flex items-center gap-2 self-start rounded-xl bg-white px-5 py-3 text-sm font-semibold text-primary-700 shadow-md transition-transform hover:-translate-y-0.5 hover:shadow-lg sm:self-auto"
+              className="flex items-center gap-2 self-start rounded-xl bg-white dark:bg-slate-900 px-5 py-3 text-sm font-semibold text-primary-700 shadow-md transition-transform hover:-translate-y-0.5 hover:shadow-lg sm:self-auto"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -1059,7 +1059,7 @@ export default function DoctorPrescriptionsPage() {
                   <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
                     {draftSource === "ai" ? "AI assistant draft ready" : "Voice dictation ready"}
                   </p>
-                  <p className="mt-0.5 text-sm text-gray-700">
+                  <p className="mt-0.5 text-sm text-gray-700 dark:text-slate-300">
                     Pick a template below, then click <b>Finish &amp; Open Editor</b> to review and send.
                   </p>
                 </div>
@@ -1080,7 +1080,7 @@ export default function DoctorPrescriptionsPage() {
           const active = PRESCRIPTION_TEMPLATES.find((t) => t.id === selectedId) || PRESCRIPTION_TEMPLATES[0];
           return (
             <div
-              className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 bg-white p-4 shadow-sm"
+              className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 bg-white dark:bg-slate-900 p-4 shadow-sm"
               style={{ borderColor: active.accentColor }}
             >
               <div className="flex items-center gap-3">
@@ -1093,8 +1093,8 @@ export default function DoctorPrescriptionsPage() {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Active template</p>
-                  <p className="text-base font-bold text-gray-900">{active.name}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">Active template</p>
+                  <p className="text-base font-bold text-gray-900 dark:text-slate-100">{active.name}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -1118,7 +1118,7 @@ export default function DoctorPrescriptionsPage() {
         })()}
 
         {/* Style Filters */}
-        <div className="mb-6 flex flex-wrap gap-2 rounded-2xl bg-white p-2 shadow-sm ring-1 ring-gray-100">
+        <div className="mb-6 flex flex-wrap gap-2 rounded-2xl bg-white dark:bg-slate-900 p-2 shadow-sm ring-1 ring-gray-100">
           {["all", "classic", "modern", "minimal", "colorful", "professional"].map(
             (s) => {
               const count =
@@ -1133,13 +1133,13 @@ export default function DoctorPrescriptionsPage() {
                   className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold capitalize transition-all ${
                     active
                       ? "bg-gradient-to-r from-primary-600 to-indigo-600 text-white shadow-md"
-                      : "text-gray-600 hover:bg-gray-50"
+                      : "text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
                   }`}
                 >
                   {s === "all" ? "All Styles" : STYLE_LABELS[s] || s}
                   <span
                     className={`rounded-full px-2 py-0.5 text-[10px] ${
-                      active ? "bg-white/25" : "bg-gray-100 text-gray-500"
+                      active ? "bg-white/25" : "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400"
                     }`}
                   >
                     {count}
@@ -1164,7 +1164,7 @@ export default function DoctorPrescriptionsPage() {
         </div>
 
         {filtered.length === 0 && (
-          <div className="rounded-xl border border-dashed border-gray-200 bg-white p-12 text-center text-sm text-gray-400">
+          <div className="rounded-xl border border-dashed border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center text-sm text-gray-400 dark:text-slate-500">
             No templates match this filter.
           </div>
         )}
@@ -1177,15 +1177,15 @@ export default function DoctorPrescriptionsPage() {
           onClick={() => setPreviewId(null)}
         >
           <div
-            className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+            className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
               <div>
-                <h3 className="text-lg font-bold text-gray-900">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">
                   {previewTpl.name}
                 </h3>
-                <p className="text-xs text-gray-500">{previewTpl.description}</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400">{previewTpl.description}</p>
               </div>
               <div className="flex items-center gap-3">
                 <button
@@ -1203,7 +1203,7 @@ export default function DoctorPrescriptionsPage() {
                 </button>
                 <button
                   onClick={() => setPreviewId(null)}
-                  className="rounded-lg p-2 text-gray-400 hover:bg-gray-100"
+                  className="rounded-lg p-2 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800"
                 >
                   <svg
                     className="h-5 w-5"
@@ -1221,9 +1221,9 @@ export default function DoctorPrescriptionsPage() {
                 </button>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto bg-gray-100 p-6">
+            <div className="flex-1 overflow-y-auto bg-gray-100 dark:bg-slate-800 p-6">
               <div
-                className="mx-auto w-full max-w-[210mm] bg-white shadow-lg"
+                className="mx-auto w-full max-w-[210mm] bg-white dark:bg-slate-900 shadow-lg"
                 style={{ minHeight: "297mm" }}
               >
                 <PrescriptionRenderer
@@ -1271,7 +1271,7 @@ function TemplateCard({
 }) {
   return (
     <div
-      className={`group relative overflow-hidden rounded-2xl border-2 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
+      className={`group relative overflow-hidden rounded-2xl border-2 bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
         isActive
           ? "scale-[1.01] shadow-lg"
           : "border-gray-100"
@@ -1337,7 +1337,7 @@ function TemplateCard({
         <div className="absolute inset-0 flex items-center justify-center gap-2 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 transition-all duration-300 group-hover:opacity-100">
           <button
             onClick={onPreview}
-            className="rounded-lg bg-white/95 px-4 py-2 text-xs font-semibold text-gray-900 shadow-lg backdrop-blur hover:bg-white"
+            className="rounded-lg bg-white/95 px-4 py-2 text-xs font-semibold text-gray-900 dark:text-slate-100 shadow-lg backdrop-blur hover:bg-white dark:bg-slate-900"
           >
             👁 Preview
           </button>
@@ -1363,7 +1363,7 @@ function TemplateCard({
               boxShadow: `0 0 0 2px ${tpl.accentColor}22`,
             }}
           />
-          <h3 className="truncate text-sm font-bold text-gray-900">{tpl.name}</h3>
+          <h3 className="truncate text-sm font-bold text-gray-900 dark:text-slate-100">{tpl.name}</h3>
           <span
             className="ml-auto flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize"
             style={{
@@ -1374,7 +1374,7 @@ function TemplateCard({
             {tpl.style}
           </span>
         </div>
-        <p className="text-xs leading-relaxed text-gray-500 line-clamp-2">
+        <p className="text-xs leading-relaxed text-gray-500 dark:text-slate-400 line-clamp-2">
           {tpl.description}
         </p>
       </div>

@@ -89,7 +89,7 @@ export default function DoctorPayoutPage() {
   if (!loaded) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16">
-        <div className="h-32 animate-pulse rounded-2xl bg-gray-100" />
+        <div className="h-32 animate-pulse rounded-2xl bg-gray-100 dark:bg-slate-800" />
       </div>
     );
   }
@@ -100,13 +100,13 @@ export default function DoctorPayoutPage() {
         <div className="mb-6">
           <Link
             href="/dashboard/doctor"
-            className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+            className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300"
           >
             ← Back to dashboard
           </Link>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-3xl border border-gray-100 bg-white dark:bg-slate-900 shadow-sm">
           <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 p-6 text-white">
             <h1 className="text-2xl font-bold">Payout details</h1>
             <p className="mt-1 text-sm text-white/90">
@@ -127,7 +127,7 @@ export default function DoctorPayoutPage() {
           <div className="p-6 sm:p-8">
             {/* Method picker — beautiful tile selector */}
             <div className="mb-6">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                 Payout method
               </p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -139,14 +139,14 @@ export default function DoctorPayoutPage() {
                     className={`rounded-xl border px-3 py-3 text-sm font-semibold transition ${
                       details.method === m
                         ? "border-emerald-400 bg-emerald-50 text-emerald-700 ring-2 ring-emerald-200"
-                        : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"
+                        : "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-gray-300 dark:border-slate-700 hover:bg-gray-50 dark:bg-slate-900"
                     }`}
                   >
                     {labelFor(m)}
                   </button>
                 ))}
               </div>
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">
                 Don&apos;t see your method? Pick <b>Other</b> and describe it — we
                 support local mobile money (M-Pesa, GCash), UPI, crypto wallets,
                 and regional bank networks worldwide.
@@ -332,7 +332,7 @@ export default function DoctorPayoutPage() {
               </button>
               <Link
                 href="/dashboard/doctor"
-                className="rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
               >
                 Cancel
               </Link>
@@ -340,7 +340,7 @@ export default function DoctorPayoutPage() {
           </div>
         </div>
 
-        <p className="mt-6 px-2 text-center text-xs text-gray-500">
+        <p className="mt-6 px-2 text-center text-xs text-gray-500 dark:text-slate-400">
           Your payout details are stored securely and visible only to you and our finance team.
           We never share them with patients.
         </p>
@@ -379,7 +379,7 @@ function labelFor(m: Method): string {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+      <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
         {label}
       </span>
       {children}

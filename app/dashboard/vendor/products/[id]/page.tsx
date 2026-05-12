@@ -81,12 +81,12 @@ export default function EditVendorProduct() {
     } finally { setDeleting(false); }
   };
 
-  if (loading) return <div className="p-12 text-center text-gray-500">Loading…</div>;
+  if (loading) return <div className="p-12 text-center text-gray-500 dark:text-slate-400">Loading…</div>;
   if (notFound) {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Product not found</h1>
-        <p className="mt-2 text-gray-500">This product may have been deleted.</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Product not found</h1>
+        <p className="mt-2 text-gray-500 dark:text-slate-400">This product may have been deleted.</p>
         <Link href="/dashboard/vendor" className="btn-primary mt-6 inline-block">Back to dashboard</Link>
       </div>
     );
@@ -96,32 +96,32 @@ export default function EditVendorProduct() {
     <div className="mx-auto max-w-2xl px-4 py-10">
       <Link href="/dashboard/vendor" className="mb-4 inline-block text-sm text-primary-600 hover:underline">← Back to dashboard</Link>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Edit product</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Edit product</h1>
         <button onClick={remove} disabled={deleting}
           className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 disabled:opacity-50">
           {deleting ? "Deleting…" : "Delete product"}
         </button>
       </div>
 
-      <form onSubmit={submit} className="mt-6 space-y-4 rounded-2xl bg-white p-6 shadow-sm">
+      <form onSubmit={submit} className="mt-6 space-y-4 rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
         <Field label="Product name *" value={form.name} onChange={(v) => setForm({ ...form, name: v })} required />
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Description</label>
+          <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">Description</label>
           <textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500" />
+            className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500" />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Category *</label>
+            <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">Category *</label>
             <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500">
+              className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500">
               {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Listing status</label>
+            <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">Listing status</label>
             <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as typeof form.status })}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500">
+              className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500">
               <option value="Active">Active (visible)</option>
               <option value="Draft">Draft (hidden)</option>
             </select>
@@ -132,7 +132,7 @@ export default function EditVendorProduct() {
           <Field label="MRP / original price ($)" type="number" step="0.01" value={form.originalPrice} onChange={(v) => setForm({ ...form, originalPrice: v })} />
           <Field label="Stock count *" type="number" value={form.stock} onChange={(v) => setForm({ ...form, stock: v })} required />
         </div>
-        <label className="flex items-center gap-2 text-sm text-gray-700">
+        <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
           <input type="checkbox" checked={form.prescriptionRequired} onChange={(e) => setForm({ ...form, prescriptionRequired: e.target.checked })} />
           Prescription required for this product
         </label>
@@ -152,9 +152,9 @@ function Field({
 }: { label: string; value: string; onChange: (v: string) => void; required?: boolean; type?: string; step?: string }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-gray-600">{label}</label>
+      <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">{label}</label>
       <input type={type} step={step} required={required} value={value} onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500" />
+        className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500" />
     </div>
   );
 }

@@ -364,7 +364,7 @@ export default function AiPrescriptionPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 py-10">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 py-10">
       {/* Decorative gradient background */}
       <div className="pointer-events-none absolute inset-0 -z-0">
         <div className="absolute -top-40 left-1/2 h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-gradient-to-br from-indigo-300/40 via-fuchsia-200/40 to-cyan-200/40 blur-3xl" />
@@ -403,7 +403,7 @@ export default function AiPrescriptionPage() {
                 <h1 className="bg-gradient-to-r from-slate-900 via-indigo-900 to-fuchsia-900 bg-clip-text text-2xl font-bold text-transparent sm:text-3xl">
                   AI Prescription Assistant
                 </h1>
-                <p className="mt-1 max-w-xl text-sm text-slate-600">
+                <p className="mt-1 max-w-xl text-sm text-slate-600 dark:text-slate-300">
                   Get AI-suggested differentials, investigations and
                   treatments. Always review before prescribing.
                 </p>
@@ -411,7 +411,7 @@ export default function AiPrescriptionPage() {
             </div>
             <Link
               href="/dashboard/doctor"
-              className="group inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-indigo-300 hover:bg-white hover:text-indigo-700"
+              className="group inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:border-indigo-300 hover:bg-white dark:bg-slate-900 hover:text-indigo-700"
             >
               <span className="transition group-hover:-translate-x-0.5">←</span>{" "}
               Dashboard
@@ -453,7 +453,7 @@ export default function AiPrescriptionPage() {
           <div className="overflow-hidden rounded-3xl border border-white/60 bg-white/80 shadow-xl shadow-indigo-500/5 backdrop-blur-xl">
             <div className="border-b border-slate-100 bg-gradient-to-r from-indigo-50/60 via-violet-50/60 to-fuchsia-50/60 px-6 py-5 sm:px-8">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-indigo-600 shadow-sm ring-1 ring-indigo-100">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white dark:bg-slate-900 text-indigo-600 shadow-sm ring-1 ring-indigo-100">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -469,10 +469,10 @@ export default function AiPrescriptionPage() {
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                     Patient details
                   </h2>
-                  <p className="mt-0.5 text-xs text-slate-600">
+                  <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">
                     At minimum, fill in age, sex, and symptoms.
                   </p>
                 </div>
@@ -613,7 +613,7 @@ export default function AiPrescriptionPage() {
               </div>
 
               <div className="mt-8 flex flex-col-reverse items-stretch gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
-                <p className="flex items-center gap-2 text-xs text-slate-500">
+                <p className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -682,7 +682,7 @@ export default function AiPrescriptionPage() {
             <div className="border-b border-slate-100 bg-gradient-to-r from-indigo-50/60 via-violet-50/60 to-fuchsia-50/60 px-6 py-5 sm:px-8">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-violet-600 shadow-sm ring-1 ring-violet-100">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white dark:bg-slate-900 text-violet-600 shadow-sm ring-1 ring-violet-100">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -698,10 +698,10 @@ export default function AiPrescriptionPage() {
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-slate-900">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                       Differential diagnoses
                     </h2>
-                    <p className="mt-0.5 text-xs text-slate-600">
+                    <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">
                       Pick the diagnosis you want to treat — AI ranking is
                       advisory.
                     </p>
@@ -709,7 +709,7 @@ export default function AiPrescriptionPage() {
                 </div>
                 <button
                   onClick={() => setStep(1)}
-                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-indigo-300 hover:text-indigo-700"
+                  className="rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 transition hover:border-indigo-300 hover:text-indigo-700"
                 >
                   ← Edit patient
                 </button>
@@ -739,7 +739,7 @@ export default function AiPrescriptionPage() {
                 {diagnoses.map((d, i) => (
                   <li
                     key={i}
-                    className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-500/10"
+                    className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 transition-all hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-500/10"
                   >
                     <span
                       aria-hidden
@@ -751,12 +751,12 @@ export default function AiPrescriptionPage() {
                           <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-indigo-50 text-[11px] font-bold text-indigo-700 ring-1 ring-indigo-100">
                             {i + 1}
                           </span>
-                          <h3 className="text-base font-semibold text-slate-900">
+                          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
                             {d.name}
                           </h3>
                           <ConfidenceBadge level={d.confidence} />
                         </div>
-                        <p className="mt-2 text-sm leading-relaxed text-slate-700">
+                        <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                           {d.rationale}
                         </p>
                         {d.redFlags && d.redFlags.length > 0 && (
@@ -829,7 +829,7 @@ export default function AiPrescriptionPage() {
                   </li>
                 ))}
                 {diagnoses.length === 0 && (
-                  <li className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/60 py-12 text-center text-sm text-slate-500">
+                  <li className="rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/60 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                     No suggestions returned. Try adding more detail and retry.
                   </li>
                 )}
@@ -865,7 +865,7 @@ export default function AiPrescriptionPage() {
                   </div>
                   <button
                     onClick={() => setStep(2)}
-                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-indigo-300 hover:text-indigo-700"
+                    className="rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 transition hover:border-indigo-300 hover:text-indigo-700"
                   >
                     ← Other diagnoses
                   </button>
@@ -894,7 +894,7 @@ export default function AiPrescriptionPage() {
                 }
               >
                 {treatment.investigations.length === 0 ? (
-                  <p className="text-sm text-slate-500">None suggested.</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">None suggested.</p>
                 ) : (
                   <ul className="space-y-2">
                     {treatment.investigations.map((iv, i) => (
@@ -902,11 +902,11 @@ export default function AiPrescriptionPage() {
                         key={i}
                         className="rounded-xl border border-slate-100 bg-gradient-to-br from-cyan-50/40 to-white p-3 transition hover:border-cyan-200"
                       >
-                        <p className="text-sm font-semibold text-slate-900">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                           {iv.name}
                         </p>
                         {iv.why && (
-                          <p className="mt-0.5 text-xs text-slate-600">
+                          <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">
                             {iv.why}
                           </p>
                         )}
@@ -936,7 +936,7 @@ export default function AiPrescriptionPage() {
                 }
               >
                 {treatment.medications.length === 0 ? (
-                  <p className="text-sm text-slate-500">None suggested.</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">None suggested.</p>
                 ) : (
                   <ul className="space-y-2.5">
                     {treatment.medications.map((m, i) => (
@@ -944,7 +944,7 @@ export default function AiPrescriptionPage() {
                         key={i}
                         className="rounded-xl border border-slate-100 bg-gradient-to-br from-violet-50/40 to-white p-3.5 transition hover:border-violet-200"
                       >
-                        <p className="text-sm font-bold text-slate-900">
+                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
                           {m.name}
                         </p>
                         {[m.dose, m.frequency, m.duration].some(Boolean) && (
@@ -967,7 +967,7 @@ export default function AiPrescriptionPage() {
                           </div>
                         )}
                         {m.instructions && (
-                          <p className="mt-2 text-xs text-slate-600">
+                          <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">
                             {m.instructions}
                           </p>
                         )}
@@ -1000,7 +1000,7 @@ export default function AiPrescriptionPage() {
                     {treatment.advice.map((a, i) => (
                       <li
                         key={i}
-                        className="flex items-start gap-2 text-sm text-slate-700"
+                        className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300"
                       >
                         <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                         <span>{a}</span>
@@ -1030,7 +1030,7 @@ export default function AiPrescriptionPage() {
                     </svg>
                   }
                 >
-                  <p className="text-sm leading-relaxed text-slate-700">
+                  <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                     {treatment.followUp}
                   </p>
                 </Section>
@@ -1093,7 +1093,7 @@ export default function AiPrescriptionPage() {
                       <path d="M12 16v-4M12 8h.01" />
                     </svg>
                   </div>
-                  <p className="text-xs leading-relaxed text-slate-600">
+                  <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                     AI suggestions only. Verify doses, contraindications and
                     drug interactions before prescribing.
                   </p>
@@ -1101,7 +1101,7 @@ export default function AiPrescriptionPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={reset}
-                    className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 dark:bg-slate-900"
                   >
                     Start over
                   </button>
@@ -1180,7 +1180,7 @@ function Stepper({ step }: { step: 1 | 2 | 3 }) {
                       ? "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md shadow-emerald-500/30"
                       : active
                       ? "bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-lg shadow-indigo-500/40"
-                      : "border-2 border-slate-200 bg-white text-slate-400"
+                      : "border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-400"
                   }`}
                 >
                   {active && (
@@ -1191,12 +1191,12 @@ function Stepper({ step }: { step: 1 | 2 | 3 }) {
                 <div className="mt-2 sm:mt-0">
                   <p
                     className={`text-xs font-bold sm:text-sm ${
-                      active || done ? "text-slate-900" : "text-slate-400"
+                      active || done ? "text-slate-900 dark:text-slate-100" : "text-slate-400"
                     }`}
                   >
                     {s.label}
                   </p>
-                  <p className="hidden text-[11px] text-slate-500 sm:block">
+                  <p className="hidden text-[11px] text-slate-500 dark:text-slate-400 sm:block">
                     {s.sub}
                   </p>
                 </div>
@@ -1227,7 +1227,7 @@ function Field({
   return (
     <label className={`block ${wide ? "md:col-span-2" : ""}`}>
       <span className="mb-1.5 flex items-center justify-between gap-2">
-        <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
+        <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
           {icon && <FieldIcon name={icon} />}
           {label}
           {required && <span className="text-rose-500">*</span>}
@@ -1331,7 +1331,7 @@ function Section({
     emerald: { bg: "bg-emerald-50", ring: "ring-emerald-100", text: "text-emerald-700" },
     amber: { bg: "bg-amber-50", ring: "ring-amber-100", text: "text-amber-700" },
   };
-  const a = accent ? accents[accent] : { bg: "bg-slate-50", ring: "ring-slate-100", text: "text-slate-700" };
+  const a = accent ? accents[accent] : { bg: "bg-slate-50 dark:bg-slate-900", ring: "ring-slate-100", text: "text-slate-700 dark:text-slate-300" };
   return (
     <div className="overflow-hidden rounded-3xl border border-white/60 bg-white/80 shadow-sm shadow-indigo-500/5 backdrop-blur-xl">
       <div className="flex items-center gap-2.5 border-b border-slate-100 px-5 py-3.5">
@@ -1342,7 +1342,7 @@ function Section({
             {icon}
           </div>
         )}
-        <h3 className="text-sm font-bold text-slate-900">{title}</h3>
+        <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">{title}</h3>
       </div>
       <div className="p-5">{children}</div>
     </div>
@@ -1369,8 +1369,8 @@ function ConfidenceBadge({ level }: { level: string }) {
       : {
           dot: "bg-slate-400",
           ring: "ring-slate-100",
-          bg: "bg-slate-50",
-          text: "text-slate-700",
+          bg: "bg-slate-50 dark:bg-slate-900",
+          text: "text-slate-700 dark:text-slate-300",
         };
   return (
     <span

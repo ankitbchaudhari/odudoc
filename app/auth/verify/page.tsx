@@ -156,7 +156,7 @@ function VerifyForm() {
     label: string;
   }) => (
     <div>
-      <label className="mb-2 block text-sm font-semibold text-gray-700">{label}</label>
+      <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-slate-300">{label}</label>
       <div className="flex justify-between gap-2">
         {arr.map((v, i) => (
           <input
@@ -168,7 +168,7 @@ function VerifyForm() {
             onPaste={(e) => handleBoxPaste(e, setArr, refs)}
             inputMode="numeric"
             maxLength={1}
-            className="h-12 w-full max-w-[48px] rounded-lg border border-gray-300 text-center text-lg font-semibold text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="h-12 w-full max-w-[48px] rounded-lg border border-gray-300 dark:border-slate-700 text-center text-lg font-semibold text-gray-900 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
           />
         ))}
       </div>
@@ -180,13 +180,13 @@ function VerifyForm() {
       <div className="mb-8 text-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/images/logo.svg" alt="OduDoc" width={440} height={108} className="mx-auto mb-6 h-14 w-auto" />
-        <h1 className="text-2xl font-bold text-gray-900">Two-Step Verification</h1>
-        <p className="mt-2 text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Two-Step Verification</h1>
+        <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
           To keep your account secure, we sent verification codes to your email and phone.
         </p>
       </div>
 
-      <div className="rounded-2xl bg-white p-8 shadow-lg">
+      <div className="rounded-2xl bg-white dark:bg-slate-900 p-8 shadow-lg">
         {error && (
           <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
         )}
@@ -209,17 +209,17 @@ function VerifyForm() {
           <button
             onClick={resend}
             disabled={resendCooldown > 0}
-            className="font-medium text-primary-600 disabled:cursor-not-allowed disabled:text-gray-400"
+            className="font-medium text-primary-600 disabled:cursor-not-allowed disabled:text-gray-400 dark:text-slate-500"
           >
             {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend codes"}
           </button>
-          <Link href="/auth/login" className="font-medium text-gray-500 hover:text-gray-700">
+          <Link href="/auth/login" className="font-medium text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300">
             ← Back to sign in
           </Link>
         </div>
       </div>
 
-      <p className="mt-6 text-center text-xs text-gray-400">
+      <p className="mt-6 text-center text-xs text-gray-400 dark:text-slate-500">
         Codes expire in 10 minutes. If you didn&apos;t request this, ignore and your account remains safe.
       </p>
     </div>
@@ -228,7 +228,7 @@ function VerifyForm() {
 
 export default function VerifyPage() {
   return (
-    <div className="flex min-h-[calc(100vh-80px)] items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="flex min-h-[calc(100vh-80px)] items-center justify-center bg-gray-50 dark:bg-slate-900 px-4 py-12">
       <Suspense
         fallback={
           <div className="flex items-center justify-center">

@@ -107,7 +107,7 @@ export default function NotificationPreferencesPage() {
   if (!prefs) {
     return (
       <div className="mx-auto max-w-2xl p-6">
-        <p className="text-sm text-slate-500">{err ?? "Loading…"}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{err ?? "Loading…"}</p>
       </div>
     );
   }
@@ -115,23 +115,23 @@ export default function NotificationPreferencesPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
       <header>
-        <h1 className="text-2xl font-bold text-slate-900">Notification preferences</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Notification preferences</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Choose how OduDoc reaches you. OTPs and critical health alerts always go through — everything else respects these settings.
         </p>
       </header>
 
       {/* Channel order */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">Channel order</h2>
-        <p className="mt-1 text-xs text-slate-500">OduDoc tries channels top-to-bottom. The first one that delivers wins.</p>
+      <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Channel order</h2>
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">OduDoc tries channels top-to-bottom. The first one that delivers wins.</p>
         <ol className="mt-4 space-y-2">
           {prefs.channelOrder.map((ch, i) => (
             <li
               key={ch}
-              className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+              className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-3"
             >
-              <span className="text-sm font-semibold text-slate-800">
+              <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                 <span className="mr-3 text-slate-400">{i + 1}.</span>
                 {CHANNEL_LABEL[ch]}
               </span>
@@ -139,14 +139,14 @@ export default function NotificationPreferencesPage() {
                 <button
                   onClick={() => moveChannel(i, -1)}
                   disabled={i === 0 || saving}
-                  className="rounded-md px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-200 disabled:opacity-30"
+                  className="rounded-md px-2 py-1 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 disabled:opacity-30"
                 >
                   ↑
                 </button>
                 <button
                   onClick={() => moveChannel(i, 1)}
                   disabled={i === prefs.channelOrder.length - 1 || saving}
-                  className="rounded-md px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-200 disabled:opacity-30"
+                  className="rounded-md px-2 py-1 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 disabled:opacity-30"
                 >
                   ↓
                 </button>
@@ -157,16 +157,16 @@ export default function NotificationPreferencesPage() {
       </section>
 
       {/* Category opt-outs */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">What to send</h2>
-        <ul className="mt-4 divide-y divide-slate-100">
+      <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">What to send</h2>
+        <ul className="mt-4 divide-y divide-slate-100 dark:divide-slate-800">
           {OPTABLE.map((c) => {
             const optedIn = !prefs.optedOutCategories.includes(c.key);
             return (
               <li key={c.key} className="flex items-center justify-between py-3">
                 <div>
-                  <div className="text-sm font-medium text-slate-800">{c.label}</div>
-                  <div className="text-xs text-slate-500">{c.help}</div>
+                  <div className="text-sm font-medium text-slate-800 dark:text-slate-200">{c.label}</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">{c.help}</div>
                 </div>
                 <button
                   onClick={() => toggleCategory(c.key)}
@@ -178,7 +178,7 @@ export default function NotificationPreferencesPage() {
                   aria-label={c.label}
                 >
                   <span
-                    className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition ${
+                    className={`absolute top-0.5 h-5 w-5 rounded-full bg-white dark:bg-slate-900 shadow transition ${
                       optedIn ? "left-5" : "left-0.5"
                     }`}
                   />
@@ -190,11 +190,11 @@ export default function NotificationPreferencesPage() {
       </section>
 
       {/* Do not disturb */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">Do not disturb</h2>
-            <p className="mt-1 text-xs text-slate-500">Pauses everything except OTPs and critical health alerts.</p>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Do not disturb</h2>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Pauses everything except OTPs and critical health alerts.</p>
           </div>
           <button
             onClick={() => save({ doNotDisturb: !prefs.doNotDisturb })}
@@ -204,7 +204,7 @@ export default function NotificationPreferencesPage() {
             }`}
           >
             <span
-              className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition ${
+              className={`absolute top-0.5 h-5 w-5 rounded-full bg-white dark:bg-slate-900 shadow transition ${
                 prefs.doNotDisturb ? "left-5" : "left-0.5"
               }`}
             />
@@ -212,7 +212,7 @@ export default function NotificationPreferencesPage() {
         </div>
       </section>
 
-      <div className="flex items-center gap-3 text-xs text-slate-500">
+      <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
         {saving && <span>Saving…</span>}
         {!saving && savedAt && <span className="text-emerald-600">✓ Saved at {savedAt}</span>}
         {err && <span className="text-rose-600">⚠ {err}</span>}

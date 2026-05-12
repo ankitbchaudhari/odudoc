@@ -59,8 +59,8 @@ export default function ClinicBillingPage() {
     <div>
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Billing</h1>
-          <p className="mt-1 text-sm text-gray-500">Automated invoices with GST / VAT.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Billing</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Automated invoices with GST / VAT.</p>
         </div>
         <button onClick={() => setShowForm((s) => !s)} className="btn-primary !py-2 !text-sm">
           {showForm ? "Close" : "+ New invoice"}
@@ -70,41 +70,41 @@ export default function ClinicBillingPage() {
       <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Card label="Revenue (paid)" value={`$${totalRevenue.toLocaleString()}`} color="text-emerald-700" />
         <Card label="Outstanding" value={`$${outstanding.toLocaleString()}`} color="text-amber-700" />
-        <Card label="Invoices" value={items.length} color="text-gray-900" />
+        <Card label="Invoices" value={items.length} color="text-gray-900 dark:text-slate-100" />
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="mb-4 space-y-3 rounded-xl bg-white p-4 shadow-sm">
+        <form onSubmit={handleCreate} className="mb-4 space-y-3 rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="block">
-              <span className="text-xs font-medium text-gray-600">Patient name</span>
+              <span className="text-xs font-medium text-gray-600 dark:text-slate-300">Patient name</span>
               <input
                 value={patientName}
                 onChange={(e) => setPatientName(e.target.value)}
                 required
-                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                className="mt-1 w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
               />
             </label>
             <label className="block">
-              <span className="text-xs font-medium text-gray-600">Tax rate (%)</span>
+              <span className="text-xs font-medium text-gray-600 dark:text-slate-300">Tax rate (%)</span>
               <input
                 type="number"
                 value={taxRate}
                 onChange={(e) => setTaxRate(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                className="mt-1 w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
               />
             </label>
           </div>
 
           <div>
-            <p className="mb-2 text-xs font-medium text-gray-600">Line items</p>
+            <p className="mb-2 text-xs font-medium text-gray-600 dark:text-slate-300">Line items</p>
             {lines.map((l, i) => (
               <div key={i} className="mb-2 flex gap-2">
                 <input
                   value={l.description}
                   onChange={(e) => setLines(lines.map((x, idx) => idx === i ? { ...x, description: e.target.value } : x))}
                   placeholder="Description"
-                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                  className="flex-1 rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
                 />
                 <input
                   type="number"
@@ -112,7 +112,7 @@ export default function ClinicBillingPage() {
                   value={l.amount}
                   onChange={(e) => setLines(lines.map((x, idx) => idx === i ? { ...x, amount: e.target.value } : x))}
                   placeholder="Amount"
-                  className="w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                  className="w-32 rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
                 />
                 {lines.length > 1 && (
                   <button type="button" onClick={() => setLines(lines.filter((_, idx) => idx !== i))} className="rounded px-2 text-sm text-red-600 hover:bg-red-50">
@@ -127,22 +127,22 @@ export default function ClinicBillingPage() {
           </div>
 
           <div className="flex items-end justify-between border-t border-gray-100 pt-3">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-slate-300">
               <div>Subtotal: <b>${subtotal.toFixed(2)}</b></div>
               <div>Tax ({taxRate || 0}%): <b>${tax.toFixed(2)}</b></div>
-              <div className="mt-1 text-lg font-bold text-gray-900">Total: ${total.toFixed(2)}</div>
+              <div className="mt-1 text-lg font-bold text-gray-900 dark:text-slate-100">Total: ${total.toFixed(2)}</div>
             </div>
             <button type="submit" className="btn-primary !py-2 !text-sm">Create invoice</button>
           </div>
         </form>
       )}
 
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl bg-white dark:bg-slate-900 shadow-sm">
         {items.length === 0 ? (
-          <p className="p-10 text-center text-sm text-gray-400">No invoices yet.</p>
+          <p className="p-10 text-center text-sm text-gray-400 dark:text-slate-500 dark:text-slate-400">No invoices yet.</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
+            <thead className="bg-gray-50 dark:bg-slate-900 text-left text-xs uppercase text-gray-500 dark:text-slate-400">
               <tr>
                 <th className="px-4 py-3">Invoice #</th>
                 <th className="px-4 py-3">Patient</th>
@@ -152,13 +152,13 @@ export default function ClinicBillingPage() {
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
               {items.map((inv: ClinicInvoice) => (
-                <tr key={inv.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{inv.invoiceNumber}</td>
-                  <td className="px-4 py-3 text-gray-600">{inv.patientName}</td>
-                  <td className="px-4 py-3 text-gray-600">{new Date(inv.issuedAt).toLocaleDateString()}</td>
-                  <td className="px-4 py-3 font-semibold text-gray-900">${inv.total.toFixed(2)}</td>
+                <tr key={inv.id} className="hover:bg-gray-50 dark:bg-slate-900">
+                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-slate-100">{inv.invoiceNumber}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-slate-300">{inv.patientName}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-slate-300">{new Date(inv.issuedAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 font-semibold text-gray-900 dark:text-slate-100">${inv.total.toFixed(2)}</td>
                   <td className="px-4 py-3">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                       inv.status === "paid" ? "bg-green-50 text-green-700" :
@@ -192,8 +192,8 @@ export default function ClinicBillingPage() {
 
 function Card({ label, value, color }: { label: string; value: string | number; color: string }) {
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm">
-      <p className="text-xs text-gray-500">{label}</p>
+    <div className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
+      <p className="text-xs text-gray-500 dark:text-slate-400">{label}</p>
       <p className={`mt-1 text-xl font-bold ${color}`}>{value}</p>
     </div>
   );

@@ -111,18 +111,18 @@ export default function OnboardingWizardPage() {
           <p className="text-xs font-bold uppercase tracking-widest text-indigo-700">
             Welcome to OduDoc
           </p>
-          <button onClick={skip} className="text-xs font-semibold text-slate-500 hover:text-slate-700">
+          <button onClick={skip} className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300">
             Skip for now →
           </button>
         </div>
 
         {/* Progress */}
-        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-700">
+        <div className="rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+          <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
             <span>Step {step + 1} of {total}</span>
             <span>{completed} of {total} complete · {pct}%</span>
           </div>
-          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
             <div
               className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-500 transition-all duration-500"
               style={{ width: `${pct}%` }}
@@ -143,13 +143,13 @@ export default function OnboardingWizardPage() {
         </div>
 
         {/* Card */}
-        <div className="mt-6 rounded-3xl bg-white p-8 shadow-xl ring-1 ring-slate-200">
+        <div className="mt-6 rounded-3xl bg-white dark:bg-slate-900 p-8 shadow-xl ring-1 ring-slate-200 dark:ring-slate-800">
           <div className="text-5xl">{current.emoji}</div>
-          <h1 className="mt-4 text-2xl font-extrabold text-slate-900 sm:text-3xl">
+          <h1 className="mt-4 text-2xl font-extrabold text-slate-900 dark:text-slate-100 sm:text-3xl">
             {current.title}
           </h1>
           <p
-            className="mt-3 text-sm leading-6 text-slate-600 sm:text-base"
+            className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-base"
             // pitch contains escaped &apos; for valid JSX inside the array;
             // render as plain text via dangerouslySetInnerHTML so the
             // HTML entities decode rather than appearing literally.
@@ -166,13 +166,13 @@ export default function OnboardingWizardPage() {
             </Link>
             <button
               onClick={() => { markDone(current.key); next(); }}
-              className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-5 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
             >
               {step < STEPS.length - 1 ? "Mark done & continue" : "Finish"}
             </button>
             <button
               onClick={next}
-              className="text-sm font-semibold text-slate-500 hover:text-slate-700"
+              className="text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300"
             >
               Skip this step
             </button>
@@ -191,12 +191,12 @@ export default function OnboardingWizardPage() {
             <li key={s.key}>
               <button
                 onClick={() => setStep(i)}
-                className={`flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3 text-left shadow-sm ring-1 transition-all ${
-                  i === step ? "ring-indigo-300" : "ring-slate-200 hover:ring-slate-300"
+                className={`flex w-full items-center gap-3 rounded-xl bg-white dark:bg-slate-900 px-4 py-3 text-left shadow-sm ring-1 transition-all ${
+                  i === step ? "ring-indigo-300" : "ring-slate-200 dark:ring-slate-800 hover:ring-slate-300"
                 }`}
               >
                 <span className="text-xl">{s.emoji}</span>
-                <span className="flex-1 text-sm font-semibold text-slate-900">{s.title}</span>
+                <span className="flex-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{s.title}</span>
                 {done.has(s.key) ? (
                   <span className="text-xs font-bold text-emerald-600">✓</span>
                 ) : i === step ? (

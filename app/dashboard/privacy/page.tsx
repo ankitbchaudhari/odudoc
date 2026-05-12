@@ -61,7 +61,7 @@ const TONE_CLASSES: Record<string, string> = {
   fuchsia: "border-fuchsia-200 bg-fuchsia-50",
   pink: "border-pink-200 bg-pink-50",
   rose: "border-rose-200 bg-rose-50",
-  slate: "border-slate-200 bg-slate-50",
+  slate: "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900",
 };
 
 function timeUntil(iso: string | null): string {
@@ -161,8 +161,8 @@ export default function PrivacyPage() {
       )}
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Privacy & Consent</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Privacy & Consent</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Every consent you&apos;ve issued, in one place. Revoke any time, download signed receipts as legal proof, export your data, or file a deletion request — your rights under the DPDP Act 2023.
         </p>
       </div>
@@ -170,14 +170,14 @@ export default function PrivacyPage() {
       {openErasure && (
         <div className="mb-6 rounded-2xl border-2 border-rose-300 bg-rose-50 p-5">
           <p className="text-sm font-bold uppercase tracking-wider text-rose-700">Erasure request in progress</p>
-          <p className="mt-1 text-slate-800">
+          <p className="mt-1 text-slate-800 dark:text-slate-200">
             You filed an erasure request on <strong>{new Date(openErasure.filedAt).toLocaleDateString()}</strong>.
             {openErasure.coolingOffEndsAt && (
               <> Cooling-off ends <strong>{new Date(openErasure.coolingOffEndsAt).toLocaleDateString()}</strong>; you can cancel until then.</>
             )}
           </p>
           {openErasure.reason && <p className="mt-1 text-xs text-rose-700 italic">&ldquo;{openErasure.reason}&rdquo;</p>}
-          <button onClick={() => cancelErasure(openErasure)} className="mt-3 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-rose-700 ring-1 ring-rose-300 hover:bg-rose-100">
+          <button onClick={() => cancelErasure(openErasure)} className="mt-3 rounded-lg bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-rose-700 ring-1 ring-rose-300 hover:bg-rose-100">
             Cancel erasure request
           </button>
         </div>
@@ -185,8 +185,8 @@ export default function PrivacyPage() {
 
       {/* Quick stats + actions */}
       <div className="mb-6 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-xl bg-white p-4 shadow-sm">
-          <p className="text-[11px] uppercase tracking-wider text-slate-500">Active consents</p>
+        <div className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
+          <p className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Active consents</p>
           <p className="mt-1 text-3xl font-extrabold text-emerald-600">{activeCount}</p>
           <p className="text-xs text-slate-400">{consents.length - activeCount} revoked or expired</p>
         </div>
@@ -205,10 +205,10 @@ export default function PrivacyPage() {
       {loading ? (
         <p className="py-12 text-center text-sm text-slate-400">Loading…</p>
       ) : consents.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-12 text-center">
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 dark:bg-slate-900 p-12 text-center">
           <p className="text-3xl">📋</p>
-          <p className="mt-2 text-lg font-bold text-slate-700">No consents on file</p>
-          <p className="mt-1 text-sm text-slate-500">When you grant a clinic access, opt in to marketing, or join research, the consent appears here.</p>
+          <p className="mt-2 text-lg font-bold text-slate-700 dark:text-slate-300">No consents on file</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">When you grant a clinic access, opt in to marketing, or join research, the consent appears here.</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -218,25 +218,25 @@ export default function PrivacyPage() {
               <section key={purpose} className={`rounded-2xl border p-4 ${TONE_CLASSES[meta.tone]}`}>
                 <div className="mb-3 flex items-center gap-2">
                   <span className="text-xl">{meta.emoji}</span>
-                  <p className="text-sm font-bold text-slate-900">{meta.title}</p>
-                  <span className="ml-auto text-[11px] font-semibold text-slate-500">{list.length} consent{list.length === 1 ? "" : "s"}</span>
+                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{meta.title}</p>
+                  <span className="ml-auto text-[11px] font-semibold text-slate-500 dark:text-slate-400">{list.length} consent{list.length === 1 ? "" : "s"}</span>
                 </div>
                 <ul className="space-y-2">
                   {list.map((c) => {
                     const expired = c.status === "expired" || (c.expiresAt && new Date(c.expiresAt).getTime() < Date.now());
                     const inactive = c.status === "revoked" || expired;
                     return (
-                      <li key={c.id} className={`rounded-lg border bg-white p-3 ${inactive ? "opacity-60" : ""}`}>
+                      <li key={c.id} className={`rounded-lg border bg-white dark:bg-slate-900 p-3 ${inactive ? "opacity-60" : ""}`}>
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1">
-                            <p className="text-sm font-semibold text-slate-900">{c.recipientName}</p>
-                            <p className="mt-0.5 text-xs text-slate-700">{c.purposeStatement}</p>
+                            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{c.recipientName}</p>
+                            <p className="mt-0.5 text-xs text-slate-700 dark:text-slate-300">{c.purposeStatement}</p>
                             <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[10px]">
                               {c.dataCategories.slice(0, 6).map((d) => (
-                                <span key={d} className="rounded-full bg-slate-100 px-2 py-0.5 font-semibold text-slate-700">{d}</span>
+                                <span key={d} className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 font-semibold text-slate-700 dark:text-slate-300">{d}</span>
                               ))}
-                              <span className="text-slate-500">·</span>
-                              <span className={`font-bold ${c.status === "granted" ? "text-emerald-700" : c.status === "revoked" ? "text-rose-700" : "text-slate-500"}`}>
+                              <span className="text-slate-500 dark:text-slate-400">·</span>
+                              <span className={`font-bold ${c.status === "granted" ? "text-emerald-700" : c.status === "revoked" ? "text-rose-700" : "text-slate-500 dark:text-slate-400"}`}>
                                 {c.status} · {timeUntil(c.expiresAt)}
                               </span>
                               <span className="text-slate-400">· granted {new Date(c.grantedAt).toLocaleDateString()}</span>
@@ -244,7 +244,7 @@ export default function PrivacyPage() {
                             </div>
                           </div>
                           <div className="flex flex-col gap-1">
-                            <button onClick={() => downloadReceipt(c)} className="rounded-md border border-slate-300 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50">
+                            <button onClick={() => downloadReceipt(c)} className="rounded-md border border-slate-300 px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900">
                               📄 Receipt
                             </button>
                             {c.status === "granted" && (
@@ -264,8 +264,8 @@ export default function PrivacyPage() {
         </div>
       )}
 
-      <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 text-xs text-slate-600 shadow-sm">
-        <p className="text-sm font-bold text-slate-900">Your rights as a Data Principal</p>
+      <div className="mt-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 text-xs text-slate-600 dark:text-slate-300 shadow-sm">
+        <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Your rights as a Data Principal</p>
         <ul className="mt-2 list-disc space-y-1 pl-5">
           <li><strong>Access</strong> — see every consent you&apos;ve issued (this page).</li>
           <li><strong>Correction</strong> — edit profile / dependents / allergies / meds inline anywhere they appear.</li>
@@ -278,12 +278,12 @@ export default function PrivacyPage() {
       {/* Erasure dialog */}
       {showErasure && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowErasure(false)}>
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-slate-900">File erasure request</h3>
-            <p className="mt-1 text-xs text-slate-500">
+          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">File erasure request</h3>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Under DPDP §13(2)(b) you have the right to ask us to delete your data. Filing this starts a 14-day cooling-off window — you can cancel any time. After that, a super-admin reviews for legal-hold conflicts (active billing disputes, etc.) and your data is purged.
             </p>
-            <p className="mt-3 mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">Reason (optional)</p>
+            <p className="mt-3 mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Reason (optional)</p>
             <textarea
               rows={3}
               value={erasureForm.reason}
@@ -291,12 +291,12 @@ export default function PrivacyPage() {
               placeholder="Helps us understand and improve. Not required."
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
-            <label className="mt-3 flex items-start gap-2 text-xs text-slate-700">
+            <label className="mt-3 flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300">
               <input type="checkbox" checked={erasureForm.retainDependents} onChange={(e) => setErasureForm({ ...erasureForm, retainDependents: e.target.checked })} className="mt-0.5" />
               <span>Keep my family members&apos; profiles. Useful when leaving an account but wanting kids&apos; / parents&apos; records to stay accessible to a co-parent who&apos;ll re-create the family link.</span>
             </label>
             <div className="mt-5 flex justify-end gap-2">
-              <button onClick={() => setShowErasure(false)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Cancel</button>
+              <button onClick={() => setShowErasure(false)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Cancel</button>
               <button onClick={fileErasure} className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-bold text-white hover:bg-rose-700">File erasure request</button>
             </div>
           </div>

@@ -59,7 +59,7 @@ export default function DocumentViewerPage() {
     return <p className="mx-auto mt-12 max-w-md rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{error}</p>;
   }
   if (!resp) {
-    return <p className="mx-auto mt-12 max-w-md rounded-xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>;
+    return <p className="mx-auto mt-12 max-w-md rounded-xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>;
   }
 
   const { document, watermark } = resp;
@@ -67,11 +67,11 @@ export default function DocumentViewerPage() {
   const isPdf = document.mimeType === "application/pdf";
 
   return (
-    <div className="min-h-screen bg-slate-100 print:bg-white">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-800 print:bg-white dark:bg-slate-900">
       {/* Action bar — hidden on print */}
-      <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-md print:hidden">
+      <div className="sticky top-0 z-20 border-b border-slate-200 dark:border-slate-800 bg-white/95 backdrop-blur-md print:hidden">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
-          <Link href="/dashboard/documents" className="text-sm font-semibold text-slate-700 hover:text-indigo-700">
+          <Link href="/dashboard/documents" className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-700">
             ← Back to documents
           </Link>
           <div className="flex items-center gap-2">
@@ -83,23 +83,23 @@ export default function DocumentViewerPage() {
             </button>
           </div>
         </div>
-        <p className="mx-auto max-w-5xl px-4 pb-2 text-[10px] text-slate-500">
+        <p className="mx-auto max-w-5xl px-4 pb-2 text-[10px] text-slate-500 dark:text-slate-400">
           Every view, print, and share is logged with your account, IP address, and timestamp.
           You can review the access log at <Link href="/dashboard/audit" className="font-semibold text-indigo-600 hover:underline">Audit log</Link>.
         </p>
       </div>
 
       <div className="mx-auto max-w-5xl px-4 py-6 print:max-w-none print:p-0">
-        <div className="mb-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 print:shadow-none print:ring-0">
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-500">{document.source || "OduDoc record"}</p>
-          <h1 className="mt-1 text-2xl font-extrabold text-slate-900">{document.title}</h1>
-          <p className="mt-0.5 text-xs text-slate-500">
+        <div className="mb-4 rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 print:shadow-none print:ring-0">
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">{document.source || "OduDoc record"}</p>
+          <h1 className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-100">{document.title}</h1>
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
             {document.documentDate ? new Date(document.documentDate).toLocaleDateString() : new Date(document.uploadedAt).toLocaleDateString()} · {document.mimeType}
           </p>
         </div>
 
         {/* Document tile with diagonal watermark */}
-        <div className="relative overflow-hidden rounded-2xl bg-white p-2 shadow-sm ring-1 ring-slate-200 print:shadow-none print:ring-0">
+        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 p-2 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 print:shadow-none print:ring-0">
           {isImage && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -112,11 +112,11 @@ export default function DocumentViewerPage() {
           )}
           {isPdf && (
             <object data={document.data} type="application/pdf" className="block h-[78vh] w-full" aria-label={document.title}>
-              <p className="p-6 text-sm text-slate-600">PDF viewer not available — use the Print button.</p>
+              <p className="p-6 text-sm text-slate-600 dark:text-slate-300">PDF viewer not available — use the Print button.</p>
             </object>
           )}
           {!isImage && !isPdf && (
-            <p className="p-8 text-center text-sm text-slate-500">
+            <p className="p-8 text-center text-sm text-slate-500 dark:text-slate-400">
               File type {document.mimeType} cannot be previewed inline.
             </p>
           )}
@@ -148,7 +148,7 @@ export default function DocumentViewerPage() {
 
       {/* Print-only footer */}
       <div className="hidden print:block">
-        <p className="mt-4 px-4 text-[10px] text-slate-500">
+        <p className="mt-4 px-4 text-[10px] text-slate-500 dark:text-slate-400">
           Printed from OduDoc · Patient ID {watermark.patientUserId} · IP {watermark.ip || "unknown"} ·
           {" "}{new Date(watermark.viewedAt).toLocaleString()}. This printout carries an audit trail.
         </p>

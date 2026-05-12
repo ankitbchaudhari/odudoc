@@ -31,7 +31,7 @@ interface Subject { subjectKey: string; subjectName: string; subjectDob: string;
 const STATUS_TONE: Record<DoseStatus, string> = {
   received: "border-emerald-200 bg-emerald-50 text-emerald-800",
   due: "border-indigo-200 bg-indigo-50 text-indigo-800",
-  upcoming: "border-slate-200 bg-slate-50 text-slate-600",
+  upcoming: "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-300",
   overdue: "border-rose-300 bg-rose-50 text-rose-800",
 };
 const STATUS_LABEL: Record<DoseStatus, string> = {
@@ -104,8 +104,8 @@ export default function VaccinationsPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Vaccinations</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Vaccinations</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Track doses against the Indian National Immunization Schedule. Add a subject to see what&apos;s due.
         </p>
       </div>
@@ -117,7 +117,7 @@ export default function VaccinationsPage() {
             key={s.subjectKey}
             onClick={() => setActiveSubject(s)}
             className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
-              activeSubject?.subjectKey === s.subjectKey ? "bg-indigo-600 text-white shadow-sm" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+              activeSubject?.subjectKey === s.subjectKey ? "bg-indigo-600 text-white shadow-sm" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:bg-slate-900"
             }`}
           >
             {s.subjectName}
@@ -128,7 +128,7 @@ export default function VaccinationsPage() {
         ))}
         <button
           onClick={() => setShowSubjectForm((v) => !v)}
-          className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-dashed ring-slate-300 hover:bg-slate-50"
+          className="rounded-xl bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-dashed ring-slate-300 hover:bg-slate-50 dark:bg-slate-900"
         >
           + Add subject
         </button>
@@ -144,12 +144,12 @@ export default function VaccinationsPage() {
         />
       )}
 
-      {loading && <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>}
+      {loading && <p className="rounded-xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>}
       {!loading && subjects.length === 0 && !showSubjectForm && (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white dark:bg-slate-900 p-10 text-center">
           <p className="text-3xl">💉</p>
-          <p className="mt-2 text-base font-bold text-slate-700">Add a subject to start tracking</p>
-          <p className="mt-1 text-sm text-slate-500">You can track yourself plus each family member separately.</p>
+          <p className="mt-2 text-base font-bold text-slate-700 dark:text-slate-300">Add a subject to start tracking</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">You can track yourself plus each family member separately.</p>
           <button onClick={() => setShowSubjectForm(true)} className="mt-4 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white">+ Add subject</button>
         </div>
       )}
@@ -176,27 +176,27 @@ export default function VaccinationsPage() {
           {/* Rows */}
           <ul className="space-y-2">
             {filtered.map((row) => (
-              <li key={row.id} className={`rounded-xl border p-3 shadow-sm transition-colors ${row.status === "overdue" ? "border-rose-200 bg-rose-50/30" : row.status === "due" ? "border-indigo-200 bg-indigo-50/30" : "border-slate-200 bg-white"}`}>
+              <li key={row.id} className={`rounded-xl border p-3 shadow-sm transition-colors ${row.status === "overdue" ? "border-rose-200 bg-rose-50/30" : row.status === "due" ? "border-indigo-200 bg-indigo-50/30" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"}`}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-bold text-slate-900">{row.vaccine}</p>
-                      <span className="text-xs text-slate-500">· {row.doseLabel}</span>
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{row.vaccine}</p>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">· {row.doseLabel}</span>
                       <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${STATUS_TONE[row.status]}`}>{STATUS_LABEL[row.status]}</span>
                       <span className="text-[10px] text-slate-400">{CATEGORY_EMOJI[row.category]} {CATEGORY_LABEL[row.category]}</span>
                     </div>
-                    <p className="mt-0.5 text-xs text-slate-600">
+                    <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">
                       {row.status === "received" && row.receivedDate
                         ? <>Given on <b>{new Date(row.receivedDate).toLocaleDateString()}</b></>
                         : <>Due <b>{new Date(row.dueDate).toLocaleDateString()}</b></>}
                     </p>
-                    {row.note && <p className="mt-0.5 text-[11px] text-slate-500 italic">{row.note}</p>}
-                    {row.notes && <p className="mt-0.5 text-[11px] text-slate-500">Note: {row.notes}</p>}
+                    {row.note && <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 italic">{row.note}</p>}
+                    {row.notes && <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">Note: {row.notes}</p>}
                   </div>
                   {row.status !== "received" ? (
                     <button onClick={() => setMarkingId(row.id)} className="flex-none rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white">Mark received</button>
                   ) : (
-                    <button onClick={() => setMarkingId(row.id)} className="flex-none rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-slate-700 ring-1 ring-slate-300">Edit</button>
+                    <button onClick={() => setMarkingId(row.id)} className="flex-none rounded-lg bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300">Edit</button>
                   )}
                 </div>
                 {markingId === row.id && (
@@ -216,11 +216,11 @@ function Stat({ label, value, tone }: { label: string; value: number; tone: "ok"
     tone === "ok" ? "ring-emerald-200 bg-emerald-50"
     : tone === "info" ? "ring-indigo-200 bg-indigo-50"
     : tone === "bad" ? "ring-rose-200 bg-rose-50"
-    : "ring-slate-200 bg-white";
+    : "ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900";
   return (
     <div className={`rounded-xl p-3 ring-1 ${cls}`}>
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{label}</p>
-      <p className="mt-1 text-2xl font-extrabold text-slate-900 tabular-nums">{value}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-100 tabular-nums">{value}</p>
     </div>
   );
 }
@@ -229,10 +229,10 @@ function Chip({ active, onClick, children, count }: { active: boolean; onClick: 
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${active ? "bg-indigo-600 text-white" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${active ? "bg-indigo-600 text-white" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:bg-slate-900"}`}
     >
       {children}
-      <span className={`rounded-full px-1.5 text-[10px] font-bold ${active ? "bg-white/20" : "bg-slate-100 text-slate-600"}`}>{count}</span>
+      <span className={`rounded-full px-1.5 text-[10px] font-bold ${active ? "bg-white/20" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}>{count}</span>
     </button>
   );
 }
@@ -251,17 +251,17 @@ function SubjectForm({ onAdded }: { onAdded: (s: Subject) => void }) {
   };
 
   return (
-    <div className="mb-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-      <p className="text-sm font-bold text-slate-900">New subject</p>
+    <div className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">New subject</p>
       {error && <p className="mt-2 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="text-xs font-semibold text-slate-700">
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
           Name
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder='Yourself, "Aarav", "Mom"…' className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal" />
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder='Yourself, "Aarav", "Mom"…' className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal" />
         </label>
-        <label className="text-xs font-semibold text-slate-700">
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
           Date of birth
-          <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} max={new Date().toISOString().slice(0, 10)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal" />
+          <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} max={new Date().toISOString().slice(0, 10)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal" />
         </label>
       </div>
       <div className="mt-4 flex justify-end">
@@ -275,19 +275,19 @@ function MarkForm({ row, onCancel, onSave }: { row: ScheduleRow; onCancel: () =>
   const [date, setDate] = useState(row.receivedDate || new Date().toISOString().slice(0, 10));
   const [notes, setNotes] = useState(row.notes || "");
   return (
-    <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+    <div className="mt-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-3">
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <label className="text-xs font-semibold text-slate-700">
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
           Date received
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} max={new Date().toISOString().slice(0, 10)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal" />
+          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} max={new Date().toISOString().slice(0, 10)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal" />
         </label>
-        <label className="text-xs font-semibold text-slate-700">
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
           Notes (optional)
-          <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Clinic, batch, lot…" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal" />
+          <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Clinic, batch, lot…" className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal" />
         </label>
       </div>
       <div className="mt-3 flex justify-end gap-2">
-        <button onClick={onCancel} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">Cancel</button>
+        <button onClick={onCancel} className="rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">Cancel</button>
         <button onClick={() => onSave(date, notes.trim() || undefined)} className="rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-bold text-white">Save</button>
       </div>
     </div>

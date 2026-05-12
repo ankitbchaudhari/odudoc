@@ -449,7 +449,7 @@ function DicomViewerInner() {
           )}
 
           {srcs.length > 0 && !allDicom && (
-            <div className="rounded-2xl bg-white p-2 text-slate-900">
+            <div className="rounded-2xl bg-white dark:bg-slate-900 p-2 text-slate-900 dark:text-slate-100">
               <MedicalFileViewer url={srcs[0]} filename={srcs[0].split("/").pop() || "file"} />
             </div>
           )}

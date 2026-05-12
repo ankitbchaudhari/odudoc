@@ -37,7 +37,7 @@ const STATUS_PILL: Record<string, string> = {
   packed: "bg-indigo-100 text-indigo-800",
   out_for_delivery: "bg-violet-100 text-violet-800",
   delivered: "bg-emerald-100 text-emerald-800",
-  cancelled: "bg-slate-200 text-slate-600",
+  cancelled: "bg-slate-200 text-slate-600 dark:text-slate-300",
   rejected: "bg-rose-100 text-rose-800",
 };
 const STATUS_LABEL: Record<string, string> = {
@@ -156,17 +156,17 @@ export default function RxFulfillmentPage() {
 
       <div className="mb-6 flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Pharmacy Fulfillment</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Pharmacy Fulfillment</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Get your prescription delivered. Type your drugs, see which pharmacies have everything in stock, compare prices and delivery time, place an order in one click.
           </p>
         </div>
-        <button onClick={seed} className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600">Seed demo data</button>
+        <button onClick={seed} className="rounded-lg border border-dashed border-slate-300 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300">Seed demo data</button>
       </div>
 
       {/* ── Search ───────────────────────────────────────────── */}
-      <section className="mb-6 rounded-2xl bg-white p-5 shadow-sm">
-        <p className="mb-3 text-sm font-bold text-slate-900">Your prescription</p>
+      <section className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+        <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Your prescription</p>
         <ul className="space-y-2">
           {drugRows.map((d, i) => (
             <li key={i} className="grid gap-2 sm:grid-cols-[2fr_1fr_80px_auto]">
@@ -181,7 +181,7 @@ export default function RxFulfillmentPage() {
 
         <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
           <input className="form-input" placeholder="Delivery pincode" value={pincode} onChange={(e) => setPincode(e.target.value)} />
-          <label className="flex items-center gap-1.5 text-xs text-slate-600">
+          <label className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
             <input type="checkbox" checked={includePartial} onChange={(e) => setIncludePartial(e.target.checked)} />
             Include partial-coverage pharmacies
           </label>
@@ -194,41 +194,41 @@ export default function RxFulfillmentPage() {
       {/* ── Offers ───────────────────────────────────────────── */}
       {offers.length > 0 && (
         <section className="mb-6">
-          <p className="mb-3 text-sm font-bold text-slate-900">{offers.length} pharmac{offers.length === 1 ? "y" : "ies"} matched</p>
+          <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">{offers.length} pharmac{offers.length === 1 ? "y" : "ies"} matched</p>
           <ul className="space-y-3">
             {offers.map((o, i) => (
-              <li key={o.pharmacyId} className={`rounded-2xl border-2 p-4 shadow-sm ${i === 0 ? "border-emerald-300 bg-emerald-50/30" : "border-slate-200 bg-white"}`}>
+              <li key={o.pharmacyId} className={`rounded-2xl border-2 p-4 shadow-sm ${i === 0 ? "border-emerald-300 bg-emerald-50/30" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"}`}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="flex-1 min-w-[240px]">
-                    <p className="font-bold text-slate-900">
+                    <p className="font-bold text-slate-900 dark:text-slate-100">
                       {o.pharmacyName}
                       {i === 0 && <span className="ml-2 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">Best match</span>}
                       {o.samePincode && <span className="ml-1 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase text-sky-700">Same pincode</span>}
                     </p>
-                    <p className="mt-0.5 text-xs text-slate-500">{o.city || "—"}{o.pincode ? ` · ${o.pincode}` : ""}</p>
+                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{o.city || "—"}{o.pincode ? ` · ${o.pincode}` : ""}</p>
                     <div className="mt-1 flex flex-wrap gap-2 text-xs">
-                      <span className="rounded-md bg-slate-100 px-2 py-0.5">Coverage {o.coveragePct}%</span>
+                      <span className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5">Coverage {o.coveragePct}%</span>
                       <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-emerald-800">{o.effectiveDiscountPct}% off</span>
                       <span className="rounded-md bg-sky-100 px-2 py-0.5 text-sky-800">{o.deliveryEtaHours}h delivery</span>
                       {o.prescriptionRequired && <span className="rounded-md bg-amber-100 px-2 py-0.5 text-amber-800">Rx required</span>}
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-extrabold text-slate-900">{fmtINR(o.totalRupees)}</p>
+                    <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">{fmtINR(o.totalRupees)}</p>
                     {o.savingsRupees > 0 && <p className="text-xs text-emerald-700">Save {fmtINR(o.savingsRupees)} vs MRP</p>}
                     <button onClick={() => setOrderingFrom(o)} className="mt-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white">Order →</button>
                   </div>
                 </div>
                 <div className="mt-3 grid gap-1.5 sm:grid-cols-2">
                   {o.lines.map((l, j) => (
-                    <div key={j} className={`rounded-md px-2 py-1 text-xs ${l.inStock ? "bg-white ring-1 ring-slate-200" : "bg-rose-50 ring-1 ring-rose-200"}`}>
+                    <div key={j} className={`rounded-md px-2 py-1 text-xs ${l.inStock ? "bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800" : "bg-rose-50 ring-1 ring-rose-200"}`}>
                       <div className="flex items-center justify-between">
-                        <span className={l.inStock ? "text-slate-800" : "text-rose-700"}>
+                        <span className={l.inStock ? "text-slate-800 dark:text-slate-200" : "text-rose-700"}>
                           {l.inStock ? "✓" : "✗"} <strong>{l.drugName}</strong>{l.strength ? ` ${l.strength}` : ""} × {l.quantity}
-                          {l.brand && <span className="ml-1 text-slate-500">({l.brand})</span>}
+                          {l.brand && <span className="ml-1 text-slate-500 dark:text-slate-400">({l.brand})</span>}
                         </span>
                         {l.inStock && l.pricedRupees !== undefined && (
-                          <span className="font-mono font-semibold text-slate-700">{fmtINR(l.pricedRupees)}</span>
+                          <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">{fmtINR(l.pricedRupees)}</span>
                         )}
                       </div>
                     </div>
@@ -241,18 +241,18 @@ export default function RxFulfillmentPage() {
       )}
 
       {/* ── My orders ─────────────────────────────────────────── */}
-      <section className="rounded-2xl bg-white p-5 shadow-sm">
-        <p className="mb-3 text-sm font-bold text-slate-900">My pharmacy orders</p>
+      <section className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+        <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">My pharmacy orders</p>
         {orders.length === 0 ? (
-          <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">No orders yet. Search for your prescription above and place your first order.</p>
+          <p className="rounded-lg bg-slate-50 dark:bg-slate-900 p-4 text-sm text-slate-500 dark:text-slate-400">No orders yet. Search for your prescription above and place your first order.</p>
         ) : (
           <ul className="space-y-3">
             {orders.map((o) => (
-              <li key={o.id} className="rounded-xl border border-slate-200 bg-white p-4">
+              <li key={o.id} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
-                    <p className="font-semibold text-slate-900">{o.pharmacyName}</p>
-                    <p className="mt-0.5 text-[11px] text-slate-500">Placed {new Date(o.createdAt).toLocaleString()} · ETA {o.estimatedDeliveryHours}h</p>
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">{o.pharmacyName}</p>
+                    <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">Placed {new Date(o.createdAt).toLocaleString()} · ETA {o.estimatedDeliveryHours}h</p>
                     <div className="mt-2 flex items-center gap-1">
                       {STAGES.map((s, i) => {
                         const reached = STAGES.indexOf(o.status) >= i || ["delivered"].includes(o.status);
@@ -260,7 +260,7 @@ export default function RxFulfillmentPage() {
                         const cancelled = o.status === "cancelled" || o.status === "rejected";
                         return (
                           <div key={s} className="flex flex-1 items-center gap-1">
-                            <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${cancelled ? "bg-slate-200 text-slate-500" : done ? "bg-emerald-500 text-white" : reached ? "bg-indigo-500 text-white" : "bg-slate-200 text-slate-400"}`}>
+                            <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${cancelled ? "bg-slate-200 text-slate-500 dark:text-slate-400" : done ? "bg-emerald-500 text-white" : reached ? "bg-indigo-500 text-white" : "bg-slate-200 text-slate-400"}`}>
                               {done || (reached && o.status === s) ? "✓" : i + 1}
                             </span>
                             {i < STAGES.length - 1 && <div className={`h-0.5 flex-1 ${cancelled ? "bg-slate-200" : done ? "bg-emerald-300" : "bg-slate-200"}`} />}
@@ -271,7 +271,7 @@ export default function RxFulfillmentPage() {
                   </div>
                   <div className="text-right">
                     <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold uppercase ${STATUS_PILL[o.status]}`}>{STATUS_LABEL[o.status]}</span>
-                    <p className="mt-1 text-lg font-bold text-slate-900">{fmtINR(o.totalRupees)}</p>
+                    <p className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">{fmtINR(o.totalRupees)}</p>
                     {(o.status === "placed" || o.status === "accepted") && (
                       <button onClick={() => cancelOrder(o.id)} className="mt-1 text-[11px] font-semibold text-rose-600">Cancel</button>
                     )}
@@ -279,9 +279,9 @@ export default function RxFulfillmentPage() {
                 </div>
                 <ul className="mt-3 grid gap-1 text-xs sm:grid-cols-2">
                   {o.lines.map((l, j) => (
-                    <li key={j} className="flex justify-between rounded-md bg-slate-50 px-2 py-1">
-                      <span className="text-slate-700">{l.drugName}{l.strength ? ` ${l.strength}` : ""}{l.brand ? ` (${l.brand})` : ""} × {l.quantity}</span>
-                      <span className="font-mono font-semibold text-slate-700">{fmtINR(l.pricedRupees)}</span>
+                    <li key={j} className="flex justify-between rounded-md bg-slate-50 dark:bg-slate-900 px-2 py-1">
+                      <span className="text-slate-700 dark:text-slate-300">{l.drugName}{l.strength ? ` ${l.strength}` : ""}{l.brand ? ` (${l.brand})` : ""} × {l.quantity}</span>
+                      <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">{fmtINR(l.pricedRupees)}</span>
                     </li>
                   ))}
                 </ul>
@@ -294,9 +294,9 @@ export default function RxFulfillmentPage() {
       {/* Order confirm dialog */}
       {orderingFrom && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setOrderingFrom(null)}>
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-slate-900">Confirm order</h3>
-            <p className="mt-1 text-sm text-slate-500">{orderingFrom.pharmacyName} · ETA {orderingFrom.deliveryEtaHours}h</p>
+          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Confirm order</h3>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{orderingFrom.pharmacyName} · ETA {orderingFrom.deliveryEtaHours}h</p>
             <ul className="mt-3 space-y-1 text-sm">
               {orderingFrom.lines.filter((l) => l.inStock).map((l, i) => (
                 <li key={i} className="flex justify-between border-b border-slate-100 py-1">
@@ -306,14 +306,14 @@ export default function RxFulfillmentPage() {
               ))}
             </ul>
             <div className="mt-3 space-y-1 text-sm">
-              <div className="flex justify-between"><span className="text-slate-600">Subtotal</span><span className="font-mono">{fmtINR(orderingFrom.totalRupees)}</span></div>
-              <div className="flex justify-between"><span className="text-slate-600">Delivery fee</span><span className="font-mono">{orderingFrom.totalRupees > 500 ? "FREE" : fmtINR(39)}</span></div>
-              <div className="flex justify-between border-t border-slate-200 pt-1 text-base font-bold"><span>Total</span><span className="font-mono">{fmtINR(orderingFrom.totalRupees + (orderingFrom.totalRupees > 500 ? 0 : 39))}</span></div>
+              <div className="flex justify-between"><span className="text-slate-600 dark:text-slate-300">Subtotal</span><span className="font-mono">{fmtINR(orderingFrom.totalRupees)}</span></div>
+              <div className="flex justify-between"><span className="text-slate-600 dark:text-slate-300">Delivery fee</span><span className="font-mono">{orderingFrom.totalRupees > 500 ? "FREE" : fmtINR(39)}</span></div>
+              <div className="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-1 text-base font-bold"><span>Total</span><span className="font-mono">{fmtINR(orderingFrom.totalRupees + (orderingFrom.totalRupees > 500 ? 0 : 39))}</span></div>
             </div>
-            <p className="mt-3 mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">Delivery address</p>
+            <p className="mt-3 mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Delivery address</p>
             <textarea rows={2} value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
             <div className="mt-5 flex justify-end gap-2">
-              <button onClick={() => setOrderingFrom(null)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Cancel</button>
+              <button onClick={() => setOrderingFrom(null)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Cancel</button>
               <button onClick={placeOrder} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white">Place order</button>
             </div>
           </div>

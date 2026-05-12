@@ -44,7 +44,7 @@ function VerifyResult() {
           className="mx-auto mb-6 h-14 w-auto"
         />
       </div>
-      <div className="rounded-2xl bg-white p-8 shadow-lg text-center">
+      <div className="rounded-2xl bg-white dark:bg-slate-900 p-8 shadow-lg text-center">
         <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-red-50">
           <svg
             className="h-7 w-7 text-red-500"
@@ -60,8 +60,8 @@ function VerifyResult() {
             />
           </svg>
         </div>
-        <h1 className="text-xl font-bold text-gray-900">{c.title}</h1>
-        <p className="mt-2 text-sm text-gray-600">{c.body}</p>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">{c.title}</h1>
+        <p className="mt-2 text-sm text-gray-600 dark:text-slate-300">{c.body}</p>
 
         <div className="mt-6 flex flex-col gap-2">
           <Link href="/auth/login" className="btn-primary w-full">
@@ -69,7 +69,7 @@ function VerifyResult() {
           </Link>
           <Link
             href="/auth/register"
-            className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
           >
             Create a new account
           </Link>
@@ -81,7 +81,7 @@ function VerifyResult() {
 
 export default function VerifyEmailPage() {
   return (
-    <div className="flex min-h-[calc(100vh-80px)] items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="flex min-h-[calc(100vh-80px)] items-center justify-center bg-gray-50 dark:bg-slate-900 px-4 py-12">
       <Suspense
         fallback={
           <div className="flex items-center justify-center">

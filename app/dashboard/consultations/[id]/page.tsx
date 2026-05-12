@@ -114,7 +114,7 @@ export default function PatientConsultationDetail() {
     } finally { setRespondingAvail(false); }
   };
 
-  if (!c) return <div className="p-12 text-center text-gray-500">Loading…</div>;
+  if (!c) return <div className="p-12 text-center text-gray-500 dark:text-slate-400">Loading…</div>;
 
   const hasMh = !!c.medicalHistorySubmittedAt || !!c.medicalHistory?.chiefComplaint?.trim();
   const showMhForm = !hasMh && (c.status === "awaiting_doctor" || c.status === "approved" || c.status === "rescheduled");
@@ -122,15 +122,15 @@ export default function PatientConsultationDetail() {
   const showAvailPrompt = !!availReq && availReq.respondedAt == null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <Link href="/dashboard/consultations" className="mb-4 inline-block text-sm text-primary-600 hover:underline">← All consultations</Link>
 
-        <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
+        <div className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Consultation with {c.doctorName}</h1>
-              <p className="text-sm text-gray-500">{c.specialty} · {c.dateLabel} at {c.timeSlot}</p>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">Consultation with {c.doctorName}</h1>
+              <p className="text-sm text-gray-500 dark:text-slate-400">{c.specialty} · {c.dateLabel} at {c.timeSlot}</p>
             </div>
             <span className="rounded-full bg-primary-100 px-3 py-1 text-xs font-semibold text-primary-700">{c.status.replace(/_/g, " ")}</span>
           </div>
@@ -180,7 +180,7 @@ export default function PatientConsultationDetail() {
                 ✓ Yes, I&apos;m available
               </button>
               <button onClick={() => respondAvailability(false)} disabled={respondingAvail}
-                className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50">
+                className="flex-1 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900 disabled:opacity-50">
                 Not right now
               </button>
             </div>
@@ -195,10 +195,10 @@ export default function PatientConsultationDetail() {
 
         {/* Medical history form — MUST be completed before doctor can start */}
         {showMhForm && (
-          <div id="mh-form" className="mb-6 rounded-2xl border-2 border-primary-300 bg-white p-6 shadow-sm">
+          <div id="mh-form" className="mb-6 rounded-2xl border-2 border-primary-300 bg-white dark:bg-slate-900 p-6 shadow-sm">
             <div className="mb-4">
-              <h2 className="text-lg font-bold text-gray-900">Complete your medical history</h2>
-              <p className="mt-1 text-sm text-gray-600">Your doctor needs this information before starting the consultation. Fields marked * are required.</p>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Complete your medical history</h2>
+              <p className="mt-1 text-sm text-gray-600 dark:text-slate-300">Your doctor needs this information before starting the consultation. Fields marked * are required.</p>
             </div>
 
             {error && (
@@ -250,8 +250,8 @@ export default function PatientConsultationDetail() {
         )}
 
         {hasMh && (c.status === "awaiting_doctor" || c.status === "approved") && !c.roomId && !showAvailPrompt && (
-          <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
-            <p className="text-sm text-gray-700">
+          <div className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <p className="text-sm text-gray-700 dark:text-slate-300">
               ✓ Medical history submitted. {c.status === "awaiting_doctor"
                 ? "Waiting for the doctor to approve your consultation."
                 : "The doctor will start the video call shortly — you'll get a prompt here."}
@@ -260,8 +260,8 @@ export default function PatientConsultationDetail() {
         )}
 
         {c.prescriptionId && (
-          <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
-            <h2 className="mb-3 text-sm font-bold text-gray-900">Your prescription</h2>
+          <div className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <h2 className="mb-3 text-sm font-bold text-gray-900 dark:text-slate-100">Your prescription</h2>
             <div className="flex flex-wrap gap-2">
               <Link href={`/prescription/${c.prescriptionId}`}
                 className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">
@@ -272,7 +272,7 @@ export default function PatientConsultationDetail() {
                 Buy medicines online
               </Link>
             </div>
-            <p className="mt-3 text-xs text-gray-500">You can also take this prescription to any pharmacy offline.</p>
+            <p className="mt-3 text-xs text-gray-500 dark:text-slate-400">You can also take this prescription to any pharmacy offline.</p>
           </div>
         )}
 
@@ -286,9 +286,9 @@ export default function PatientConsultationDetail() {
           </div>
         )}
 
-        <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
+        <div className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-gray-900">Shared documents</h2>
+            <h2 className="text-sm font-bold text-gray-900 dark:text-slate-100">Shared documents</h2>
             <button onClick={() => fileRef.current?.click()} disabled={uploading}
               className="rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-700 disabled:opacity-50">
               {uploading ? "Uploading…" : "+ Upload"}
@@ -296,17 +296,17 @@ export default function PatientConsultationDetail() {
             <input ref={fileRef} type="file" accept="image/*,application/pdf" className="hidden"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload(f); e.target.value = ""; }} />
           </div>
-          <p className="mb-3 text-xs text-gray-500">Share lab reports, previous prescriptions, or photos with your doctor (max 10MB).</p>
+          <p className="mb-3 text-xs text-gray-500 dark:text-slate-400">Share lab reports, previous prescriptions, or photos with your doctor (max 10MB).</p>
           {error && !showMhForm && <p className="mb-2 text-sm text-red-600">{error}</p>}
           {c.documents.length === 0 ? (
-            <p className="text-sm text-gray-400">No documents uploaded yet.</p>
+            <p className="text-sm text-gray-400 dark:text-slate-500">No documents uploaded yet.</p>
           ) : (
             <ul className="space-y-2">
               {c.documents.map((d) => (
                 <li key={d.id} className="flex items-center justify-between rounded-lg border border-gray-100 p-3">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{d.name}</p>
-                    <p className="text-xs text-gray-500">{(d.size / 1024).toFixed(1)} KB · from {d.uploadedBy}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{d.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">{(d.size / 1024).toFixed(1)} KB · from {d.uploadedBy}</p>
                   </div>
                   <a href={d.dataUrl} download={d.name} className="text-sm text-primary-600 hover:underline">Download</a>
                 </li>
@@ -315,8 +315,8 @@ export default function PatientConsultationDetail() {
           )}
         </div>
 
-        <div className="rounded-2xl bg-white p-6 shadow-sm">
-          <h2 className="mb-3 text-sm font-bold text-gray-900">Booking summary</h2>
+        <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+          <h2 className="mb-3 text-sm font-bold text-gray-900 dark:text-slate-100">Booking summary</h2>
           <dl className="grid gap-3 text-sm sm:grid-cols-2">
             <Row label="Fee" value={`$${c.fee}`} />
             <Row label="Payment" value={c.paymentStatus} />
@@ -332,8 +332,8 @@ export default function PatientConsultationDetail() {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs text-gray-500">{label}</dt>
-      <dd className="mt-0.5 font-medium text-gray-900">{value}</dd>
+      <dt className="text-xs text-gray-500 dark:text-slate-400">{label}</dt>
+      <dd className="mt-0.5 font-medium text-gray-900 dark:text-slate-100">{value}</dd>
     </div>
   );
 }
@@ -341,10 +341,10 @@ function Row({ label, value }: { label: string; value: string }) {
 function MhField({
   label, value, onChange, placeholder, wide, textarea, required, invalid,
 }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; wide?: boolean; textarea?: boolean; required?: boolean; invalid?: boolean }) {
-  const borderCls = invalid ? "border-red-400 ring-1 ring-red-200" : "border-gray-200 focus:border-primary-500";
+  const borderCls = invalid ? "border-red-400 ring-1 ring-red-200" : "border-gray-200 dark:border-slate-800 focus:border-primary-500";
   return (
     <div className={wide ? "sm:col-span-2" : ""}>
-      <label className="mb-1 block text-xs font-medium text-gray-600">{label}</label>
+      <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">{label}</label>
       {textarea ? (
         <textarea rows={3} required={required} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
           className={`w-full rounded-lg border ${borderCls} px-3 py-2 text-sm outline-none`} />
@@ -361,9 +361,9 @@ function MhSelect({
 }: { label: string; value: string; onChange: (v: string) => void; options: [string, string][] }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-gray-600">{label}</label>
+      <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">{label}</label>
       <select value={value} onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500">
+        className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500">
         {options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
       </select>
     </div>

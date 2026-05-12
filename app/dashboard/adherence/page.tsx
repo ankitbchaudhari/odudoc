@@ -60,8 +60,8 @@ export default function AdherencePage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Today&apos;s medications</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Today&apos;s medications</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Tap each dose as you take it. Missed doses help your doctor adjust the plan.
         </p>
       </div>
@@ -76,13 +76,13 @@ export default function AdherencePage() {
       )}
 
       {error && <p className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{error}</p>}
-      {loading && <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>}
+      {loading && <p className="rounded-xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>}
 
       {!loading && schedule.length === 0 && !error && (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white dark:bg-slate-900 p-10 text-center">
           <p className="text-3xl">💊</p>
-          <p className="mt-2 text-base font-bold text-slate-700">No active prescriptions</p>
-          <p className="mt-1 text-sm text-slate-500">Once a doctor issues a prescription, today&apos;s schedule appears here.</p>
+          <p className="mt-2 text-base font-bold text-slate-700 dark:text-slate-300">No active prescriptions</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Once a doctor issues a prescription, today&apos;s schedule appears here.</p>
           <Link href="/dashboard/prescriptions" className="mt-4 inline-block rounded-lg bg-indigo-600 px-5 py-2 text-sm font-bold text-white">View prescriptions</Link>
         </div>
       )}
@@ -91,7 +91,7 @@ export default function AdherencePage() {
         <section key={slot} className="mb-6">
           <header className="mb-3 flex items-center gap-2">
             <span className="text-xl">{SLOT_EMOJI[slot]}</span>
-            <p className="text-sm font-bold text-slate-900">{SLOT_LABEL[slot]}</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{SLOT_LABEL[slot]}</p>
             <span className="text-xs text-slate-400">{SLOT_TIME[slot]}</span>
           </header>
           <ul className="space-y-2">
@@ -103,15 +103,15 @@ export default function AdherencePage() {
                   key={`${d.rxId}-${d.medIndex}-${d.slot}`}
                   className={`rounded-xl border p-3 shadow-sm transition-all ${
                     isTaken ? "border-emerald-200 bg-emerald-50/40"
-                    : isSkipped ? "border-slate-200 bg-slate-50 opacity-70"
-                    : "border-slate-200 bg-white"
+                    : isSkipped ? "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 opacity-70"
+                    : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-slate-900">{d.medName}</p>
-                      <p className="text-xs text-slate-600">{d.dose} · {d.frequency}</p>
-                      {d.instructions && <p className="mt-0.5 text-[10px] text-slate-500">{d.instructions}</p>}
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{d.medName}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-300">{d.dose} · {d.frequency}</p>
+                      {d.instructions && <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">{d.instructions}</p>}
                       {d.loggedAt && (
                         <p className="mt-1 text-[10px] text-slate-400">
                           {isTaken ? "Taken" : "Skipped"} at {new Date(d.loggedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
@@ -122,7 +122,7 @@ export default function AdherencePage() {
                       <button
                         onClick={() => log(d, "taken")}
                         className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
-                          isTaken ? "bg-emerald-600 text-white" : "bg-white text-emerald-700 ring-1 ring-emerald-300 hover:bg-emerald-50"
+                          isTaken ? "bg-emerald-600 text-white" : "bg-white dark:bg-slate-900 text-emerald-700 ring-1 ring-emerald-300 hover:bg-emerald-50"
                         }`}
                       >
                         {isTaken ? "✓ Taken" : "Mark taken"}
@@ -130,7 +130,7 @@ export default function AdherencePage() {
                       <button
                         onClick={() => log(d, "skipped")}
                         className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
-                          isSkipped ? "bg-slate-700 text-white" : "bg-white text-slate-600 ring-1 ring-slate-300 hover:bg-slate-50"
+                          isSkipped ? "bg-slate-700 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-50 dark:bg-slate-900"
                         }`}
                       >
                         Skip
@@ -152,12 +152,12 @@ function Stat({ label, value, sub, tone = "neutral" }: { label: string; value: s
     tone === "ok" ? "ring-emerald-200 bg-emerald-50"
     : tone === "warn" ? "ring-amber-200 bg-amber-50"
     : tone === "critical" ? "ring-rose-200 bg-rose-50"
-    : "ring-slate-200 bg-white";
+    : "ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900";
   return (
     <div className={`rounded-xl p-3 ring-1 ${ring}`}>
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{label}</p>
-      <p className="mt-1 text-xl font-extrabold text-slate-900">{value}</p>
-      {sub && <p className="mt-0.5 text-[10px] text-slate-500">{sub}</p>}
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="mt-1 text-xl font-extrabold text-slate-900 dark:text-slate-100">{value}</p>
+      {sub && <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">{sub}</p>}
     </div>
   );
 }

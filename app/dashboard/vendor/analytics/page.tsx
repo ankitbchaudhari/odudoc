@@ -50,14 +50,14 @@ export default function VendorAnalyticsPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/40 to-pink-50/40 p-12 text-center">
         <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-500" />
-        <p className="mt-4 text-sm text-slate-500">Loading analytics…</p>
+        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Loading analytics…</p>
       </div>
     );
   }
   if (err) {
     return (
       <div className="mx-auto max-w-xl p-12 text-center">
-        <p className="text-gray-700">{err}</p>
+        <p className="text-gray-700 dark:text-slate-300">{err}</p>
         <Link href="/dashboard/vendor" className="mt-4 inline-block text-sm text-indigo-600 hover:underline">
           ← Back to dashboard
         </Link>
@@ -99,7 +99,7 @@ export default function VendorAnalyticsPage() {
                     onClick={() => setDays(w)}
                     className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
                       days === w
-                        ? "bg-white text-indigo-700 shadow-sm"
+                        ? "bg-white dark:bg-slate-900 text-indigo-700 shadow-sm"
                         : "text-white/80 hover:text-white"
                     }`}
                   >
@@ -128,12 +128,12 @@ export default function VendorAnalyticsPage() {
         </div>
 
         {/* Revenue chart */}
-        <div className="mb-6 overflow-hidden rounded-3xl border border-white/60 bg-white p-6 shadow-sm">
+        <div className="mb-6 overflow-hidden rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-6 shadow-sm">
           <div className="mb-5 flex items-center gap-2">
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 text-base shadow-sm">
               📈
             </span>
-            <h2 className="text-base font-bold text-slate-900">Revenue over time</h2>
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Revenue over time</h2>
           </div>
           {data.timeseries.every((p) => p.revenue === 0) ? (
             <p className="py-12 text-center text-sm text-slate-400">No revenue in this window yet.</p>
@@ -160,12 +160,12 @@ export default function VendorAnalyticsPage() {
 
         <div className="grid gap-4 lg:grid-cols-2">
           {/* Top products */}
-          <div className="overflow-hidden rounded-3xl border border-white/60 bg-white p-6 shadow-sm">
+          <div className="overflow-hidden rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 text-base shadow-sm">
                 🏆
               </span>
-              <h2 className="text-base font-bold text-slate-900">Top products</h2>
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Top products</h2>
             </div>
             {data.topProducts.length === 0 ? (
               <p className="py-8 text-center text-sm text-slate-400">No sales yet.</p>
@@ -181,16 +181,16 @@ export default function VendorAnalyticsPage() {
                         i === 0
                           ? "bg-gradient-to-br from-amber-400 to-orange-500 text-white"
                           : i === 1
-                            ? "bg-slate-200 text-slate-700"
+                            ? "bg-slate-200 text-slate-700 dark:text-slate-300"
                             : i === 2
                               ? "bg-amber-100 text-amber-700"
-                              : "bg-slate-100 text-slate-600"
+                              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
                       }`}
                     >
                       {i + 1}
                     </span>
-                    <span className="flex-1 truncate text-sm font-semibold text-slate-900">{p.name}</span>
-                    <span className="text-xs text-slate-500">{p.units} units</span>
+                    <span className="flex-1 truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{p.name}</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{p.units} units</span>
                     <span className="text-sm font-bold text-emerald-700">${p.revenue.toFixed(2)}</span>
                   </li>
                 ))}
@@ -199,12 +199,12 @@ export default function VendorAnalyticsPage() {
           </div>
 
           {/* Order status */}
-          <div className="overflow-hidden rounded-3xl border border-white/60 bg-white p-6 shadow-sm">
+          <div className="overflow-hidden rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-blue-500 text-base shadow-sm">
                 🎯
               </span>
-              <h2 className="text-base font-bold text-slate-900">Order status</h2>
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Order status</h2>
             </div>
             {data.statusBreakdown.length === 0 ? (
               <p className="py-8 text-center text-sm text-slate-400">No orders in this window.</p>
@@ -225,12 +225,12 @@ export default function VendorAnalyticsPage() {
                   return (
                     <div key={s.status}>
                       <div className="mb-1.5 flex items-baseline justify-between text-xs">
-                        <span className="font-semibold capitalize text-slate-800">{s.status}</span>
-                        <span className="text-slate-500">
-                          <b className="text-slate-900">{s.count}</b> · {pct}%
+                        <span className="font-semibold capitalize text-slate-800 dark:text-slate-200">{s.status}</span>
+                        <span className="text-slate-500 dark:text-slate-400">
+                          <b className="text-slate-900 dark:text-slate-100">{s.count}</b> · {pct}%
                         </span>
                       </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                         <div
                           className={`h-2 rounded-full bg-gradient-to-r ${grad} transition-all`}
                           style={{ width: `${pct}%` }}
@@ -267,7 +267,7 @@ function Stat({
         <span className="text-lg">{emoji}</span>
         <span className={`text-[10px] font-bold uppercase tracking-[0.15em] ${t.text}`}>{label}</span>
       </div>
-      <p className="mt-3 text-2xl font-bold text-slate-900">{value}</p>
+      <p className="mt-3 text-2xl font-bold text-slate-900 dark:text-slate-100">{value}</p>
     </div>
   );
 }

@@ -195,7 +195,7 @@ export default function VendorDashboard() {
   if (loading || authStatus !== "authenticated")
     return (
       <div className="flex min-h-[60vh] items-center justify-center bg-gradient-to-b from-indigo-50/40 via-white to-white">
-        <div className="flex flex-col items-center gap-3 text-gray-400">
+        <div className="flex flex-col items-center gap-3 text-gray-400 dark:text-slate-500">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-100 border-t-indigo-600" />
           <p className="text-sm">Loading your dashboard…</p>
         </div>
@@ -205,10 +205,10 @@ export default function VendorDashboard() {
   if (!vendor) {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
           You&apos;re not registered as a vendor yet
         </h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-gray-600 dark:text-slate-300">
           Apply to sell your pharmacy&apos;s products on OduDoc.
         </p>
         <Link href="/sell" className="btn-primary mt-6 inline-block">
@@ -221,8 +221,8 @@ export default function VendorDashboard() {
   if (vendor.status !== "approved") {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-gray-900">{vendor.name}</h1>
-        <p className="mt-2 text-gray-600">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{vendor.name}</h1>
+        <p className="mt-2 text-gray-600 dark:text-slate-300">
           Your vendor application is currently <strong>{vendor.status}</strong>.
         </p>
         <Link
@@ -303,7 +303,7 @@ export default function VendorDashboard() {
             <div className="flex flex-wrap gap-2">
               <Link
                 href="/dashboard/vendor/products/new"
-                className="rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-indigo-700 shadow hover:bg-indigo-50"
+                className="rounded-xl bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-semibold text-indigo-700 shadow hover:bg-indigo-50"
               >
                 + Add product
               </Link>
@@ -313,7 +313,7 @@ export default function VendorDashboard() {
               >
                 Orders
                 {pendingOrders > 0 && (
-                  <span className="ml-1.5 rounded-full bg-white px-1.5 py-0.5 text-[10px] font-bold text-indigo-700">
+                  <span className="ml-1.5 rounded-full bg-white dark:bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700">
                     {pendingOrders}
                   </span>
                 )}
@@ -408,13 +408,13 @@ export default function VendorDashboard() {
 
         {/* Revenue chart + status breakdown */}
         <div className="mb-6 grid gap-4 lg:grid-cols-3">
-          <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100 lg:col-span-2">
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-gray-100 lg:col-span-2">
             <div className="mb-3 flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700">
+                <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 dark:text-slate-300">
                   Revenue · last 30 days
                 </h2>
-                <p className="mt-0.5 text-xs text-gray-500">
+                <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
                   Your vendor subtotal per day
                 </p>
               </div>
@@ -428,14 +428,14 @@ export default function VendorDashboard() {
             <SparkBar series={series} maxRevenue={maxRevenue} />
           </div>
 
-          <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700">
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-gray-100">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 dark:text-slate-300">
               Order status
             </h2>
-            <p className="mt-0.5 text-xs text-gray-500">Last 30 days</p>
+            <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">Last 30 days</p>
             <div className="mt-4 space-y-2">
               {statusBreakdown.length === 0 ? (
-                <p className="py-4 text-center text-xs text-gray-400">
+                <p className="py-4 text-center text-xs text-gray-400 dark:text-slate-500">
                   No orders yet in this window.
                 </p>
               ) : (
@@ -450,16 +450,16 @@ export default function VendorDashboard() {
                       <div className="flex items-center justify-between text-xs">
                         <span
                           className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${
-                            STATUS_COLORS[s.status] || "bg-gray-100 text-gray-700 ring-gray-200"
+                            STATUS_COLORS[s.status] || "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 ring-gray-200 dark:ring-slate-800"
                           }`}
                         >
                           {s.status}
                         </span>
-                        <span className="font-semibold text-gray-700">
+                        <span className="font-semibold text-gray-700 dark:text-slate-300">
                           {s.count} · {pct.toFixed(0)}%
                         </span>
                       </div>
-                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-gray-100">
+                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-slate-800">
                         <div
                           className="h-full rounded-full bg-indigo-500"
                           style={{ width: `${pct}%` }}
@@ -530,9 +530,9 @@ export default function VendorDashboard() {
         <div className="grid gap-4 lg:grid-cols-3">
           {/* Left: recent orders + products */}
           <div className="space-y-4 lg:col-span-2">
-            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+            <div className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-gray-100">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700">
+                <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 dark:text-slate-300">
                   Recent orders
                 </h2>
                 <Link
@@ -543,18 +543,18 @@ export default function VendorDashboard() {
                 </Link>
               </div>
               {recentOrders.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-gray-200 py-8 text-center">
+                <div className="rounded-xl border border-dashed border-gray-200 dark:border-slate-800 py-8 text-center">
                   <p className="text-4xl">📭</p>
-                  <p className="mt-2 text-sm font-medium text-gray-700">
+                  <p className="mt-2 text-sm font-medium text-gray-700 dark:text-slate-300">
                     No orders yet
                   </p>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
                     List more products and share your store to land your first
                     sale.
                   </p>
                 </div>
               ) : (
-                <ul className="divide-y divide-gray-100">
+                <ul className="divide-y divide-gray-100 dark:divide-slate-800">
                   {recentOrders.map((o) => (
                     <li
                       key={o.id}
@@ -562,24 +562,24 @@ export default function VendorDashboard() {
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="truncate text-sm font-semibold text-gray-900">
+                          <p className="truncate text-sm font-semibold text-gray-900 dark:text-slate-100">
                             {o.orderNumber}
                           </p>
                           <span
                             className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${
                               STATUS_COLORS[o.orderStatus] ||
-                              "bg-gray-100 text-gray-700 ring-gray-200"
+                              "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 ring-gray-200 dark:ring-slate-800"
                             }`}
                           >
                             {o.orderStatus}
                           </span>
                         </div>
-                        <p className="mt-0.5 truncate text-xs text-gray-500">
+                        <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-slate-400">
                           {o.customer} · {o.items.length} item
                           {o.items.length > 1 ? "s" : ""} · {relTime(o.createdAt)}
                         </p>
                       </div>
-                      <p className="shrink-0 text-sm font-bold text-gray-900">
+                      <p className="shrink-0 text-sm font-bold text-gray-900 dark:text-slate-100">
                         ${o.vendorSubtotal.toFixed(2)}
                       </p>
                     </li>
@@ -588,13 +588,13 @@ export default function VendorDashboard() {
               )}
             </div>
 
-            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+            <div className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-gray-100">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700">
+                <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 dark:text-slate-300">
                   Your products
                 </h2>
                 <div className="flex items-center gap-3 text-xs">
-                  <span className="text-gray-500">
+                  <span className="text-gray-500 dark:text-slate-400">
                     Stock value {money(totalStockValue)}
                   </span>
                   <Link
@@ -607,12 +607,12 @@ export default function VendorDashboard() {
               </div>
 
               {products.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-gray-200 py-10 text-center">
+                <div className="rounded-xl border border-dashed border-gray-200 dark:border-slate-800 py-10 text-center">
                   <p className="text-4xl">🛍️</p>
-                  <p className="mt-2 text-sm font-medium text-gray-700">
+                  <p className="mt-2 text-sm font-medium text-gray-700 dark:text-slate-300">
                     No products yet
                   </p>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
                     Add your first listing to start selling.
                   </p>
                   <Link
@@ -626,7 +626,7 @@ export default function VendorDashboard() {
                 <div className="-mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0">
                   <table className="w-full min-w-[560px] text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100 text-left text-xs uppercase tracking-wide text-gray-500">
+                      <tr className="border-b border-gray-100 text-left text-xs uppercase tracking-wide text-gray-500 dark:text-slate-400">
                         <th className="py-2">Name</th>
                         <th className="py-2">Category</th>
                         <th className="py-2">Price</th>
@@ -641,12 +641,12 @@ export default function VendorDashboard() {
                           key={p.id}
                           className="border-b border-gray-50 transition hover:bg-gray-50/50"
                         >
-                          <td className="py-3 font-medium text-gray-900">
+                          <td className="py-3 font-medium text-gray-900 dark:text-slate-100">
                             {p.name}
                           </td>
-                          <td className="py-3 text-gray-600">{p.category}</td>
-                          <td className="py-3 text-gray-900">${p.price}</td>
-                          <td className="py-3 text-gray-900">
+                          <td className="py-3 text-gray-600 dark:text-slate-300">{p.category}</td>
+                          <td className="py-3 text-gray-900 dark:text-slate-100">${p.price}</td>
+                          <td className="py-3 text-gray-900 dark:text-slate-100">
                             <span
                               className={
                                 p.stock === 0
@@ -666,7 +666,7 @@ export default function VendorDashboard() {
                                   ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
                                   : p.status === "Out of Stock"
                                   ? "bg-rose-50 text-rose-700 ring-rose-200"
-                                  : "bg-gray-100 text-gray-700 ring-gray-200"
+                                  : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 ring-gray-200 dark:ring-slate-800"
                               }`}
                             >
                               {p.status}
@@ -685,7 +685,7 @@ export default function VendorDashboard() {
                     </tbody>
                   </table>
                   {products.length > 10 && (
-                    <p className="mt-3 text-center text-xs text-gray-500">
+                    <p className="mt-3 text-center text-xs text-gray-500 dark:text-slate-400">
                       Showing 10 of {products.length}. Open the Products area
                       for the full list.
                     </p>
@@ -698,16 +698,16 @@ export default function VendorDashboard() {
           {/* Right: top products + low stock + checklist */}
           <div className="space-y-4">
             {stepsDone < steps.length && (
-              <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+              <div className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-gray-100">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700">
+                  <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 dark:text-slate-300">
                     Getting started
                   </h2>
-                  <span className="text-xs font-semibold text-gray-500">
+                  <span className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                     {stepsDone}/{steps.length}
                   </span>
                 </div>
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-gray-100">
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-slate-800">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 transition-all"
                     style={{ width: `${(stepsDone / steps.length) * 100}%` }}
@@ -720,7 +720,7 @@ export default function VendorDashboard() {
                         className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] ${
                           s.done
                             ? "bg-emerald-100 text-emerald-700"
-                            : "bg-gray-100 text-gray-400"
+                            : "bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500"
                         }`}
                       >
                         {s.done ? "✓" : ""}
@@ -728,12 +728,12 @@ export default function VendorDashboard() {
                       {s.href && !s.done ? (
                         <Link
                           href={s.href}
-                          className="text-gray-700 hover:text-indigo-600 hover:underline"
+                          className="text-gray-700 dark:text-slate-300 hover:text-indigo-600 hover:underline"
                         >
                           {s.label}
                         </Link>
                       ) : (
-                        <span className={s.done ? "text-gray-500 line-through" : "text-gray-700"}>
+                        <span className={s.done ? "text-gray-500 dark:text-slate-400 line-through" : "text-gray-700 dark:text-slate-300"}>
                           {s.label}
                         </span>
                       )}
@@ -743,15 +743,15 @@ export default function VendorDashboard() {
               </div>
             )}
 
-            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+            <div className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-gray-100">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700">
+                <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 dark:text-slate-300">
                   Top sellers
                 </h2>
-                <span className="text-[10px] text-gray-400">last 30d</span>
+                <span className="text-[10px] text-gray-400 dark:text-slate-500">last 30d</span>
               </div>
               {topProducts.length === 0 ? (
-                <p className="mt-4 text-center text-xs text-gray-400">
+                <p className="mt-4 text-center text-xs text-gray-400 dark:text-slate-500">
                   No sales yet.
                 </p>
               ) : (
@@ -762,10 +762,10 @@ export default function VendorDashboard() {
                         {i + 1}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-gray-900">
+                        <p className="truncate text-sm font-medium text-gray-900 dark:text-slate-100">
                           {t.name}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-slate-400">
                           {t.units} unit{t.units !== 1 ? "s" : ""} · $
                           {t.revenue.toFixed(2)}
                         </p>
@@ -776,12 +776,12 @@ export default function VendorDashboard() {
               )}
             </div>
 
-            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
-              <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700">
+            <div className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-gray-100">
+              <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 dark:text-slate-300">
                 Inventory alerts
               </h2>
               {oos === 0 && lowStock.length === 0 ? (
-                <p className="mt-3 text-xs text-gray-500">
+                <p className="mt-3 text-xs text-gray-500 dark:text-slate-400">
                   ✅ All good — no low-stock or out-of-stock items.
                 </p>
               ) : (
@@ -808,7 +808,7 @@ export default function VendorDashboard() {
                         >
                           <Link
                             href={`/dashboard/vendor/products/${p.id}`}
-                            className="min-w-0 flex-1 truncate font-medium text-gray-800 hover:underline"
+                            className="min-w-0 flex-1 truncate font-medium text-gray-800 dark:text-slate-200 hover:underline"
                           >
                             {p.name}
                           </Link>
@@ -823,20 +823,20 @@ export default function VendorDashboard() {
               )}
             </div>
 
-            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
-              <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700">
+            <div className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-gray-100">
+              <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 dark:text-slate-300">
                 Store details
               </h2>
               <dl className="mt-3 space-y-1.5 text-xs">
                 <div className="flex justify-between gap-2">
-                  <dt className="text-gray-500">Commission</dt>
-                  <dd className="font-semibold text-gray-900">
+                  <dt className="text-gray-500 dark:text-slate-400">Commission</dt>
+                  <dd className="font-semibold text-gray-900 dark:text-slate-100">
                     {vendor.commissionPercent}%
                   </dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="text-gray-500">Stripe</dt>
-                  <dd className="font-semibold text-gray-900">
+                  <dt className="text-gray-500 dark:text-slate-400">Stripe</dt>
+                  <dd className="font-semibold text-gray-900 dark:text-slate-100">
                     {vendor.stripePayoutsEnabled
                       ? "Connected"
                       : vendor.stripeAccountId
@@ -845,15 +845,15 @@ export default function VendorDashboard() {
                   </dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt className="text-gray-500">Owner</dt>
-                  <dd className="truncate font-semibold text-gray-900">
+                  <dt className="text-gray-500 dark:text-slate-400">Owner</dt>
+                  <dd className="truncate font-semibold text-gray-900 dark:text-slate-100">
                     {vendor.ownerName || "—"}
                   </dd>
                 </div>
                 {vendor.phone && (
                   <div className="flex justify-between gap-2">
-                    <dt className="text-gray-500">Phone</dt>
-                    <dd className="truncate font-semibold text-gray-900">
+                    <dt className="text-gray-500 dark:text-slate-400">Phone</dt>
+                    <dd className="truncate font-semibold text-gray-900 dark:text-slate-100">
                       {vendor.phone}
                     </dd>
                   </div>
@@ -889,7 +889,7 @@ function Kpi({
     rose: "from-rose-500 to-pink-500",
   };
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100 transition hover:shadow-md">
+    <div className="rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm ring-1 ring-gray-100 transition hover:shadow-md">
       <div className="flex items-center gap-2">
         <div
           className={`flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br text-white shadow-sm ${tones[tone]}`}
@@ -904,11 +904,11 @@ function Kpi({
             <path strokeLinecap="round" strokeLinejoin="round" d={icon} />
           </svg>
         </div>
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
           {label}
         </p>
       </div>
-      <p className="mt-2 text-xl font-bold text-gray-900">{value}</p>
+      <p className="mt-2 text-xl font-bold text-gray-900 dark:text-slate-100">{value}</p>
     </div>
   );
 }
@@ -929,7 +929,7 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="group relative flex items-center gap-3 overflow-hidden rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100 transition hover:-translate-y-0.5 hover:shadow-md"
+      className="group relative flex items-center gap-3 overflow-hidden rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm ring-1 ring-gray-100 transition hover:-translate-y-0.5 hover:shadow-md"
     >
       <div
         className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br text-2xl text-white shadow-sm ${tone}`}
@@ -937,8 +937,8 @@ function QuickAction({
         <span>{emoji}</span>
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold text-gray-900">{label}</p>
-        <p className="truncate text-xs text-gray-500">{desc}</p>
+        <p className="text-sm font-bold text-gray-900 dark:text-slate-100">{label}</p>
+        <p className="truncate text-xs text-gray-500 dark:text-slate-400">{desc}</p>
       </div>
       <svg
         className="h-4 w-4 text-gray-300 transition group-hover:translate-x-1 group-hover:text-indigo-600"
@@ -961,7 +961,7 @@ function SparkBar({
   maxRevenue: number;
 }) {
   if (series.length === 0)
-    return <p className="py-8 text-center text-xs text-gray-400">No data.</p>;
+    return <p className="py-8 text-center text-xs text-gray-400 dark:text-slate-500">No data.</p>;
   return (
     <div>
       <div className="flex h-32 items-end gap-[3px]">
@@ -978,7 +978,7 @@ function SparkBar({
                 className={`w-full rounded-t transition ${
                   active
                     ? "bg-gradient-to-t from-indigo-500 to-violet-500 group-hover:from-indigo-600 group-hover:to-violet-600"
-                    : "bg-gray-100"
+                    : "bg-gray-100 dark:bg-slate-800"
                 }`}
                 style={{ height: `${h}%` }}
               />
@@ -986,7 +986,7 @@ function SparkBar({
           );
         })}
       </div>
-      <div className="mt-2 flex items-center justify-between text-[10px] text-gray-400">
+      <div className="mt-2 flex items-center justify-between text-[10px] text-gray-400 dark:text-slate-500">
         <span>{series[0]?.date}</span>
         <span>peak {money(maxRevenue)}</span>
         <span>{series[series.length - 1]?.date}</span>

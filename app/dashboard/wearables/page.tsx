@@ -43,7 +43,7 @@ const TILE_TONE: Record<KpiTile["status"], string> = {
   good: "border-emerald-200 bg-emerald-50 text-emerald-900",
   warn: "border-amber-200 bg-amber-50 text-amber-900",
   critical: "border-rose-300 bg-rose-50 text-rose-900",
-  neutral: "border-slate-200 bg-white text-slate-900",
+  neutral: "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100",
 };
 const SEV_TONE: Record<AnomalyFlag["severity"], string> = {
   info: "border-sky-200 bg-sky-50 text-sky-900",
@@ -125,8 +125,8 @@ export default function WearablesPage() {
 
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Wearable health</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Wearable health</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Connect your Fitbit, Apple Watch, Mi Band, or any wearable to share heart rate, BP, sleep, and glucose trends with your doctor at the next visit.
           </p>
         </div>
@@ -137,30 +137,30 @@ export default function WearablesPage() {
 
       {/* Demo seed strip */}
       {devices.length === 0 && (
-        <div className="mb-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm">
-          <p className="text-slate-700"><strong>Try a demo persona:</strong></p>
+        <div className="mb-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 dark:bg-slate-900 p-4 text-sm">
+          <p className="text-slate-700 dark:text-slate-300"><strong>Try a demo persona:</strong></p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <button onClick={() => seed("diabetic_hypertensive")} className="rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-300 hover:bg-slate-100">🩸 Diabetic + hypertensive (60yo)</button>
-            <button onClick={() => seed("athlete")} className="rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-300 hover:bg-slate-100">🏃 Athlete (28yo)</button>
-            <button onClick={() => seed("post_op")} className="rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-300 hover:bg-slate-100">🩺 Post-op recovery</button>
+            <button onClick={() => seed("diabetic_hypertensive")} className="rounded-md bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-100 dark:bg-slate-800">🩸 Diabetic + hypertensive (60yo)</button>
+            <button onClick={() => seed("athlete")} className="rounded-md bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-100 dark:bg-slate-800">🏃 Athlete (28yo)</button>
+            <button onClick={() => seed("post_op")} className="rounded-md bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-100 dark:bg-slate-800">🩺 Post-op recovery</button>
           </div>
         </div>
       )}
 
       {/* ── Devices ─────────────────────────────────── */}
-      <section className="mb-6 rounded-2xl bg-white p-5 shadow-sm">
-        <p className="mb-3 text-sm font-bold text-slate-900">Linked devices ({devices.length})</p>
+      <section className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+        <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Linked devices ({devices.length})</p>
         {devices.length === 0 ? (
-          <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">No devices linked yet. Use the seed buttons above for a demo, or link your own with the button at the top.</p>
+          <p className="rounded-lg bg-slate-50 dark:bg-slate-900 p-4 text-sm text-slate-500 dark:text-slate-400">No devices linked yet. Use the seed buttons above for a demo, or link your own with the button at the top.</p>
         ) : (
           <ul className="space-y-2">
             {devices.map((d) => (
-              <li key={d.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3">
+              <li key={d.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{PROVIDER_EMOJI[d.provider]}</span>
                   <div>
-                    <p className="font-semibold text-slate-900">{d.displayName}</p>
-                    <p className="text-[11px] text-slate-500">
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">{d.displayName}</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
                       {PROVIDER_LABEL[d.provider]} · linked {new Date(d.linkedAt).toLocaleDateString()}
                       {d.lastSyncAt ? ` · synced ${new Date(d.lastSyncAt).toLocaleDateString()}` : ""}
                     </p>
@@ -176,8 +176,8 @@ export default function WearablesPage() {
       {/* ── KPIs + charts + anomalies ────────────────────────────── */}
       {insights && insights.kpis.length > 0 && (
         <>
-          <section className="mb-6 rounded-2xl bg-white p-5 shadow-sm">
-            <p className="mb-3 text-sm font-bold text-slate-900">Last {insights.windowDays} days</p>
+          <section className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+            <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Last {insights.windowDays} days</p>
             <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {insights.kpis.map((k) => (
                 <div key={k.kind} className={`rounded-xl border p-3 ${TILE_TONE[k.status]}`}>
@@ -195,8 +195,8 @@ export default function WearablesPage() {
             </div>
           </section>
 
-          <section className="mb-6 rounded-2xl bg-white p-5 shadow-sm">
-            <p className="mb-3 text-sm font-bold text-slate-900">30-day trends</p>
+          <section className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+            <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">30-day trends</p>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {CHART_KINDS.filter((c) => insights.daily[c.kind] && (insights.daily[c.kind] as DailyBucket[]).length > 0).map((c) => (
                 <SparkChart key={c.kind} label={c.label} unit={c.unit} tone={c.tone} buckets={insights.daily[c.kind]!} />
@@ -207,8 +207,8 @@ export default function WearablesPage() {
       )}
 
       {insights && insights.anomalies.length > 0 && (
-        <section className="mb-6 rounded-2xl bg-white p-5 shadow-sm">
-          <p className="mb-3 text-sm font-bold text-slate-900">Anomalies detected ({insights.anomalies.length})</p>
+        <section className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+          <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Anomalies detected ({insights.anomalies.length})</p>
           <ul className="space-y-2">
             {insights.anomalies.map((a, i) => (
               <li key={i} className={`rounded-xl border-l-4 p-3 text-sm ${SEV_TONE[a.severity]}`}>
@@ -225,8 +225,8 @@ export default function WearablesPage() {
       {insights && (
         <section className="mb-6 rounded-2xl border-2 border-indigo-200 bg-indigo-50 p-5 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-wider text-indigo-700">Clinical summary — share with your doctor</p>
-          <p className="mt-2 text-sm text-slate-800">{insights.clinicalSummary}</p>
-          <button onClick={() => navigator.clipboard?.writeText(insights.clinicalSummary)} className="mt-3 rounded-md border border-indigo-300 bg-white px-3 py-1 text-xs font-semibold text-indigo-700">Copy summary</button>
+          <p className="mt-2 text-sm text-slate-800 dark:text-slate-200">{insights.clinicalSummary}</p>
+          <button onClick={() => navigator.clipboard?.writeText(insights.clinicalSummary)} className="mt-3 rounded-md border border-indigo-300 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-semibold text-indigo-700">Copy summary</button>
         </section>
       )}
 
@@ -235,23 +235,23 @@ export default function WearablesPage() {
       {/* Link device dialog */}
       {showLink && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowLink(false)}>
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-slate-900">Link a wearable</h3>
-            <p className="mt-1 text-xs text-slate-500">In production this opens your device&apos;s OAuth flow. For the demo, name a device and we&apos;ll start tracking.</p>
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Link a wearable</h3>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">In production this opens your device&apos;s OAuth flow. For the demo, name a device and we&apos;ll start tracking.</p>
             <div className="mt-3 space-y-3">
               <div>
-                <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">Provider</label>
-                <select value={linkForm.provider} onChange={(e) => setLinkForm({ ...linkForm, provider: e.target.value as WearableProvider })} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+                <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Provider</label>
+                <select value={linkForm.provider} onChange={(e) => setLinkForm({ ...linkForm, provider: e.target.value as WearableProvider })} className="w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm">
                   {Object.entries(PROVIDER_LABEL).map(([k, v]) => <option key={k} value={k}>{PROVIDER_EMOJI[k as WearableProvider]} {v}</option>)}
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">Name</label>
-                <input className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder='e.g. "My Mi Band 7"' value={linkForm.displayName} onChange={(e) => setLinkForm({ ...linkForm, displayName: e.target.value })} />
+                <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Name</label>
+                <input className="w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm" placeholder='e.g. "My Mi Band 7"' value={linkForm.displayName} onChange={(e) => setLinkForm({ ...linkForm, displayName: e.target.value })} />
               </div>
             </div>
             <div className="mt-5 flex justify-end gap-2">
-              <button onClick={() => setShowLink(false)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Cancel</button>
+              <button onClick={() => setShowLink(false)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Cancel</button>
               <button onClick={link} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white">Link</button>
             </div>
           </div>
@@ -275,10 +275,10 @@ function SparkChart({ label, unit, tone, buckets }: { label: string; unit: strin
   const path = values.map((v, i) => `${i === 0 ? "M" : "L"}${(i * step).toFixed(1)},${(h - ((v - min) / range) * h).toFixed(1)}`).join(" ");
   const last = values[values.length - 1];
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3">
       <div className="flex items-center justify-between">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{label}</p>
-        <p className="font-mono text-xs font-bold text-slate-900">{Math.round(last * 10) / 10}{unit}</p>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
+        <p className="font-mono text-xs font-bold text-slate-900 dark:text-slate-100">{Math.round(last * 10) / 10}{unit}</p>
       </div>
       <svg viewBox={`0 0 ${w} ${h}`} className="h-12 w-full">
         <path d={path} fill="none" stroke={tone} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />

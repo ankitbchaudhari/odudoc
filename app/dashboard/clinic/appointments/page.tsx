@@ -49,7 +49,7 @@ export default function ClinicAppointmentsPage() {
       </Header>
 
       {showForm && (
-        <form onSubmit={handleAdd} className="mb-4 grid grid-cols-1 gap-3 rounded-xl bg-white p-4 shadow-sm sm:grid-cols-2">
+        <form onSubmit={handleAdd} className="mb-4 grid grid-cols-1 gap-3 rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm sm:grid-cols-2">
           <Input label="Patient name" value={form.patientName} onChange={(v) => setForm({ ...form, patientName: v })} required />
           <Input label="Doctor" value={form.doctorName} onChange={(v) => setForm({ ...form, doctorName: v })} required />
           <Input type="date" label="Date" value={form.date} onChange={(v) => setForm({ ...form, date: v })} />
@@ -63,12 +63,12 @@ export default function ClinicAppointmentsPage() {
         </form>
       )}
 
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl bg-white dark:bg-slate-900 shadow-sm">
         {items.length === 0 ? (
-          <p className="p-10 text-center text-sm text-gray-400">No appointments yet.</p>
+          <p className="p-10 text-center text-sm text-gray-400 dark:text-slate-500 dark:text-slate-400">No appointments yet.</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
+            <thead className="bg-gray-50 dark:bg-slate-900 text-left text-xs uppercase text-gray-500 dark:text-slate-400">
               <tr>
                 <th className="px-4 py-3">Patient</th>
                 <th className="px-4 py-3">Doctor</th>
@@ -78,23 +78,23 @@ export default function ClinicAppointmentsPage() {
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
               {items
                 .slice()
                 .sort((a, b) => (a.date + a.time > b.date + b.time ? -1 : 1))
                 .map((a) => (
-                  <tr key={a.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium text-gray-900">{a.patientName}</td>
-                    <td className="px-4 py-3 text-gray-600">{a.doctorName}</td>
-                    <td className="px-4 py-3 text-gray-600">{a.date} · {a.time}</td>
-                    <td className="px-4 py-3 text-gray-600">{a.reason || "—"}</td>
+                  <tr key={a.id} className="hover:bg-gray-50 dark:bg-slate-900">
+                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-slate-100">{a.patientName}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-slate-300">{a.doctorName}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-slate-300">{a.date} · {a.time}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-slate-300">{a.reason || "—"}</td>
                     <td className="px-4 py-3">
                       <select
                         value={a.status}
                         onChange={(e) => setStatus(a.id, e.target.value as ClinicAppointment["status"])}
                         className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                           a.status === "completed" ? "bg-green-50 text-green-700" :
-                          a.status === "cancelled" ? "bg-gray-100 text-gray-500" :
+                          a.status === "cancelled" ? "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400" :
                           "bg-primary-50 text-primary-700"
                         }`}
                       >
@@ -132,8 +132,8 @@ function Header({ title, subtitle, children }: { title: string; subtitle: string
   return (
     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-        <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{title}</h1>
+        <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{subtitle}</p>
       </div>
       {children}
     </div>
@@ -145,13 +145,13 @@ function Input({ label, value, onChange, type = "text", required = false }: {
 }) {
   return (
     <label className="block">
-      <span className="text-xs font-medium text-gray-600">{label}</span>
+      <span className="text-xs font-medium text-gray-600 dark:text-slate-300">{label}</span>
       <input
         type={type}
         value={value}
         required={required}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+        className="mt-1 w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
       />
     </label>
   );

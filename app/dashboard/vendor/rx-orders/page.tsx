@@ -103,7 +103,7 @@ export default function VendorRxOrdersPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/40 to-sky-50/40 py-10">
       <div className="mx-auto max-w-5xl px-4">
-        <Link href="/dashboard/vendor" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-emerald-600">
+        <Link href="/dashboard/vendor" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 transition-colors hover:text-emerald-600">
           ← Back to dashboard
         </Link>
 
@@ -139,7 +139,7 @@ export default function VendorRxOrdersPage() {
               className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
                 tab === t.id
                   ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/30"
-                  : "border border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-emerald-300 hover:text-emerald-700"
+                  : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:-translate-y-0.5 hover:border-emerald-300 hover:text-emerald-700"
               }`}
             >
               {t.label}
@@ -153,14 +153,14 @@ export default function VendorRxOrdersPage() {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center rounded-3xl border border-white/60 bg-white py-16 shadow-sm">
+          <div className="flex items-center justify-center rounded-3xl border border-white/60 bg-white dark:bg-slate-900 py-16 shadow-sm">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-500" />
           </div>
         ) : orders.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-200 bg-white py-16 text-center shadow-sm">
+          <div className="rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-16 text-center shadow-sm">
             <span className="text-5xl">💊</span>
-            <p className="mt-3 text-base font-semibold text-slate-900">No orders in this tab</p>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-3 text-base font-semibold text-slate-900 dark:text-slate-100">No orders in this tab</p>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               When new Rx orders come in they&apos;ll show up here automatically.
             </p>
           </div>
@@ -252,7 +252,7 @@ function OrderCard({
           onChange={(e) => setPinEntry(e.target.value.replace(/\D/g, "").slice(0, 4))}
           maxLength={4}
           placeholder="PIN"
-          className="w-20 rounded-md border border-gray-300 px-2 py-1 font-mono text-sm tracking-widest"
+          className="w-20 rounded-md border border-gray-300 dark:border-slate-700 px-2 py-1 font-mono text-sm tracking-widest"
         />
         <Btn
           onClick={() => go("completed", { pin: pinEntry })}
@@ -272,55 +272,55 @@ function OrderCard({
   }
 
   return (
-    <article className="overflow-hidden rounded-3xl border border-white/60 bg-white p-5 shadow-sm transition hover:shadow-md">
+    <article className="overflow-hidden rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-5 shadow-sm transition hover:shadow-md">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <p className="font-mono text-sm font-bold text-gray-900">{order.orderNumber}</p>
+            <p className="font-mono text-sm font-bold text-gray-900 dark:text-slate-100">{order.orderNumber}</p>
             <StatusPill status={order.status} />
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-700">
+            <span className="rounded-full bg-gray-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-gray-700 dark:text-slate-300">
               {order.fulfillment === "pickup" ? "🏪 Pickup" : "🛵 Delivery"}
             </span>
           </div>
-          <p className="mt-1 text-sm font-medium text-gray-900">
+          <p className="mt-1 text-sm font-medium text-gray-900 dark:text-slate-100">
             {order.patientName}
             {order.patientPhone && (
-              <span className="ml-2 font-normal text-gray-500">{order.patientPhone}</span>
+              <span className="ml-2 font-normal text-gray-500 dark:text-slate-400">{order.patientPhone}</span>
             )}
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 dark:text-slate-400">
             {storeName} · placed {new Date(order.createdAt).toLocaleString()}
             {order.doctorName ? ` · by ${order.doctorName}` : ""}
           </p>
           {order.fulfillment === "delivery" && order.deliveryAddress && (
-            <p className="mt-1 text-xs text-gray-600">
+            <p className="mt-1 text-xs text-gray-600 dark:text-slate-300">
               📍 {order.deliveryAddress}
             </p>
           )}
         </div>
         <div className="text-right">
-          <p className="text-sm font-bold text-gray-900">
+          <p className="text-sm font-bold text-gray-900 dark:text-slate-100">
             ₹{order.totalInr.toLocaleString("en-IN")}
           </p>
-          <p className="text-[11px] text-gray-500">
+          <p className="text-[11px] text-gray-500 dark:text-slate-400">
             {order.lines.length} item{order.lines.length === 1 ? "" : "s"}
           </p>
         </div>
       </header>
 
-      <div className="mt-3 divide-y divide-gray-100 rounded-lg border border-gray-100 bg-gray-50 text-sm">
+      <div className="mt-3 divide-y divide-gray-100 dark:divide-slate-800 rounded-lg border border-gray-100 bg-gray-50 dark:bg-slate-900 text-sm">
         {order.lines.map((l, i) => (
           <div key={i} className="flex items-center justify-between px-3 py-2">
             <div>
-              <p className="font-medium text-gray-800">
+              <p className="font-medium text-gray-800 dark:text-slate-200">
                 {l.brandLabel || l.catalogName || l.rxLabel}
                 {l.strength ? ` · ${l.strength}` : ""}
               </p>
-              <p className="text-[11px] text-gray-500">
+              <p className="text-[11px] text-gray-500 dark:text-slate-400">
                 {l.unit || "—"} · qty {l.quantity} · rx: {l.rxLabel}
               </p>
             </div>
-            <p className="text-sm font-semibold text-gray-900">₹{l.priceInr}</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">₹{l.priceInr}</p>
           </div>
         ))}
       </div>
@@ -332,7 +332,7 @@ function OrderCard({
           {actions.map((a, i) => (
             <span key={i}>{a}</span>
           ))}
-          {busy && <span className="text-xs text-gray-500">Saving…</span>}
+          {busy && <span className="text-xs text-gray-500 dark:text-slate-400">Saving…</span>}
         </div>
       )}
     </article>
@@ -353,7 +353,7 @@ function Btn({
   const cls =
     tone === "primary"
       ? "bg-gradient-to-r from-emerald-500 to-teal-600 hover:-translate-y-0.5 hover:shadow-md text-white shadow-sm"
-      : "bg-white text-rose-600 border border-rose-200 hover:bg-rose-50";
+      : "bg-white dark:bg-slate-900 text-rose-600 border border-rose-200 hover:bg-rose-50";
   return (
     <button
       onClick={onClick}

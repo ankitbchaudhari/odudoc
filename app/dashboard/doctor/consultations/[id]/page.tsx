@@ -111,7 +111,7 @@ export default function DoctorConsultationDetail() {
     } finally { setBusy(false); }
   };
 
-  if (!c) return <div className="p-12 text-center text-gray-500">Loading…</div>;
+  if (!c) return <div className="p-12 text-center text-gray-500 dark:text-slate-400">Loading…</div>;
 
   // Legacy / partial records may have an undefined medicalHistory or
   // documents array. Coerce to safe shapes so destructuring + array
@@ -120,37 +120,37 @@ export default function DoctorConsultationDetail() {
   const docs = Array.isArray(c.documents) ? c.documents : [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <Link href="/dashboard/doctor/consultations" className="mb-4 inline-block text-sm text-primary-600 hover:underline">← Back to consultations</Link>
 
-        <div className="mb-6 flex flex-wrap items-start justify-between gap-4 rounded-2xl bg-white p-6 shadow-sm">
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-4 rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{c.patientName}</h1>
-            <p className="text-sm text-gray-500">{c.patientEmail} · {c.patientPhone}</p>
-            <p className="mt-1 text-sm text-gray-500">{c.specialty} · {c.dateLabel} at {c.timeSlot}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{c.patientName}</h1>
+            <p className="text-sm text-gray-500 dark:text-slate-400">{c.patientEmail} · {c.patientPhone}</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{c.specialty} · {c.dateLabel} at {c.timeSlot}</p>
           </div>
           <div className="text-right">
             <span className="rounded-full bg-primary-100 px-3 py-1 text-xs font-semibold text-primary-700">{c.status.replace(/_/g, " ")}</span>
-            <p className="mt-2 text-sm font-bold text-gray-900">${c.fee} {c.currency}</p>
-            <p className="text-xs text-gray-400">{c.paymentStatus}</p>
+            <p className="mt-2 text-sm font-bold text-gray-900 dark:text-slate-100">${c.fee} {c.currency}</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500">{c.paymentStatus}</p>
           </div>
         </div>
 
         {c.status === "awaiting_doctor" && (
-          <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-sm font-bold text-gray-900">Action required</h2>
+          <div className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <h2 className="mb-4 text-sm font-bold text-gray-900 dark:text-slate-100">Action required</h2>
             <div className="mb-3">
-              <label className="mb-1 block text-xs font-medium text-gray-600">Note (optional — shared with patient)</label>
+              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">Note (optional — shared with patient)</label>
               <input value={reason} onChange={(e) => setReason(e.target.value)}
                 placeholder="e.g. emergency surgery, will reschedule"
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500" />
+                className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500" />
             </div>
             <div className="mb-4">
-              <label className="mb-1 block text-xs font-medium text-gray-600">Reschedule slot (only if rescheduling)</label>
+              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">Reschedule slot (only if rescheduling)</label>
               <input value={rescheduleSlot} onChange={(e) => setRescheduleSlot(e.target.value)}
                 placeholder="e.g. Tomorrow 3:00 PM"
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500" />
+                className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500" />
             </div>
             <div className="flex flex-wrap gap-2">
               <button onClick={() => decide("approved")} disabled={busy}
@@ -193,12 +193,12 @@ export default function DoctorConsultationDetail() {
 
         {/* Start consultation flow — approved + has medical history */}
         {(c.status === "approved" || c.status === "rescheduled" || c.status === "in_progress") && !!c.medicalHistory?.chiefComplaint?.trim() && (
-          <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
-            <h2 className="mb-3 text-sm font-bold text-gray-900">Start consultation</h2>
+          <div className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <h2 className="mb-3 text-sm font-bold text-gray-900 dark:text-slate-100">Start consultation</h2>
 
             {!c.availabilityRequest && c.status !== "in_progress" && (
               <>
-                <p className="mb-3 text-sm text-gray-600">Ping the patient to confirm they&apos;re available now, then start the video call.</p>
+                <p className="mb-3 text-sm text-gray-600 dark:text-slate-300">Ping the patient to confirm they&apos;re available now, then start the video call.</p>
                 <button onClick={requestAvailability} disabled={busy}
                   className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-50">
                   📞 Request availability
@@ -242,7 +242,7 @@ export default function DoctorConsultationDetail() {
             {/* Skip-the-ping option */}
             {(c.status === "approved" || c.status === "rescheduled") && !c.roomId && (
               <button onClick={startCall} disabled={busy}
-                className="mt-3 text-xs text-gray-500 underline hover:text-gray-700">
+                className="mt-3 text-xs text-gray-500 dark:text-slate-400 underline hover:text-gray-700 dark:text-slate-300">
                 Skip and start call immediately
               </button>
             )}
@@ -251,11 +251,11 @@ export default function DoctorConsultationDetail() {
 
         {/* Refer to another doctor */}
         {c.status !== "rejected" && c.status !== "refunded" && c.status !== "cancelled" && (
-          <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
+          <div className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="text-sm font-bold text-gray-900">Refer to another doctor</h2>
-                <p className="mt-1 text-xs text-gray-500">
+                <h2 className="text-sm font-bold text-gray-900 dark:text-slate-100">Refer to another doctor</h2>
+                <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
                   Need a specialist opinion? Send {c.patientName.split(" ")[0]}&apos;s case to a colleague.
                 </p>
               </div>
@@ -274,20 +274,20 @@ export default function DoctorConsultationDetail() {
               if (relevant.length === 0) return null;
               return (
                 <div className="mt-4 space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
                     Referrals for this patient ({relevant.length})
                   </p>
                   {relevant.map((r) => (
                     <div
                       key={r.id}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-100 bg-gray-50 p-3"
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-100 bg-gray-50 dark:bg-slate-900 p-3"
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
                           → {r.toDoctorName}{" "}
-                          <span className="text-xs font-normal text-gray-500">({r.toSpecialty})</span>
+                          <span className="text-xs font-normal text-gray-500 dark:text-slate-400">({r.toSpecialty})</span>
                         </p>
-                        <p className="mt-0.5 truncate text-xs text-gray-500">{r.reason}</p>
+                        <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-slate-400">{r.reason}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${urgencyStyle(r.urgency)}`}>
@@ -311,11 +311,11 @@ export default function DoctorConsultationDetail() {
           </div>
         )}
 
-        <div className="mb-4 flex gap-2 border-b border-gray-200">
+        <div className="mb-4 flex gap-2 border-b border-gray-200 dark:border-slate-800">
           {(["details", "documents", "prescribe"] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)}
               className={`px-4 py-2 text-sm font-medium ${
-                tab === t ? "border-b-2 border-primary-600 text-primary-700" : "text-gray-500 hover:text-gray-700"
+                tab === t ? "border-b-2 border-primary-600 text-primary-700" : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300"
               }`}>
               {t[0].toUpperCase() + t.slice(1)}
               {t === "documents" && ` (${docs.length})`}
@@ -324,8 +324,8 @@ export default function DoctorConsultationDetail() {
         </div>
 
         {tab === "details" && (
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <h3 className="mb-4 text-sm font-bold text-gray-900">Medical history</h3>
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <h3 className="mb-4 text-sm font-bold text-gray-900 dark:text-slate-100">Medical history</h3>
             <dl className="grid gap-4 text-sm sm:grid-cols-2">
               <Field label="Chief complaint" value={mh.chiefComplaint} wide />
               <Field label="Symptoms" value={mh.symptoms} wide />
@@ -345,17 +345,17 @@ export default function DoctorConsultationDetail() {
         )}
 
         {tab === "documents" && (
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <h3 className="mb-4 text-sm font-bold text-gray-900">Shared documents</h3>
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <h3 className="mb-4 text-sm font-bold text-gray-900 dark:text-slate-100">Shared documents</h3>
             {docs.length === 0 ? (
-              <p className="text-sm text-gray-500">No documents shared yet.</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">No documents shared yet.</p>
             ) : (
               <ul className="space-y-2">
                 {docs.map((d) => (
                   <li key={d.id} className="flex items-center justify-between rounded-lg border border-gray-100 p-3">
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{d.name}</p>
-                      <p className="text-xs text-gray-500">{(d.size / 1024).toFixed(1)} KB · {d.uploadedBy} · {new Date(d.uploadedAt).toLocaleString()}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{d.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-slate-400">{(d.size / 1024).toFixed(1)} KB · {d.uploadedBy} · {new Date(d.uploadedAt).toLocaleString()}</p>
                     </div>
                     <a href={d.dataUrl} download={d.name} className="text-sm text-primary-600 hover:underline">Download</a>
                   </li>
@@ -366,22 +366,22 @@ export default function DoctorConsultationDetail() {
         )}
 
         {tab === "prescribe" && (
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
             {c.prescriptionId ? (
               <div>
-                <p className="mb-3 text-sm text-gray-600">Prescription already issued.</p>
+                <p className="mb-3 text-sm text-gray-600 dark:text-slate-300">Prescription already issued.</p>
                 <Link href={`/prescription/${c.prescriptionId}`} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">
                   View prescription →
                 </Link>
               </div>
             ) : (
               <>
-                <h3 className="mb-4 text-sm font-bold text-gray-900">Write prescription</h3>
+                <h3 className="mb-4 text-sm font-bold text-gray-900 dark:text-slate-100">Write prescription</h3>
 
                 <div className="mb-4">
-                  <label className="mb-1 block text-xs font-medium text-gray-600">Template</label>
+                  <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">Template</label>
                   <select value={templateId} onChange={(e) => setTemplateId(e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500">
+                    className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500">
                     {PRESCRIPTION_TEMPLATES.map((t) => (
                       <option key={t.id} value={t.id}>{t.name}</option>
                     ))}
@@ -389,27 +389,27 @@ export default function DoctorConsultationDetail() {
                 </div>
 
                 <div className="mb-4">
-                  <label className="mb-1 block text-xs font-medium text-gray-600">Diagnosis</label>
+                  <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">Diagnosis</label>
                   <input value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)}
                     placeholder="e.g. Acute bronchitis"
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500" />
+                    className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500" />
                 </div>
 
                 <div className="mb-4">
-                  <label className="mb-2 block text-xs font-medium text-gray-600">Medications</label>
+                  <label className="mb-2 block text-xs font-medium text-gray-600 dark:text-slate-300">Medications</label>
                   <div className="space-y-3">
                     {meds.map((m, i) => (
                       <div key={i} className="grid gap-2 rounded-lg border border-gray-100 p-3 sm:grid-cols-5">
                         <input value={m.name} onChange={(e) => setMed(i, { name: e.target.value })} placeholder="Medicine"
-                          className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 sm:col-span-2" />
+                          className="rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 sm:col-span-2" />
                         <input value={m.dose} onChange={(e) => setMed(i, { dose: e.target.value })} placeholder="Dose (500mg)"
-                          className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500" />
+                          className="rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500" />
                         <input value={m.frequency} onChange={(e) => setMed(i, { frequency: e.target.value })} placeholder="Frequency (1-0-1)"
-                          className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500" />
+                          className="rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500" />
                         <input value={m.duration} onChange={(e) => setMed(i, { duration: e.target.value })} placeholder="Duration (5 days)"
-                          className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500" />
+                          className="rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500" />
                         <input value={m.instructions || ""} onChange={(e) => setMed(i, { instructions: e.target.value })} placeholder="Instructions (after meals)"
-                          className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 sm:col-span-4" />
+                          className="rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 sm:col-span-4" />
                         {meds.length > 1 && (
                           <button onClick={() => removeMed(i)} className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-100">
                             Remove
@@ -423,16 +423,16 @@ export default function DoctorConsultationDetail() {
 
                 <div className="mb-4 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-gray-600">Advice</label>
+                    <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">Advice</label>
                     <textarea rows={3} value={advice} onChange={(e) => setAdvice(e.target.value)}
                       placeholder="Rest, hydrate, avoid cold drinks..."
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500" />
+                      className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500" />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-gray-600">Follow-up</label>
+                    <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">Follow-up</label>
                     <input value={followUp} onChange={(e) => setFollowUp(e.target.value)}
                       placeholder="Review in 5 days if not better"
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500" />
+                      className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500" />
                   </div>
                 </div>
 
@@ -468,8 +468,8 @@ export default function DoctorConsultationDetail() {
 function Field({ label, value, wide }: { label: string; value: string; wide?: boolean }) {
   return (
     <div className={wide ? "sm:col-span-2" : ""}>
-      <dt className="text-xs font-medium text-gray-500">{label}</dt>
-      <dd className="mt-0.5 text-sm text-gray-900">{value || <span className="text-gray-400">—</span>}</dd>
+      <dt className="text-xs font-medium text-gray-500 dark:text-slate-400">{label}</dt>
+      <dd className="mt-0.5 text-sm text-gray-900 dark:text-slate-100">{value || <span className="text-gray-400 dark:text-slate-500">—</span>}</dd>
     </div>
   );
 }

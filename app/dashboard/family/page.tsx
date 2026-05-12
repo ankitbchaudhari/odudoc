@@ -159,8 +159,8 @@ export default function FamilyPage() {
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Family</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Family</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             One account, every member of your family. Add kids, parents, or a spouse — book consults and store records for each, all from your phone.
           </p>
         </div>
@@ -170,28 +170,28 @@ export default function FamilyPage() {
       </div>
 
       {/* Self card pinned at top */}
-      <div className={`mb-3 flex items-center justify-between rounded-xl border p-4 shadow-sm ${active?.kind === "self" ? "border-indigo-300 bg-indigo-50/40 ring-2 ring-indigo-200" : "border-slate-200 bg-white"}`}>
+      <div className={`mb-3 flex items-center justify-between rounded-xl border p-4 shadow-sm ${active?.kind === "self" ? "border-indigo-300 bg-indigo-50/40 ring-2 ring-indigo-200" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"}`}>
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 font-bold text-white">You</div>
           <div>
-            <p className="font-semibold text-slate-900">Yourself</p>
-            <p className="text-xs text-slate-500">Primary account — bookings & records default here when no one else is selected.</p>
+            <p className="font-semibold text-slate-900 dark:text-slate-100">Yourself</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Primary account — bookings & records default here when no one else is selected.</p>
           </div>
         </div>
         {active?.kind === "self" ? (
           <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">✓ Active</span>
         ) : (
-          <button onClick={() => switchTo(null)} className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">Switch to self</button>
+          <button onClick={() => switchTo(null)} className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900">Switch to self</button>
         )}
       </div>
 
       {loading ? (
         <p className="py-12 text-center text-sm text-slate-400">Loading…</p>
       ) : list.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
+        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 dark:bg-slate-900 p-10 text-center">
           <p className="text-2xl">👨‍👩‍👧‍👦</p>
-          <p className="mt-2 text-sm font-semibold text-slate-700">No family members added yet</p>
-          <p className="mt-1 text-xs text-slate-500">Add your kids, spouse, or parents to manage their healthcare from one account.</p>
+          <p className="mt-2 text-sm font-semibold text-slate-700 dark:text-slate-300">No family members added yet</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Add your kids, spouse, or parents to manage their healthcare from one account.</p>
           <button onClick={() => open()} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white">+ Add first member</button>
         </div>
       ) : (
@@ -201,16 +201,16 @@ export default function FamilyPage() {
             const age = ageYears(d.dateOfBirth);
             const initials = d.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "?";
             return (
-              <li key={d.id} className={`rounded-xl border p-4 shadow-sm ${isActive ? "border-emerald-300 bg-emerald-50/40 ring-2 ring-emerald-200" : "border-slate-200 bg-white"}`}>
+              <li key={d.id} className={`rounded-xl border p-4 shadow-sm ${isActive ? "border-emerald-300 bg-emerald-50/40 ring-2 ring-emerald-200" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"}`}>
                 <div className="flex items-start gap-4">
                   <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${REL_GRADIENT[d.relationship]} text-lg font-bold text-white`}>
                     {initials}
                   </div>
                   <div className="flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold text-slate-900">{d.name}</p>
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-600">{REL_LABEL[d.relationship]}</span>
-                      {age !== null && <span className="text-xs text-slate-500">{age} yrs</span>}
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">{d.name}</p>
+                      <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300">{REL_LABEL[d.relationship]}</span>
+                      {age !== null && <span className="text-xs text-slate-500 dark:text-slate-400">{age} yrs</span>}
                       {d.sex && <span className="text-xs text-slate-400">· {d.sex}</span>}
                       {isActive && <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700">✓ Active</span>}
                     </div>
@@ -221,13 +221,13 @@ export default function FamilyPage() {
                         {d.currentMeds?.map((m, i) => <span key={`m${i}`} className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold text-sky-700">💊 {m}</span>)}
                       </div>
                     )}
-                    {d.notes && <p className="mt-1 text-xs text-slate-600 italic">&ldquo;{d.notes}&rdquo;</p>}
+                    {d.notes && <p className="mt-1 text-xs text-slate-600 dark:text-slate-300 italic">&ldquo;{d.notes}&rdquo;</p>}
                   </div>
                   <div className="flex flex-col gap-1.5">
                     {!isActive && (
                       <button onClick={() => switchTo(d.id)} className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700">Book for {d.name.split(" ")[0]}</button>
                     )}
-                    <button onClick={() => open(d)} className="rounded-md border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50">Edit</button>
+                    <button onClick={() => open(d)} className="rounded-md border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900">Edit</button>
                     <button onClick={() => remove(d)} className="rounded-md border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50">Remove</button>
                   </div>
                 </div>
@@ -240,9 +240,9 @@ export default function FamilyPage() {
       {/* Form dialog */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => { setShowForm(false); reset(); }}>
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-slate-900">{editing ? `Edit ${editing.name}` : "Add a family member"}</h3>
-            <p className="mt-1 text-xs text-slate-500">Their healthcare profile will be managed from your account. You can switch back at any time.</p>
+          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{editing ? `Edit ${editing.name}` : "Add a family member"}</h3>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Their healthcare profile will be managed from your account. You can switch back at any time.</p>
             <div className="mt-4 space-y-3">
               <Row>
                 <F label="Full name"><input className="form-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Aarav Sharma" /></F>
@@ -267,7 +267,7 @@ export default function FamilyPage() {
               <F label="Notes"><textarea rows={2} className="form-input" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="e.g. anaphylactic reaction to peanuts" /></F>
             </div>
             <div className="mt-5 flex justify-end gap-2">
-              <button onClick={() => { setShowForm(false); reset(); }} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Cancel</button>
+              <button onClick={() => { setShowForm(false); reset(); }} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Cancel</button>
               <button onClick={save} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700">{editing ? "Save changes" : "Add to family"}</button>
             </div>
           </div>
@@ -297,7 +297,7 @@ export default function FamilyPage() {
 function F({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex-1">
-      <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">{label}</label>
+      <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</label>
       {children}
     </div>
   );

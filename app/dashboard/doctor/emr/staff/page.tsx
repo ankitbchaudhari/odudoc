@@ -153,7 +153,7 @@ export default function StaffPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 py-10">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 py-10">
       <div className="pointer-events-none absolute inset-0 -z-0">
         <div className="absolute -top-40 left-1/2 h-[420px] w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-br from-indigo-200/40 via-violet-200/40 to-fuchsia-200/40 blur-3xl" />
       </div>
@@ -162,7 +162,7 @@ export default function StaffPage() {
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/dashboard/doctor/emr"
-            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:border-emerald-300 hover:text-emerald-700"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:border-emerald-300 hover:text-emerald-700"
           >
             ← Clinic records
           </Link>
@@ -176,8 +176,8 @@ export default function StaffPage() {
 
         <div className="mb-6 overflow-hidden rounded-3xl border border-white/60 bg-white/80 shadow-xl shadow-indigo-500/5 backdrop-blur-xl">
           <div className="border-b border-slate-100 px-6 py-5">
-            <h1 className="text-2xl font-bold text-slate-900">Clinic staff</h1>
-            <p className="mt-1 text-sm text-slate-600">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Clinic staff</h1>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
               You — the clinic owner — are automatically on the team. Add
               additional nurse, front desk, and (with the unlock) staff
               doctors below.
@@ -188,7 +188,7 @@ export default function StaffPage() {
           {quota && (
             <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-5">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                   {quota.unlocked
                     ? `Unlocked plan · ${quota.month}`
                     : "Free plan"}
@@ -214,25 +214,25 @@ export default function StaffPage() {
                   return (
                     <div
                       key={roleKey}
-                      className={`rounded-2xl border bg-white p-4 ${
-                        full ? "border-rose-200" : "border-slate-200"
+                      className={`rounded-2xl border bg-white dark:bg-slate-900 p-4 ${
+                        full ? "border-rose-200" : "border-slate-200 dark:border-slate-800"
                       }`}
                     >
-                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         {meta.label}
                       </p>
                       <p
                         className={`mt-1 text-2xl font-bold tabular-nums ${
-                          full ? "text-rose-700" : "text-slate-900"
+                          full ? "text-rose-700" : "text-slate-900 dark:text-slate-100"
                         }`}
                       >
                         {used}
-                        <span className="text-base font-normal text-slate-500">
+                        <span className="text-base font-normal text-slate-500 dark:text-slate-400">
                           {" "}
                           / {limit}
                         </span>
                       </p>
-                      <p className="mt-1 text-[11px] text-slate-500">
+                      <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
                         {full
                           ? quota.unlocked
                             ? "Limit reached — Corporate plan needed"
@@ -257,20 +257,20 @@ export default function StaffPage() {
           {loading ? (
             <div className="space-y-3 p-6">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-16 animate-pulse rounded-xl bg-slate-100" />
+                <div key={i} className="h-16 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
               ))}
             </div>
           ) : staff.length === 0 ? (
             <div className="px-6 py-16 text-center">
-              <p className="text-sm font-semibold text-slate-700">
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                 You haven&apos;t added any staff yet
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Click <b>+ Invite staff</b> to bring nurses or front-desk staff into your clinic.
               </p>
             </div>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-slate-100 dark:divide-slate-800">
               {staff.map((s) => {
                 const meta = ROLE_META[s.role];
                 return (
@@ -279,10 +279,10 @@ export default function StaffPage() {
                       {(s.staffName || s.staffEmail)[0]?.toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-slate-900">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                         {s.staffName || s.staffEmail}
                       </p>
-                      <p className="truncate text-xs text-slate-500">
+                      <p className="truncate text-xs text-slate-500 dark:text-slate-400">
                         {s.staffEmail}
                       </p>
                     </div>
@@ -320,7 +320,7 @@ export default function StaffPage() {
                   {ROLE_META[k].label}
                 </span>
               </div>
-              <p className="mt-2 text-xs leading-relaxed text-slate-600">
+              <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                 {ROLE_META[k].description}
               </p>
             </div>
@@ -336,15 +336,15 @@ export default function StaffPage() {
           <form
             onSubmit={inviteStaff}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+            className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl"
           >
-            <h3 className="text-lg font-bold text-slate-900">Invite staff</h3>
-            <p className="mt-1 text-xs text-slate-500">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Invite staff</h3>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               They must already have an OduDoc account with this email.
             </p>
             <div className="mt-4 space-y-3">
               <label className="block">
-                <span className="mb-1 block text-xs font-semibold text-slate-700">
+                <span className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Staff email *
                 </span>
                 <input
@@ -352,33 +352,33 @@ export default function StaffPage() {
                   required
                   value={form.staffEmail}
                   onChange={(e) => setForm({ ...form, staffEmail: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
                 />
               </label>
               <label className="block">
-                <span className="mb-1 block text-xs font-semibold text-slate-700">
+                <span className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Display name
                 </span>
                 <input
                   value={form.staffName}
                   onChange={(e) => setForm({ ...form, staffName: e.target.value })}
                   placeholder="Optional"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
                 />
               </label>
               <label className="block">
-                <span className="mb-1 block text-xs font-semibold text-slate-700">Role</span>
+                <span className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">Role</span>
                 <select
                   value={form.role}
                   onChange={(e) => setForm({ ...form, role: e.target.value as StaffRow["role"] })}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
                 >
                   <option value="frontdesk">Front desk</option>
                   <option value="nurse">Nurse</option>
                   <option value="doctor">Doctor</option>
                 </select>
                 {quota && (
-                  <p className="mt-1 text-[11px] text-slate-500">
+                  <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
                     Currently using {quota.staffUsage[form.role === "frontdesk" ? "frontdesk" : form.role]} of {quota.staffLimits[form.role === "frontdesk" ? "frontdesk" : form.role]} {form.role === "frontdesk" ? "front desk" : `${form.role}`} seats.
                   </p>
                 )}
@@ -388,7 +388,7 @@ export default function StaffPage() {
               <button
                 type="button"
                 onClick={() => setShowInvite(false)}
-                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                className="rounded-xl border border-slate-200 dark:border-slate-800 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
               >
                 Cancel
               </button>
@@ -411,34 +411,34 @@ export default function StaffPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl"
+            className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white dark:bg-slate-900 shadow-2xl"
           >
             <div className="bg-gradient-to-br from-indigo-50 via-violet-50 to-fuchsia-50 px-6 py-5">
               <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-700">
                 Plan upgrade
               </p>
-              <h3 className="mt-1 text-xl font-bold text-slate-900">
+              <h3 className="mt-1 text-xl font-bold text-slate-900 dark:text-slate-100">
                 Bigger team? Pick a plan that fits.
               </h3>
               {paywallContext && (
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
                   {paywallContext.error}
                 </p>
               )}
             </div>
             <div className="grid grid-cols-1 gap-3 p-6 sm:grid-cols-3">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Free
                 </p>
-                <p className="mt-1 text-2xl font-bold text-slate-900">$0</p>
-                <ul className="mt-3 space-y-1 text-xs text-slate-600">
+                <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">$0</p>
+                <ul className="mt-3 space-y-1 text-xs text-slate-600 dark:text-slate-300">
                   <li>✓ 1 nurse</li>
                   <li>✓ 1 front desk</li>
                   <li className="text-slate-400">— No staff doctors</li>
                   <li>✓ 50 patients / month</li>
                 </ul>
-                <p className="mt-3 text-[11px] font-semibold text-slate-500">
+                <p className="mt-3 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
                   {quota.unlocked ? "Includes free tier" : "Current plan"}
                 </p>
               </div>
@@ -446,10 +446,10 @@ export default function StaffPage() {
                 <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-700">
                   {quota.unlocked ? "Current plan" : "Recommended"}
                 </p>
-                <p className="mt-1 text-2xl font-bold text-slate-900">
-                  $50<span className="text-sm font-normal text-slate-500">/mo</span>
+                <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  $50<span className="text-sm font-normal text-slate-500 dark:text-slate-400">/mo</span>
                 </p>
-                <ul className="mt-3 space-y-1 text-xs text-slate-700">
+                <ul className="mt-3 space-y-1 text-xs text-slate-700 dark:text-slate-300">
                   <li>✓ 3 nurses</li>
                   <li>✓ 3 front desk</li>
                   <li>✓ 3 staff doctors</li>
@@ -469,12 +469,12 @@ export default function StaffPage() {
                   </button>
                 )}
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Corporate
                 </p>
-                <p className="mt-1 text-2xl font-bold text-slate-900">Talk to us</p>
-                <ul className="mt-3 space-y-1 text-xs text-slate-700">
+                <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">Talk to us</p>
+                <ul className="mt-3 space-y-1 text-xs text-slate-700 dark:text-slate-300">
                   <li>✓ Unlimited staff &amp; roles</li>
                   <li>✓ Multiple clinics</li>
                   <li>✓ Hospital + admin tools</li>
@@ -491,7 +491,7 @@ export default function StaffPage() {
             <div className="border-t border-slate-100 bg-slate-50/60 px-6 py-3 text-right">
               <button
                 onClick={() => setShowPaywall(null)}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
               >
                 Close
               </button>

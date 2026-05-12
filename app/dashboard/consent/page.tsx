@@ -95,11 +95,11 @@ export default function ConsentPage() {
             psychiatric: "bg-rose-400",
           };
           return (
-            <div className="mt-6 rounded-2xl border border-white/60 bg-white p-4 shadow-sm">
-              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">
+            <div className="mt-6 rounded-2xl border border-white/60 bg-white dark:bg-slate-900 p-4 shadow-sm">
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
                 Active consents · by scope
               </p>
-              <div className="flex h-3 overflow-hidden rounded-full bg-slate-100">
+              <div className="flex h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                 {(Object.keys(buckets) as ConsentScope[]).map((s) => {
                   const pct = (buckets[s] / active.length) * 100;
                   if (pct === 0) return null;
@@ -108,9 +108,9 @@ export default function ConsentPage() {
               </div>
               <div className="mt-2 flex flex-wrap gap-3 text-[11px]">
                 {(Object.keys(buckets) as ConsentScope[]).map((s) => (
-                  <span key={s} className="inline-flex items-center gap-1 text-slate-600">
+                  <span key={s} className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300">
                     <span className={`inline-block h-2 w-2 rounded-full ${colors[s]}`} />
-                    {SCOPE_LABEL[s]} <b className="text-slate-900">{buckets[s]}</b>
+                    {SCOPE_LABEL[s]} <b className="text-slate-900 dark:text-slate-100">{buckets[s]}</b>
                   </span>
                 ))}
               </div>
@@ -118,15 +118,15 @@ export default function ConsentPage() {
           );
         })()}
 
-        <form onSubmit={submit} className="mt-6 rounded-3xl border border-white/60 bg-white p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-900">Grant new access</h3>
+        <form onSubmit={submit} className="mt-6 rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Grant new access</h3>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <Inp label="Source clinic (current)" required value={form.sourceOwnerEmail} onChange={(v) => setForm({ ...form, sourceOwnerEmail: v })} placeholder="dr.source@clinic.com" />
             <Inp label="Recipient clinic" required value={form.grantedToOwnerEmail} onChange={(v) => setForm({ ...form, grantedToOwnerEmail: v })} placeholder="dr.referral@hospital.com" />
             <Inp label="Patient ID" required value={form.patientId} onChange={(v) => setForm({ ...form, patientId: v })} />
             <label className="block">
-              <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">Scope</span>
-              <select value={form.scope} onChange={(e) => setForm({ ...form, scope: e.target.value as ConsentScope })} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
+              <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">Scope</span>
+              <select value={form.scope} onChange={(e) => setForm({ ...form, scope: e.target.value as ConsentScope })} className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3 py-2 text-sm">
                 {(Object.keys(SCOPE_LABEL) as ConsentScope[]).map((s) => (
                   <option key={s} value={s}>{SCOPE_LABEL[s]}</option>
                 ))}
@@ -140,32 +140,32 @@ export default function ConsentPage() {
           </button>
         </form>
 
-        <section className="mt-6 rounded-3xl border border-white/60 bg-white p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-900">Active & past consents</h3>
+        <section className="mt-6 rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Active & past consents</h3>
           <div className="mt-3 space-y-2">
             {consents.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/40 p-6 text-center text-xs text-slate-500">
+              <p className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/40 p-6 text-center text-xs text-slate-500 dark:text-slate-400">
                 No consents on file yet.
               </p>
             ) : consents.map((c) => (
-              <div key={c.id} className={`rounded-2xl border p-4 ${c.revokedAt ? "border-slate-200 bg-slate-50/50" : "border-emerald-200 bg-emerald-50/40"}`}>
+              <div key={c.id} className={`rounded-2xl border p-4 ${c.revokedAt ? "border-slate-200 dark:border-slate-800 bg-slate-50/50" : "border-emerald-200 bg-emerald-50/40"}`}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-slate-900">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                       {c.sourceOwnerEmail} → <span className="text-emerald-700">{c.grantedToOwnerEmail}</span>
                     </p>
-                    <p className="mt-0.5 text-xs text-slate-600">
+                    <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">
                       Patient {c.patientId} · {SCOPE_LABEL[c.scope]}
                       {c.purpose && <> · {c.purpose}</>}
                     </p>
-                    <p className="mt-0.5 text-[11px] text-slate-500">
+                    <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
                       Granted {new Date(c.createdAt).toLocaleString()}
                       {c.expiresAt && <> · expires {new Date(c.expiresAt).toLocaleString()}</>}
                       {c.revokedAt && <> · revoked {new Date(c.revokedAt).toLocaleString()}</>}
                     </p>
                   </div>
                   {!c.revokedAt && (
-                    <button onClick={() => revoke(c.id)} className="rounded-lg border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50">
+                    <button onClick={() => revoke(c.id)} className="rounded-lg border border-rose-200 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50">
                       Revoke
                     </button>
                   )}
@@ -182,8 +182,8 @@ export default function ConsentPage() {
 function Inp(p: { label: string; value: string; onChange: (v: string) => void; required?: boolean; type?: string; placeholder?: string }) {
   return (
     <label className="block">
-      <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">{p.label}{p.required && <span className="ml-0.5 text-rose-500">*</span>}</span>
-      <input type={p.type || "text"} required={p.required} value={p.value} onChange={(e) => p.onChange(e.target.value)} placeholder={p.placeholder} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+      <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">{p.label}{p.required && <span className="ml-0.5 text-rose-500">*</span>}</span>
+      <input type={p.type || "text"} required={p.required} value={p.value} onChange={(e) => p.onChange(e.target.value)} placeholder={p.placeholder} className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3 py-2 text-sm" />
     </label>
   );
 }

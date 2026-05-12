@@ -111,8 +111,8 @@ export default function NotificationsInboxPage() {
     <div className="mx-auto max-w-3xl px-4 py-6">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Inbox</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Inbox</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {unread > 0 ? `${unread} unread · ` : ""}{items.length} total
           </p>
         </div>
@@ -134,22 +134,22 @@ export default function NotificationsInboxPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search…"
-          className="ml-auto w-40 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm sm:w-56"
+          className="ml-auto w-40 rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm sm:w-56"
         />
       </div>
 
       {loading ? (
-        <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>
+        <p className="rounded-xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white dark:bg-slate-900 p-10 text-center">
           <p className="text-3xl">📭</p>
-          <p className="mt-2 text-base font-bold text-slate-700">No notifications here</p>
-          <p className="mt-1 text-sm text-slate-500">{filter === "all" ? "You're all caught up." : "Try a different filter."}</p>
+          <p className="mt-2 text-base font-bold text-slate-700 dark:text-slate-300">No notifications here</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{filter === "all" ? "You're all caught up." : "Try a different filter."}</p>
         </div>
       ) : (
         <ul className="space-y-2">
           {filtered.map((n) => (
-            <li key={n.id} className={`rounded-xl border-l-4 bg-white shadow-sm ring-1 ring-slate-200 ${SEVERITY_BORDER[n.severity] || ""} ${!n.readAt ? "bg-indigo-50/30" : ""}`}>
+            <li key={n.id} className={`rounded-xl border-l-4 bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 ${SEVERITY_BORDER[n.severity] || ""} ${!n.readAt ? "bg-indigo-50/30" : ""}`}>
               <Link
                 href={n.link || "#"}
                 onClick={() => { if (!n.readAt) markOne(n.id); }}
@@ -158,12 +158,12 @@ export default function NotificationsInboxPage() {
                 <span className="text-2xl leading-none">{KIND_EMOJI[n.kind] || "🔔"}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-bold text-slate-900">{n.title}</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{n.title}</p>
                     {!n.readAt && <span className="h-1.5 w-1.5 flex-none rounded-full bg-indigo-500" aria-hidden />}
                   </div>
-                  <p className="mt-0.5 text-xs text-slate-600">{n.body}</p>
+                  <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">{n.body}</p>
                   <div className="mt-1 flex items-center gap-2 text-[10px] text-slate-400">
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 font-semibold uppercase tracking-wide text-slate-600">
+                    <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
                       {KIND_LABEL[n.kind] || "Other"}
                     </span>
                     <span>{timeAgo(n.createdAt)}</span>
@@ -183,7 +183,7 @@ function Chip({ active, onClick, children, badge }: { active: boolean; onClick: 
     <button
       onClick={onClick}
       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-        active ? "bg-indigo-600 text-white shadow-sm" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+        active ? "bg-indigo-600 text-white shadow-sm" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:bg-slate-900"
       }`}
     >
       {children}

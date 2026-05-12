@@ -63,8 +63,8 @@ export default function MessagesPage() {
       )}
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Messages</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Messages</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           WhatsApp conversations with hospitals and clinics that have you in their system. Reply on WhatsApp itself — your reply lands here automatically.
         </p>
       </div>
@@ -72,22 +72,22 @@ export default function MessagesPage() {
       {loading ? (
         <p className="py-12 text-center text-sm text-slate-400">Loading…</p>
       ) : list.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 dark:bg-slate-900 p-10 text-center">
           <p className="text-3xl">💬</p>
-          <p className="mt-2 text-sm font-bold text-slate-700">No conversations yet</p>
-          <p className="mt-1 text-xs text-slate-500">Once a clinic sends you a reminder, lab result, or follow-up via WhatsApp, the thread will appear here.</p>
+          <p className="mt-2 text-sm font-bold text-slate-700 dark:text-slate-300">No conversations yet</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Once a clinic sends you a reminder, lab result, or follow-up via WhatsApp, the thread will appear here.</p>
         </div>
       ) : !active ? (
         <ul className="space-y-2">
           {list.map((c) => (
-            <li key={c.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <li key={c.id} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
               <div className="flex items-start justify-between gap-3">
                 <button onClick={() => setActive(c)} className="flex-1 text-left">
-                  <p className="font-semibold text-slate-900">
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">
                     {c.orgName}
                     {c.unreadByPatient > 0 && <span className="ml-2 rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">{c.unreadByPatient}</span>}
                   </p>
-                  <p className="mt-0.5 truncate text-xs text-slate-500">{c.messages[c.messages.length - 1]?.body || "(no messages)"}</p>
+                  <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">{c.messages[c.messages.length - 1]?.body || "(no messages)"}</p>
                   <p className="mt-1 text-[10px] text-slate-400">{new Date(c.updatedAt).toLocaleString()}</p>
                 </button>
                 <div className="flex flex-col gap-1">
@@ -102,18 +102,18 @@ export default function MessagesPage() {
           ))}
         </ul>
       ) : (
-        <div className="rounded-xl bg-white p-4 shadow-sm">
+        <div className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <button onClick={() => setActive(null)} className="text-sm text-indigo-600 hover:underline">← Back</button>
-            <p className="font-semibold text-slate-900">{active.orgName}</p>
+            <p className="font-semibold text-slate-900 dark:text-slate-100">{active.orgName}</p>
             <span className="text-[11px] font-mono text-slate-400">{active.patientPhone}</span>
           </div>
-          <div className="space-y-2 rounded-lg bg-slate-50 p-4">
+          <div className="space-y-2 rounded-lg bg-slate-50 dark:bg-slate-900 p-4">
             {active.messages.map((m) => (
               <div key={m.id} className={`flex ${m.direction === "outbound" ? "justify-start" : "justify-end"}`}>
-                <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm shadow-sm ${m.direction === "outbound" ? "bg-white text-slate-800" : "bg-emerald-100 text-emerald-900"}`}>
+                <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm shadow-sm ${m.direction === "outbound" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" : "bg-emerald-100 text-emerald-900"}`}>
                   <p className="whitespace-pre-wrap">{m.body}</p>
-                  <p className="mt-1 text-[10px] text-slate-500">
+                  <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
                     {new Date(m.createdAt).toLocaleString()}
                     {m.templateName && <span className="ml-1 rounded bg-indigo-100 px-1 py-0.5 font-bold text-indigo-700">{m.templateName}</span>}
                   </p>
@@ -127,7 +127,7 @@ export default function MessagesPage() {
         </div>
       )}
 
-      <p className="mt-6 text-center text-xs text-slate-500">
+      <p className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
         WhatsApp opt-ins live in your <Link href="/dashboard/privacy" className="text-indigo-600 underline">Privacy & Consent</Link> vault and can be revoked from there or here.
       </p>
     </div>

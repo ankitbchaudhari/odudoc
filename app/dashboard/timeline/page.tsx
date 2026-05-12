@@ -113,8 +113,8 @@ export default function TimelinePage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Health timeline</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Health timeline</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Everything that has happened across your appointments, prescriptions, labs, and wallet — newest first.
         </p>
       </div>
@@ -130,11 +130,11 @@ export default function TimelinePage() {
               key={k}
               onClick={() => setFilter(k)}
               className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-                active ? "bg-indigo-600 text-white shadow-sm" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+                active ? "bg-indigo-600 text-white shadow-sm" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:bg-slate-900"
               }`}
             >
               {k === "all" ? "All" : `${KIND_EMOJI[k]} ${KIND_LABEL[k]}`}
-              <span className={`rounded-full px-1.5 text-[10px] font-bold ${active ? "bg-white/20" : "bg-slate-100 text-slate-600"}`}>
+              <span className={`rounded-full px-1.5 text-[10px] font-bold ${active ? "bg-white/20" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}>
                 {c}
               </span>
             </button>
@@ -146,13 +146,13 @@ export default function TimelinePage() {
         <p className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{error}</p>
       )}
       {!error && events === null && (
-        <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>
+        <p className="rounded-xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>
       )}
       {!error && events && events.length === 0 && (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white dark:bg-slate-900 p-10 text-center">
           <p className="text-3xl">🩺</p>
-          <p className="mt-2 text-base font-bold text-slate-700">Your timeline starts here</p>
-          <p className="mt-1 text-sm text-slate-500">Book a consult, top up the wallet, or order a lab test — events show up automatically.</p>
+          <p className="mt-2 text-base font-bold text-slate-700 dark:text-slate-300">Your timeline starts here</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Book a consult, top up the wallet, or order a lab test — events show up automatically.</p>
         </div>
       )}
 
@@ -167,7 +167,7 @@ export default function TimelinePage() {
                   <span className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white shadow ring-4 ring-white">
                     {g.items.length}
                   </span>
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500">{g.label}</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{g.label}</p>
                 </div>
                 <ul className="ml-4 space-y-2">
                   {g.items.map((e) => (
@@ -188,14 +188,14 @@ export default function TimelinePage() {
 
 function EventCard({ event }: { event: TimelineEvent }) {
   const inner = (
-    <div className="rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200 transition-colors hover:bg-slate-50">
+    <div className="rounded-xl bg-white dark:bg-slate-900 p-3 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 transition-colors hover:bg-slate-50 dark:bg-slate-900">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="text-base leading-none">{KIND_EMOJI[event.kind]}</span>
-            <p className="truncate text-sm font-semibold text-slate-900">{event.title}</p>
+            <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{event.title}</p>
           </div>
-          {event.body && <p className="mt-1 text-xs text-slate-600">{event.body}</p>}
+          {event.body && <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{event.body}</p>}
         </div>
         <p className="flex-none text-[10px] font-medium tabular-nums text-slate-400">{formatTime(event.at)}</p>
       </div>

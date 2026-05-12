@@ -12,7 +12,7 @@ const statusConfig: Record<
   paid: { label: "Paid", bg: "bg-green-100", text: "text-green-700" },
   pending: { label: "Pending", bg: "bg-yellow-100", text: "text-yellow-700" },
   failed: { label: "Failed", bg: "bg-red-100", text: "text-red-700" },
-  refunded: { label: "Refunded", bg: "bg-gray-100", text: "text-gray-700" },
+  refunded: { label: "Refunded", bg: "bg-gray-100 dark:bg-slate-800", text: "text-gray-700 dark:text-slate-300" },
 };
 
 export default function PaymentsPage() {
@@ -53,15 +53,15 @@ export default function PaymentsPage() {
   }
 
   return (
-    <div className="bg-gray-50 py-8">
+    <div className="bg-gray-50 dark:bg-slate-900 py-8">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100">
               Payment History
             </h1>
-            <p className="mt-1 text-gray-500">
+            <p className="mt-1 text-gray-500 dark:text-slate-400">
               {bookings.length} total transaction
               {bookings.length !== 1 ? "s" : ""} &middot; $
               {totalPaid.toFixed(2)} paid
@@ -80,7 +80,7 @@ export default function PaymentsPage() {
               className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                 filter === s
                   ? "bg-primary-600 text-white"
-                  : "bg-white text-gray-600 hover:bg-gray-100"
+                  : "bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:bg-slate-800"
               }`}
             >
               {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
@@ -92,12 +92,12 @@ export default function PaymentsPage() {
         </div>
 
         {filtered.length === 0 ? (
-          <div className="rounded-xl bg-white py-16 text-center shadow-sm">
+          <div className="rounded-xl bg-white dark:bg-slate-900 py-16 text-center shadow-sm">
             <p className="text-4xl">&#128722;</p>
-            <p className="mt-4 text-lg font-semibold text-gray-900">
+            <p className="mt-4 text-lg font-semibold text-gray-900 dark:text-slate-100">
               No payments found
             </p>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
               {filter === "all"
                 ? "You haven't made any payments yet."
                 : `No ${filter} payments.`}
@@ -106,26 +106,26 @@ export default function PaymentsPage() {
         ) : (
           <>
             {/* Desktop Table */}
-            <div className="hidden overflow-hidden rounded-xl bg-white shadow-sm md:block">
+            <div className="hidden overflow-hidden rounded-xl bg-white dark:bg-slate-900 shadow-sm md:block">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50">
-                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  <tr className="border-b border-gray-100 bg-gray-50 dark:bg-slate-900">
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
                       Reference
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
                       Doctor
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
                       Patient
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
                       Date
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
                       Amount
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
                       Status
                     </th>
                   </tr>
@@ -136,23 +136,23 @@ export default function PaymentsPage() {
                     return (
                       <tr
                         key={booking.id}
-                        className="transition-colors hover:bg-gray-50"
+                        className="transition-colors hover:bg-gray-50 dark:bg-slate-900"
                       >
                         <td className="px-6 py-4 text-sm font-mono font-medium text-primary-600">
                           {booking.id}
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-sm font-medium text-gray-900">
+                          <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
                             {booking.doctorName}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 dark:text-slate-400">
                             {booking.timeSlot}
                           </p>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-700">
+                        <td className="px-6 py-4 text-sm text-gray-700 dark:text-slate-300">
                           {booking.patientName}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
+                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                           {new Date(booking.createdAt).toLocaleDateString(
                             "en-US",
                             {
@@ -162,7 +162,7 @@ export default function PaymentsPage() {
                             }
                           )}
                         </td>
-                        <td className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                        <td className="px-6 py-4 text-right text-sm font-semibold text-gray-900 dark:text-slate-100">
                           ${booking.fee.toFixed(2)}
                         </td>
                         <td className="px-6 py-4 text-center">
@@ -186,14 +186,14 @@ export default function PaymentsPage() {
                 return (
                   <div
                     key={booking.id}
-                    className="rounded-xl bg-white p-4 shadow-sm"
+                    className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm"
                   >
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="font-mono text-sm font-medium text-primary-600">
                           {booking.id}
                         </p>
-                        <p className="mt-1 font-semibold text-gray-900">
+                        <p className="mt-1 font-semibold text-gray-900 dark:text-slate-100">
                           {booking.doctorName}
                         </p>
                       </div>
@@ -204,14 +204,14 @@ export default function PaymentsPage() {
                       </span>
                     </div>
                     <div className="mt-3 flex items-center justify-between text-sm">
-                      <span className="text-gray-500">
+                      <span className="text-gray-500 dark:text-slate-400">
                         {booking.patientName} &middot; {booking.timeSlot}
                       </span>
-                      <span className="font-semibold text-gray-900">
+                      <span className="font-semibold text-gray-900 dark:text-slate-100">
                         ${booking.fee.toFixed(2)}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-gray-400">
+                    <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
                       {new Date(booking.createdAt).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",

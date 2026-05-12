@@ -95,7 +95,7 @@ export default function LaboratoryPage() {
       gradient="from-emerald-600 via-teal-600 to-cyan-600"
       actions={
         <>
-          <button onClick={() => setShowNew((v) => !v)} className="rounded-full bg-white px-4 py-2 text-xs font-bold text-emerald-700 shadow-md hover:-translate-y-0.5">+ Order test</button>
+          <button onClick={() => setShowNew((v) => !v)} className="rounded-full bg-white dark:bg-slate-900 px-4 py-2 text-xs font-bold text-emerald-700 shadow-md hover:-translate-y-0.5">+ Order test</button>
           <button onClick={load} className="rounded-full bg-white/15 px-4 py-2 text-xs font-semibold text-white backdrop-blur-sm hover:bg-white/25">↻ Refresh</button>
         </>
       }
@@ -110,11 +110,11 @@ export default function LaboratoryPage() {
       {/* Pipeline strip — visual order flow with per-stage totals.
           Uses the canonical clinical-tones colors. */}
       {orders.length > 0 && (
-        <div className="mb-6 rounded-2xl border border-white/60 bg-white p-4 shadow-sm">
-          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">
+        <div className="mb-6 rounded-2xl border border-white/60 bg-white dark:bg-slate-900 p-4 shadow-sm">
+          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
             Order pipeline
           </p>
-          <div className="flex h-3 overflow-hidden rounded-full bg-slate-100">
+          <div className="flex h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
             {(["pending", "collected", "in_progress", "ready", "delivered"] as const).map((s) => {
               const total = orders.length;
               const pct = (counts[s] / total) * 100;
@@ -138,12 +138,12 @@ export default function LaboratoryPage() {
           </div>
           <div className="mt-2 flex flex-wrap gap-3 text-[11px]">
             {(["pending", "collected", "in_progress", "ready", "delivered"] as const).map((s) => (
-              <span key={s} className="inline-flex items-center gap-1 text-slate-600">
+              <span key={s} className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300">
                 <span className={`inline-block h-2 w-2 rounded-full ${{
                   pending: "bg-amber-400", collected: "bg-cyan-400", in_progress: "bg-sky-400",
                   ready: "bg-emerald-400", delivered: "bg-teal-400",
                 }[s]}`} />
-                {s.replace("_", " ")} <b className="text-slate-900">{counts[s]}</b>
+                {s.replace("_", " ")} <b className="text-slate-900 dark:text-slate-100">{counts[s]}</b>
               </span>
             ))}
           </div>
@@ -151,8 +151,8 @@ export default function LaboratoryPage() {
       )}
 
       {showNew && (
-        <form onSubmit={submitNew} className="mb-6 rounded-3xl border border-white/60 bg-white p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-900">Order a test</h3>
+        <form onSubmit={submitNew} className="mb-6 rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Order a test</h3>
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
             <Inp label="Patient ID" required value={form.patientId} onChange={(v) => setForm({ ...form, patientId: v })} />
             <Inp label="Patient name" required value={form.patientName} onChange={(v) => setForm({ ...form, patientName: v })} />
@@ -168,7 +168,7 @@ export default function LaboratoryPage() {
 
       <div className="mb-3 flex flex-wrap gap-2">
         {(["All", ...TABS] as Array<Status | "All">).map((t) => (
-          <button key={t} onClick={() => setTab(t)} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${tab === t ? "bg-slate-900 text-white" : "border border-slate-200 bg-white text-slate-700 hover:border-slate-300"}`}>
+          <button key={t} onClick={() => setTab(t)} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${tab === t ? "bg-slate-900 text-white" : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300"}`}>
             {t === "All" ? "All" : t.replace("_", " ")}
           </button>
         ))}
@@ -176,26 +176,26 @@ export default function LaboratoryPage() {
 
       <section className="space-y-2">
         {orders.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-200 bg-white py-12 text-center shadow-sm">
+          <div className="rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-12 text-center shadow-sm">
             <span className="text-4xl">🧫</span>
-            <p className="mt-3 text-sm font-semibold text-slate-900">No orders in this filter</p>
+            <p className="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">No orders in this filter</p>
           </div>
         ) : orders.map((o) => (
-          <article key={o.id} className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+          <article key={o.id} className="rounded-2xl border border-slate-100 bg-white dark:bg-slate-900 p-4 shadow-sm">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-semibold text-slate-900">{o.patientName}</p>
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">{o.patientName}</p>
                   <StatusBadge status={o.status} />
                   {o.abnormal && <StatusBadge status="abnormal" />}
                 </div>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   {o.testName}{o.panel ? ` · ${o.panel}` : ""} · ordered by {o.orderedBy}
                 </p>
                 {o.resultValue && (
                   <p className="mt-1 text-sm">
-                    <span className="font-semibold text-slate-900">Result: {o.resultValue}</span>
-                    {o.refRange && <span className="ml-2 text-xs text-slate-500">(ref: {o.refRange})</span>}
+                    <span className="font-semibold text-slate-900 dark:text-slate-100">Result: {o.resultValue}</span>
+                    {o.refRange && <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">(ref: {o.refRange})</span>}
                   </p>
                 )}
               </div>
@@ -218,7 +218,7 @@ export default function LaboratoryPage() {
               </div>
             </div>
             {resultFor === o.id && (
-              <div className="mt-3 rounded-xl bg-slate-50 p-3">
+              <div className="mt-3 rounded-xl bg-slate-50 dark:bg-slate-900 p-3">
                 <div className="grid gap-2 sm:grid-cols-3">
                   <Inp label="Result value" value={resultForm.resultValue} onChange={(v) => setResultForm({ ...resultForm, resultValue: v })} placeholder="e.g. 7.8 mmol/L" />
                   <Inp label="Reference range" value={resultForm.refRange} onChange={(v) => setResultForm({ ...resultForm, refRange: v })} placeholder="3.9–7.1" />
@@ -243,14 +243,14 @@ export default function LaboratoryPage() {
 function Inp(p: { label: string; value: string; onChange: (v: string) => void; required?: boolean; type?: string; placeholder?: string }) {
   return (
     <label className="block">
-      <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">{p.label}{p.required && <span className="ml-0.5 text-rose-500">*</span>}</span>
-      <input type={p.type || "text"} required={p.required} value={p.value} onChange={(e) => p.onChange(e.target.value)} placeholder={p.placeholder} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+      <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">{p.label}{p.required && <span className="ml-0.5 text-rose-500">*</span>}</span>
+      <input type={p.type || "text"} required={p.required} value={p.value} onChange={(e) => p.onChange(e.target.value)} placeholder={p.placeholder} className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3 py-2 text-sm" />
     </label>
   );
 }
 function Btn({ onClick, children, tone = "primary" }: { onClick: () => void; children: React.ReactNode; tone?: "primary" | "ghost" }) {
   const cls = tone === "primary"
     ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-sm hover:-translate-y-0.5"
-    : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50";
+    : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900";
   return <button onClick={onClick} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${cls}`}>{children}</button>;
 }

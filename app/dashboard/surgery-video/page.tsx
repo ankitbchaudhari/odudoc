@@ -23,7 +23,7 @@ const STATUS_TONE: Record<string, string> = {
   scheduled: "bg-indigo-100 text-indigo-800",
   live: "bg-rose-600 text-white animate-pulse",
   completed: "bg-emerald-100 text-emerald-800",
-  cancelled: "bg-slate-200 text-slate-700",
+  cancelled: "bg-slate-200 text-slate-700 dark:text-slate-300",
   failed: "bg-amber-100 text-amber-800",
 };
 
@@ -48,19 +48,19 @@ export default function MySurgeriesPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">My surgery videos</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">My surgery videos</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Live and recorded sessions where you&apos;re an authorized viewer. Every play is audit-logged.
         </p>
       </div>
 
       {loading ? (
-        <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>
+        <p className="rounded-xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>
       ) : sessions.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white dark:bg-slate-900 p-10 text-center">
           <p className="text-3xl">🎥</p>
-          <p className="mt-2 text-base font-bold text-slate-700">No surgery videos yet</p>
-          <p className="mt-1 text-sm text-slate-500">When you consent to OT video on a surgery, the session shows up here.</p>
+          <p className="mt-2 text-base font-bold text-slate-700 dark:text-slate-300">No surgery videos yet</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">When you consent to OT video on a surgery, the session shows up here.</p>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -68,19 +68,19 @@ export default function MySurgeriesPage() {
             <li key={s.id}>
               <Link
                 href={`/dashboard/surgery-video/${s.id}`}
-                className="block rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 transition-shadow hover:shadow-md"
+                className="block rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 transition-shadow hover:shadow-md"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-bold text-slate-900">
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
                         {s.surgeryId ? `Surgery ${s.surgeryId}` : "Surgery session"}
                       </p>
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${STATUS_TONE[s.status] || ""}`}>
                         {s.status === "live" ? "● LIVE" : s.status}
                       </span>
                     </div>
-                    <p className="mt-0.5 text-xs text-slate-500">Lead: {s.leadSurgeonEmail}</p>
+                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Lead: {s.leadSurgeonEmail}</p>
                     <p className="text-[10px] text-slate-400">
                       {s.startedAt ? `Started ${new Date(s.startedAt).toLocaleString()}` : `Scheduled ${new Date(s.createdAt).toLocaleString()}`}
                       {s.durationSeconds ? ` · ${Math.round(s.durationSeconds / 60)} min` : ""}

@@ -146,7 +146,7 @@ export default function DashboardPage() {
             <div className="flex flex-wrap gap-2">
               <Link
                 href="/doctors"
-                className="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-primary-700 shadow-md transition-transform hover:-translate-y-0.5 hover:shadow-lg"
+                className="rounded-xl bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-primary-700 shadow-md transition-transform hover:-translate-y-0.5 hover:shadow-lg"
               >
                 Book Appointment
               </Link>
@@ -166,7 +166,7 @@ export default function DashboardPage() {
             <Link
               key={s.label}
               href={s.href}
-              className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+              className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
             >
               <div
                 className={`absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gradient-to-br ${s.gradient} opacity-20 blur-xl transition-opacity group-hover:opacity-40`}
@@ -178,8 +178,8 @@ export default function DashboardPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={s.icon} />
                 </svg>
               </div>
-              <p className="mt-4 text-3xl font-bold text-gray-900">{s.value}</p>
-              <p className="text-sm text-gray-500">{s.label}</p>
+              <p className="mt-4 text-3xl font-bold text-gray-900 dark:text-slate-100">{s.value}</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">{s.label}</p>
             </Link>
           ))}
         </div>
@@ -195,7 +195,7 @@ export default function DashboardPage() {
             { label: "Vaccinations", href: "/dashboard/vaccinations", icon: "💉", bg: "from-cyan-100 to-blue-100", ring: "ring-cyan-200" },
             { label: "Care Plans", href: "/dashboard/care-plan", icon: "📋", bg: "from-teal-100 to-cyan-100", ring: "ring-teal-200" },
             { label: "Symptom Log", href: "/dashboard/symptoms", icon: "🩺", bg: "from-rose-100 to-fuchsia-100", ring: "ring-rose-200" },
-            { label: "Access log", href: "/dashboard/audit", icon: "🛡️", bg: "from-slate-100 to-zinc-100", ring: "ring-slate-200" },
+            { label: "Access log", href: "/dashboard/audit", icon: "🛡️", bg: "from-slate-100 to-zinc-100", ring: "ring-slate-200 dark:ring-slate-800" },
             { label: "Emergency Profile", href: "/dashboard/emergency-profile", icon: "🚨", bg: "from-red-100 to-rose-100", ring: "ring-red-200" },
             { label: "AI Credits", href: "/dashboard/ai-credit", icon: "🤖", bg: "from-purple-100 to-violet-100", ring: "ring-purple-200" },
             { label: "Jobs Board", href: "/jobs", icon: "💼", bg: "from-blue-100 to-indigo-100", ring: "ring-blue-200" },
@@ -214,7 +214,7 @@ export default function DashboardPage() {
             { label: "Wearables", href: "/dashboard/wearables", icon: "⌚", bg: "from-cyan-100 to-sky-100", ring: "ring-cyan-200" },
             { label: "Import old Rx", href: "/dashboard/rx-import", icon: "📷", bg: "from-orange-100 to-amber-100", ring: "ring-orange-200" },
             { label: "ABHA / ABDM", href: "/dashboard/abha", icon: "🇮🇳", bg: "from-yellow-100 to-orange-100", ring: "ring-yellow-200" },
-            { label: "Privacy & Consent", href: "/dashboard/privacy", icon: "🔐", bg: "from-slate-100 to-zinc-100", ring: "ring-slate-200" },
+            { label: "Privacy & Consent", href: "/dashboard/privacy", icon: "🔐", bg: "from-slate-100 to-zinc-100", ring: "ring-slate-200 dark:ring-slate-800" },
             { label: "My Profile", href: "/profile", icon: "⚙️", bg: "from-violet-100 to-fuchsia-100", ring: "ring-violet-200" },
             { label: "Get Started", href: "/dashboard/onboarding", icon: "🚀", bg: "from-lime-100 to-green-100", ring: "ring-lime-200" },
           ].map((a) => (
@@ -224,7 +224,7 @@ export default function DashboardPage() {
               className={`flex flex-col items-center gap-2 rounded-2xl bg-gradient-to-br ${a.bg} p-5 shadow-sm ring-1 ${a.ring} transition-transform hover:-translate-y-0.5`}
             >
               <span className="text-3xl">{a.icon}</span>
-              <span className="text-sm font-semibold text-gray-800">{a.label}</span>
+              <span className="text-sm font-semibold text-gray-800 dark:text-slate-200">{a.label}</span>
             </Link>
           ))}
         </div>
@@ -251,14 +251,14 @@ export default function DashboardPage() {
                     <li key={c.id}>
                       <Link
                         href={`/dashboard/consultations/${c.id}`}
-                        className="group flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-3 transition-all hover:border-primary-200 hover:bg-primary-50/30"
+                        className="group flex items-center gap-3 rounded-xl border border-gray-100 bg-white dark:bg-slate-900 p-3 transition-all hover:border-primary-200 hover:bg-primary-50/30"
                       >
                         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 text-sm font-bold text-white shadow">
                           {c.doctorName.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-gray-900">{c.doctorName}</p>
-                          <p className="truncate text-xs text-gray-500">
+                          <p className="truncate text-sm font-semibold text-gray-900 dark:text-slate-100">{c.doctorName}</p>
+                          <p className="truncate text-xs text-gray-500 dark:text-slate-400">
                             {c.specialty} · {c.dateLabel} · {c.timeSlot}
                           </p>
                         </div>
@@ -286,16 +286,16 @@ export default function DashboardPage() {
               {recent.length === 0 ? (
                 <EmptyState emoji="🩺" label="No recent consultations" sub="Your past visits will show up here." />
               ) : (
-                <ul className="divide-y divide-gray-100">
+                <ul className="divide-y divide-gray-100 dark:divide-slate-800">
                   {recent.slice(0, 5).map((c) => (
                     <li key={c.id}>
                       <Link
                         href={`/dashboard/consultations/${c.id}`}
-                        className="flex items-center justify-between py-3 transition-colors hover:bg-gray-50"
+                        className="flex items-center justify-between py-3 transition-colors hover:bg-gray-50 dark:bg-slate-900"
                       >
                         <div>
-                          <p className="text-sm font-medium text-gray-900">{c.doctorName}</p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{c.doctorName}</p>
+                          <p className="text-xs text-gray-500 dark:text-slate-400">
                             {c.dateLabel} · {c.timeSlot}
                           </p>
                         </div>
@@ -321,18 +321,18 @@ export default function DashboardPage() {
               {prescriptions.length === 0 ? (
                 <EmptyState emoji="💊" label="No prescriptions yet" sub="Doctors will send prescriptions here after your consult." />
               ) : (
-                <ul className="divide-y divide-gray-100">
+                <ul className="divide-y divide-gray-100 dark:divide-slate-800">
                   {prescriptions.slice(0, 5).map((p) => (
                     <li key={p.id}>
                       <Link
                         href="/dashboard/prescriptions"
-                        className="flex items-center justify-between py-3 transition-colors hover:bg-gray-50"
+                        className="flex items-center justify-between py-3 transition-colors hover:bg-gray-50 dark:bg-slate-900"
                       >
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-gray-900">
+                          <p className="truncate text-sm font-medium text-gray-900 dark:text-slate-100">
                             {p.data.diagnosis || "Prescription"}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 dark:text-slate-400">
                             by {p.data.doctorName || p.doctorEmail} ·{" "}
                             {new Date(p.createdAt).toLocaleDateString()}
                           </p>
@@ -370,8 +370,8 @@ export default function DashboardPage() {
                       key={i}
                       className="rounded-xl bg-gradient-to-br from-fuchsia-50 to-purple-50 p-3 ring-1 ring-fuchsia-100"
                     >
-                      <p className="line-clamp-2 text-sm font-medium text-gray-900">{h.complaint}</p>
-                      <p className="mt-1 text-xs text-gray-500">
+                      <p className="line-clamp-2 text-sm font-medium text-gray-900 dark:text-slate-100">{h.complaint}</p>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
                         {h.doctor} · {h.date}
                       </p>
                     </li>
@@ -400,7 +400,7 @@ export default function DashboardPage() {
               </p>
               <Link
                 href="/profile"
-                className="mt-4 inline-block rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary-700 shadow transition-transform hover:-translate-y-0.5"
+                className="mt-4 inline-block rounded-lg bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-primary-700 shadow transition-transform hover:-translate-y-0.5"
               >
                 Update Profile
               </Link>
@@ -413,7 +413,7 @@ export default function DashboardPage() {
 }
 
 function Card({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">{children}</div>;
+  return <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-gray-100">{children}</div>;
 }
 
 function CardHeader({
@@ -429,7 +429,7 @@ function CardHeader({
     <div className="mb-5 flex items-center justify-between">
       <div className="flex items-center gap-3">
         <span className={`h-7 w-1.5 rounded-full ${accent}`} />
-        <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">{title}</h2>
       </div>
       {right}
     </div>
@@ -440,8 +440,8 @@ function EmptyState({ emoji, label, sub }: { emoji: string; label: string; sub?:
   return (
     <div className="py-10 text-center">
       <div className="text-4xl">{emoji}</div>
-      <p className="mt-2 text-sm font-medium text-gray-500">{label}</p>
-      {sub && <p className="mt-1 text-xs text-gray-400">{sub}</p>}
+      <p className="mt-2 text-sm font-medium text-gray-500 dark:text-slate-400">{label}</p>
+      {sub && <p className="mt-1 text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">{sub}</p>}
     </div>
   );
 }

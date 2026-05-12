@@ -344,14 +344,14 @@ export default function DoctorIdCardPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50/40 to-violet-50/40 p-12 text-center">
         <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-cyan-200 border-t-cyan-500" />
-        <p className="mt-4 text-sm text-slate-500">Loading your ID card…</p>
+        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Loading your ID card…</p>
       </div>
     );
   }
   if (!me) {
     return (
       <div className="mx-auto max-w-md p-12 text-center">
-        <p className="text-slate-700">Doctor record not found.</p>
+        <p className="text-slate-700 dark:text-slate-300">Doctor record not found.</p>
         <Link href="/dashboard/doctor" className="mt-4 inline-block text-sm text-cyan-700 hover:underline">
           ← Back to dashboard
         </Link>
@@ -371,7 +371,7 @@ export default function DoctorIdCardPage() {
       <div className="relative mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
         <Link
           href="/dashboard/doctor"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-cyan-700"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 transition-colors hover:text-cyan-700"
         >
           ← Back to dashboard
         </Link>
@@ -409,16 +409,16 @@ export default function DoctorIdCardPage() {
 
         {/* Front / back toggle */}
         <div className="mt-8 flex justify-center">
-          <div className="inline-flex gap-1 rounded-full bg-white p-1 shadow-md ring-1 ring-slate-200">
+          <div className="inline-flex gap-1 rounded-full bg-white dark:bg-slate-900 p-1 shadow-md ring-1 ring-slate-200 dark:ring-slate-800">
             <button
               onClick={() => setSide("front")}
-              className={`rounded-full px-5 py-2 text-xs font-bold uppercase tracking-wider transition ${side === "front" ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md" : "text-slate-600 hover:text-slate-900"}`}
+              className={`rounded-full px-5 py-2 text-xs font-bold uppercase tracking-wider transition ${side === "front" ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-slate-100"}`}
             >
               Front · Identity
             </button>
             <button
               onClick={() => setSide("back")}
-              className={`rounded-full px-5 py-2 text-xs font-bold uppercase tracking-wider transition ${side === "back" ? "bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white shadow-md" : "text-slate-600 hover:text-slate-900"}`}
+              className={`rounded-full px-5 py-2 text-xs font-bold uppercase tracking-wider transition ${side === "back" ? "bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white shadow-md" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-slate-100"}`}
             >
               Back · Booking
             </button>
@@ -514,7 +514,7 @@ export default function DoctorIdCardPage() {
           <button
             onClick={downloadOneSide}
             disabled={busy}
-            className="text-xs text-slate-500 underline-offset-4 hover:text-slate-800 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+            className="text-xs text-slate-500 dark:text-slate-400 underline-offset-4 hover:text-slate-800 dark:text-slate-200 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
           >
             Or download just the {side} side (single-page PDF)
           </button>
@@ -534,12 +534,12 @@ export default function DoctorIdCardPage() {
 
         {/* Public profile URL panel */}
         <div className="mt-8 grid gap-4 lg:grid-cols-3">
-          <div className="lg:col-span-2 overflow-hidden rounded-3xl border border-white/60 bg-white p-6 shadow-sm">
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+          <div className="lg:col-span-2 overflow-hidden rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
               Your public profile URL
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <code className="flex-1 break-all rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-xs text-slate-800">
+              <code className="flex-1 break-all rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-3 py-2 font-mono text-xs text-slate-800 dark:text-slate-200">
                 {profileUrl}
               </code>
               <button
@@ -549,7 +549,7 @@ export default function DoctorIdCardPage() {
                 Copy
               </button>
             </div>
-            <p className="mt-3 text-xs text-slate-500">
+            <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
               <span className="font-semibold text-emerald-700">Tip:</span>{" "}
               this URL is name-based now (was an opaque internal id before).
               Patients land here when they scan your QR. Keep your bio,
@@ -566,7 +566,7 @@ export default function DoctorIdCardPage() {
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-violet-700">
               Pro tips
             </p>
-            <ul className="mt-3 space-y-2.5 text-xs text-slate-700">
+            <ul className="mt-3 space-y-2.5 text-xs text-slate-700 dark:text-slate-300">
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 text-base">📌</span>
                 <span>Pin your card to WhatsApp Status — patients book in seconds.</span>
@@ -748,12 +748,12 @@ function BackSide({ me, qrUrl, profileUrl }: { me: DoctorRecord; qrUrl: string; 
 
       <div className="absolute inset-0 flex items-center gap-6 p-6">
         <div className="flex shrink-0 flex-col items-center">
-          <div className="rounded-2xl bg-white p-2.5 ring-2 ring-white/30 shadow-lg">
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-2.5 ring-2 ring-white/30 shadow-lg">
             {qrUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={qrUrl} alt="Profile QR" width={140} height={140} className="block" crossOrigin="anonymous" />
             ) : (
-              <div className="h-[140px] w-[140px] bg-slate-100" />
+              <div className="h-[140px] w-[140px] bg-slate-100 dark:bg-slate-800" />
             )}
           </div>
           <p className="mt-2 text-[9px] font-bold uppercase tracking-[0.22em] text-white/70">

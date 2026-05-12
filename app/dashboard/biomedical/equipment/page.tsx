@@ -91,7 +91,7 @@ export default function EquipmentPage() {
       title="Equipment registry"
       subtitle="Asset tags, AMC contracts, preventive maintenance, calibration log."
       gradient="from-amber-600 via-orange-600 to-rose-600"
-      actions={<button onClick={() => setShowNew((v) => !v)} className="rounded-full bg-white px-4 py-2 text-xs font-bold text-orange-700 shadow-md hover:-translate-y-0.5">+ Add equipment</button>}
+      actions={<button onClick={() => setShowNew((v) => !v)} className="rounded-full bg-white dark:bg-slate-900 px-4 py-2 text-xs font-bold text-orange-700 shadow-md hover:-translate-y-0.5">+ Add equipment</button>}
     >
       {summary && (
         <>
@@ -103,11 +103,11 @@ export default function EquipmentPage() {
           </div>
 
           {summary.total > 0 && (
-            <div className="mb-6 rounded-2xl border border-white/60 bg-white p-4 shadow-sm">
-              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">
+            <div className="mb-6 rounded-2xl border border-white/60 bg-white dark:bg-slate-900 p-4 shadow-sm">
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
                 Fleet status
               </p>
-              <div className="flex h-3 overflow-hidden rounded-full bg-slate-100">
+              <div className="flex h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                 {([
                   { k: "active", v: summary.active, c: "bg-emerald-400" },
                   { k: "under_maintenance", v: summary.underMaintenance, c: "bg-amber-400" },
@@ -119,9 +119,9 @@ export default function EquipmentPage() {
                 })}
               </div>
               <div className="mt-2 flex flex-wrap gap-3 text-[11px]">
-                <span className="inline-flex items-center gap-1 text-slate-600"><span className="inline-block h-2 w-2 rounded-full bg-emerald-400" /> active <b className="text-slate-900">{summary.active}</b></span>
-                <span className="inline-flex items-center gap-1 text-slate-600"><span className="inline-block h-2 w-2 rounded-full bg-amber-400" /> under maintenance <b className="text-slate-900">{summary.underMaintenance}</b></span>
-                <span className="inline-flex items-center gap-1 text-slate-600"><span className="inline-block h-2 w-2 rounded-full bg-rose-400" /> out of service <b className="text-slate-900">{summary.outOfService}</b></span>
+                <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300"><span className="inline-block h-2 w-2 rounded-full bg-emerald-400" /> active <b className="text-slate-900 dark:text-slate-100">{summary.active}</b></span>
+                <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300"><span className="inline-block h-2 w-2 rounded-full bg-amber-400" /> under maintenance <b className="text-slate-900 dark:text-slate-100">{summary.underMaintenance}</b></span>
+                <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300"><span className="inline-block h-2 w-2 rounded-full bg-rose-400" /> out of service <b className="text-slate-900 dark:text-slate-100">{summary.outOfService}</b></span>
               </div>
             </div>
           )}
@@ -129,8 +129,8 @@ export default function EquipmentPage() {
       )}
 
       {showNew && (
-        <form onSubmit={submit} className="mb-6 rounded-3xl border border-white/60 bg-white p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-900">Add equipment</h3>
+        <form onSubmit={submit} className="mb-6 rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Add equipment</h3>
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
             <Inp label="Asset tag" required value={form.assetTag} onChange={(v) => setForm({ ...form, assetTag: v })} placeholder="EQ-001" />
             <Inp label="Name" required value={form.name} onChange={(v) => setForm({ ...form, name: v })} placeholder="Patient monitor" />
@@ -150,7 +150,7 @@ export default function EquipmentPage() {
 
       {logFor && (
         <form onSubmit={submitLog} className="mb-6 rounded-3xl border border-amber-200 bg-amber-50/40 p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-900">Log maintenance for {logFor}</h3>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Log maintenance for {logFor}</h3>
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
             <Sel label="Kind" value={logForm.kind} onChange={(v) => setLogForm({ ...logForm, kind: v as typeof logForm.kind })}>
               <option value="preventive">Preventive</option>
@@ -165,21 +165,21 @@ export default function EquipmentPage() {
           </div>
           <div className="mt-4 flex gap-2">
             <button type="submit" disabled={busy} className="rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:-translate-y-0.5 disabled:opacity-50">{busy ? "Logging…" : "Log entry"}</button>
-            <button type="button" onClick={() => setLogFor(null)} className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700">Cancel</button>
+            <button type="button" onClick={() => setLogFor(null)} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300">Cancel</button>
           </div>
         </form>
       )}
 
-      <section className="rounded-3xl border border-white/60 bg-white p-2 shadow-sm">
+      <section className="rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-2 shadow-sm">
         {items.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-200 p-10 text-center">
+          <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-10 text-center">
             <span className="text-4xl">🧰</span>
-            <p className="mt-3 text-sm font-semibold text-slate-900">No equipment yet</p>
-            <p className="mt-1 text-xs text-slate-500">Add your first device above.</p>
+            <p className="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">No equipment yet</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Add your first device above.</p>
           </div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="text-left text-[10px] uppercase tracking-wider text-slate-500">
+            <thead className="text-left text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">
               <tr className="border-b border-slate-100">
                 <th className="px-3 py-2">Equipment</th>
                 <th className="px-3 py-2">Location</th>
@@ -193,8 +193,8 @@ export default function EquipmentPage() {
               {items.map((eq) => (
                 <tr key={eq.id} className="border-b border-slate-50">
                   <td className="px-3 py-2">
-                    <p className="font-semibold text-slate-900">{eq.name}</p>
-                    <p className="text-[11px] text-slate-500">{eq.assetTag}{eq.manufacturer ? ` · ${eq.manufacturer}` : ""}{eq.model ? ` ${eq.model}` : ""}</p>
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">{eq.name}</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">{eq.assetTag}{eq.manufacturer ? ` · ${eq.manufacturer}` : ""}{eq.model ? ` ${eq.model}` : ""}</p>
                   </td>
                   <td className="px-3 py-2 text-xs">{eq.location || "—"}</td>
                   <td className="px-3 py-2 text-xs">{eq.status.replace(/_/g, " ")}</td>
@@ -216,16 +216,16 @@ export default function EquipmentPage() {
 function Inp(p: { label: string; value: string; onChange: (v: string) => void; required?: boolean; type?: string; placeholder?: string }) {
   return (
     <label className="block">
-      <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">{p.label}{p.required && <span className="ml-0.5 text-rose-500">*</span>}</span>
-      <input type={p.type || "text"} required={p.required} value={p.value} onChange={(e) => p.onChange(e.target.value)} placeholder={p.placeholder} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+      <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">{p.label}{p.required && <span className="ml-0.5 text-rose-500">*</span>}</span>
+      <input type={p.type || "text"} required={p.required} value={p.value} onChange={(e) => p.onChange(e.target.value)} placeholder={p.placeholder} className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3 py-2 text-sm" />
     </label>
   );
 }
 function Sel(p: { label: string; value: string; onChange: (v: string) => void; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">{p.label}</span>
-      <select value={p.value} onChange={(e) => p.onChange(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">{p.children}</select>
+      <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">{p.label}</span>
+      <select value={p.value} onChange={(e) => p.onChange(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3 py-2 text-sm">{p.children}</select>
     </label>
   );
 }

@@ -156,7 +156,7 @@ export default function EmrLandingPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 py-10">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 py-10">
       <div className="pointer-events-none absolute inset-0 -z-0">
         <div className="absolute -top-40 left-1/2 h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-gradient-to-br from-emerald-200/40 via-cyan-200/40 to-indigo-200/40 blur-3xl" />
       </div>
@@ -179,7 +179,7 @@ export default function EmrLandingPage() {
                 <h1 className="bg-gradient-to-r from-slate-900 via-emerald-900 to-cyan-900 bg-clip-text text-2xl font-bold text-transparent sm:text-3xl">
                   Clinic Records
                 </h1>
-                <p className="mt-1 max-w-xl text-sm text-slate-600">
+                <p className="mt-1 max-w-xl text-sm text-slate-600 dark:text-slate-300">
                   Manage patients, log visits with SOAP notes, and keep a
                   searchable history — no extra software, no monthly fee.
                 </p>
@@ -188,7 +188,7 @@ export default function EmrLandingPage() {
             <div className="flex flex-wrap items-center gap-2">
               <Link
                 href="/dashboard/doctor"
-                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-300 hover:bg-white hover:text-emerald-700"
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:border-emerald-300 hover:bg-white dark:bg-slate-900 hover:text-emerald-700"
               >
                 ← Dashboard
               </Link>
@@ -196,13 +196,13 @@ export default function EmrLandingPage() {
                 <>
                   <Link
                     href="/dashboard/doctor/emr/staff"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-indigo-300 hover:bg-white hover:text-indigo-700"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:border-indigo-300 hover:bg-white dark:bg-slate-900 hover:text-indigo-700"
                   >
                     Staff
                   </Link>
                   <Link
                     href="/dashboard/doctor/emr/audit"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-violet-300 hover:bg-white hover:text-violet-700"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:border-violet-300 hover:bg-white dark:bg-slate-900 hover:text-violet-700"
                   >
                     Audit log
                   </Link>
@@ -210,7 +210,7 @@ export default function EmrLandingPage() {
               )}
               <button
                 onClick={() => setShowImport(true)}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/80 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-300 hover:bg-white hover:text-emerald-700"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/80 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:border-emerald-300 hover:bg-white dark:bg-slate-900 hover:text-emerald-700"
                 title="Bulk-import existing patients from a CSV — doesn't count toward the monthly cap"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
@@ -297,10 +297,10 @@ export default function EmrLandingPage() {
             <div className="overflow-hidden rounded-3xl border border-white/60 bg-white/80 shadow-sm backdrop-blur-xl">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-bold text-slate-900">
+                  <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
                     Patients
                   </h2>
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                  <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                     {patients.length}
                   </span>
                 </div>
@@ -314,7 +314,7 @@ export default function EmrLandingPage() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search by name, phone, condition…"
-                    className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
                   />
                 </div>
               </div>
@@ -322,7 +322,7 @@ export default function EmrLandingPage() {
               {loading && patients.length === 0 ? (
                 <div className="p-6 space-y-3">
                   {[...Array(4)].map((_, i) => (
-                    <div key={i} className="animate-pulse rounded-xl bg-slate-100 p-4 h-16" />
+                    <div key={i} className="animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800 p-4 h-16" />
                   ))}
                 </div>
               ) : patients.length === 0 ? (
@@ -334,17 +334,17 @@ export default function EmrLandingPage() {
                       <path d="M22 11h-6M19 8v6" />
                     </svg>
                   </div>
-                  <p className="text-sm font-semibold text-slate-700">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                     {query ? "No patients match your search" : "No patients yet"}
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {query
                       ? "Try a different name or phone number."
                       : "Click \"Add patient\" to start your clinic record."}
                   </p>
                 </div>
               ) : (
-                <ul className="divide-y divide-slate-100">
+                <ul className="divide-y divide-slate-100 dark:divide-slate-800">
                   {patients.slice(0, 20).map((p) => (
                     <li key={p.id}>
                       <Link
@@ -356,10 +356,10 @@ export default function EmrLandingPage() {
                           {(p.lastName[0] || "").toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-slate-900">
+                          <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
                             {p.firstName} {p.lastName}
                           </p>
-                          <p className="truncate text-xs text-slate-500">
+                          <p className="truncate text-xs text-slate-500 dark:text-slate-400">
                             {p.age && <>{p.age} yrs · </>}
                             {p.sex && <>{p.sex} · </>}
                             {p.phone}
@@ -380,7 +380,7 @@ export default function EmrLandingPage() {
                 </ul>
               )}
               {patients.length > 20 && (
-                <div className="border-t border-slate-100 px-5 py-3 text-center text-xs text-slate-500">
+                <div className="border-t border-slate-100 px-5 py-3 text-center text-xs text-slate-500 dark:text-slate-400">
                   Showing 20 of {patients.length} — refine search to find others.
                 </div>
               )}
@@ -391,19 +391,19 @@ export default function EmrLandingPage() {
           <div className="lg:col-span-1">
             <div className="overflow-hidden rounded-3xl border border-white/60 bg-white/80 shadow-sm backdrop-blur-xl">
               <div className="border-b border-slate-100 px-5 py-4">
-                <h2 className="text-base font-bold text-slate-900">
+                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
                   Recent visits
                 </h2>
-                <p className="mt-0.5 text-xs text-slate-500">
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                   Last 15 SOAP notes you logged
                 </p>
               </div>
               {recentVisits.length === 0 ? (
-                <div className="p-8 text-center text-xs text-slate-500">
+                <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">
                   No visits yet — open a patient and add a SOAP note.
                 </div>
               ) : (
-                <ul className="divide-y divide-slate-100">
+                <ul className="divide-y divide-slate-100 dark:divide-slate-800">
                   {recentVisits.map((v) => (
                     <li key={v.id}>
                       <Link
@@ -413,14 +413,14 @@ export default function EmrLandingPage() {
                         <p className="text-[11px] font-semibold uppercase tracking-wide text-cyan-700">
                           {v.visitDate}
                         </p>
-                        <p className="mt-0.5 truncate text-sm font-semibold text-slate-900">
+                        <p className="mt-0.5 truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
                           {patientNameById(v.patientId)}
                         </p>
-                        <p className="mt-0.5 line-clamp-2 text-xs text-slate-600">
-                          <span className="font-medium text-slate-700">CC:</span>{" "}
+                        <p className="mt-0.5 line-clamp-2 text-xs text-slate-600 dark:text-slate-300">
+                          <span className="font-medium text-slate-700 dark:text-slate-300">CC:</span>{" "}
                           {v.chiefComplaint}
                         </p>
-                        <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">
+                        <p className="mt-0.5 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">
                           {v.assessment}
                         </p>
                       </Link>
@@ -525,16 +525,16 @@ function ImportPatientsModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-xl overflow-hidden rounded-3xl bg-white shadow-2xl"
+        className="w-full max-w-xl overflow-hidden rounded-3xl bg-white dark:bg-slate-900 shadow-2xl"
       >
         <div className="bg-gradient-to-br from-emerald-50 via-cyan-50 to-indigo-50 px-6 py-5">
           <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">
             Bulk import · CSV
           </p>
-          <h3 className="mt-1 text-lg font-bold text-slate-900">
+          <h3 className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">
             Import your existing patients
           </h3>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
             Migrating from another EMR or a spreadsheet? Upload a CSV and we&apos;ll
             create the records in one go. <b>Imported patients don&apos;t count
             toward the monthly cap</b> — only net-new patients you add via
@@ -563,30 +563,30 @@ function ImportPatientsModal({
               </a>
 
               <label className="block">
-                <span className="mb-1 block text-xs font-semibold text-slate-700">
+                <span className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
                   CSV file (max 5 MB · 10,000 rows)
                 </span>
                 <input
                   type="file"
                   accept=".csv,text/csv"
                   onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-emerald-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-emerald-700 hover:file:bg-emerald-200"
+                  className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-emerald-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-emerald-700 hover:file:bg-emerald-200"
                 />
               </label>
 
-              <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3 text-xs text-slate-600">
-                <p className="font-bold text-slate-800">Required columns:</p>
+              <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 dark:bg-slate-900 p-3 text-xs text-slate-600 dark:text-slate-300">
+                <p className="font-bold text-slate-800 dark:text-slate-200">Required columns:</p>
                 <p>
                   <code className="font-mono">firstName</code>{" "}
                   · <code className="font-mono">lastName</code>{" "}
                   · <code className="font-mono">phone</code>
                 </p>
-                <p className="mt-1 font-bold text-slate-800">Optional columns:</p>
+                <p className="mt-1 font-bold text-slate-800 dark:text-slate-200">Optional columns:</p>
                 <p>
                   age · sex · email · address · bloodGroup · allergies ·
                   chronicConditions · notes
                 </p>
-                <p className="mt-2 text-[11px] text-slate-500">
+                <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
                   Headers are matched case-insensitively. &quot;First Name&quot;,
                   &quot;Mobile&quot;, &quot;Medical history&quot; etc. work too.
                 </p>
@@ -601,7 +601,7 @@ function ImportPatientsModal({
               <div className="mt-5 flex items-center justify-end gap-2">
                 <button
                   onClick={onClose}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
                 >
                   Cancel
                 </button>
@@ -646,7 +646,7 @@ function ImportPatientsModal({
                     setResult(null);
                     setFile(null);
                   }}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
                 >
                   Import another file
                 </button>
@@ -693,11 +693,11 @@ function QuotaBanner({
             <p className={`text-xs font-bold uppercase tracking-wide ${tone.text}`}>
               {planLabel} · {quota.blocked ? "monthly limit reached" : `${quota.month} usage`}
             </p>
-            <span className="rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold text-slate-700">
+            <span className="rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
               {quota.month}
             </span>
           </div>
-          <p className="mt-1 text-sm text-slate-700">
+          <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
             {quota.blocked ? (
               quota.unlocked ? (
                 <>
@@ -775,7 +775,7 @@ function PaywallModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl"
+        className="w-full max-w-lg overflow-hidden rounded-3xl bg-white dark:bg-slate-900 shadow-2xl"
       >
         <div className="bg-gradient-to-br from-rose-50 via-amber-50 to-orange-50 px-6 py-5">
           <div className="flex items-start gap-3">
@@ -786,12 +786,12 @@ function PaywallModal({
               </svg>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                 {atTopTier
                   ? "You've reached the Practice unlock cap"
                   : "You've reached the free monthly limit"}
               </h3>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
                 {quota.used} of {quota.limit} patients added in <b>{quota.month}</b>.
                 {atTopTier
                   ? " The Practice unlock is the highest self-serve tier — bigger volume needs OduDoc Corporate."
@@ -808,14 +808,14 @@ function PaywallModal({
                   <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
                     OduDoc Corporate
                   </p>
-                  <p className="mt-1 text-sm text-slate-700">
+                  <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
                     Multi-clinic, hospital-grade tier. Custom volume, BAA / DPA
                     available, dedicated support.
                   </p>
                 </div>
-                <p className="text-base font-bold text-slate-900">Talk to us</p>
+                <p className="text-base font-bold text-slate-900 dark:text-slate-100">Talk to us</p>
               </div>
-              <ul className="mt-3 space-y-1 text-sm text-slate-700">
+              <ul className="mt-3 space-y-1 text-sm text-slate-700 dark:text-slate-300">
                 <li className="flex items-start gap-2">
                   <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500" />
                   <span>Unlimited patients per month</span>
@@ -831,22 +831,22 @@ function PaywallModal({
               </ul>
             </div>
           ) : (
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-4">
               <div className="flex items-end justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     Practice unlock
                   </p>
-                  <p className="mt-1 text-sm text-slate-700">
+                  <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
                     Lifts the cap for the rest of <b>{quota.month}</b>.
                   </p>
                 </div>
-                <p className="text-3xl font-bold text-slate-900">
+                <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">
                   ${quota.unlockAmount}
-                  <span className="ml-0.5 text-sm font-normal text-slate-500">/mo</span>
+                  <span className="ml-0.5 text-sm font-normal text-slate-500 dark:text-slate-400">/mo</span>
                 </p>
               </div>
-              <ul className="mt-3 space-y-1 text-sm text-slate-700">
+              <ul className="mt-3 space-y-1 text-sm text-slate-700 dark:text-slate-300">
                 <li className="flex items-start gap-2">
                   <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   <span>Up to <b>250 patients</b> this calendar month</span>
@@ -865,7 +865,7 @@ function PaywallModal({
           <div className="mt-5 flex flex-col-reverse items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end">
             <button
               onClick={onClose}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
             >
               Close
             </button>
@@ -885,7 +885,7 @@ function PaywallModal({
                 {unlocking ? "Opening Stripe…" : `Unlock for $${quota.unlockAmount}`}
               </button>
             ) : (
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-slate-500 dark:text-slate-400">
                 Only the clinic owner can purchase the unlock.
               </span>
             )}
@@ -918,7 +918,7 @@ function StatCard({
       <p className={`text-[11px] font-semibold uppercase tracking-wide ${a.text}`}>
         {label}
       </p>
-      <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900">
+      <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900 dark:text-slate-100">
         {value === undefined ? "—" : value}
       </p>
     </div>
@@ -1002,7 +1002,7 @@ function NewPatientModal({
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/5"
+        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-white dark:bg-slate-900 shadow-2xl ring-1 ring-slate-900/5"
       >
         {/* Header with gradient + icon */}
         <div className="relative overflow-hidden border-b border-slate-100 bg-gradient-to-br from-emerald-50 via-cyan-50 to-indigo-50 px-7 py-5">
@@ -1020,10 +1020,10 @@ function NewPatientModal({
                 <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">
                   New patient · Clinic record
                 </p>
-                <h3 className="mt-0.5 text-xl font-bold text-slate-900">
+                <h3 className="mt-0.5 text-xl font-bold text-slate-900 dark:text-slate-100">
                   Add a patient to your clinic
                 </h3>
-                <p className="mt-0.5 text-xs text-slate-600">
+                <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">
                   Required fields are marked <span className="font-bold text-rose-500">*</span>. Everything else is optional and editable later.
                 </p>
               </div>
@@ -1031,7 +1031,7 @@ function NewPatientModal({
             <button
               type="button"
               onClick={onClose}
-              className="-mr-2 -mt-1 shrink-0 rounded-xl p-2 text-slate-400 transition hover:bg-white/70 hover:text-slate-700"
+              className="-mr-2 -mt-1 shrink-0 rounded-xl p-2 text-slate-400 transition hover:bg-white/70 hover:text-slate-700 dark:text-slate-300"
               aria-label="Close"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
@@ -1156,7 +1156,7 @@ function NewPatientModal({
             </div>
           </Section>
 
-          <p className="mt-2 flex items-start gap-2 text-[11px] text-slate-500">
+          <p className="mt-2 flex items-start gap-2 text-[11px] text-slate-500 dark:text-slate-400">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-3.5 w-3.5 shrink-0">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0110 0v4" />
@@ -1165,15 +1165,15 @@ function NewPatientModal({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 bg-white px-7 py-4">
-          <p className="text-[11px] text-slate-500">
-            <span className="font-semibold text-slate-700">Tip:</span> have lots of patients already? Use the <span className="font-semibold">Import CSV</span> button instead.
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 bg-white dark:bg-slate-900 px-7 py-4">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <span className="font-semibold text-slate-700 dark:text-slate-300">Tip:</span> have lots of patients already? Use the <span className="font-semibold">Import CSV</span> button instead.
           </p>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:bg-slate-900"
             >
               Cancel
             </button>
@@ -1216,7 +1216,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mb-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="mb-5 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
       <div className="flex items-start gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-3">
         {icon && (
           <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
@@ -1224,11 +1224,11 @@ function Section({
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
             {title}
           </p>
           {description && (
-            <p className="mt-0.5 text-[11px] text-slate-500">{description}</p>
+            <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">{description}</p>
           )}
         </div>
       </div>
@@ -1257,7 +1257,7 @@ function Input({
 }) {
   return (
     <label className={`block ${wide ? "sm:col-span-2" : ""}`}>
-      <span className="mb-1 block text-xs font-semibold text-slate-700">
+      <span className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
         {label} {required && <span className="text-rose-500">*</span>}
       </span>
       <input
@@ -1265,7 +1265,7 @@ function Input({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
+        className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
       />
     </label>
   );
@@ -1283,11 +1283,11 @@ function Select({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-semibold text-slate-700">{label}</span>
+      <span className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">{label}</span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
+        className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>
@@ -1313,13 +1313,13 @@ function Textarea({
 }) {
   return (
     <label className={`block ${wide ? "sm:col-span-2" : ""}`}>
-      <span className="mb-1 block text-xs font-semibold text-slate-700">{label}</span>
+      <span className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">{label}</span>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={3}
-        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
+        className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
       />
     </label>
   );

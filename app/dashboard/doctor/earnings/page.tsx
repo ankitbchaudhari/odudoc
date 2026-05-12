@@ -75,20 +75,20 @@ export default function DoctorEarningsPage() {
   const AVAILABLE_BALANCE = pendingBalance;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-center gap-3">
           <Link
             href="/dashboard/doctor"
-            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-2 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Earnings</h1>
-            <p className="mt-0.5 text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Earnings</h1>
+            <p className="mt-0.5 text-sm text-gray-500 dark:text-slate-400">
               Your consultation revenue and payouts
             </p>
           </div>
@@ -111,7 +111,7 @@ export default function DoctorEarningsPage() {
             <button
               onClick={() => setShowModal(true)}
               disabled={AVAILABLE_BALANCE <= 0}
-              className="rounded-lg bg-white px-5 py-3 text-sm font-semibold text-primary-700 shadow transition-colors hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg bg-white dark:bg-slate-900 px-5 py-3 text-sm font-semibold text-primary-700 shadow transition-colors hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-60"
               title={AVAILABLE_BALANCE <= 0 ? "No balance available yet" : undefined}
             >
               Request Withdrawal
@@ -126,25 +126,25 @@ export default function DoctorEarningsPage() {
             { label: "This Week", value: money.format(periods.week) },
             { label: "This Month", value: money.format(periods.month) },
           ].map((x) => (
-            <div key={x.label} className="rounded-xl bg-white p-5 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wider text-gray-500">{x.label}</p>
-              <p className="mt-2 text-2xl font-bold text-gray-900">{x.value}</p>
+            <div key={x.label} className="rounded-xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+              <p className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-slate-400">{x.label}</p>
+              <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-slate-100">{x.value}</p>
             </div>
           ))}
         </div>
 
         {/* Recent earnings */}
-        <div className="mb-6 rounded-xl bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">Recent consultations</h2>
+        <div className="mb-6 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-slate-100">Recent consultations</h2>
           {earnings.length === 0 ? (
-            <p className="py-6 text-center text-sm text-gray-400">
+            <p className="py-6 text-center text-sm text-gray-400 dark:text-slate-500">
               No paid consultations yet. Earnings appear here as patients complete payment.
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  <tr className="border-b border-gray-100 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                     <th className="pb-3 pr-4">Date</th>
                     <th className="pb-3 pr-4">Patient</th>
                     <th className="pb-3 pr-4">Gross</th>
@@ -153,20 +153,20 @@ export default function DoctorEarningsPage() {
                     <th className="pb-3">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
                   {earnings.slice(0, 20).map((e) => (
                     <tr key={e.id}>
-                      <td className="py-3 pr-4 text-xs text-gray-500">
+                      <td className="py-3 pr-4 text-xs text-gray-500 dark:text-slate-400">
                         {formatDate(e.createdAt)}
                       </td>
-                      <td className="py-3 pr-4 text-gray-700">{e.patientName}</td>
-                      <td className="py-3 pr-4 text-gray-900">
+                      <td className="py-3 pr-4 text-gray-700 dark:text-slate-300">{e.patientName}</td>
+                      <td className="py-3 pr-4 text-gray-900 dark:text-slate-100">
                         {money.formatFrom(e.grossAmount, e.currency)}
                       </td>
-                      <td className="py-3 pr-4 text-gray-500">
+                      <td className="py-3 pr-4 text-gray-500 dark:text-slate-400">
                         −{money.formatFrom(e.commissionAmount, e.currency)}
                       </td>
-                      <td className="py-3 pr-4 font-semibold text-gray-900">
+                      <td className="py-3 pr-4 font-semibold text-gray-900 dark:text-slate-100">
                         {money.formatFrom(e.netAmount, e.currency)}
                       </td>
                       <td className="py-3">
@@ -189,9 +189,9 @@ export default function DoctorEarningsPage() {
         </div>
 
         {/* Withdrawal history */}
-        <div className="rounded-xl bg-white p-6 shadow-sm">
+        <div className="rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm">
           <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
               Withdrawal Requests
             </h2>
             <button
@@ -203,16 +203,16 @@ export default function DoctorEarningsPage() {
           </div>
 
           {loading ? (
-            <p className="py-10 text-center text-sm text-gray-400">Loading…</p>
+            <p className="py-10 text-center text-sm text-gray-400 dark:text-slate-500">Loading…</p>
           ) : withdrawals.length === 0 ? (
-            <p className="py-10 text-center text-sm text-gray-400">
+            <p className="py-10 text-center text-sm text-gray-400 dark:text-slate-500">
               You haven&apos;t requested any withdrawals yet.
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  <tr className="border-b border-gray-100 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                     <th className="pb-3 pr-4">Requested</th>
                     <th className="pb-3 pr-4">Amount</th>
                     <th className="pb-3 pr-4">Method</th>
@@ -220,19 +220,19 @@ export default function DoctorEarningsPage() {
                     <th className="pb-3">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
                   {withdrawals.map((w) => (
                     <tr key={w.id}>
-                      <td className="py-3 pr-4 text-xs text-gray-500">
+                      <td className="py-3 pr-4 text-xs text-gray-500 dark:text-slate-400">
                         {formatDate(w.requestedAt)}
                       </td>
-                      <td className="py-3 pr-4 font-semibold text-gray-900">
+                      <td className="py-3 pr-4 font-semibold text-gray-900 dark:text-slate-100">
                         {money.format(w.amount)}
                       </td>
-                      <td className="py-3 pr-4 text-gray-700">
+                      <td className="py-3 pr-4 text-gray-700 dark:text-slate-300">
                         {METHOD_LABELS[w.method]}
                       </td>
-                      <td className="py-3 pr-4 text-gray-500">
+                      <td className="py-3 pr-4 text-gray-500 dark:text-slate-400">
                         {w.accountDetails}
                       </td>
                       <td className="py-3">
@@ -242,7 +242,7 @@ export default function DoctorEarningsPage() {
                           {w.status}
                         </span>
                         {w.adminNote && (
-                          <p className="mt-1 text-[11px] text-gray-400">
+                          <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500">
                             Note: {w.adminNote}
                           </p>
                         )}
@@ -337,14 +337,14 @@ function WithdrawalModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+        className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">Request Withdrawal</h2>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Request Withdrawal</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100"
+            className="rounded-lg p-1.5 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -365,7 +365,7 @@ function WithdrawalModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">
+            <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">
               Amount (USD)
             </label>
             <input
@@ -376,18 +376,18 @@ function WithdrawalModal({
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
               required
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+              className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">
+            <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">
               Payout Method
             </label>
             <select
               value={method}
               onChange={(e) => setMethod(e.target.value as WithdrawalRequest["method"])}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+              className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
             >
               <option value="bank_transfer">Bank Transfer</option>
               <option value="paypal">PayPal</option>
@@ -397,7 +397,7 @@ function WithdrawalModal({
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">
+            <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">
               Account Details
             </label>
             <input
@@ -411,19 +411,19 @@ function WithdrawalModal({
                     : "Payment reference"
               }
               required
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+              className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">
-              Notes <span className="text-gray-400">(optional)</span>
+            <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">
+              Notes <span className="text-gray-400 dark:text-slate-500">(optional)</span>
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+              className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
@@ -431,7 +431,7 @@ function WithdrawalModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-gray-200 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="flex-1 rounded-lg border border-gray-200 dark:border-slate-800 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
             >
               Cancel
             </button>

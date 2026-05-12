@@ -144,10 +144,10 @@ function LoginForm() {
             height={108}
             className="mx-auto h-12 w-auto lg:mx-0"
           />
-          <h1 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
+          <h1 className="mt-6 text-3xl font-bold tracking-tight text-gray-900 dark:text-slate-100">
             Welcome back
           </h1>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
             Sign in to your OduDoc account to continue.
           </p>
         </div>
@@ -187,7 +187,7 @@ function LoginForm() {
 
           <button
             onClick={() => signIn("google", { callbackUrl })}
-            className="group flex w-full items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:bg-gray-50 hover:shadow"
+            className="group flex w-full items-center justify-center gap-3 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-slate-300 shadow-sm transition-all hover:border-gray-300 dark:border-slate-700 hover:bg-gray-50 dark:bg-slate-900 hover:shadow"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -200,7 +200,7 @@ function LoginForm() {
 
           <div className="my-6 flex items-center gap-3">
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-            <span className="text-xs font-medium uppercase tracking-wider text-gray-400">
+            <span className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-slate-500 dark:text-slate-400">
               or sign in with email
             </span>
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
@@ -208,11 +208,11 @@ function LoginForm() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-600">
+              <label htmlFor="email" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-slate-300">
                 Email address
               </label>
               <div className="relative">
-                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 dark:text-slate-400">
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
@@ -224,14 +224,14 @@ function LoginForm() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full rounded-xl border border-gray-200 bg-white px-10 py-3 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100"
+                  className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-10 py-3 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 transition-all focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100"
                 />
               </div>
             </div>
 
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-gray-600">
+                <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-slate-300">
                   Password
                 </label>
                 <Link
@@ -242,7 +242,7 @@ function LoginForm() {
                 </Link>
               </div>
               <div className="relative">
-                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 dark:text-slate-400">
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
@@ -254,12 +254,12 @@ function LoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full rounded-xl border border-gray-200 bg-white px-10 py-3 pr-12 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100"
+                  className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-10 py-3 pr-12 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 transition-all focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
@@ -293,7 +293,7 @@ function LoginForm() {
           </form>
         </div>
 
-        <p className="mt-6 text-center text-sm text-gray-500 lg:text-left">
+        <p className="mt-6 text-center text-sm text-gray-500 dark:text-slate-400 lg:text-left">
           Don&apos;t have an account?{" "}
           <Link href="/auth/register" className="font-semibold text-primary-600 hover:text-primary-700">
             Create one now

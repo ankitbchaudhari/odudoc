@@ -21,10 +21,10 @@ export default function DoctorGuidePage() {
           <p className="text-xs font-bold uppercase tracking-widest text-primary-600">
             Doctor onboarding
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100 sm:text-4xl">
             Welcome to OduDoc
           </h1>
-          <p className="mt-3 max-w-2xl text-base text-slate-600">
+          <p className="mt-3 max-w-2xl text-base text-slate-600 dark:text-slate-300">
             Everything you can do on OduDoc, in the order you&apos;ll usually
             need it. Each section has a one-click link to the actual feature so
             you can try it as you read.
@@ -34,10 +34,10 @@ export default function DoctorGuidePage() {
         <GuideRenderer audience="doctor" />
 
         <div className="mt-12 rounded-2xl border border-primary-200 bg-gradient-to-br from-primary-50 to-sky-50 p-6 text-center">
-          <h2 className="text-lg font-bold text-slate-900">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
             Stuck on something?
           </h2>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
             Our support team replies within one business day. Most doctors get
             onboarded in under 30 minutes.
           </p>
@@ -50,7 +50,7 @@ export default function DoctorGuidePage() {
             </Link>
             <Link
               href="/dashboard/doctor"
-              className="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
             >
               Back to dashboard
             </Link>

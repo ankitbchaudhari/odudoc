@@ -157,7 +157,7 @@ export default function ReferralsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 py-10">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-10">
         <div className="mx-auto max-w-4xl px-4">
           <div className="h-44 animate-pulse rounded-3xl bg-slate-200" />
         </div>
@@ -167,9 +167,9 @@ export default function ReferralsPage() {
 
   if (!me) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
-        <div className="rounded-3xl bg-white p-8 text-center shadow">
-          <p className="text-sm text-slate-700">{error || "Sign in to view your referral dashboard."}</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900 p-4">
+        <div className="rounded-3xl bg-white dark:bg-slate-900 p-8 text-center shadow">
+          <p className="text-sm text-slate-700 dark:text-slate-300">{error || "Sign in to view your referral dashboard."}</p>
           <Link
             href="/auth/signin"
             className="mt-3 inline-block text-sm font-semibold text-indigo-600 hover:underline"
@@ -207,7 +207,7 @@ export default function ReferralsPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 py-10">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 py-10">
       <div className="pointer-events-none absolute inset-0 -z-0">
         <div className="absolute -top-40 left-1/2 h-[420px] w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-br from-indigo-200/40 via-violet-200/40 to-fuchsia-200/40 blur-3xl" />
       </div>
@@ -216,7 +216,7 @@ export default function ReferralsPage() {
         <div className="mb-6">
           <Link
             href={me.role === "doctor" ? "/dashboard/doctor" : "/dashboard"}
-            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:border-indigo-300 hover:text-indigo-700"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:border-indigo-300 hover:text-indigo-700"
           >
             ← Dashboard
           </Link>
@@ -237,7 +237,7 @@ export default function ReferralsPage() {
               <h1 className="mt-1 bg-gradient-to-r from-slate-900 via-indigo-900 to-fuchsia-900 bg-clip-text text-2xl font-bold text-transparent sm:text-3xl">
                 Share OduDoc, earn up to {doctorReward} per friend
               </h1>
-              <p className="mt-2 max-w-xl text-sm text-slate-600">
+              <p className="mt-2 max-w-xl text-sm text-slate-600 dark:text-slate-300">
                 Share your code with patients or doctors. <b>You earn {reward} when a referred patient completes 10 paid video consultations</b>, or
                 <b> {doctorReward} when a referred doctor completes 10 paid consultations</b>. Credit auto-applies on your next booking.
               </p>
@@ -263,12 +263,12 @@ export default function ReferralsPage() {
 
         {/* Share card */}
         <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <div className="rounded-3xl border border-white/60 bg-white p-6 shadow-sm">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
+          <div className="rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
               Your referral code
             </p>
             <div className="mt-2 flex items-center gap-3">
-              <code className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-2xl font-bold tracking-widest text-slate-900">
+              <code className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-2xl font-bold tracking-widest text-slate-900 dark:text-slate-100">
                 {me.code}
               </code>
               <button
@@ -282,17 +282,17 @@ export default function ReferralsPage() {
                 {copied === "code" ? "✓ Copied" : "Copy code"}
               </button>
             </div>
-            <p className="mt-3 text-[11px] text-slate-500">
+            <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
               Anyone signing up at <code>odudoc.com/?ref={me.code}</code> gets
               attributed to you automatically.
             </p>
           </div>
-          <div className="rounded-3xl border border-white/60 bg-white p-6 shadow-sm">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
+          <div className="rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
               Share link
             </p>
             <div className="mt-2 flex items-center gap-2">
-              <code className="min-w-0 flex-1 truncate rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
+              <code className="min-w-0 flex-1 truncate rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-xs text-slate-700 dark:text-slate-300">
                 {me.shareUrl}
               </code>
               <button
@@ -300,7 +300,7 @@ export default function ReferralsPage() {
                 className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${
                   copied === "url"
                     ? "bg-emerald-100 text-emerald-700"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
                 }`}
               >
                 {copied === "url" ? "✓" : "Copy"}
@@ -336,10 +336,10 @@ export default function ReferralsPage() {
                 <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">
                   Refer a doctor · {doctorReward} bonus
                 </p>
-                <h3 className="mt-1 text-lg font-bold text-slate-900">
+                <h3 className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">
                   Know another doctor? Earn {doctorReward} when they take their first 10 consultations.
                 </h3>
-                <p className="mt-1 max-w-xl text-sm text-slate-700">
+                <p className="mt-1 max-w-xl text-sm text-slate-700 dark:text-slate-300">
                   Send this link to a colleague. They apply via{" "}
                   <code className="rounded bg-white/70 px-1.5 py-0.5 text-xs">/for-doctors</code>.
                   Once they get verified <b>and complete 10 paid consultations</b>,{" "}
@@ -350,7 +350,7 @@ export default function ReferralsPage() {
             </div>
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <code className="min-w-0 flex-1 truncate rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs text-slate-700">
+            <code className="min-w-0 flex-1 truncate rounded-xl border border-emerald-200 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-700 dark:text-slate-300">
               {me.doctorShareUrl}
             </code>
             <button
@@ -358,7 +358,7 @@ export default function ReferralsPage() {
               className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${
                 copied === "url"
                   ? "bg-emerald-100 text-emerald-700"
-                  : "bg-white text-slate-700 ring-1 ring-emerald-200 hover:bg-emerald-50"
+                  : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-emerald-200 hover:bg-emerald-50"
               }`}
             >
               {copied === "url" ? "✓ Copied" : "Copy link"}
@@ -385,11 +385,11 @@ export default function ReferralsPage() {
         </div>
 
         {/* Claim a code (if you have one) */}
-        <div className="mb-6 rounded-3xl border border-white/60 bg-white p-6 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
+        <div className="mb-6 rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-6 shadow-sm">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
             Got a code from a friend?
           </p>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
             Apply it now. The friend who shared their code earns{" "}
             <b>{reward}</b> after you complete 10 paid video consultations on
             OduDoc.
@@ -399,7 +399,7 @@ export default function ReferralsPage() {
               value={claimCode}
               onChange={(e) => setClaimCode(e.target.value.toUpperCase())}
               placeholder="REFERRALCODE"
-              className="min-w-[200px] flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 font-mono text-sm tracking-widest outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
+              className="min-w-[200px] flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 font-mono text-sm tracking-widest outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
             />
             <button
               onClick={submitClaim}
@@ -417,27 +417,27 @@ export default function ReferralsPage() {
         </div>
 
         {/* Recent referrals */}
-        <div className="overflow-hidden rounded-3xl border border-white/60 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-3xl border border-white/60 bg-white dark:bg-slate-900 shadow-sm">
           <div className="border-b border-slate-100 px-6 py-4">
-            <h2 className="text-base font-bold text-slate-900">Recent referrals</h2>
-            <p className="mt-0.5 text-xs text-slate-500">
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Recent referrals</h2>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
               Showing your latest 20 referrals.
             </p>
           </div>
           {me.stats.recent.length === 0 ? (
-            <div className="px-6 py-12 text-center text-sm text-slate-500">
+            <div className="px-6 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
               No referrals yet — share your code or link with friends to start
               earning.
             </div>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-slate-100 dark:divide-slate-800">
               {me.stats.recent.map((r) => (
                 <li key={r.id} className="flex items-center gap-4 px-6 py-3.5">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-slate-900">
+                    <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
                       {r.refereeEmail}
                     </p>
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
                       Referred {timeAgo(r.createdAt)}
                       {r.qualifiedAt && ` · qualified ${timeAgo(r.qualifiedAt)}`}
                     </p>
@@ -448,12 +448,12 @@ export default function ReferralsPage() {
                         ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100"
                         : r.status === "pending"
                           ? "bg-amber-50 text-amber-700 ring-1 ring-amber-100"
-                          : "bg-slate-100 text-slate-600"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
                     }`}
                   >
                     {r.status}
                   </span>
-                  <span className="hidden text-sm font-bold tabular-nums text-slate-900 sm:inline">
+                  <span className="hidden text-sm font-bold tabular-nums text-slate-900 dark:text-slate-100 sm:inline">
                     {r.status === "qualified"
                       ? `+${formatMoney(r.rewardEachCents, r.currency)}`
                       : ""}
@@ -489,7 +489,7 @@ function Stat({
       <p className={`text-[11px] font-semibold uppercase tracking-wide ${t.text}`}>
         {label}
       </p>
-      <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900">{value}</p>
+      <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900 dark:text-slate-100">{value}</p>
     </div>
   );
 }

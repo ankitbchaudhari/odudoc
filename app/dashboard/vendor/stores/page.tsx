@@ -168,7 +168,7 @@ export default function VendorStoresPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/40 to-emerald-50/40 py-10">
       <div className="mx-auto max-w-5xl px-4">
-        <Link href="/dashboard/vendor" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-sky-600">
+        <Link href="/dashboard/vendor" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 transition-colors hover:text-sky-600">
           ← Back to dashboard
         </Link>
 
@@ -196,9 +196,9 @@ export default function VendorStoresPage() {
         {/* Existing stores */}
         <section className="space-y-4">
           {loading ? (
-            <p className="text-sm text-gray-500">Loading…</p>
+            <p className="text-sm text-gray-500 dark:text-slate-400">Loading…</p>
           ) : stores.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-gray-200 bg-white p-6 text-center text-sm text-gray-500">
+            <p className="rounded-xl border border-dashed border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 text-center text-sm text-gray-500 dark:text-slate-400">
               No stores yet. Add your first pharmacy location below.
             </p>
           ) : (
@@ -219,9 +219,9 @@ export default function VendorStoresPage() {
         </section>
 
         {/* New-store form */}
-        <section className="mt-10 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900">Add a store</h2>
-          <p className="mt-1 text-xs text-gray-500">
+        <section className="mt-10 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Add a store</h2>
+          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
             Once added, you can load its inventory from the list above.
           </p>
           <form onSubmit={submitStore} className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -309,7 +309,7 @@ export default function VendorStoresPage() {
               />
             </FormField>
             <div className="flex items-end gap-4">
-              <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+              <label className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
                 <input
                   type="checkbox"
                   checked={form.pickup}
@@ -317,7 +317,7 @@ export default function VendorStoresPage() {
                 />
                 Pickup
               </label>
-              <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+              <label className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
                 <input
                   type="checkbox"
                   checked={form.delivery}
@@ -375,7 +375,7 @@ function FormField({
 }) {
   return (
     <label className={`block ${className}`}>
-      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
         {label}
       </span>
       {children}
@@ -477,14 +477,14 @@ function StoreCard({
   };
 
   return (
-    <article className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <article className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="font-semibold text-gray-900">{store.name}</p>
-          <p className="mt-0.5 text-xs text-gray-500">
+          <p className="font-semibold text-gray-900 dark:text-slate-100">{store.name}</p>
+          <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
             {store.addressLine} · {store.city} · {store.pincode}
           </p>
-          <p className="mt-1 text-[11px] text-gray-400">
+          <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500">
             {store.lat.toFixed(4)}, {store.lng.toFixed(4)}
             {store.hours ? ` · ${store.hours}` : ""}
           </p>
@@ -514,12 +514,12 @@ function StoreCard({
       {open && (
         <div className="mt-4 space-y-4">
           {/* Add row */}
-          <form onSubmit={addRow} className="grid gap-2 rounded-lg bg-gray-50 p-3 text-sm md:grid-cols-6">
+          <form onSubmit={addRow} className="grid gap-2 rounded-lg bg-gray-50 dark:bg-slate-900 p-3 text-sm md:grid-cols-6">
             <select
               required
               value={adding.medicineId}
               onChange={(e) => setAdding({ ...adding, medicineId: e.target.value })}
-              className="md:col-span-2 rounded-md border border-gray-300 px-2 py-1.5"
+              className="md:col-span-2 rounded-md border border-gray-300 dark:border-slate-700 px-2 py-1.5"
             >
               <option value="">— Medicine —</option>
               {catalog.map((c) => (
@@ -532,13 +532,13 @@ function StoreCard({
               value={adding.brandLabel}
               onChange={(e) => setAdding({ ...adding, brandLabel: e.target.value })}
               placeholder="Brand (optional)"
-              className="rounded-md border border-gray-300 px-2 py-1.5"
+              className="rounded-md border border-gray-300 dark:border-slate-700 px-2 py-1.5"
             />
             <input
               value={adding.strength}
               onChange={(e) => setAdding({ ...adding, strength: e.target.value })}
               placeholder="Strength"
-              className="rounded-md border border-gray-300 px-2 py-1.5"
+              className="rounded-md border border-gray-300 dark:border-slate-700 px-2 py-1.5"
             />
             <input
               required
@@ -547,7 +547,7 @@ function StoreCard({
               value={adding.priceInr}
               onChange={(e) => setAdding({ ...adding, priceInr: e.target.value })}
               placeholder="Price ₹"
-              className="rounded-md border border-gray-300 px-2 py-1.5"
+              className="rounded-md border border-gray-300 dark:border-slate-700 px-2 py-1.5"
             />
             <input
               required
@@ -556,13 +556,13 @@ function StoreCard({
               value={adding.stock}
               onChange={(e) => setAdding({ ...adding, stock: e.target.value })}
               placeholder="Stock"
-              className="rounded-md border border-gray-300 px-2 py-1.5"
+              className="rounded-md border border-gray-300 dark:border-slate-700 px-2 py-1.5"
             />
             <input
               value={adding.unit}
               onChange={(e) => setAdding({ ...adding, unit: e.target.value })}
               placeholder="Unit label"
-              className="md:col-span-5 rounded-md border border-gray-300 px-2 py-1.5"
+              className="md:col-span-5 rounded-md border border-gray-300 dark:border-slate-700 px-2 py-1.5"
             />
             <button
               type="submit"
@@ -574,15 +574,15 @@ function StoreCard({
 
           {/* Rows */}
           {loading ? (
-            <p className="text-xs text-gray-500">Loading inventory…</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400">Loading inventory…</p>
           ) : rows.length === 0 ? (
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-slate-400">
               No inventory yet — add your first line above.
             </p>
           ) : (
-            <div className="overflow-hidden rounded-lg border border-gray-200">
+            <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
+                <thead className="bg-gray-50 dark:bg-slate-900 text-left text-xs uppercase text-gray-500 dark:text-slate-400">
                   <tr>
                     <th className="px-3 py-2">Medicine</th>
                     <th className="px-3 py-2">Brand · strength</th>
@@ -592,23 +592,23 @@ function StoreCard({
                     <th className="px-3 py-2" />
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
                   {rows.map((r) => {
                     const cat = catalogById.get(r.medicineId);
                     return (
                       <tr key={r.id}>
-                        <td className="px-3 py-2 font-medium text-gray-800">
+                        <td className="px-3 py-2 font-medium text-gray-800 dark:text-slate-200">
                           {cat?.generic || r.medicineId}
                         </td>
-                        <td className="px-3 py-2 text-gray-600">
+                        <td className="px-3 py-2 text-gray-600 dark:text-slate-300">
                           {r.brandLabel || cat?.brands[0] || "—"}
                           {r.strength ? ` · ${r.strength}` : ""}
                         </td>
-                        <td className="px-3 py-2 text-gray-600">{r.unit}</td>
-                        <td className="px-3 py-2 text-right font-semibold text-gray-900">
+                        <td className="px-3 py-2 text-gray-600 dark:text-slate-300">{r.unit}</td>
+                        <td className="px-3 py-2 text-right font-semibold text-gray-900 dark:text-slate-100">
                           ₹{r.priceInr}
                         </td>
-                        <td className="px-3 py-2 text-right text-gray-600">{r.stock}</td>
+                        <td className="px-3 py-2 text-right text-gray-600 dark:text-slate-300">{r.stock}</td>
                         <td className="px-3 py-2 text-right">
                           <button
                             onClick={() => delRow(r.id)}
@@ -636,7 +636,7 @@ function Pill({ on, label, onClick }: { on: boolean; label: string; onClick: () 
     <button
       onClick={onClick}
       className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
-        on ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"
+        on ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400"
       }`}
     >
       {on ? "✓ " : "○ "}

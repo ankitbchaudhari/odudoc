@@ -58,7 +58,7 @@ const SAMPLE_QUERIES: Record<Mode, string[]> = {
 
 function ConfidencePill({ value }: { value: number }) {
   const pct = Math.round(value * 100);
-  let cls = "bg-slate-100 text-slate-600";
+  let cls = "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300";
   if (value >= 0.85) cls = "bg-emerald-100 text-emerald-800";
   else if (value >= 0.6) cls = "bg-sky-100 text-sky-800";
   else if (value >= 0.3) cls = "bg-amber-100 text-amber-800";
@@ -107,23 +107,23 @@ export default function DictionaryPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Medical Dictionary</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Medical Dictionary</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           AI-backed lookup for any clinical term, abbreviation, or drug — including Indian brand names. Decision support only; verify against your formulary before prescribing.
         </p>
       </div>
 
       {/* Mode switch */}
-      <div className="mb-4 inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+      <div className="mb-4 inline-flex rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1 shadow-sm">
         <button
           onClick={() => setMode("term")}
-          className={`rounded-lg px-4 py-1.5 text-sm font-semibold ${mode === "term" ? "bg-violet-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
+          className={`rounded-lg px-4 py-1.5 text-sm font-semibold ${mode === "term" ? "bg-violet-600 text-white shadow-md" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"}`}
         >
           Clinical term
         </button>
         <button
           onClick={() => setMode("drug")}
-          className={`rounded-lg px-4 py-1.5 text-sm font-semibold ${mode === "drug" ? "bg-emerald-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
+          className={`rounded-lg px-4 py-1.5 text-sm font-semibold ${mode === "drug" ? "bg-emerald-600 text-white shadow-md" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"}`}
         >
           Drug
         </button>
@@ -146,7 +146,7 @@ export default function DictionaryPage() {
               ? "e.g. diabetic ketoacidosis · PCOS · Tinel's sign"
               : "e.g. Metformin · Glycomet · Augmentin"
           }
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm shadow-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+          className="w-full rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm shadow-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
         />
         <button
           type="submit"
@@ -159,7 +159,7 @@ export default function DictionaryPage() {
 
       {/* Sample queries — discoverability for first-time users */}
       <div className="mt-3 flex flex-wrap gap-1.5">
-        <span className="text-[11px] font-semibold text-slate-500">Try:</span>
+        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Try:</span>
         {SAMPLE_QUERIES[mode].map((q) => (
           <button
             key={q}
@@ -167,7 +167,7 @@ export default function DictionaryPage() {
               setQuery(q);
               search(q);
             }}
-            className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[11px] text-slate-700 hover:border-violet-400 hover:text-violet-700"
+            className="rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 py-0.5 text-[11px] text-slate-700 dark:text-slate-300 hover:border-violet-400 hover:text-violet-700"
           >
             {q}
           </button>
@@ -182,13 +182,13 @@ export default function DictionaryPage() {
 
       {/* Term result */}
       {term && (
-        <div className="mt-6 overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm">
+        <div className="mt-6 overflow-hidden rounded-2xl border border-violet-200 bg-white dark:bg-slate-900 shadow-sm">
           <div className="border-b border-violet-100 bg-gradient-to-r from-violet-50 to-indigo-50 px-5 py-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-xl font-bold text-slate-900">{term.term}</h2>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{term.term}</h2>
                 {term.pronunciation && (
-                  <p className="mt-0.5 font-mono text-xs text-slate-500">
+                  <p className="mt-0.5 font-mono text-xs text-slate-500 dark:text-slate-400">
                     /{term.pronunciation}/
                   </p>
                 )}
@@ -206,12 +206,12 @@ export default function DictionaryPage() {
           <div className="space-y-4 px-5 py-4 text-sm">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-violet-700">Clinical definition</p>
-              <p className="mt-1 text-slate-800">{term.shortDefinition}</p>
+              <p className="mt-1 text-slate-800 dark:text-slate-200">{term.shortDefinition}</p>
             </div>
             {term.patientSummary && (
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-wider text-sky-700">Patient-facing summary</p>
-                <p className="mt-1 text-slate-700">{term.patientSummary}</p>
+                <p className="mt-1 text-slate-700 dark:text-slate-300">{term.patientSummary}</p>
               </div>
             )}
             {(term.icd10?.length ?? 0) > 0 && (
@@ -228,7 +228,7 @@ export default function DictionaryPage() {
             )}
             {(term.relatedTerms?.length ?? 0) > 0 && (
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Related</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Related</p>
                 <div className="mt-1 flex flex-wrap gap-1.5">
                   {term.relatedTerms!.map((r) => (
                     <button
@@ -237,7 +237,7 @@ export default function DictionaryPage() {
                         setQuery(r);
                         search(r);
                       }}
-                      className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[11px] text-slate-700 hover:border-violet-400 hover:text-violet-700"
+                      className="rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 py-0.5 text-[11px] text-slate-700 dark:text-slate-300 hover:border-violet-400 hover:text-violet-700"
                     >
                       {r}
                     </button>
@@ -256,13 +256,13 @@ export default function DictionaryPage() {
 
       {/* Drug result */}
       {drug && (
-        <div className="mt-6 overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm">
+        <div className="mt-6 overflow-hidden rounded-2xl border border-emerald-200 bg-white dark:bg-slate-900 shadow-sm">
           <div className="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-teal-50 px-5 py-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-xl font-bold text-slate-900">{drug.generic}</h2>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{drug.generic}</h2>
                 {drug.drugClass && (
-                  <p className="mt-0.5 text-xs text-slate-600">{drug.drugClass}</p>
+                  <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">{drug.drugClass}</p>
                 )}
               </div>
               <div className="flex flex-col items-end gap-1">
@@ -290,22 +290,22 @@ export default function DictionaryPage() {
             )}
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Common adult dose</p>
-              <p className="mt-1 font-mono text-sm text-slate-800">{drug.commonAdultDose}</p>
+              <p className="mt-1 font-mono text-sm text-slate-800 dark:text-slate-200">{drug.commonAdultDose}</p>
               {drug.pediatricNote && (
-                <p className="mt-1 text-[11px] text-slate-500">Paediatric: {drug.pediatricNote}</p>
+                <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Paediatric: {drug.pediatricNote}</p>
               )}
             </div>
             {drug.pregnancyCategory && (
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-wider text-rose-700">Pregnancy</p>
-                <p className="mt-1 text-slate-800">{drug.pregnancyCategory}</p>
+                <p className="mt-1 text-slate-800 dark:text-slate-200">{drug.pregnancyCategory}</p>
               </div>
             )}
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Indications</p>
               <ul className="mt-1 space-y-0.5">
                 {drug.indications.map((i) => (
-                  <li key={i} className="flex gap-1.5 text-slate-800"><span className="text-emerald-500">•</span><span>{i}</span></li>
+                  <li key={i} className="flex gap-1.5 text-slate-800 dark:text-slate-200"><span className="text-emerald-500">•</span><span>{i}</span></li>
                 ))}
               </ul>
             </div>
@@ -316,20 +316,20 @@ export default function DictionaryPage() {
                   <li className="text-slate-400">None recorded.</li>
                 )}
                 {drug.contraindications.map((i) => (
-                  <li key={i} className="flex gap-1.5 text-slate-800"><span className="text-rose-500">•</span><span>{i}</span></li>
+                  <li key={i} className="flex gap-1.5 text-slate-800 dark:text-slate-200"><span className="text-rose-500">•</span><span>{i}</span></li>
                 ))}
               </ul>
             </div>
             <div className="md:col-span-2">
               <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700">Common side effects</p>
-              <p className="mt-1 text-slate-800">
+              <p className="mt-1 text-slate-800 dark:text-slate-200">
                 {drug.commonSideEffects.length === 0 ? "None typically reported." : drug.commonSideEffects.join(" · ")}
               </p>
             </div>
             {drug.prescriberNotes && (
               <div className="md:col-span-2 rounded-lg bg-indigo-50 px-3 py-2">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-700">Prescribing pearls</p>
-                <p className="mt-1 text-slate-800">{drug.prescriberNotes}</p>
+                <p className="mt-1 text-slate-800 dark:text-slate-200">{drug.prescriberNotes}</p>
               </div>
             )}
             {drug.needsReview && (

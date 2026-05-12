@@ -71,8 +71,8 @@ export default function ClinicAiUsagePage() {
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">My AI Usage</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">My AI Usage</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Per-feature breakdown of your AI consumption with approximate cost. Decision support to validate the AI add-on at a glance.
           </p>
         </div>
@@ -84,7 +84,7 @@ export default function ClinicAiUsagePage() {
               className={`rounded-lg border px-3 py-1.5 text-sm font-semibold transition ${
                 days === n
                   ? "border-violet-500 bg-violet-50 text-violet-700"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
               }`}
             >
               Last {n} days
@@ -97,20 +97,20 @@ export default function ClinicAiUsagePage() {
 
       {/* Hero numbers */}
       <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Calls</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">
+        <div className="rounded-xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Calls</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">
             {loading ? "…" : (data?.totals.calls ?? 0).toLocaleString()}
           </p>
         </div>
-        <div className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Tokens</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">
+        <div className="rounded-xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Tokens</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">
             {loading ? "…" : (data?.totals.tokens ?? 0).toLocaleString()}
           </p>
         </div>
-        <div className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Approx cost</p>
+        <div className="rounded-xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Approx cost</p>
           <p className="mt-1 text-2xl font-bold text-emerald-700">
             {loading ? "…" : approxCostUsd(data?.totals.tokens ?? 0)}
           </p>
@@ -118,20 +118,20 @@ export default function ClinicAiUsagePage() {
             For comparison: Abridge bills ~$400/dr/mo
           </p>
         </div>
-        <div className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Errors</p>
+        <div className="rounded-xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Errors</p>
           <p className="mt-1 text-2xl font-bold text-rose-600">
             {loading ? "…" : (data?.totals.errors ?? 0).toLocaleString()}
           </p>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm">
-        <div className="border-b border-slate-100 px-5 py-3 font-semibold text-slate-900">
+      <div className="overflow-hidden rounded-xl bg-white dark:bg-slate-900 shadow-sm">
+        <div className="border-b border-slate-100 px-5 py-3 font-semibold text-slate-900 dark:text-slate-100">
           By feature · last {days} days
         </div>
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+          <thead className="bg-slate-50 dark:bg-slate-900 text-xs uppercase text-slate-500 dark:text-slate-400">
             <tr>
               <th className="px-5 py-2 font-medium">Feature</th>
               <th className="px-5 py-2 font-medium">Calls</th>
@@ -144,14 +144,14 @@ export default function ClinicAiUsagePage() {
           <tbody>
             {(data?.byRoute || []).map((r) => (
               <tr key={r.route} className="border-b border-slate-50">
-                <td className="px-5 py-2 text-slate-800">
+                <td className="px-5 py-2 text-slate-800 dark:text-slate-200">
                   {FRIENDLY_NAMES[r.route] || r.route}
                   <span className="ml-2 text-[10px] font-mono text-slate-400">{r.route}</span>
                 </td>
                 <td className="px-5 py-2">{r.calls.toLocaleString()}</td>
                 <td className="px-5 py-2">{r.tokens.toLocaleString()}</td>
                 <td className="px-5 py-2 text-emerald-700">{approxCostUsd(r.tokens)}</td>
-                <td className="px-5 py-2 text-slate-500">{r.avgLatencyMs} ms</td>
+                <td className="px-5 py-2 text-slate-500 dark:text-slate-400">{r.avgLatencyMs} ms</td>
                 <td className={`px-5 py-2 ${r.errors > 0 ? "text-rose-600" : "text-slate-400"}`}>
                   {r.errors}
                 </td>

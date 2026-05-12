@@ -71,8 +71,8 @@ export default function DocumentsPage() {
     <div className="mx-auto max-w-4xl px-4 py-6">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">My documents</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">My documents</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Prescriptions, reports, imaging, insurance — one secure place. {docs.length}/50 used.
           </p>
         </div>
@@ -103,24 +103,24 @@ export default function DocumentsPage() {
       </div>
 
       {loading ? (
-        <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>
+        <p className="rounded-xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white dark:bg-slate-900 p-10 text-center">
           <p className="text-3xl">📄</p>
-          <p className="mt-2 text-base font-bold text-slate-700">No documents yet</p>
-          <p className="mt-1 text-sm text-slate-500">Upload your first prescription or lab report to start your medical record.</p>
+          <p className="mt-2 text-base font-bold text-slate-700 dark:text-slate-300">No documents yet</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Upload your first prescription or lab report to start your medical record.</p>
         </div>
       ) : (
         <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {filtered.map((d) => (
-            <li key={d.id} className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 transition-shadow hover:shadow-md">
+            <li key={d.id} className="rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 transition-shadow hover:shadow-md">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 min-w-0 flex-1">
                   <span className="text-2xl flex-none">{CATEGORY_EMOJI[d.category]}</span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-bold text-slate-900">{d.title}</p>
-                    <p className="text-xs text-slate-500">{CATEGORY_LABEL[d.category]}</p>
-                    {d.source && <p className="mt-0.5 truncate text-[11px] text-slate-500">{d.source}</p>}
+                    <p className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">{d.title}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{CATEGORY_LABEL[d.category]}</p>
+                    {d.source && <p className="mt-0.5 truncate text-[11px] text-slate-500 dark:text-slate-400">{d.source}</p>}
                     <div className="mt-1 flex items-center gap-2 text-[10px] text-slate-400">
                       <span>{d.documentDate ? new Date(d.documentDate).toLocaleDateString() : new Date(d.uploadedAt).toLocaleDateString()}</span>
                       <span>·</span>
@@ -155,11 +155,11 @@ function Chip({ active, onClick, children, count }: { active: boolean; onClick: 
     <button
       onClick={onClick}
       className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-        active ? "bg-indigo-600 text-white shadow-sm" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+        active ? "bg-indigo-600 text-white shadow-sm" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:bg-slate-900"
       }`}
     >
       {children}
-      <span className={`rounded-full px-1.5 text-[10px] font-bold ${active ? "bg-white/20" : "bg-slate-100 text-slate-600"}`}>{count}</span>
+      <span className={`rounded-full px-1.5 text-[10px] font-bold ${active ? "bg-white/20" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}>{count}</span>
     </button>
   );
 }
@@ -222,57 +222,57 @@ function UploadForm({ onSaved }: { onSaved: () => void }) {
   };
 
   return (
-    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-      <p className="text-sm font-bold text-slate-900">Upload a document</p>
+    <div className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Upload a document</p>
       {error && <p className="mt-2 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
 
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="text-xs font-semibold text-slate-700">
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
           Title
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Lipid panel — March 2026"
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal"
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal"
           />
         </label>
-        <label className="text-xs font-semibold text-slate-700">
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
           Category
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as Category)}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal"
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal"
           >
             {(Object.keys(CATEGORY_LABEL) as Category[]).map((c) => (
               <option key={c} value={c}>{CATEGORY_EMOJI[c]} {CATEGORY_LABEL[c]}</option>
             ))}
           </select>
         </label>
-        <label className="text-xs font-semibold text-slate-700">
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
           Source (optional)
           <input
             value={source}
             onChange={(e) => setSource(e.target.value)}
             placeholder="Hospital / doctor / lab name"
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal"
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal"
           />
         </label>
-        <label className="text-xs font-semibold text-slate-700">
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
           Document date (optional)
           <input
             type="date"
             value={documentDate}
             onChange={(e) => setDocumentDate(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal"
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal"
           />
         </label>
-        <label className="sm:col-span-2 text-xs font-semibold text-slate-700">
+        <label className="sm:col-span-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
           Notes (optional)
           <input
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Anything you want to remember about this document"
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal"
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal"
           />
         </label>
       </div>
@@ -287,11 +287,11 @@ function UploadForm({ onSaved }: { onSaved: () => void }) {
         />
         <button
           onClick={() => fileRef.current?.click()}
-          className="w-full rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-700"
+          className="w-full rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 dark:bg-slate-900 px-4 py-6 text-center text-sm font-semibold text-slate-600 dark:text-slate-300 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-700"
         >
           {data ? `📎 ${data.name} (${fmtBytes(data.bytes)})` : "Click to choose an image or PDF"}
         </button>
-        <p className="mt-1 text-[10px] text-slate-500">PDF or image up to {fmtBytes(MAX_BYTES)}.</p>
+        <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">PDF or image up to {fmtBytes(MAX_BYTES)}.</p>
       </div>
 
       <div className="mt-4 flex justify-end gap-2">

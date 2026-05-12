@@ -19,7 +19,7 @@ import Link from "next/link";
 // shell + Suspense gate around it.
 export default function ChangePasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-50" />}>
+    <Suspense fallback={<div className="min-h-screen bg-slate-50 dark:bg-slate-900" />}>
       <ChangePasswordPageInner />
     </Suspense>
   );
@@ -91,15 +91,15 @@ function ChangePasswordPageInner() {
           <div className="mx-auto mb-3 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-2xl text-white shadow-lg shadow-emerald-500/30">
             🔑
           </div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
             {isTempFlow ? "Set your new password" : "Change password"}
           </h1>
           {isTempFlow ? (
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
               Your account was provisioned with a temporary password. Choose a new one now — temp passwords expire after 3 days and you'll be locked out until an admin re-issues.
             </p>
           ) : (
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
               Pick a strong password. We never email passwords; if you forget it, an admin will issue a new temporary one.
             </p>
           )}
@@ -111,7 +111,7 @@ function ChangePasswordPageInner() {
         </div>
         <form
           onSubmit={submit}
-          className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg"
+          className="space-y-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-lg"
         >
           {ok && (
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
@@ -152,7 +152,7 @@ function ChangePasswordPageInner() {
           >
             {submitting ? "Saving…" : ok ? "Saved" : "Update password"}
           </button>
-          <p className="text-center text-[11px] text-slate-500">
+          <p className="text-center text-[11px] text-slate-500 dark:text-slate-400">
             Need help? <Link href="/contact" className="font-semibold text-emerald-700 underline">Contact your admin</Link>.
           </p>
         </form>
@@ -178,7 +178,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-600">
+      <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
         {label}
       </span>
       <input
@@ -189,7 +189,7 @@ function Field({
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
         required
       />
-      {hint && <p className="mt-1 text-[11px] text-slate-500">{hint}</p>}
+      {hint && <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{hint}</p>}
     </label>
   );
 }

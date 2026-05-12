@@ -44,7 +44,7 @@ const STATUS_PILL: Record<string, string> = {
   in_lab: "bg-violet-100 text-violet-800",
   reported: "bg-emerald-100 text-emerald-800",
   closed: "bg-emerald-200 text-emerald-900",
-  cancelled: "bg-slate-200 text-slate-600",
+  cancelled: "bg-slate-200 text-slate-600 dark:text-slate-300",
 };
 const STATUS_LABEL: Record<string, string> = {
   placed: "Placed", confirmed: "Confirmed",
@@ -60,7 +60,7 @@ const CATEGORY_TONE: Record<string, string> = {
   ecg: "bg-pink-100 text-pink-800",
   biopsy: "bg-fuchsia-100 text-fuchsia-800",
   stool: "bg-yellow-100 text-yellow-800",
-  other: "bg-slate-100 text-slate-700",
+  other: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
 };
 
 function fmtINR(n: number): string { return `₹${Math.round(n).toLocaleString("en-IN")}`; }
@@ -198,19 +198,19 @@ function LabsContent() {
 
       <div className="mb-6 flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Lab Tests</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Lab Tests</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Pick tests, see nearby NABL-accredited labs, and book home collection or an in-lab visit.
           </p>
         </div>
         {catalog.labs.length === 0 && (
-          <button onClick={seed} className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600">Seed demo</button>
+          <button onClick={seed} className="rounded-lg border border-dashed border-slate-300 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300">Seed demo</button>
         )}
       </div>
 
       {/* Test picker */}
-      <section className="mb-6 rounded-2xl bg-white p-5 shadow-sm">
-        <p className="mb-2 text-sm font-bold text-slate-900">Pick tests ({picked.size})</p>
+      <section className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+        <p className="mb-2 text-sm font-bold text-slate-900 dark:text-slate-100">Pick tests ({picked.size})</p>
         <input
           className="mb-3 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
           placeholder="Search tests (CBC, HbA1c, lipid…)"
@@ -224,11 +224,11 @@ function LabsContent() {
               <button
                 key={t.testCode}
                 onClick={() => togglePick(t.testCode)}
-                className={`flex items-start justify-between gap-2 rounded-lg border p-2 text-left text-xs ${on ? "border-indigo-500 bg-indigo-50" : "border-slate-200 bg-white hover:border-indigo-300"}`}
+                className={`flex items-start justify-between gap-2 rounded-lg border p-2 text-left text-xs ${on ? "border-indigo-500 bg-indigo-50" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-indigo-300"}`}
               >
                 <div>
-                  <p className="font-bold text-slate-900">{t.testName}</p>
-                  <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${CATEGORY_TONE[t.category] || "bg-slate-100"}`}>{t.category}</span>
+                  <p className="font-bold text-slate-900 dark:text-slate-100">{t.testName}</p>
+                  <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${CATEGORY_TONE[t.category] || "bg-slate-100 dark:bg-slate-800"}`}>{t.category}</span>
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] text-slate-400">from</p>
@@ -243,7 +243,7 @@ function LabsContent() {
 
         <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
           <input className="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="Pincode" value={pincode} onChange={(e) => setPincode(e.target.value)} />
-          <label className="flex items-center gap-1.5 text-xs text-slate-600">
+          <label className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
             <input type="checkbox" checked={includePartial} onChange={(e) => setIncludePartial(e.target.checked)} />
             Show partial matches
           </label>
@@ -256,20 +256,20 @@ function LabsContent() {
       {/* Offers */}
       {offers.length > 0 && (
         <section className="mb-6 space-y-3">
-          <p className="text-sm font-bold text-slate-900">{offers.length} lab{offers.length === 1 ? "" : "s"} matched</p>
+          <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{offers.length} lab{offers.length === 1 ? "" : "s"} matched</p>
           {offers.map((o, i) => (
-            <div key={o.labId} className={`rounded-2xl border-2 p-4 shadow-sm ${i === 0 ? "border-emerald-300 bg-emerald-50/30" : "border-slate-200 bg-white"}`}>
+            <div key={o.labId} className={`rounded-2xl border-2 p-4 shadow-sm ${i === 0 ? "border-emerald-300 bg-emerald-50/30" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"}`}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex-1 min-w-[240px]">
-                  <p className="font-bold text-slate-900">
+                  <p className="font-bold text-slate-900 dark:text-slate-100">
                     {o.labName}
                     {i === 0 && <span className="ml-2 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">Best match</span>}
                     {o.samePincode && <span className="ml-1 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase text-sky-700">Same pincode</span>}
                     {o.nablAccredited && <span className="ml-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700">NABL</span>}
                   </p>
-                  <p className="mt-0.5 text-xs text-slate-500">{o.city || "—"}{o.pincode ? ` · ${o.pincode}` : ""}</p>
+                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{o.city || "—"}{o.pincode ? ` · ${o.pincode}` : ""}</p>
                   <div className="mt-1 flex flex-wrap gap-2 text-xs">
-                    <span className="rounded-md bg-slate-100 px-2 py-0.5">Coverage {o.coveragePct}%</span>
+                    <span className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5">Coverage {o.coveragePct}%</span>
                     <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-emerald-800">{o.effectiveDiscountPct}% off</span>
                     <span className="rounded-md bg-sky-100 px-2 py-0.5 text-sky-800">Reports in {o.reportingHours}h</span>
                     {o.homeCollection && <span className="rounded-md bg-violet-100 px-2 py-0.5 text-violet-800">Home collection ₹{o.homeCollectionFeeRupees}</span>}
@@ -277,19 +277,19 @@ function LabsContent() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-extrabold text-slate-900">{fmtINR(o.totalRupees)}</p>
+                  <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">{fmtINR(o.totalRupees)}</p>
                   {o.savingsRupees > 0 && <p className="text-xs text-emerald-700">Save {fmtINR(o.savingsRupees)} vs MRP</p>}
                   <button onClick={() => setOrderingFrom(o)} className="mt-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white">Book →</button>
                 </div>
               </div>
               <div className="mt-3 grid gap-1.5 sm:grid-cols-2">
                 {o.tests.map((t, j) => (
-                  <div key={j} className={`rounded-md px-2 py-1 text-xs ${t.available ? "bg-white ring-1 ring-slate-200" : "bg-rose-50 ring-1 ring-rose-200"}`}>
+                  <div key={j} className={`rounded-md px-2 py-1 text-xs ${t.available ? "bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800" : "bg-rose-50 ring-1 ring-rose-200"}`}>
                     <div className="flex items-center justify-between">
-                      <span className={t.available ? "text-slate-800" : "text-rose-700"}>
+                      <span className={t.available ? "text-slate-800 dark:text-slate-200" : "text-rose-700"}>
                         {t.available ? "✓" : "✗"} <strong>{catalog.tests.find((c) => c.testCode === t.testCode)?.testName || t.testCode}</strong>
                       </span>
-                      {t.available && t.pricedRupees !== undefined && <span className="font-mono font-semibold text-slate-700">{fmtINR(t.pricedRupees)}</span>}
+                      {t.available && t.pricedRupees !== undefined && <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">{fmtINR(t.pricedRupees)}</span>}
                     </div>
                   </div>
                 ))}
@@ -300,18 +300,18 @@ function LabsContent() {
       )}
 
       {/* My orders */}
-      <section className="rounded-2xl bg-white p-5 shadow-sm">
-        <p className="mb-3 text-sm font-bold text-slate-900">My lab orders</p>
+      <section className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+        <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">My lab orders</p>
         {orders.length === 0 ? (
-          <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">No orders yet.</p>
+          <p className="rounded-lg bg-slate-50 dark:bg-slate-900 p-4 text-sm text-slate-500 dark:text-slate-400">No orders yet.</p>
         ) : (
           <ul className="space-y-3">
             {orders.map((o) => (
-              <li key={o.id} className="rounded-xl border border-slate-200 bg-white p-4">
+              <li key={o.id} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
-                    <p className="font-semibold text-slate-900">{o.labName}</p>
-                    <p className="mt-0.5 text-[11px] text-slate-500">
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">{o.labName}</p>
+                    <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
                       {o.fulfilment === "home_collection" ? "Home collection" : "In-lab"} · Placed {new Date(o.createdAt).toLocaleString()}
                     </p>
                     <div className="mt-2 flex items-center gap-1">
@@ -321,7 +321,7 @@ function LabsContent() {
                         const cancelled = o.status === "cancelled";
                         return (
                           <div key={s} className="flex flex-1 items-center gap-1">
-                            <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${cancelled ? "bg-slate-200 text-slate-500" : done ? "bg-emerald-500 text-white" : reached ? "bg-indigo-500 text-white" : "bg-slate-200 text-slate-400"}`}>
+                            <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${cancelled ? "bg-slate-200 text-slate-500 dark:text-slate-400" : done ? "bg-emerald-500 text-white" : reached ? "bg-indigo-500 text-white" : "bg-slate-200 text-slate-400"}`}>
                               {done || (reached && o.status === s) ? "✓" : i + 1}
                             </span>
                             {i < STAGES.length - 1 && <div className={`h-0.5 flex-1 ${cancelled ? "bg-slate-200" : done ? "bg-emerald-300" : "bg-slate-200"}`} />}
@@ -332,7 +332,7 @@ function LabsContent() {
                   </div>
                   <div className="text-right">
                     <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold uppercase ${STATUS_PILL[o.status]}`}>{STATUS_LABEL[o.status]}</span>
-                    <p className="mt-1 text-lg font-bold text-slate-900">{fmtINR(o.totalRupees)}</p>
+                    <p className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">{fmtINR(o.totalRupees)}</p>
                     {(o.status === "placed" || o.status === "confirmed") && (
                       <button onClick={() => cancelOrder(o.id)} className="mt-1 text-[11px] font-semibold text-rose-600">Cancel</button>
                     )}
@@ -340,9 +340,9 @@ function LabsContent() {
                 </div>
                 <ul className="mt-3 grid gap-1 text-xs sm:grid-cols-2">
                   {o.lines.map((l, j) => (
-                    <li key={j} className="flex justify-between rounded-md bg-slate-50 px-2 py-1">
-                      <span className="text-slate-700">{l.testName || l.testCode}</span>
-                      <span className="font-mono font-semibold text-slate-700">{fmtINR(l.pricedRupees)}</span>
+                    <li key={j} className="flex justify-between rounded-md bg-slate-50 dark:bg-slate-900 px-2 py-1">
+                      <span className="text-slate-700 dark:text-slate-300">{l.testName || l.testCode}</span>
+                      <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">{fmtINR(l.pricedRupees)}</span>
                     </li>
                   ))}
                 </ul>
@@ -360,47 +360,47 @@ function LabsContent() {
       {/* Order confirm dialog */}
       {orderingFrom && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setOrderingFrom(null)}>
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-slate-900">Confirm booking</h3>
-            <p className="mt-1 text-sm text-slate-500">{orderingFrom.labName}</p>
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Confirm booking</h3>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{orderingFrom.labName}</p>
 
             <div className="mt-4 space-y-3">
               <div>
-                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Fulfilment</p>
+                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Fulfilment</p>
                 <div className="flex gap-2">
                   {orderingFrom.homeCollection && (
-                    <button onClick={() => setFulfilment("home_collection")} className={`flex-1 rounded-lg border-2 p-2 text-sm ${fulfilment === "home_collection" ? "border-indigo-500 bg-indigo-50" : "border-slate-200"}`}>
-                      🏠 Home collection<br /><span className="text-[11px] text-slate-500">+{fmtINR(orderingFrom.homeCollectionFeeRupees)}</span>
+                    <button onClick={() => setFulfilment("home_collection")} className={`flex-1 rounded-lg border-2 p-2 text-sm ${fulfilment === "home_collection" ? "border-indigo-500 bg-indigo-50" : "border-slate-200 dark:border-slate-800"}`}>
+                      🏠 Home collection<br /><span className="text-[11px] text-slate-500 dark:text-slate-400">+{fmtINR(orderingFrom.homeCollectionFeeRupees)}</span>
                     </button>
                   )}
-                  <button onClick={() => setFulfilment("in_lab")} className={`flex-1 rounded-lg border-2 p-2 text-sm ${fulfilment === "in_lab" ? "border-indigo-500 bg-indigo-50" : "border-slate-200"}`}>
-                    🏥 Visit lab<br /><span className="text-[11px] text-slate-500">No collection fee</span>
+                  <button onClick={() => setFulfilment("in_lab")} className={`flex-1 rounded-lg border-2 p-2 text-sm ${fulfilment === "in_lab" ? "border-indigo-500 bg-indigo-50" : "border-slate-200 dark:border-slate-800"}`}>
+                    🏥 Visit lab<br /><span className="text-[11px] text-slate-500 dark:text-slate-400">No collection fee</span>
                   </button>
                 </div>
               </div>
               {fulfilment === "home_collection" && (
                 <div>
-                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Collection address</p>
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Collection address</p>
                   <textarea rows={2} value={address} onChange={(e) => setAddress(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
                 </div>
               )}
               <div>
-                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Preferred slot</p>
+                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Preferred slot</p>
                 <input type="datetime-local" value={slot} onChange={(e) => setSlot(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
               </div>
               {orderingFrom.fastingHoursMax !== undefined && orderingFrom.fastingHoursMax > 0 && (
                 <p className="rounded-md bg-amber-50 p-2 text-xs text-amber-800">⚠ Fast for {orderingFrom.fastingHoursMax}h before sample collection.</p>
               )}
-              <div className="rounded-md bg-slate-50 p-2 text-sm">
-                <div className="flex justify-between"><span className="text-slate-600">Subtotal</span><span className="font-mono">{fmtINR(orderingFrom.totalRupees)}</span></div>
+              <div className="rounded-md bg-slate-50 dark:bg-slate-900 p-2 text-sm">
+                <div className="flex justify-between"><span className="text-slate-600 dark:text-slate-300">Subtotal</span><span className="font-mono">{fmtINR(orderingFrom.totalRupees)}</span></div>
                 {fulfilment === "home_collection" && (
-                  <div className="flex justify-between"><span className="text-slate-600">Collection fee</span><span className="font-mono">{fmtINR(orderingFrom.homeCollectionFeeRupees)}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-600 dark:text-slate-300">Collection fee</span><span className="font-mono">{fmtINR(orderingFrom.homeCollectionFeeRupees)}</span></div>
                 )}
-                <div className="mt-1 flex justify-between border-t border-slate-200 pt-1 text-base font-bold"><span>Total</span><span className="font-mono">{fmtINR(orderingFrom.totalRupees + (fulfilment === "home_collection" ? orderingFrom.homeCollectionFeeRupees : 0))}</span></div>
+                <div className="mt-1 flex justify-between border-t border-slate-200 dark:border-slate-800 pt-1 text-base font-bold"><span>Total</span><span className="font-mono">{fmtINR(orderingFrom.totalRupees + (fulfilment === "home_collection" ? orderingFrom.homeCollectionFeeRupees : 0))}</span></div>
               </div>
             </div>
             <div className="mt-5 flex justify-end gap-2">
-              <button onClick={() => setOrderingFrom(null)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Cancel</button>
+              <button onClick={() => setOrderingFrom(null)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Cancel</button>
               <button onClick={placeOrder} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white">Place order</button>
             </div>
           </div>

@@ -74,8 +74,8 @@ export default function CarePlanPage() {
     <div className="mx-auto max-w-4xl px-4 py-6">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Care plans</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Care plans</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Chronic-condition goals — targets, compliance %, lifestyle reminders. Pulls vitals from the last 30 days.
           </p>
         </div>
@@ -91,13 +91,13 @@ export default function CarePlanPage() {
         <CreatePlanForm conditions={conditions} onCreated={() => { setShowCreate(false); load(); }} />
       )}
 
-      {loading && <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>}
+      {loading && <p className="rounded-xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>}
 
       {!loading && plans.length === 0 && !showCreate && (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white dark:bg-slate-900 p-10 text-center">
           <p className="text-3xl">📋</p>
-          <p className="mt-2 text-base font-bold text-slate-700">No active care plans</p>
-          <p className="mt-1 text-sm text-slate-500">Add a plan for an ongoing condition (diabetes, hypertension, etc.) to track targets over time.</p>
+          <p className="mt-2 text-base font-bold text-slate-700 dark:text-slate-300">No active care plans</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Add a plan for an ongoing condition (diabetes, hypertension, etc.) to track targets over time.</p>
           <button onClick={() => setShowCreate(true)} className="mt-4 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white">+ New plan</button>
         </div>
       )}
@@ -113,21 +113,21 @@ export default function CarePlanPage() {
 
 function PlanCard({ plan, onDelete, onToggle }: { plan: CarePlan; onDelete: () => void; onToggle: () => void }) {
   return (
-    <article className={`rounded-3xl bg-white p-6 shadow-sm ring-1 ${plan.active ? "ring-slate-200" : "ring-slate-100 opacity-70"}`}>
+    <article className={`rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ${plan.active ? "ring-slate-200 dark:ring-slate-800" : "ring-slate-100 opacity-70"}`}>
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-extrabold text-slate-900">{plan.title}</h2>
-            {!plan.active && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-600">Paused</span>}
+            <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">{plan.title}</h2>
+            {!plan.active && <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-600 dark:text-slate-300">Paused</span>}
           </div>
-          <p className="mt-0.5 text-xs text-slate-500">
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
             {plan.diagnosedOn && <>Since {new Date(plan.diagnosedOn).toLocaleDateString()} · </>}
             {plan.doctorEmail && <>{plan.doctorEmail} · </>}
             Updated {new Date(plan.updatedAt).toLocaleDateString()}
           </p>
         </div>
         <div className="flex flex-none gap-1">
-          <button onClick={onToggle} className="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50">
+          <button onClick={onToggle} className="rounded-lg bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-50 dark:bg-slate-900">
             {plan.active ? "Pause" : "Reactivate"}
           </button>
           <button onClick={onDelete} className="rounded-lg p-1.5 text-rose-500 hover:bg-rose-50" aria-label="Delete plan">
@@ -140,21 +140,21 @@ function PlanCard({ plan, onDelete, onToggle }: { plan: CarePlan; onDelete: () =
 
       {plan.compliance.length > 0 && (
         <section className="mt-5">
-          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Targets — last 30 days</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Targets — last 30 days</p>
           <ul className="space-y-2">
             {plan.compliance.map((c, i) => (
-              <li key={i} className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-100">
+              <li key={i} className="rounded-xl bg-slate-50 dark:bg-slate-900 p-3 ring-1 ring-slate-100">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <span className="text-base">{KIND_EMOJI[c.target.kind]}</span>
-                    <p className="truncate text-sm font-semibold text-slate-900">{c.target.label}</p>
-                    <span className="text-xs text-slate-500">
+                    <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{c.target.label}</p>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
                       {targetText(c.target)}
                     </span>
                   </div>
                   {c.count > 0 ? (
                     <div className="flex flex-none items-center gap-3">
-                      <span className="text-xs tabular-nums text-slate-700">{c.latest} {c.target.unit}</span>
+                      <span className="text-xs tabular-nums text-slate-700 dark:text-slate-300">{c.latest} {c.target.unit}</span>
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
                         c.inRangePct >= 80 ? "bg-emerald-100 text-emerald-800"
                         : c.inRangePct >= 50 ? "bg-amber-100 text-amber-800"
@@ -189,10 +189,10 @@ function PlanCard({ plan, onDelete, onToggle }: { plan: CarePlan; onDelete: () =
 
       {plan.goals.length > 0 && (
         <section className="mt-5">
-          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Lifestyle goals</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Lifestyle goals</p>
           <ul className="space-y-1.5">
             {plan.goals.map((g, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
+              <li key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
                 <span className="mt-1.5 h-1.5 w-1.5 flex-none rounded-full bg-indigo-500" />
                 {g}
               </li>
@@ -250,37 +250,37 @@ function CreatePlanForm({ conditions, onCreated }: { conditions: ConditionOpt[];
   };
 
   return (
-    <div className="mb-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-      <p className="text-sm font-bold text-slate-900">New care plan</p>
+    <div className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">New care plan</p>
       {error && <p className="mt-2 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="text-xs font-semibold text-slate-700">
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
           Condition
-          <select value={condition} onChange={(e) => setCondition(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal">
+          <select value={condition} onChange={(e) => setCondition(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal">
             {conditions.map((c) => (<option key={c.value} value={c.value}>{c.label}</option>))}
           </select>
         </label>
-        <label className="text-xs font-semibold text-slate-700">
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
           Diagnosed on (optional)
-          <input type="date" value={diagnosedOn} onChange={(e) => setDiagnosedOn(e.target.value)} max={new Date().toISOString().slice(0, 10)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal" />
+          <input type="date" value={diagnosedOn} onChange={(e) => setDiagnosedOn(e.target.value)} max={new Date().toISOString().slice(0, 10)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal" />
         </label>
-        <label className="sm:col-span-2 text-xs font-semibold text-slate-700">
+        <label className="sm:col-span-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
           Title (optional override)
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Auto: condition name" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal" />
+          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Auto: condition name" className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal" />
         </label>
-        <label className="sm:col-span-2 text-xs font-semibold text-slate-700">
+        <label className="sm:col-span-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
           Lifestyle goals (one per line)
           <textarea
             value={goals}
             onChange={(e) => setGoals(e.target.value)}
             rows={4}
             placeholder={"Walk 30 minutes daily\nNo added sugar\nSleep 7 hours"}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal"
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal"
           />
         </label>
-        <label className="sm:col-span-2 text-xs font-semibold text-slate-700">
+        <label className="sm:col-span-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
           Notes (optional)
-          <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Why this plan, lifestyle context, etc." className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal" />
+          <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Why this plan, lifestyle context, etc." className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal" />
         </label>
       </div>
       <div className="mt-4 flex justify-end">

@@ -23,12 +23,12 @@ export default function BiomedicalDashboard() {
         <StatTile label="Waste this month" value="0 kg" emoji="🗑️" tone="emerald" />
       </div>
 
-      <section className="rounded-3xl border border-white/60 bg-white p-6 shadow-sm">
-        <h2 className="text-base font-bold text-slate-900">What lives here</h2>
+      <section className="rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">What lives here</h2>
         <ul className="mt-3 grid gap-3 sm:grid-cols-2">
           <li className="rounded-2xl border border-amber-200 bg-amber-50/40 p-4">
-            <p className="font-semibold text-slate-900">🗑️ Biomedical waste log</p>
-            <p className="mt-1 text-xs text-slate-600">
+            <p className="font-semibold text-slate-900 dark:text-slate-100">🗑️ Biomedical waste log</p>
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
               BMW-2016 / OSHA / EU compliant disposal log. Yellow / red /
               blue / white / black bag categories with weight + manifest
               tracking. Auto monthly summary for regulatory submission.
@@ -38,8 +38,8 @@ export default function BiomedicalDashboard() {
             </a>
           </li>
           <li className="rounded-2xl border border-cyan-200 bg-cyan-50/40 p-4">
-            <p className="font-semibold text-slate-900">🧰 Equipment inventory</p>
-            <p className="mt-1 text-xs text-slate-600">
+            <p className="font-semibold text-slate-900 dark:text-slate-100">🧰 Equipment inventory</p>
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
               Track every monitor, ventilator, infusion pump, autoclave with
               serial numbers, calibration dates, and AMC contracts. Alerts
               when service falls due.

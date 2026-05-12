@@ -119,46 +119,46 @@ function GrantInner() {
     <div className="space-y-4">
       <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4">
         <p className="text-xs font-bold uppercase tracking-wider text-indigo-700">A clinic is requesting access</p>
-        <p className="mt-1 text-2xl font-bold text-slate-900">{loadingOrg ? "…" : org?.name || "Requesting clinic"}</p>
-        {org?.country && <p className="text-sm text-slate-600">{org.country}</p>}
-        <p className="mt-2 text-sm text-slate-700">
+        <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">{loadingOrg ? "…" : org?.name || "Requesting clinic"}</p>
+        {org?.country && <p className="text-sm text-slate-600 dark:text-slate-300">{org.country}</p>}
+        <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
           They want to read your health passport. You choose what to share and for how long.
         </p>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <p className="mb-3 text-sm font-bold text-slate-900">What to share</p>
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+        <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">What to share</p>
         <ul className="space-y-2">
           {SCOPE_OPTS.map((s) => {
             const on = scopes.has(s.id);
             return (
-              <li key={s.id} className={`flex items-start gap-3 rounded-lg border p-3 ${s.locked ? "border-emerald-200 bg-emerald-50" : on ? "border-indigo-300 bg-indigo-50/50" : "border-slate-200 bg-white"}`}>
+              <li key={s.id} className={`flex items-start gap-3 rounded-lg border p-3 ${s.locked ? "border-emerald-200 bg-emerald-50" : on ? "border-indigo-300 bg-indigo-50/50" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"}`}>
                 <input type="checkbox" checked={on} disabled={s.locked} onChange={() => toggle(s.id)} className="mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-slate-900">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {s.label}{s.locked && <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700">Always</span>}
                   </p>
-                  <p className="text-xs text-slate-500">{s.help}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{s.help}</p>
                 </div>
               </li>
             );
           })}
         </ul>
 
-        <p className="mt-5 mb-2 text-sm font-bold text-slate-900">For how long</p>
+        <p className="mt-5 mb-2 text-sm font-bold text-slate-900 dark:text-slate-100">For how long</p>
         <div className="flex flex-wrap gap-2">
           {TTL_OPTS.map((o) => (
             <button
               key={o.label}
               onClick={() => setTtlHours(o.hours)}
-              className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${ttlHours === o.hours ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-slate-300 bg-white text-slate-600"}`}
+              className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${ttlHours === o.hours ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-slate-300 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
             >
               {o.label}
             </button>
           ))}
         </div>
 
-        <p className="mt-5 mb-1 text-sm font-bold text-slate-900">Note (optional)</p>
+        <p className="mt-5 mb-1 text-sm font-bold text-slate-900 dark:text-slate-100">Note (optional)</p>
         <input
           value={note}
           onChange={(e) => setNote(e.target.value)}
@@ -169,7 +169,7 @@ function GrantInner() {
         {error && <p className="mt-3 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
 
         <div className="mt-5 flex justify-end gap-2">
-          <button onClick={() => router.push("/dashboard/health-passport")} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
+          <button onClick={() => router.push("/dashboard/health-passport")} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
             Cancel
           </button>
           <button onClick={save} disabled={saving} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">
@@ -184,8 +184,8 @@ function GrantInner() {
 export default function GrantPage() {
   return (
     <div className="mx-auto max-w-xl px-4 py-6">
-      <h1 className="mb-4 text-2xl font-bold text-slate-900">Grant access to your Health Passport</h1>
-      <Suspense fallback={<p className="text-sm text-slate-500">Loading…</p>}>
+      <h1 className="mb-4 text-2xl font-bold text-slate-900 dark:text-slate-100">Grant access to your Health Passport</h1>
+      <Suspense fallback={<p className="text-sm text-slate-500 dark:text-slate-400">Loading…</p>}>
         <GrantInner />
       </Suspense>
     </div>

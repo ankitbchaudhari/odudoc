@@ -279,13 +279,13 @@ export default function DoctorProfilePage() {
   if (!doctor) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-slate-900">Doctor profile not found</h1>
-        <p className="mt-2 text-sm text-slate-600">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Doctor profile not found</h1>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
           We couldn&apos;t load your doctor record. Sign out and back in, then try again.
         </p>
         <Link
           href="/dashboard/doctor"
-          className="mt-4 inline-block rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          className="mt-4 inline-block rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
         >
           Back to dashboard
         </Link>
@@ -296,7 +296,7 @@ export default function DoctorProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50/60 via-white to-indigo-50/40 pb-24">
       {/* Hero */}
-      <div className="relative overflow-hidden border-b border-slate-200/60 bg-gradient-to-br from-primary-600 via-teal-600 to-emerald-600 text-white">
+      <div className="relative overflow-hidden border-b border-slate-200 dark:border-slate-800/60 bg-gradient-to-br from-primary-600 via-teal-600 to-emerald-600 text-white">
         <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
         <div className="relative mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
@@ -394,7 +394,7 @@ export default function DoctorProfilePage() {
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                  className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:bg-slate-900"
                 >
                   Upload photo
                 </button>
@@ -408,7 +408,7 @@ export default function DoctorProfilePage() {
                   </button>
                 )}
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Square image, at least 200 × 200 px, under 4 MB. A clear, recent
                 headshot performs best.
               </p>
@@ -423,12 +423,12 @@ export default function DoctorProfilePage() {
               rows={5}
               maxLength={600}
               placeholder="Briefly describe your training, focus areas, and what patients can expect. 80–200 words is ideal — patients skim, not read."
-              className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-900 placeholder:text-slate-400 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/15"
+              className="w-full resize-y rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-4 py-3 text-sm leading-6 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/15"
             />
             <div className="mt-1.5 flex items-center justify-between text-xs">
               <span
                 className={
-                  bio.trim().length >= 60 ? "text-emerald-600" : "text-slate-500"
+                  bio.trim().length >= 60 ? "text-emerald-600" : "text-slate-500 dark:text-slate-400"
                 }
               >
                 {bio.trim().length >= 60
@@ -446,7 +446,7 @@ export default function DoctorProfilePage() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Include country code, e.g. +1 555 123 4567"
-              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/15"
+              className="w-full rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/15"
             />
           </div>
         </Card>
@@ -503,7 +503,7 @@ export default function DoctorProfilePage() {
                 ))}
               </select>
               {country && (
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   Selected: <b>{isoToName(country)}</b> · drives the currency below.
                 </p>
               )}
@@ -522,7 +522,7 @@ export default function DoctorProfilePage() {
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={`Consultation fee (${currency.code})`}>
               <div className="relative">
-                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-500">
+                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-500 dark:text-slate-400">
                   {currency.symbol}
                 </span>
                 <input
@@ -534,7 +534,7 @@ export default function DoctorProfilePage() {
                   className="input-modern pl-9"
                 />
               </div>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Patients in other countries see a converted amount automatically.
               </p>
             </Field>
@@ -625,7 +625,7 @@ export default function DoctorProfilePage() {
                 <button
                   type="button"
                   onClick={copyMondayToWeek}
-                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  className="rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
                 >
                   Copy Mon → Mon-Fri
                 </button>
@@ -642,7 +642,7 @@ export default function DoctorProfilePage() {
                   className={`rounded-2xl border transition-all ${
                     on
                       ? "border-primary-200 bg-primary-50/40 shadow-sm"
-                      : "border-slate-200 bg-white"
+                      : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
                   }`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
@@ -657,12 +657,12 @@ export default function DoctorProfilePage() {
                         }`}
                       >
                         <span
-                          className={`absolute top-0.5 h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                          className={`absolute top-0.5 h-5 w-5 transform rounded-full bg-white dark:bg-slate-900 shadow transition-transform ${
                             on ? "translate-x-5" : "translate-x-0.5"
                           }`}
                         />
                       </button>
-                      <span className="w-12 flex-none text-sm font-bold text-slate-900">
+                      <span className="w-12 flex-none text-sm font-bold text-slate-900 dark:text-slate-100">
                         {day}
                       </span>
                       {!on && (
@@ -673,7 +673,7 @@ export default function DoctorProfilePage() {
                       <button
                         type="button"
                         onClick={() => addWindow(day)}
-                        className="rounded-lg border border-primary-200 bg-white px-3 py-1.5 text-xs font-semibold text-primary-700 hover:bg-primary-50"
+                        className="rounded-lg border border-primary-200 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-primary-700 hover:bg-primary-50"
                       >
                         + Add window
                       </button>
@@ -684,7 +684,7 @@ export default function DoctorProfilePage() {
                       {windows.map((w, idx) => (
                         <li
                           key={idx}
-                          className="flex flex-wrap items-center gap-2 rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200"
+                          className="flex flex-wrap items-center gap-2 rounded-xl bg-white dark:bg-slate-900 px-3 py-2 ring-1 ring-slate-200 dark:ring-slate-800"
                         >
                           <TimeBox
                             value={w.start}
@@ -695,7 +695,7 @@ export default function DoctorProfilePage() {
                             value={w.end}
                             onChange={(v) => updateWindow(day, idx, { end: v })}
                           />
-                          <span className="ml-2 text-xs text-slate-500">
+                          <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">
                             {durationLabel(w)}
                           </span>
                           {windows.length > 1 && (
@@ -722,15 +722,15 @@ export default function DoctorProfilePage() {
       </div>
 
       {/* Sticky save bar */}
-      <div className="sticky bottom-0 left-0 right-0 z-10 border-t border-slate-200 bg-white/85 backdrop-blur-md">
+      <div className="sticky bottom-0 left-0 right-0 z-10 border-t border-slate-200 dark:border-slate-800 bg-white/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-slate-600 dark:text-slate-300">
             Changes go live the moment you save. You can edit again any time.
           </p>
           <div className="flex items-center gap-2">
             <Link
               href="/dashboard/doctor"
-              className="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
             >
               Back
             </Link>
@@ -779,7 +779,7 @@ export default function DoctorProfilePage() {
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <section className="mb-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <section className="mb-6 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm sm:p-6">
       {children}
     </section>
   );
@@ -800,7 +800,7 @@ function CardHead({
         <p className="text-[10px] font-bold uppercase tracking-widest text-primary-600">
           {label}
         </p>
-        <h2 className="mt-0.5 text-base font-semibold text-slate-900 sm:text-lg">
+        <h2 className="mt-0.5 text-base font-semibold text-slate-900 dark:text-slate-100 sm:text-lg">
           {title}
         </h2>
       </div>
@@ -811,7 +811,7 @@ function CardHead({
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-600">
+    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
       {children}
     </label>
   );
@@ -846,7 +846,7 @@ function ReadOnly({
       ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
       : tone === "warn"
         ? "bg-amber-50 text-amber-700 ring-amber-200"
-        : "bg-slate-50 text-slate-700 ring-slate-200";
+        : "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-slate-200 dark:ring-slate-800";
   return (
     <div>
       <FieldLabel>{label}</FieldLabel>
@@ -871,7 +871,7 @@ function TimeBox({
       type="time"
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm font-semibold tabular-nums text-slate-900 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/15"
+      className="rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/15"
     />
   );
 }

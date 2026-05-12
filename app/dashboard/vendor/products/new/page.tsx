@@ -64,7 +64,7 @@ export default function NewVendorProduct() {
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
         <Link
           href="/dashboard/vendor"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-indigo-600"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 transition-colors hover:text-indigo-600"
         >
           <span>←</span> Back to dashboard
         </Link>
@@ -92,7 +92,7 @@ export default function NewVendorProduct() {
 
         <form
           onSubmit={submit}
-          className="mt-6 space-y-6 overflow-hidden rounded-3xl border border-white/60 bg-white p-6 shadow-sm sm:p-8"
+          className="mt-6 space-y-6 overflow-hidden rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8"
         >
           {/* Product name */}
           <Field
@@ -111,7 +111,7 @@ export default function NewVendorProduct() {
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="Composition, dosage, manufacturer — anything patients should know."
-              className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm placeholder:text-slate-400 transition focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm placeholder:text-slate-400 transition focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
             />
           </div>
 
@@ -129,7 +129,7 @@ export default function NewVendorProduct() {
                     className={`group flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm font-semibold transition ${
                       active
                         ? "border-transparent bg-gradient-to-br text-white shadow-md " + c.color
-                        : "border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm"
+                        : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm"
                     }`}
                   >
                     <span className="text-lg">{c.emoji}</span>
@@ -144,7 +144,7 @@ export default function NewVendorProduct() {
           <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/60 via-white to-pink-50/50 p-5">
             <div className="flex items-center gap-2">
               <span className="text-lg">💰</span>
-              <h3 className="text-sm font-bold text-slate-900">Pricing & stock</h3>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Pricing & stock</h3>
               {discount > 0 && (
                 <span className="ml-auto inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
                   −{discount}% off MRP
@@ -191,13 +191,13 @@ export default function NewVendorProduct() {
               className="peer sr-only"
             />
             <span className="relative mt-0.5 inline-flex h-6 w-11 shrink-0 rounded-full bg-slate-300 transition peer-checked:bg-amber-500">
-              <span className="absolute left-0.5 top-0.5 inline-block h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5" />
+              <span className="absolute left-0.5 top-0.5 inline-block h-5 w-5 rounded-full bg-white dark:bg-slate-900 shadow transition peer-checked:translate-x-5" />
             </span>
             <span className="flex-1">
-              <span className="block text-sm font-semibold text-slate-900">
+              <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
                 Prescription required
               </span>
-              <span className="mt-0.5 block text-xs text-slate-600">
+              <span className="mt-0.5 block text-xs text-slate-600 dark:text-slate-300">
                 Patient must upload a valid Rx before checkout. Recommended for Schedule H drugs.
               </span>
             </span>
@@ -231,7 +231,7 @@ export default function NewVendorProduct() {
             </button>
             <Link
               href="/dashboard/vendor"
-              className="rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-3.5 text-sm font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:bg-slate-900"
             >
               Cancel
             </Link>
@@ -244,7 +244,7 @@ export default function NewVendorProduct() {
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <label className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">
+    <label className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
       {children}
     </label>
   );
@@ -280,7 +280,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm placeholder:text-slate-400 transition focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm placeholder:text-slate-400 transition focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
       />
     </div>
   );
@@ -312,7 +312,7 @@ function PrefixField({
         {required && <span className="ml-0.5 text-rose-500">*</span>}
       </Label>
       <div className="relative mt-1.5">
-        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-500">
+        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-500 dark:text-slate-400">
           {prefix}
         </span>
         <input
@@ -322,7 +322,7 @@ function PrefixField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-8 pr-4 text-sm placeholder:text-slate-400 transition focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-3 pl-8 pr-4 text-sm placeholder:text-slate-400 transition focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
         />
       </div>
     </div>

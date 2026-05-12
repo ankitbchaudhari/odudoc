@@ -161,7 +161,7 @@ export default function DoctorDashboardPage() {
               </button>
               <Link
                 href="/dashboard/doctor/prescriptions"
-                className="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-primary-700 shadow-md transition-transform hover:-translate-y-0.5 hover:shadow-lg"
+                className="rounded-xl bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-primary-700 shadow-md transition-transform hover:-translate-y-0.5 hover:shadow-lg"
               >
                 Write Prescription
               </Link>
@@ -216,7 +216,7 @@ export default function DoctorDashboardPage() {
             <Link
               key={s.label}
               href={s.href}
-              className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+              className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
             >
               <div
                 className={`absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gradient-to-br ${s.gradient} opacity-20 blur-xl transition-opacity group-hover:opacity-40`}
@@ -228,9 +228,9 @@ export default function DoctorDashboardPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={s.icon} />
                 </svg>
               </div>
-              <p className="mt-4 text-3xl font-bold text-gray-900">{s.value}</p>
-              <p className="text-sm text-gray-500">{s.label}</p>
-              <p className="mt-1 text-xs text-gray-400">{s.sub}</p>
+              <p className="mt-4 text-3xl font-bold text-gray-900 dark:text-slate-100">{s.value}</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">{s.label}</p>
+              <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">{s.sub}</p>
             </Link>
           ))}
         </div>
@@ -266,19 +266,19 @@ export default function DoctorDashboardPage() {
                     <Link
                       key={c.id}
                       href={`/dashboard/doctor/consultations/${c.id}`}
-                      className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 transition-all hover:border-primary-200 hover:bg-primary-50/30"
+                      className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white dark:bg-slate-900 p-4 transition-all hover:border-primary-200 hover:bg-primary-50/30"
                     >
                       <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary-400 to-indigo-600 text-sm font-bold text-white shadow">
                         {c.patientName.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-semibold text-gray-900">{c.patientName}</p>
-                        <p className="truncate text-sm text-gray-500">
+                        <p className="truncate font-semibold text-gray-900 dark:text-slate-100">{c.patientName}</p>
+                        <p className="truncate text-sm text-gray-500 dark:text-slate-400">
                           {c.medicalHistory.chiefComplaint || c.specialty}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold text-gray-900">{c.timeSlot}</p>
+                        <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">{c.timeSlot}</p>
                         <span className="text-xs text-emerald-600">
                           {c.mode === "video" ? "📹 Video" : "💬 Chat"}
                         </span>
@@ -306,16 +306,16 @@ export default function DoctorDashboardPage() {
               {consultations.length === 0 ? (
                 <EmptyState emoji="🩺" label="No consultations yet" sub="Patients will appear here once they book." />
               ) : (
-                <ul className="divide-y divide-gray-100">
+                <ul className="divide-y divide-gray-100 dark:divide-slate-800">
                   {consultations.slice(0, 5).map((c) => (
                     <li key={c.id}>
                       <Link
                         href={`/dashboard/doctor/consultations/${c.id}`}
-                        className="flex items-center justify-between py-3 transition-colors hover:bg-gray-50"
+                        className="flex items-center justify-between py-3 transition-colors hover:bg-gray-50 dark:bg-slate-900"
                       >
                         <div>
-                          <p className="text-sm font-medium text-gray-900">{c.patientName}</p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{c.patientName}</p>
+                          <p className="text-xs text-gray-500 dark:text-slate-400">
                             {c.dateLabel} · {c.timeSlot}
                           </p>
                         </div>
@@ -341,14 +341,14 @@ export default function DoctorDashboardPage() {
               {prescriptions.length === 0 ? (
                 <EmptyState emoji="💊" label="No prescriptions yet" sub="Prescriptions you write will appear here." />
               ) : (
-                <ul className="divide-y divide-gray-100">
+                <ul className="divide-y divide-gray-100 dark:divide-slate-800">
                   {prescriptions.slice(0, 5).map((p) => (
                     <li key={p.id} className="flex items-center justify-between py-3">
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-gray-900">
+                        <p className="truncate text-sm font-medium text-gray-900 dark:text-slate-100">
                           {p.data.patientName || p.patientEmail}
                         </p>
-                        <p className="truncate text-xs text-gray-500">
+                        <p className="truncate text-xs text-gray-500 dark:text-slate-400">
                           {p.data.diagnosis || "—"} ·{" "}
                           {new Date(p.createdAt).toLocaleDateString()}
                         </p>
@@ -404,7 +404,7 @@ export default function DoctorDashboardPage() {
                     className={`flex flex-col items-center gap-1 rounded-xl bg-gradient-to-br ${a.bg} p-4 text-center transition-transform hover:-translate-y-0.5`}
                   >
                     <span className="text-2xl">{a.icon}</span>
-                    <span className="text-xs font-semibold text-gray-800">{a.label}</span>
+                    <span className="text-xs font-semibold text-gray-800 dark:text-slate-200">{a.label}</span>
                   </Link>
                 ))}
               </div>
@@ -427,7 +427,7 @@ export default function DoctorDashboardPage() {
 }
 
 function Card({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">{children}</div>;
+  return <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-gray-100">{children}</div>;
 }
 
 function CardHeader({
@@ -443,7 +443,7 @@ function CardHeader({
     <div className="mb-5 flex items-center justify-between">
       <div className="flex items-center gap-3">
         <span className={`h-7 w-1.5 rounded-full ${accent}`} />
-        <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">{title}</h2>
       </div>
       {right}
     </div>
@@ -454,8 +454,8 @@ function EmptyState({ emoji, label, sub }: { emoji: string; label: string; sub?:
   return (
     <div className="py-10 text-center">
       <div className="text-4xl">{emoji}</div>
-      <p className="mt-2 text-sm font-medium text-gray-500">{label}</p>
-      {sub && <p className="mt-1 text-xs text-gray-400">{sub}</p>}
+      <p className="mt-2 text-sm font-medium text-gray-500 dark:text-slate-400">{label}</p>
+      {sub && <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">{sub}</p>}
     </div>
   );
 }
@@ -479,7 +479,7 @@ function StatusPill({ status }: { status: string }) {
     in_progress: "bg-purple-100 text-purple-700",
     rescheduled: "bg-orange-100 text-orange-700",
   };
-  const cls = map[status] || "bg-gray-100 text-gray-700";
+  const cls = map[status] || "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300";
   return (
     <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${cls}`}>
       {status.replace(/_/g, " ")}

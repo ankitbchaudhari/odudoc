@@ -44,12 +44,12 @@ export default function DoctorAnalyticsPage() {
     <div className="mx-auto max-w-5xl px-4 py-6">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">My analytics</h1>
-          <p className="mt-1 text-sm text-slate-500">{data.doctor.name} · {data.doctor.specialty}</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">My analytics</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{data.doctor.name} · {data.doctor.specialty}</p>
         </div>
-        <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
+        <div className="flex gap-1 rounded-lg bg-slate-100 dark:bg-slate-800 p-1">
           {[7, 30, 90, 365].map((d) => (
-            <button key={d} onClick={() => setDays(d)} className={`rounded-md px-3 py-1.5 text-xs font-semibold ${days === d ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>{d}d</button>
+            <button key={d} onClick={() => setDays(d)} className={`rounded-md px-3 py-1.5 text-xs font-semibold ${days === d ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm" : "text-slate-500 dark:text-slate-400"}`}>{d}d</button>
           ))}
         </div>
       </div>
@@ -70,18 +70,18 @@ export default function DoctorAnalyticsPage() {
       </div>
 
       {/* Daily timeline */}
-      <section className="mt-8 rounded-xl bg-white p-4 shadow-sm">
-        <p className="mb-3 text-sm font-bold text-slate-900">Daily activity</p>
+      <section className="mt-8 rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
+        <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Daily activity</p>
         <Sparkline timeline={data.timeline} />
       </section>
 
       {/* Top complaints */}
       {data.topComplaints.length > 0 && (
-        <section className="mt-6 rounded-xl bg-white p-4 shadow-sm">
-          <p className="mb-3 text-sm font-bold text-slate-900">Top patient complaints</p>
+        <section className="mt-6 rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
+          <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Top patient complaints</p>
           <div className="flex flex-wrap gap-2">
             {data.topComplaints.map((c) => (
-              <span key={c.name} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+              <span key={c.name} className="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs font-medium text-slate-700 dark:text-slate-300">
                 {c.name} <span className="ml-1 font-bold text-indigo-600">{c.count}</span>
               </span>
             ))}
@@ -100,10 +100,10 @@ function Tile({ label, v, sub, accent }: { label: string; v: string; sub?: strin
   const cls = accent === "emerald" ? "text-emerald-700"
     : accent === "rose" ? "text-rose-700"
     : accent === "indigo" ? "text-indigo-700"
-    : "text-slate-900";
+    : "text-slate-900 dark:text-slate-100";
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm">
-      <p className="text-[11px] uppercase tracking-wider text-slate-500">{label}</p>
+    <div className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
+      <p className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
       <p className={`mt-1 text-3xl font-extrabold ${cls}`}>{v}</p>
       {sub && <p className="text-[10px] text-slate-400">{sub}</p>}
     </div>
@@ -123,7 +123,7 @@ function Sparkline({ timeline }: { timeline: AnalyticsResp["timeline"] }) {
         <path d={path("bookings")} stroke="#7c3aed" strokeWidth={2} fill="none" />
         <path d={path("completed")} stroke="#10b981" strokeWidth={2} fill="none" />
       </svg>
-      <div className="mt-1 flex gap-3 text-[11px] text-slate-500">
+      <div className="mt-1 flex gap-3 text-[11px] text-slate-500 dark:text-slate-400">
         <span><span className="inline-block h-2 w-2 rounded-full bg-violet-600 align-middle" /> bookings</span>
         <span><span className="inline-block h-2 w-2 rounded-full bg-emerald-500 align-middle" /> completed</span>
       </div>

@@ -31,15 +31,15 @@ export default function RadiologyDashboard() {
         <StatTile label="Modalities online" value="—" emoji="📡" tone="emerald" hint="MRI / CT / X-ray / US" />
       </div>
 
-      <section className="rounded-3xl border border-white/60 bg-white p-6 shadow-sm">
+      <section className="rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-900">Imaging queue</h2>
-          <span className="text-xs text-slate-500">Status colours match the rest of the platform.</span>
+          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Imaging queue</h2>
+          <span className="text-xs text-slate-500 dark:text-slate-400">Status colours match the rest of the platform.</span>
         </div>
-        <div className="rounded-2xl border border-dashed border-slate-200 p-10 text-center">
+        <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-10 text-center">
           <span className="text-4xl">🩻</span>
-          <p className="mt-3 text-sm font-semibold text-slate-900">No studies yet</p>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">No studies yet</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Studies appear here once orders are placed from any consultation or
             ward, and once technologists upload the DICOM files.
           </p>
@@ -53,9 +53,9 @@ export default function RadiologyDashboard() {
       </section>
 
       <section className="mt-6 rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50/60 via-white to-fuchsia-50/40 p-6 shadow-sm">
-        <h2 className="text-base font-bold text-slate-900">Universal DICOM viewer</h2>
-        <p className="mt-1 max-w-xl text-sm text-slate-600">
-          Open any <code className="rounded bg-white px-1.5 py-0.5 text-xs">.dcm</code> file
+        <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Universal DICOM viewer</h2>
+        <p className="mt-1 max-w-xl text-sm text-slate-600 dark:text-slate-300">
+          Open any <code className="rounded bg-white dark:bg-slate-900 px-1.5 py-0.5 text-xs">.dcm</code> file
           (CT, MRI, X-ray, ultrasound) plus PDF reports and JPEG/PNG scans
           in our universal viewer. Built on Cornerstone.js, runs entirely in
           the browser, no PACS server required.
@@ -67,7 +67,7 @@ export default function RadiologyDashboard() {
           >
             🔍 Open viewer
           </Link>
-          <span className="text-[11px] italic text-slate-500">
+          <span className="text-[11px] italic text-slate-500 dark:text-slate-400">
             Cornerstone integration ships in the next release.
           </span>
         </div>

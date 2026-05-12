@@ -100,7 +100,7 @@ export default function AuditLogPage() {
   }, [entries]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 py-10">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 py-10">
       <div className="pointer-events-none absolute inset-0 -z-0">
         <div className="absolute -top-40 left-1/2 h-[420px] w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-br from-indigo-200/40 via-violet-200/40 to-cyan-200/40 blur-3xl" />
       </div>
@@ -109,7 +109,7 @@ export default function AuditLogPage() {
         <div className="mb-5 flex items-center justify-between">
           <Link
             href="/dashboard/doctor/emr"
-            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:border-emerald-300 hover:text-emerald-700"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:border-emerald-300 hover:text-emerald-700"
           >
             ← Clinic records
           </Link>
@@ -124,7 +124,7 @@ export default function AuditLogPage() {
               <h1 className="mt-1 bg-gradient-to-r from-slate-900 via-indigo-900 to-violet-900 bg-clip-text text-2xl font-bold text-transparent sm:text-3xl">
                 Who did what
               </h1>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
                 Every patient, visit, file, invoice, staff change and quota
                 unlock — timestamped and attributed.
               </p>
@@ -133,7 +133,7 @@ export default function AuditLogPage() {
               {actorTotals.map(([actor, count]) => (
                 <span
                   key={actor}
-                  className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700"
+                  className="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 font-semibold text-slate-700 dark:text-slate-300"
                 >
                   {actor.split("@")[0]} · {count}
                 </span>
@@ -148,12 +148,12 @@ export default function AuditLogPage() {
             value={filterActor}
             onChange={(e) => setFilterActor(e.target.value)}
             placeholder="Filter by actor email"
-            className="min-w-[200px] flex-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
+            className="min-w-[200px] flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
           />
           <select
             value={filterResource}
             onChange={(e) => setFilterResource(e.target.value)}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
+            className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
           >
             {RESOURCE_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
@@ -165,7 +165,7 @@ export default function AuditLogPage() {
             type="date"
             value={filterSince}
             onChange={(e) => setFilterSince(e.target.value)}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
+            className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
           />
           <button
             onClick={() => {
@@ -173,7 +173,7 @@ export default function AuditLogPage() {
               setFilterResource("");
               setFilterSince("");
             }}
-            className="rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+            className="rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800"
           >
             Clear
           </button>
@@ -188,25 +188,25 @@ export default function AuditLogPage() {
           {loading ? (
             <div className="space-y-2 p-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-12 animate-pulse rounded-lg bg-slate-100" />
+                <div key={i} className="h-12 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />
               ))}
             </div>
           ) : entries.length === 0 ? (
             <div className="px-6 py-16 text-center">
-              <p className="text-sm font-semibold text-slate-700">
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                 No audit entries match these filters
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Patient, visit, invoice and staff actions show up here as soon as they happen.
               </p>
             </div>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-slate-100 dark:divide-slate-800">
               {entries.map((e) => {
                 const tone = ACTION_TONE[e.action] || {
                   dot: "bg-slate-400",
-                  text: "text-slate-700",
-                  bg: "bg-slate-50",
+                  text: "text-slate-700 dark:text-slate-300",
+                  bg: "bg-slate-50 dark:bg-slate-900",
                 };
                 const metaPairs = e.meta
                   ? Object.entries(e.meta).filter(([, v]) => v !== undefined && v !== null && v !== "")
@@ -222,13 +222,13 @@ export default function AuditLogPage() {
                         >
                           {e.action}
                         </span>
-                        <span className="text-xs font-semibold text-slate-700">
+                        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                           {isPatientPayment ? "🌐 Patient (web)" : e.actorEmail || "system"}
                         </span>
                         <span className="text-[11px] text-slate-400">{timeAgo(e.createdAt)}</span>
                       </div>
                       {metaPairs.length > 0 && (
-                        <p className="mt-0.5 truncate text-xs text-slate-600">
+                        <p className="mt-0.5 truncate text-xs text-slate-600 dark:text-slate-300">
                           {metaPairs
                             .map(([k, v]) => `${k}: ${String(v)}`)
                             .join(" · ")}

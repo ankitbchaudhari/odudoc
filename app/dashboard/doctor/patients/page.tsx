@@ -122,21 +122,21 @@ export default function DoctorPatientsPage() {
   }, [patients, nowTick]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard/doctor"
-              className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              className="rounded-lg p-2 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">My Patients</h1>
-              <p className="mt-0.5 text-sm text-gray-500">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">My Patients</h1>
+              <p className="mt-0.5 text-sm text-gray-500 dark:text-slate-400">
                 Everyone you&apos;ve consulted with, all in one place
               </p>
             </div>
@@ -166,17 +166,17 @@ export default function DoctorPatientsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, email, or phone…"
-              className="w-full max-w-md rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+              className="w-full max-w-md rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
             />
             <button
               onClick={() => setOnlineOnly((v) => !v)}
               className={`inline-flex items-center gap-2 self-start rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
                 onlineOnly
                   ? "bg-green-600 text-white shadow-sm"
-                  : "bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50"
+                  : "bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 ring-1 ring-gray-200 dark:ring-slate-800 hover:bg-gray-50 dark:bg-slate-900"
               }`}
             >
-              <span className={`inline-block h-2 w-2 rounded-full ${onlineOnly ? "bg-white" : "bg-green-500"}`} />
+              <span className={`inline-block h-2 w-2 rounded-full ${onlineOnly ? "bg-white dark:bg-slate-900" : "bg-green-500"}`} />
               Active only
             </button>
           </div>
@@ -190,25 +190,25 @@ export default function DoctorPatientsPage() {
             </svg>
           </div>
         ) : patients.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-200 bg-white p-16 text-center">
+          <div className="rounded-xl border border-dashed border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-16 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-blue-600">
               <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
-            <h2 className="text-base font-semibold text-gray-900">No patients yet</h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-slate-100">No patients yet</h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
               Patients will appear here after you complete your first consultation.
             </p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-200 bg-white p-12 text-center text-sm text-gray-500">
+          <div className="rounded-xl border border-dashed border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center text-sm text-gray-500 dark:text-slate-400">
             No patients match your filters.
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((p) => (
-              <div key={p.email} className="flex gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
+              <div key={p.email} className="flex gap-3 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm transition-shadow hover:shadow-md">
                 <div className="relative">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-sm font-bold text-white">
                     {initialsOf(p.name) || "?"}
@@ -217,21 +217,21 @@ export default function DoctorPatientsPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-semibold text-gray-900">{p.name}</p>
+                    <p className="truncate text-sm font-semibold text-gray-900 dark:text-slate-100">{p.name}</p>
                     <span className="shrink-0 rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-semibold text-primary-700">
                       {p.totalConsults}×
                     </span>
                   </div>
-                  <p className="truncate text-xs text-gray-500">{p.email}</p>
+                  <p className="truncate text-xs text-gray-500 dark:text-slate-400">{p.email}</p>
                   <div className="mt-2">
                     <PatientPresenceBadge patientKey={p.email} />
                   </div>
                   {p.lastComplaint && (
-                    <p className="mt-2 line-clamp-1 text-xs text-gray-500">
-                      <span className="font-medium text-gray-400">Last:</span> {p.lastComplaint}
+                    <p className="mt-2 line-clamp-1 text-xs text-gray-500 dark:text-slate-400">
+                      <span className="font-medium text-gray-400 dark:text-slate-500">Last:</span> {p.lastComplaint}
                     </p>
                   )}
-                  <p className="mt-1 text-[11px] text-gray-400">
+                  <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500">
                     Last consult {timeAgo(p.lastConsult)}
                   </p>
                 </div>
@@ -244,10 +244,10 @@ export default function DoctorPatientsPage() {
   );
 }
 
-function Stat({ label, value, color = "text-gray-900" }: { label: string; value: number; color?: string }) {
+function Stat({ label, value, color = "text-gray-900 dark:text-slate-100" }: { label: string; value: number; color?: string }) {
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm">
-      <p className="text-xs text-gray-500">{label}</p>
+    <div className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
+      <p className="text-xs text-gray-500 dark:text-slate-400">{label}</p>
       <p className={`mt-1 text-2xl font-bold ${color}`}>{value}</p>
     </div>
   );

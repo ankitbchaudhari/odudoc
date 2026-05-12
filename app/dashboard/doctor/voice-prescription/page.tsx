@@ -281,10 +281,10 @@ export default function VoicePrescriptionPage() {
       <div className="mx-auto max-w-4xl px-4">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
               Voice Prescription
             </h1>
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="mt-1 text-sm text-gray-600 dark:text-slate-300">
               Speak the prescription; AI structures it for your review.
             </p>
           </div>
@@ -312,7 +312,7 @@ export default function VoicePrescriptionPage() {
         )}
 
         {/* Recording panel */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+        <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-gray-100">
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={listening ? stop : start}
@@ -330,7 +330,7 @@ export default function VoicePrescriptionPage() {
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
               disabled={listening}
-              className="max-w-[260px] rounded-lg border border-gray-300 px-3 py-2 text-sm disabled:opacity-50"
+              className="max-w-[260px] rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm disabled:opacity-50"
             >
               <optgroup label="English">
                 <option value="en-IN">English (India)</option>
@@ -456,7 +456,7 @@ export default function VoicePrescriptionPage() {
             <button
               onClick={clearAll}
               disabled={listening}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900 disabled:opacity-50"
             >
               Clear
             </button>
@@ -469,7 +469,7 @@ export default function VoicePrescriptionPage() {
           </div>
 
           <div className="mt-4">
-            <label className="mb-1 block text-xs font-semibold text-gray-700">
+            <label className="mb-1 block text-xs font-semibold text-gray-700 dark:text-slate-300">
               Transcript (editable)
             </label>
             <textarea
@@ -480,9 +480,9 @@ export default function VoicePrescriptionPage() {
               }}
               rows={6}
               placeholder="e.g. Patient Neha Shah, 32 years female. Fever and dry cough for 3 days. Diagnosis: viral upper respiratory infection. Prescribe paracetamol 500 mg, three times a day, for 5 days. Advice: plenty of fluids, rest. Follow up in 5 days if not better."
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
+              className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
             />
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
               Italicised grey text is interim — it&apos;s appended automatically
               as you speak. You can edit the transcript before parsing.
             </p>
@@ -509,8 +509,8 @@ export default function VoicePrescriptionPage() {
               </div>
             )}
 
-            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-              <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-gray-700">
+            <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-gray-100">
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-gray-700 dark:text-slate-300">
                 Patient
               </h3>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
@@ -532,8 +532,8 @@ export default function VoicePrescriptionPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-              <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-gray-700">
+            <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-gray-100">
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-gray-700 dark:text-slate-300">
                 Clinical
               </h3>
               <div className="space-y-3">
@@ -552,26 +552,26 @@ export default function VoicePrescriptionPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+            <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-gray-100">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-bold uppercase tracking-wide text-gray-700">
+                <h3 className="text-sm font-bold uppercase tracking-wide text-gray-700 dark:text-slate-300">
                   Medications
                 </h3>
                 <button
                   onClick={addMedication}
-                  className="rounded-lg border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                  className="rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-1 text-xs font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
                 >
                   + Add
                 </button>
               </div>
               {parsed.medications.length === 0 ? (
-                <p className="text-sm text-gray-500">None detected.</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">None detected.</p>
               ) : (
                 <ul className="space-y-3">
                   {parsed.medications.map((m, i) => (
                     <li
                       key={i}
-                      className="rounded-lg border border-gray-200 p-3"
+                      className="rounded-lg border border-gray-200 dark:border-slate-800 p-3"
                     >
                       <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
                         <TextField
@@ -614,8 +614,8 @@ export default function VoicePrescriptionPage() {
               )}
             </div>
 
-            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-              <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-gray-700">
+            <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-gray-100">
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-gray-700 dark:text-slate-300">
                 Tests, advice, follow-up
               </h3>
               <div className="space-y-3">
@@ -656,11 +656,11 @@ export default function VoicePrescriptionPage() {
               </button>
               <button
                 onClick={clearAll}
-                className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                className="rounded-lg border border-gray-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
               >
                 Start over
               </button>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-500 dark:text-slate-400">
                 Review every field. AI transcription can misspell drug names —
                 verify before signing.
               </span>
@@ -683,13 +683,13 @@ function TextField({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-semibold text-gray-700">
+      <span className="mb-1 block text-xs font-semibold text-gray-700 dark:text-slate-300">
         {label}
       </span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
+        className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
       />
     </label>
   );
@@ -708,14 +708,14 @@ function TextArea({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-semibold text-gray-700">
+      <span className="mb-1 block text-xs font-semibold text-gray-700 dark:text-slate-300">
         {label}
       </span>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={rows}
-        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
+        className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
       />
     </label>
   );

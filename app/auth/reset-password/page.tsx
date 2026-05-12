@@ -78,24 +78,24 @@ function ResetPasswordInner() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary-50 via-white to-teal-50 p-6">
-      <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-xl ring-1 ring-gray-100">
+      <div className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 p-8 shadow-xl ring-1 ring-gray-100">
         <div className="text-center">
           <span className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary-700">
             🔐 New password
           </span>
-          <h1 className="mt-3 text-2xl font-bold text-gray-900">
+          <h1 className="mt-3 text-2xl font-bold text-gray-900 dark:text-slate-100">
             Set a new password
           </h1>
           {validState === "valid" && email && (
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
               For{" "}
-              <span className="font-semibold text-gray-700">{email}</span>
+              <span className="font-semibold text-gray-700 dark:text-slate-300">{email}</span>
             </p>
           )}
         </div>
 
         {validState === "checking" && (
-          <p className="mt-6 text-center text-sm text-gray-500">
+          <p className="mt-6 text-center text-sm text-gray-500 dark:text-slate-400">
             Checking link…
           </p>
         )}
@@ -116,7 +116,7 @@ function ResetPasswordInner() {
         {validState === "valid" && !done && (
           <form onSubmit={submit} className="mt-6 space-y-4">
             <label className="block">
-              <span className="mb-1.5 block text-sm font-medium text-gray-700">
+              <span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
                 New password
               </span>
               <input
@@ -126,11 +126,11 @@ function ResetPasswordInner() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="At least 8 characters"
-                className="w-full rounded-xl border-2 border-gray-200 p-3 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+                className="w-full rounded-xl border-2 border-gray-200 dark:border-slate-800 p-3 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
               />
             </label>
             <label className="block">
-              <span className="mb-1.5 block text-sm font-medium text-gray-700">
+              <span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
                 Confirm new password
               </span>
               <input
@@ -139,7 +139,7 @@ function ResetPasswordInner() {
                 minLength={8}
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
-                className="w-full rounded-xl border-2 border-gray-200 p-3 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+                className="w-full rounded-xl border-2 border-gray-200 dark:border-slate-800 p-3 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
               />
             </label>
 
@@ -174,7 +174,7 @@ export default function ResetPasswordPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center">
-          <p className="text-sm text-gray-500">Loading…</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">Loading…</p>
         </div>
       }
     >

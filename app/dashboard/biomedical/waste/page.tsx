@@ -110,7 +110,7 @@ export default function WasteLogPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-amber-50/40 to-rose-50/40">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <Link href="/dashboard/biomedical" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-amber-700">
+        <Link href="/dashboard/biomedical" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-amber-700">
           ← Biomedical
         </Link>
 
@@ -145,13 +145,13 @@ export default function WasteLogPage() {
               const T = tone(CATEGORY_TONE[c]);
               const t = summary.totals[c];
               return (
-                <div key={c} className={`rounded-2xl border bg-white p-4 shadow-sm ${T.row}`}>
+                <div key={c} className={`rounded-2xl border bg-white dark:bg-slate-900 p-4 shadow-sm ${T.row}`}>
                   <div className="flex items-center justify-between">
                     <span className="text-xl">{T.emoji}</span>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-700">{T.label}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-700 dark:text-slate-300">{T.label}</span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-slate-900">{kg(t.weightGrams)} kg</p>
-                  <p className="text-xs text-slate-500">{t.bagCount} bag(s)</p>
+                  <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{kg(t.weightGrams)} kg</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{t.bagCount} bag(s)</p>
                 </div>
               );
             })}
@@ -159,9 +159,9 @@ export default function WasteLogPage() {
         )}
 
         {/* New entry form */}
-        <form onSubmit={submit} className="mb-6 rounded-3xl border border-white/60 bg-white p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-900">Log a disposal</h3>
-          <p className="mt-1 text-xs text-slate-500">{CATEGORY_HINTS[form.category]}</p>
+        <form onSubmit={submit} className="mb-6 rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Log a disposal</h3>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{CATEGORY_HINTS[form.category]}</p>
           <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
             {(["yellow", "red", "blue", "white", "black"] as WasteCategory[]).map((c) => {
               const T = tone(CATEGORY_TONE[c]);
@@ -171,7 +171,7 @@ export default function WasteLogPage() {
                   key={c}
                   type="button"
                   onClick={() => setForm({ ...form, category: c })}
-                  className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition ring-1 ${active ? T.pill + " ring-2 ring-offset-1" : "ring-slate-200 bg-white text-slate-700 hover:-translate-y-0.5"}`}
+                  className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition ring-1 ${active ? T.pill + " ring-2 ring-offset-1" : "ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:-translate-y-0.5"}`}
                 >
                   <span className="mr-1">{T.emoji}</span>{T.label}
                 </button>
@@ -206,7 +206,7 @@ export default function WasteLogPage() {
               <button
                 key={c}
                 onClick={() => setFilter(c)}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${active ? "bg-slate-900 text-white" : "border border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5"}`}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${active ? "bg-slate-900 text-white" : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:-translate-y-0.5"}`}
               >
                 {T ? <span className="mr-1">{T.emoji}</span> : null}
                 {c === "All" ? "All" : tone(CATEGORY_TONE[c]).label}
@@ -218,25 +218,25 @@ export default function WasteLogPage() {
         {/* Entries */}
         <div className="space-y-2">
           {entries.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-slate-200 bg-white py-12 text-center shadow-sm">
+            <div className="rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-12 text-center shadow-sm">
               <span className="text-4xl">🗑️</span>
-              <p className="mt-3 text-sm text-slate-500">No entries for this filter / month.</p>
+              <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">No entries for this filter / month.</p>
             </div>
           ) : entries.map((e) => (
-            <article key={e.id} className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-white p-4 shadow-sm ${tone(CATEGORY_TONE[e.category]).row}`}>
+            <article key={e.id} className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-white dark:bg-slate-900 p-4 shadow-sm ${tone(CATEGORY_TONE[e.category]).row}`}>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge status={CATEGORY_TONE[e.category]} />
-                  <span className="font-semibold text-slate-900">{e.sourceDept}</span>
-                  {e.manifestNo && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700">M# {e.manifestNo}</span>}
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">{e.sourceDept}</span>
+                  {e.manifestNo && <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-slate-300">M# {e.manifestNo}</span>}
                 </div>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   {kg(e.weightGrams)} kg · {e.bagCount} bag(s)
                   {e.vendorName && <> · vendor: {e.vendorName}</>}
                   {e.loggedBy && <> · by {e.loggedBy}</>}
                   · {new Date(e.disposedAt).toLocaleString()}
                 </p>
-                {e.notes && <p className="mt-1 text-[11px] italic text-slate-500">{e.notes}</p>}
+                {e.notes && <p className="mt-1 text-[11px] italic text-slate-500 dark:text-slate-400">{e.notes}</p>}
               </div>
             </article>
           ))}
@@ -251,7 +251,7 @@ function Field({
 }: { label: string; value: string; onChange: (v: string) => void; required?: boolean; type?: string; placeholder?: string }) {
   return (
     <label className="block">
-      <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">
+      <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
         {label}{required && <span className="ml-0.5 text-rose-500">*</span>}
       </span>
       <input
@@ -260,7 +260,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-200"
+        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3 py-2.5 text-sm focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-200"
       />
     </label>
   );

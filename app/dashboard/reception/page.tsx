@@ -183,7 +183,7 @@ export default function ReceptionDashboard() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowNew((v) => !v)}
-                className="rounded-full bg-white px-4 py-2 text-xs font-bold text-cyan-700 shadow-md transition hover:-translate-y-0.5"
+                className="rounded-full bg-white dark:bg-slate-900 px-4 py-2 text-xs font-bold text-cyan-700 shadow-md transition hover:-translate-y-0.5"
               >
                 + New admission
               </button>
@@ -209,14 +209,14 @@ export default function ReceptionDashboard() {
                 : k.key === "admitted" ? "admitted"
                 : "no_show");
               return (
-                <div key={k.key} className="rounded-2xl border border-white/60 bg-white p-4 shadow-sm">
+                <div key={k.key} className="rounded-2xl border border-white/60 bg-white dark:bg-slate-900 p-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <span className="text-lg">{T.emoji}</span>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
                       {k.label}
                     </span>
                   </div>
-                  <p className="mt-2 text-2xl font-bold text-slate-900">{v}</p>
+                  <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{v}</p>
                 </div>
               );
             })}
@@ -225,8 +225,8 @@ export default function ReceptionDashboard() {
 
         {/* New admission form */}
         {showNew && (
-          <form onSubmit={submitNew} className="mb-6 rounded-3xl border border-white/60 bg-white p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-900">Schedule a patient</h3>
+          <form onSubmit={submitNew} className="mb-6 rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Schedule a patient</h3>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               <Field label="Patient ID" required value={newRow.patientId} onChange={(v) => setNewRow({ ...newRow, patientId: v })} />
               <Field label="Patient name" required value={newRow.patientName} onChange={(v) => setNewRow({ ...newRow, patientName: v })} />
@@ -234,11 +234,11 @@ export default function ReceptionDashboard() {
               <Field label="Location" value={newRow.location} onChange={(v) => setNewRow({ ...newRow, location: v })} placeholder="OPD-1 / Bed 12" />
               <Field label="Reason" value={newRow.reasonForVisit} onChange={(v) => setNewRow({ ...newRow, reasonForVisit: v })} placeholder="Fever, follow-up, …" />
               <div>
-                <label className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">Triage</label>
+                <label className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">Triage</label>
                 <select
                   value={newRow.triage}
                   onChange={(e) => setNewRow({ ...newRow, triage: e.target.value as Triage })}
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3 py-2.5 text-sm"
                 >
                   <option value="green">🟩 Routine</option>
                   <option value="yellow">🟨 Urgent</option>
@@ -258,7 +258,7 @@ export default function ReceptionDashboard() {
               <button
                 type="button"
                 onClick={() => setShowNew(false)}
-                className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
               >
                 Cancel
               </button>
@@ -272,12 +272,12 @@ export default function ReceptionDashboard() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name / location / reason…"
-            className="min-w-[260px] flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm shadow-sm focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-200"
+            className="min-w-[260px] flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm shadow-sm focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-200"
           />
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as AdmissionStatus | "All")}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"
+            className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm"
           >
             {(["All", "scheduled", "checked_in", "in_consult", "completed", "admitted", "cancelled", "no_show"] as Array<AdmissionStatus | "All">).map((s) => (
               <option key={s} value={s}>{s.replace("_", " ")}</option>
@@ -288,9 +288,9 @@ export default function ReceptionDashboard() {
         {/* Queue */}
         <div className="space-y-3">
           {rows.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-slate-200 bg-white py-12 text-center shadow-sm">
+            <div className="rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-12 text-center shadow-sm">
               <span className="text-4xl">🗒️</span>
-              <p className="mt-3 text-sm text-slate-500">No admissions in this filter today.</p>
+              <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">No admissions in this filter today.</p>
             </div>
           ) : rows.map((a) => {
             const triageTone = a.triage
@@ -299,26 +299,26 @@ export default function ReceptionDashboard() {
             return (
               <article
                 key={a.id}
-                className={`overflow-hidden rounded-2xl border bg-white p-4 shadow-sm transition hover:shadow-md ${triageTone ? tone(triageTone).row : "border-slate-100"}`}
+                className={`overflow-hidden rounded-2xl border bg-white dark:bg-slate-900 p-4 shadow-sm transition hover:shadow-md ${triageTone ? tone(triageTone).row : "border-slate-100"}`}
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-base font-bold text-slate-900">{a.patientName}</p>
+                      <p className="text-base font-bold text-slate-900 dark:text-slate-100">{a.patientName}</p>
                       <StatusBadge status={a.status} />
                       {triageTone && <StatusBadge status={triageTone} />}
                       {a.location && (
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700">
+                        <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                           📍 {a.location}
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                       {a.department || "—"}
                       {a.reasonForVisit && <> · {a.reasonForVisit}</>}
                       {a.scheduledAt && <> · {new Date(a.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</>}
                     </p>
-                    {a.notes && <p className="mt-1 text-[11px] italic text-slate-500">{a.notes}</p>}
+                    {a.notes && <p className="mt-1 text-[11px] italic text-slate-500 dark:text-slate-400">{a.notes}</p>}
                   </div>
                   <div className="flex flex-wrap items-center gap-1.5">
                     {/* Triage quick-set */}
@@ -367,27 +367,27 @@ export default function ReceptionDashboard() {
         </div>
 
         {/* Quick contacts */}
-        <section className="mt-10 rounded-3xl border border-white/60 bg-white p-6 shadow-sm">
-          <h2 className="text-sm font-bold text-slate-900">Quick contacts</h2>
-          <p className="mt-1 text-xs text-slate-500">
+        <section className="mt-10 rounded-3xl border border-white/60 bg-white dark:bg-slate-900 p-6 shadow-sm">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">Quick contacts</h2>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Maintain this list under <Link href="/dashboard/doctor/staff" className="text-cyan-600 hover:underline">Staff</Link>; reception keeps it visible for inquiries.
           </p>
           <ul className="mt-4 grid gap-2 sm:grid-cols-2">
             <li className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-2 text-sm">
-              <span className="text-lg">📞</span> <span className="font-semibold text-slate-900">Admin</span>
-              <span className="ml-auto text-xs text-slate-500">Set in Staff settings</span>
+              <span className="text-lg">📞</span> <span className="font-semibold text-slate-900 dark:text-slate-100">Admin</span>
+              <span className="ml-auto text-xs text-slate-500 dark:text-slate-400">Set in Staff settings</span>
             </li>
             <li className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-2 text-sm">
-              <span className="text-lg">🩺</span> <span className="font-semibold text-slate-900">On-call doctor</span>
-              <span className="ml-auto text-xs text-slate-500">Set in Staff settings</span>
+              <span className="text-lg">🩺</span> <span className="font-semibold text-slate-900 dark:text-slate-100">On-call doctor</span>
+              <span className="ml-auto text-xs text-slate-500 dark:text-slate-400">Set in Staff settings</span>
             </li>
             <li className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-2 text-sm">
-              <span className="text-lg">🧪</span> <span className="font-semibold text-slate-900">Laboratory</span>
-              <span className="ml-auto text-xs text-slate-500">Ext / direct line</span>
+              <span className="text-lg">🧪</span> <span className="font-semibold text-slate-900 dark:text-slate-100">Laboratory</span>
+              <span className="ml-auto text-xs text-slate-500 dark:text-slate-400">Ext / direct line</span>
             </li>
             <li className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-2 text-sm">
-              <span className="text-lg">💊</span> <span className="font-semibold text-slate-900">Pharmacy</span>
-              <span className="ml-auto text-xs text-slate-500">Ext / direct line</span>
+              <span className="text-lg">💊</span> <span className="font-semibold text-slate-900 dark:text-slate-100">Pharmacy</span>
+              <span className="ml-auto text-xs text-slate-500 dark:text-slate-400">Ext / direct line</span>
             </li>
           </ul>
         </section>
@@ -401,7 +401,7 @@ function Field({
 }: { label: string; value: string; onChange: (v: string) => void; required?: boolean; placeholder?: string }) {
   return (
     <label className="block">
-      <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500">
+      <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
         {label}{required && <span className="ml-0.5 text-rose-500">*</span>}
       </span>
       <input
@@ -409,7 +409,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-200"
+        className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3 py-2.5 text-sm focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-200"
       />
     </label>
   );
@@ -421,8 +421,8 @@ function Btn({
   const cls = t === "primary"
     ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-sm hover:-translate-y-0.5 hover:shadow"
     : t === "danger"
-      ? "border border-rose-200 bg-white text-rose-700 hover:bg-rose-50"
-      : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50";
+      ? "border border-rose-200 bg-white dark:bg-slate-900 text-rose-700 hover:bg-rose-50"
+      : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900";
   return (
     <button onClick={onClick} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${cls}`}>
       {children}

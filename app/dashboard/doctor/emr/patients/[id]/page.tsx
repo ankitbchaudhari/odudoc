@@ -691,7 +691,7 @@ export default function PatientDetailPage({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 py-10">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-10">
         <div className="mx-auto max-w-5xl px-4">
           <div className="animate-pulse space-y-4">
             <div className="h-32 rounded-3xl bg-slate-200" />
@@ -704,9 +704,9 @@ export default function PatientDetailPage({
 
   if (!patient) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="rounded-2xl bg-white p-8 text-center shadow">
-          <p className="text-sm text-slate-700">{error || "Patient not found."}</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="rounded-2xl bg-white dark:bg-slate-900 p-8 text-center shadow">
+          <p className="text-sm text-slate-700 dark:text-slate-300">{error || "Patient not found."}</p>
           <Link
             href="/dashboard/doctor/emr"
             className="mt-3 inline-block text-sm font-semibold text-emerald-600 hover:underline"
@@ -719,7 +719,7 @@ export default function PatientDetailPage({
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 py-10">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 py-10">
       <div className="pointer-events-none absolute inset-0 -z-0">
         <div className="absolute -top-40 left-1/2 h-[420px] w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-br from-emerald-200/40 via-cyan-200/40 to-indigo-200/40 blur-3xl" />
       </div>
@@ -729,7 +729,7 @@ export default function PatientDetailPage({
         <div className="mb-4 flex items-center justify-between text-sm">
           <Link
             href="/dashboard/doctor/emr"
-            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-700 hover:border-emerald-300 hover:text-emerald-700"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 font-semibold text-slate-700 dark:text-slate-300 hover:border-emerald-300 hover:text-emerald-700"
           >
             ← Clinic records
           </Link>
@@ -765,10 +765,10 @@ export default function PatientDetailPage({
                 {(patient.lastName[0] || "").toUpperCase()}
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                   {patient.firstName} {patient.lastName}
                 </h1>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
                   {patient.age && <>{patient.age} yrs · </>}
                   {patient.sex && <>{patient.sex} · </>}
                   {patient.phone}
@@ -795,7 +795,7 @@ export default function PatientDetailPage({
             </div>
             <button
               onClick={() => setEditingDemographics((v) => !v)}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700"
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 transition hover:border-emerald-300 hover:text-emerald-700"
             >
               {editingDemographics ? "Cancel" : "Edit details"}
             </button>
@@ -846,8 +846,8 @@ export default function PatientDetailPage({
         <div className="overflow-hidden rounded-3xl border border-white/60 bg-white/80 shadow-sm backdrop-blur-xl">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-slate-900">Visit history</h2>
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Visit history</h2>
+              <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                 {visits.length}
               </span>
             </div>
@@ -855,7 +855,7 @@ export default function PatientDetailPage({
               onClick={() => setVisitFormOpen((v) => !v)}
               className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold transition ${
                 visitFormOpen
-                  ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  ? "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
                   : "bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white shadow-lg shadow-emerald-500/30 hover:shadow-xl"
               }`}
             >
@@ -981,7 +981,7 @@ export default function PatientDetailPage({
                     setVisitForm(EMPTY_VISIT);
                     setVisitFormOpen(false);
                   }}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
                 >
                   Cancel
                 </button>
@@ -998,14 +998,14 @@ export default function PatientDetailPage({
 
           {visits.length === 0 && !visitFormOpen ? (
             <div className="px-6 py-12 text-center">
-              <p className="text-sm font-semibold text-slate-700">No visits logged yet</p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No visits logged yet</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Click <b>+ New visit</b> to record a SOAP note for today&apos;s
                 consultation.
               </p>
             </div>
           ) : visits.length === 0 ? null : (
-            <ol className="relative divide-y divide-slate-100">
+            <ol className="relative divide-y divide-slate-100 dark:divide-slate-800">
               {visits.map((v) => (
                 <li key={v.id} className="px-6 py-5">
                   <div className="flex items-start gap-4">
@@ -1021,12 +1021,12 @@ export default function PatientDetailPage({
                           {v.visitDate}
                         </span>
                         {v.vitals && (
-                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                          <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:text-slate-300">
                             {v.vitals}
                           </span>
                         )}
                       </div>
-                      <p className="mt-1 text-sm font-bold text-slate-900">
+                      <p className="mt-1 text-sm font-bold text-slate-900 dark:text-slate-100">
                         {v.chiefComplaint}
                       </p>
                       <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -1051,8 +1051,8 @@ export default function PatientDetailPage({
         <div className="mt-6 overflow-hidden rounded-3xl border border-white/60 bg-white/80 shadow-sm backdrop-blur-xl">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-slate-900">Files</h2>
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Files</h2>
+              <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                 {files.length}
               </span>
             </div>
@@ -1060,7 +1060,7 @@ export default function PatientDetailPage({
               <select
                 value={uploadCategory}
                 onChange={(e) => setUploadCategory(e.target.value as EmrFile["category"])}
-                className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs"
+                className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 py-1.5 text-xs"
               >
                 <option value="lab">Lab report</option>
                 <option value="scan">Scan / X-ray</option>
@@ -1071,7 +1071,7 @@ export default function PatientDetailPage({
                 value={uploadLabel}
                 onChange={(e) => setUploadLabel(e.target.value)}
                 placeholder="Label (e.g. CBC 04-29)"
-                className="w-44 rounded-lg border border-slate-200 px-2 py-1.5 text-xs outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/15"
+                className="w-44 rounded-lg border border-slate-200 dark:border-slate-800 px-2 py-1.5 text-xs outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/15"
               />
               <input
                 ref={fileInputRef}
@@ -1087,7 +1087,7 @@ export default function PatientDetailPage({
                 htmlFor="emr-file-upload"
                 className={`inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold transition ${
                   uploading
-                    ? "bg-slate-200 text-slate-500"
+                    ? "bg-slate-200 text-slate-500 dark:text-slate-400"
                     : "bg-gradient-to-r from-cyan-600 to-teal-600 text-white shadow-md shadow-cyan-500/20 hover:shadow-lg"
                 }`}
               >
@@ -1096,21 +1096,21 @@ export default function PatientDetailPage({
             </div>
           </div>
           {files.length === 0 ? (
-            <div className="px-6 py-10 text-center text-xs text-slate-500">
+            <div className="px-6 py-10 text-center text-xs text-slate-500 dark:text-slate-400">
               No files yet — upload lab reports, scans, or other PDFs/images (max 10 MB).
             </div>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-slate-100 dark:divide-slate-800">
               {files.map((f) => (
                 <li key={f.id} className="flex items-center gap-3 px-6 py-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cyan-50 text-cyan-700 ring-1 ring-cyan-100">
                     {f.category === "scan" ? "🩻" : f.category === "lab" ? "🧪" : f.category === "report" ? "📄" : "📎"}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-slate-900">
+                    <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
                       {f.label}
                     </p>
-                    <p className="truncate text-xs text-slate-500">
+                    <p className="truncate text-xs text-slate-500 dark:text-slate-400">
                       {f.originalName} · {Math.round(f.size / 1024)} KB · {f.createdAt.slice(0, 10)}
                     </p>
                   </div>
@@ -1118,7 +1118,7 @@ export default function PatientDetailPage({
                     href={f.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-lg bg-slate-100 px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-200"
+                    className="rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-1.5 text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200"
                   >
                     Open
                   </a>
@@ -1138,8 +1138,8 @@ export default function PatientDetailPage({
         <div className="mt-6 overflow-hidden rounded-3xl border border-white/60 bg-white/80 shadow-sm backdrop-blur-xl">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-slate-900">Invoices</h2>
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Invoices</h2>
+              <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                 {invoices.length}
               </span>
             </div>
@@ -1147,7 +1147,7 @@ export default function PatientDetailPage({
               onClick={() => setInvoiceFormOpen((v) => !v)}
               className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold transition ${
                 invoiceFormOpen
-                  ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  ? "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
                   : "bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md shadow-amber-500/20 hover:shadow-lg"
               }`}
             >
@@ -1176,18 +1176,18 @@ export default function PatientDetailPage({
                   onChange={(v) => setInvoiceForm((p) => ({ ...p, currency: v.toUpperCase() }))}
                 />
               </div>
-              <div className="mt-4 rounded-xl border border-slate-200 bg-white">
-                <div className="border-b border-slate-100 px-3 py-2 text-xs font-semibold text-slate-600">
+              <div className="mt-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+                <div className="border-b border-slate-100 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
                   Line items
                 </div>
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-slate-100 dark:divide-slate-800">
                   {invoiceForm.lineItems.map((li, i) => (
                     <div key={i} className="grid grid-cols-12 items-center gap-2 p-3">
                       <input
                         value={li.description}
                         onChange={(e) => updateLine(i, "description", e.target.value)}
                         placeholder="Description"
-                        className="col-span-6 rounded-lg border border-slate-200 px-2 py-1.5 text-xs outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15"
+                        className="col-span-6 rounded-lg border border-slate-200 dark:border-slate-800 px-2 py-1.5 text-xs outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15"
                       />
                       <input
                         type="number"
@@ -1195,7 +1195,7 @@ export default function PatientDetailPage({
                         step="1"
                         value={li.quantity}
                         onChange={(e) => updateLine(i, "quantity", Number(e.target.value))}
-                        className="col-span-2 rounded-lg border border-slate-200 px-2 py-1.5 text-xs outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15"
+                        className="col-span-2 rounded-lg border border-slate-200 dark:border-slate-800 px-2 py-1.5 text-xs outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15"
                         placeholder="Qty"
                       />
                       <input
@@ -1204,7 +1204,7 @@ export default function PatientDetailPage({
                         step="0.01"
                         value={li.unitPrice}
                         onChange={(e) => updateLine(i, "unitPrice", Number(e.target.value))}
-                        className="col-span-3 rounded-lg border border-slate-200 px-2 py-1.5 text-xs outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15"
+                        className="col-span-3 rounded-lg border border-slate-200 dark:border-slate-800 px-2 py-1.5 text-xs outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15"
                         placeholder="Unit price"
                       />
                       <button
@@ -1226,7 +1226,7 @@ export default function PatientDetailPage({
                     + Add line
                   </button>
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="text-slate-500">Tax %</span>
+                    <span className="text-slate-500 dark:text-slate-400">Tax %</span>
                     <input
                       type="number"
                       min="0"
@@ -1234,10 +1234,10 @@ export default function PatientDetailPage({
                       step="0.1"
                       value={invoiceForm.taxRate}
                       onChange={(e) => setInvoiceForm((p) => ({ ...p, taxRate: e.target.value }))}
-                      className="w-16 rounded-lg border border-slate-200 px-2 py-1 outline-none focus:border-amber-500"
+                      className="w-16 rounded-lg border border-slate-200 dark:border-slate-800 px-2 py-1 outline-none focus:border-amber-500"
                     />
-                    <span className="ml-2 text-slate-500">Total</span>
-                    <span className="font-bold tabular-nums text-slate-900">
+                    <span className="ml-2 text-slate-500 dark:text-slate-400">Total</span>
+                    <span className="font-bold tabular-nums text-slate-900 dark:text-slate-100">
                       {invoiceForm.currency} {invoiceTotal.toFixed(2)}
                     </span>
                   </div>
@@ -1257,7 +1257,7 @@ export default function PatientDetailPage({
                     setInvoiceForm(EMPTY_INVOICE_FORM);
                     setInvoiceFormOpen(false);
                   }}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
                 >
                   Cancel
                 </button>
@@ -1273,32 +1273,32 @@ export default function PatientDetailPage({
           )}
 
           {invoices.length === 0 && !invoiceFormOpen ? (
-            <div className="px-6 py-10 text-center text-xs text-slate-500">
+            <div className="px-6 py-10 text-center text-xs text-slate-500 dark:text-slate-400">
               No invoices yet — log a consultation fee, lab work, or follow-up charge.
             </div>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-slate-100 dark:divide-slate-800">
               {invoices.map((inv) => (
                 <li key={inv.id} className="px-6 py-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-bold text-slate-900">{inv.number}</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{inv.number}</p>
                         <InvoiceStatusBadge status={inv.status} />
-                        <span className="text-[11px] text-slate-500">
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
                           {inv.issueDate}
                         </span>
                       </div>
-                      <p className="mt-1 text-sm text-slate-700">
+                      <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
                         {inv.lineItems.map((l) => l.description).join(" · ")}
                       </p>
-                      <p className="mt-0.5 text-xs text-slate-500">
+                      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                         {inv.currency} {inv.subtotal.toFixed(2)}
                         {inv.taxAmount ? ` + ${inv.taxAmount.toFixed(2)} tax` : ""}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold tabular-nums text-slate-900">
+                      <p className="text-lg font-bold tabular-nums text-slate-900 dark:text-slate-100">
                         {inv.currency} {inv.total.toFixed(2)}
                       </p>
                       <div className="mt-1 flex flex-wrap justify-end gap-1">
@@ -1326,7 +1326,7 @@ export default function PatientDetailPage({
                             {inv.publicToken && (
                               <button
                                 onClick={() => rotatePaymentLink(inv)}
-                                className="rounded-lg px-1.5 py-1 text-[11px] font-semibold text-slate-500 hover:bg-slate-100"
+                                className="rounded-lg px-1.5 py-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800"
                                 title="Rotate the payment link (invalidates the old URL)"
                               >
                                 ↻
@@ -1353,7 +1353,7 @@ export default function PatientDetailPage({
                         {inv.status !== "void" && inv.status !== "paid" && (
                           <button
                             onClick={() => setInvoiceStatus(inv.id, "void")}
-                            className="rounded-lg px-2.5 py-1 text-[11px] font-semibold text-slate-500 hover:bg-slate-100"
+                            className="rounded-lg px-2.5 py-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800"
                           >
                             Void
                           </button>
@@ -1371,8 +1371,8 @@ export default function PatientDetailPage({
         <div className="mt-6 overflow-hidden rounded-3xl border border-white/60 bg-white/80 shadow-sm backdrop-blur-xl">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-slate-900">Medical certificates</h2>
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Medical certificates</h2>
+              <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                 {certificates.length}
               </span>
             </div>
@@ -1380,7 +1380,7 @@ export default function PatientDetailPage({
               onClick={() => setCertFormOpen((v) => !v)}
               className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold transition ${
                 certFormOpen
-                  ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  ? "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
                   : "bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg"
               }`}
             >
@@ -1392,7 +1392,7 @@ export default function PatientDetailPage({
             <form onSubmit={saveCertificate} className="border-b border-slate-100 bg-indigo-50/30 p-6">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <label className="block sm:col-span-2">
-                  <span className="mb-1 block text-xs font-semibold text-slate-700">
+                  <span className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
                     Certificate type *
                   </span>
                   <select
@@ -1400,7 +1400,7 @@ export default function PatientDetailPage({
                     onChange={(e) =>
                       setCertForm((p) => ({ ...p, type: e.target.value as CertificateType }))
                     }
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
                   >
                     <option value="sick-leave">Sick leave</option>
                     <option value="fitness-to-work">Fitness to work / return to duty</option>
@@ -1460,8 +1460,8 @@ export default function PatientDetailPage({
                 />
               </div>
 
-              <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
-                <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-slate-500">
+              <div className="mt-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+                <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   Issuing doctor — snapshotted onto the certificate
                 </p>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -1499,7 +1499,7 @@ export default function PatientDetailPage({
                     setCertForm(EMPTY_CERT_FORM);
                     setCertFormOpen(false);
                   }}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
                 >
                   Cancel
                 </button>
@@ -1515,18 +1515,18 @@ export default function PatientDetailPage({
           )}
 
           {certificates.length === 0 && !certFormOpen ? (
-            <div className="px-6 py-10 text-center text-xs text-slate-500">
+            <div className="px-6 py-10 text-center text-xs text-slate-500 dark:text-slate-400">
               No certificates yet — click <b>+ Issue certificate</b> to create
               a sick leave, fitness, or vaccination certificate.
             </div>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-slate-100 dark:divide-slate-800">
               {certificates.map((cert) => (
                 <li key={cert.id} className="px-6 py-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-bold text-slate-900">{cert.number}</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{cert.number}</p>
                         <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-700 ring-1 ring-indigo-100">
                           {CERT_TYPE_LABEL[cert.type]}
                         </span>
@@ -1535,16 +1535,16 @@ export default function PatientDetailPage({
                             voided
                           </span>
                         )}
-                        <span className="text-[11px] text-slate-500">{cert.issueDate}</span>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">{cert.issueDate}</span>
                       </div>
-                      <p className="mt-1 text-sm text-slate-700">{cert.diagnosis}</p>
+                      <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{cert.diagnosis}</p>
                       {cert.fromDate && cert.toDate && (
-                        <p className="mt-0.5 text-xs text-slate-500">
+                        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                           Period: {cert.fromDate} → {cert.toDate}
                           {cert.daysOfRest ? ` · ${cert.daysOfRest} day${cert.daysOfRest === 1 ? "" : "s"}` : ""}
                         </p>
                       )}
-                      <p className="mt-0.5 text-xs text-slate-500">
+                      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                         Issued by <b>{cert.doctorName}</b>
                         {cert.doctorRegistration ? ` · Reg. ${cert.doctorRegistration}` : ""}
                       </p>
@@ -1597,10 +1597,10 @@ export default function PatientDetailPage({
               <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
                 Interoperability
               </p>
-              <h2 className="mt-1 text-base font-bold text-slate-900">
+              <h2 className="mt-1 text-base font-bold text-slate-900 dark:text-slate-100">
                 Export this patient&apos;s record
               </h2>
-              <p className="mt-1 text-xs text-slate-600">
+              <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
                 Download a copy in either format for migration to another EMR
                 or for the patient&apos;s personal records.
               </p>
@@ -1608,7 +1608,7 @@ export default function PatientDetailPage({
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={downloadHl7}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:border-indigo-400 hover:bg-indigo-50"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-800 dark:text-slate-200 shadow-sm hover:border-indigo-400 hover:bg-indigo-50"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                   <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
@@ -1647,7 +1647,7 @@ export default function PatientDetailPage({
 
 function InvoiceStatusBadge({ status }: { status: Invoice["status"] }) {
   const map: Record<Invoice["status"], { bg: string; text: string }> = {
-    draft: { bg: "bg-slate-100", text: "text-slate-700" },
+    draft: { bg: "bg-slate-100 dark:bg-slate-800", text: "text-slate-700 dark:text-slate-300" },
     sent: { bg: "bg-blue-50", text: "text-blue-700" },
     paid: { bg: "bg-emerald-50", text: "text-emerald-700" },
     void: { bg: "bg-rose-50", text: "text-rose-700" },
@@ -1671,14 +1671,14 @@ function InfoCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border border-slate-100 bg-white px-4 py-3 ${
+      className={`rounded-2xl border border-slate-100 bg-white dark:bg-slate-900 px-4 py-3 ${
         wide ? "sm:col-span-2" : ""
       }`}
     >
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
         {label}
       </p>
-      <p className="mt-0.5 text-sm text-slate-800">{value}</p>
+      <p className="mt-0.5 text-sm text-slate-800 dark:text-slate-200">{value}</p>
     </div>
   );
 }
@@ -1700,7 +1700,7 @@ function SoapBlock({
   };
   const t = tones[tone];
   return (
-    <div className="rounded-xl border border-slate-100 bg-white p-3">
+    <div className="rounded-xl border border-slate-100 bg-white dark:bg-slate-900 p-3">
       <div className="mb-1 flex items-center gap-1.5">
         <span
           className={`inline-flex h-5 w-5 items-center justify-center rounded text-[11px] font-bold ${t.bg} ${t.text} ring-1 ${t.ring}`}
@@ -1708,7 +1708,7 @@ function SoapBlock({
           {label}
         </span>
       </div>
-      <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700">
+      <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-300">
         {text}
       </p>
     </div>
@@ -1734,7 +1734,7 @@ function Field({
 }) {
   return (
     <label className={`block ${wide ? "sm:col-span-2" : ""}`}>
-      <span className="mb-1 block text-xs font-semibold text-slate-700">
+      <span className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
         {label} {required && <span className="text-rose-500">*</span>}
       </span>
       <input
@@ -1742,7 +1742,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
+        className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
       />
     </label>
   );
@@ -1764,7 +1764,7 @@ function FieldArea({
 }) {
   return (
     <label className={`block ${wide ? "sm:col-span-2" : ""}`}>
-      <span className="mb-1 block text-xs font-semibold text-slate-700">
+      <span className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
         {label} {required && <span className="text-rose-500">*</span>}
       </span>
       <textarea
@@ -1772,7 +1772,7 @@ function FieldArea({
         onChange={(e) => onChange(e.target.value)}
         rows={3}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
+        className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
       />
     </label>
   );

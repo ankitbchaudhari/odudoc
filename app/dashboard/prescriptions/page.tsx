@@ -32,7 +32,7 @@ export default function PatientPrescriptionsPage() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-gray-50 p-8 text-sm text-gray-400">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 p-8 text-sm text-gray-400 dark:text-slate-500">
         Loading…
       </div>
     );
@@ -40,8 +40,8 @@ export default function PatientPrescriptionsPage() {
 
   if (status !== "authenticated") {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
-        <p className="text-sm text-gray-600">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 p-8">
+        <p className="text-sm text-gray-600 dark:text-slate-300">
           Please{" "}
           <Link href="/auth/login" className="text-primary-600 underline">
             sign in
@@ -53,33 +53,33 @@ export default function PatientPrescriptionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-center gap-3">
           <Link
             href="/dashboard"
-            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-2 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">My Prescriptions</h1>
-            <p className="mt-0.5 text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">My Prescriptions</h1>
+            <p className="mt-0.5 text-sm text-gray-500 dark:text-slate-400">
               Every prescription your doctors have written for you.
             </p>
           </div>
         </div>
 
         {loading ? (
-          <div className="rounded-xl border border-gray-100 bg-white p-12 text-center text-sm text-gray-400">
+          <div className="rounded-xl border border-gray-100 bg-white dark:bg-slate-900 p-12 text-center text-sm text-gray-400 dark:text-slate-500">
             Loading…
           </div>
         ) : items.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-200 bg-white p-12 text-center">
-            <p className="text-sm text-gray-500">You don&apos;t have any prescriptions yet.</p>
-            <p className="mt-1 text-xs text-gray-400">
+          <div className="rounded-xl border border-dashed border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center">
+            <p className="text-sm text-gray-500 dark:text-slate-400">You don&apos;t have any prescriptions yet.</p>
+            <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
               They&apos;ll show up here automatically after your next consultation.
             </p>
           </div>
@@ -91,7 +91,7 @@ export default function PatientPrescriptionsPage() {
                 <button
                   key={p.id}
                   onClick={() => setViewing(p)}
-                  className="flex w-full items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 text-left shadow-sm transition-all hover:border-primary-300 hover:shadow-md"
+                  className="flex w-full items-center gap-4 rounded-xl border border-gray-100 bg-white dark:bg-slate-900 p-4 text-left shadow-sm transition-all hover:border-primary-300 hover:shadow-md"
                 >
                   <div
                     className="h-12 w-12 shrink-0 rounded-lg"
@@ -99,16 +99,16 @@ export default function PatientPrescriptionsPage() {
                   />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-gray-900">
+                      <h3 className="font-semibold text-gray-900 dark:text-slate-100">
                         {p.data.diagnosis}
                       </h3>
                       {p.status === "cancelled" && (
-                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500">
+                        <span className="rounded-full bg-gray-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-medium text-gray-500 dark:text-slate-400">
                           cancelled
                         </span>
                       )}
                     </div>
-                    <p className="mt-0.5 text-xs text-gray-500">
+                    <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
                       by {p.data.doctorName || p.doctorEmail} ·{" "}
                       {new Date(p.createdAt).toLocaleDateString()} ·{" "}
                       {p.data.medications.length} medication
@@ -162,13 +162,13 @@ function PrescriptionViewerModal({
       onClick={onClose}
     >
       <div
-        className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">{record.data.diagnosis}</h3>
-            <p className="text-xs text-gray-500">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">{record.data.diagnosis}</h3>
+            <p className="text-xs text-gray-500 dark:text-slate-400">
               {record.data.doctorName || record.doctorEmail} ·{" "}
               {new Date(record.createdAt).toLocaleDateString()}
             </p>
@@ -179,7 +179,7 @@ function PrescriptionViewerModal({
             </button>
             <button
               onClick={onClose}
-              className="rounded-lg p-2 text-gray-400 hover:bg-gray-100"
+              className="rounded-lg p-2 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -187,10 +187,10 @@ function PrescriptionViewerModal({
             </button>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto bg-gray-100 p-6">
+        <div className="flex-1 overflow-y-auto bg-gray-100 dark:bg-slate-800 p-6">
           <div
             id="rx-patient-print-target"
-            className="mx-auto w-full max-w-[210mm] bg-white shadow-lg"
+            className="mx-auto w-full max-w-[210mm] bg-white dark:bg-slate-900 shadow-lg"
             style={{ minHeight: "297mm" }}
           >
             <PrescriptionRenderer template={template} data={record.data} />

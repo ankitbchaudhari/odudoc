@@ -48,7 +48,7 @@ const STATUS_TONE: Record<SurgerySession["status"], string> = {
   scheduled: "bg-indigo-100 text-indigo-800",
   live: "bg-rose-600 text-white animate-pulse",
   completed: "bg-emerald-100 text-emerald-800",
-  cancelled: "bg-slate-200 text-slate-700",
+  cancelled: "bg-slate-200 text-slate-700 dark:text-slate-300",
   failed: "bg-amber-100 text-amber-800",
 };
 
@@ -143,7 +143,7 @@ export default function SurgeryViewerPage() {
       </div>
     );
   }
-  if (!data) return <p className="mx-auto mt-12 max-w-md rounded-xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>;
+  if (!data) return <p className="mx-auto mt-12 max-w-md rounded-xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>;
 
   const { session: s } = data;
   const playbackUrl = s.status === "completed" ? s.recordingUrl : s.livePlaybackUrl;
@@ -154,9 +154,9 @@ export default function SurgeryViewerPage() {
       {/* Header */}
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <Link href="/dashboard" className="text-xs font-semibold text-slate-500 hover:text-slate-700">← Dashboard</Link>
-          <h1 className="mt-1 text-2xl font-bold text-slate-900">Surgery video</h1>
-          <p className="text-xs text-slate-500">
+          <Link href="/dashboard" className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300">← Dashboard</Link>
+          <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">Surgery video</h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Lead: {s.leadSurgeonEmail}
             {s.surgeryId && <> · #{s.surgeryId}</>}
           </p>
@@ -167,7 +167,7 @@ export default function SurgeryViewerPage() {
       </div>
 
       {/* Player or placeholder */}
-      <div className="relative overflow-hidden rounded-2xl bg-black shadow-sm ring-1 ring-slate-200" style={{ aspectRatio: "16 / 9" }}>
+      <div className="relative overflow-hidden rounded-2xl bg-black shadow-sm ring-1 ring-slate-200 dark:ring-slate-800" style={{ aspectRatio: "16 / 9" }}>
         {playbackUrl ? (
           <>
             <video
@@ -226,7 +226,7 @@ export default function SurgeryViewerPage() {
       </div>
 
       {s.observerEmails.length > 0 && (
-        <p className="mt-3 text-[11px] text-slate-500">
+        <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
           Observers: {s.observerEmails.length} authorized
         </p>
       )}
@@ -236,9 +236,9 @@ export default function SurgeryViewerPage() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-white p-3 ring-1 ring-slate-200">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{label}</p>
-      <p className="mt-0.5 text-sm font-semibold text-slate-900">{value}</p>
+    <div className="rounded-xl bg-white dark:bg-slate-900 p-3 ring-1 ring-slate-200 dark:ring-slate-800">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</p>
     </div>
   );
 }

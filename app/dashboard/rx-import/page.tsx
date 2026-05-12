@@ -165,8 +165,8 @@ export default function RxImportPage() {
       )}
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Import Paper Prescription</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Import Paper Prescription</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Photograph or paste an old prescription. We&apos;ll OCR it in your browser, parse the drugs, run a safety check, and save it to your records — ready for refill orders.
         </p>
       </div>
@@ -174,49 +174,49 @@ export default function RxImportPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         {/* OCR + transcript */}
         <div className="space-y-3">
-          <section className="rounded-xl bg-white p-4 shadow-sm">
-            <p className="mb-2 text-sm font-bold text-slate-900">1. Add prescription image</p>
+          <section className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
+            <p className="mb-2 text-sm font-bold text-slate-900 dark:text-slate-100">1. Add prescription image</p>
             <input
               type="file" accept="image/*" capture="environment"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) onPhotoPick(f); }}
-              className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+              className="block w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
             />
             {photoUrl && (
               <div className="mt-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photoUrl} alt="Prescription" className="max-h-60 w-full rounded-lg border border-slate-200 object-contain" />
+                <img src={photoUrl} alt="Prescription" className="max-h-60 w-full rounded-lg border border-slate-200 dark:border-slate-800 object-contain" />
                 <button onClick={runOcr} disabled={ocrPhase === "loading" || ocrPhase === "running"} className="mt-2 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-bold text-white disabled:opacity-50">
                   {ocrPhase === "loading" ? "Loading OCR…" : ocrPhase === "running" ? `OCR ${ocrProgress}%` : "Run OCR"}
                 </button>
               </div>
             )}
             {ocrError && <p className="mt-2 rounded bg-rose-50 px-2 py-1 text-xs text-rose-700">{ocrError}</p>}
-            <p className="mt-2 text-[10px] text-slate-500">Tesseract.js runs in your browser — no image leaves your device.</p>
+            <p className="mt-2 text-[10px] text-slate-500 dark:text-slate-400">Tesseract.js runs in your browser — no image leaves your device.</p>
           </section>
 
-          <section className="rounded-xl bg-white p-4 shadow-sm">
-            <p className="mb-2 text-sm font-bold text-slate-900">2. OCR text (edit if needed)</p>
+          <section className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
+            <p className="mb-2 text-sm font-bold text-slate-900 dark:text-slate-100">2. OCR text (edit if needed)</p>
             <textarea
               rows={8} value={rawText} onChange={(e) => setRawText(e.target.value)}
               placeholder="Paste here, or use the photo + Run OCR above. Example:&#10;&#10;Tab. Crocin 500mg 1-0-1 x 5 days&#10;Cap. Amoxicillin 500mg 1-1-1 x 7 days #21&#10;Tab. Pantoprazole 40mg OD before food x 14 days"
-              className="w-full rounded-lg border border-slate-300 bg-white p-3 font-mono text-xs leading-5"
+              className="w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 p-3 font-mono text-xs leading-5"
             />
           </section>
         </div>
 
         {/* Parsed items */}
         <div className="space-y-3">
-          <section className="rounded-xl bg-white p-4 shadow-sm">
+          <section className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-bold text-slate-900">3. Parsed medications ({items.length})</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">3. Parsed medications ({items.length})</p>
               <button onClick={addBlankItem} className="text-xs font-semibold text-indigo-600">+ Add manually</button>
             </div>
             {items.length === 0 ? (
-              <p className="rounded-md bg-slate-50 p-3 text-sm text-slate-500">{rawText ? "No drugs detected yet — keep typing or check formatting." : "Paste or photograph an Rx to get started."}</p>
+              <p className="rounded-md bg-slate-50 dark:bg-slate-900 p-3 text-sm text-slate-500 dark:text-slate-400">{rawText ? "No drugs detected yet — keep typing or check formatting." : "Paste or photograph an Rx to get started."}</p>
             ) : (
               <ul className="space-y-2">
                 {items.map((it, i) => (
-                  <li key={i} className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs">
+                  <li key={i} className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-3 text-xs">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{FORM_EMOJI[it.form || "tablet"] || "💊"}</span>
@@ -228,13 +228,13 @@ export default function RxImportPage() {
                       </div>
                     </div>
                     <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
-                      <label className="flex flex-col"><span className="font-semibold text-slate-500">Strength</span><input value={it.strength || ""} onChange={(e) => updateItem(i, { strength: e.target.value })} className="rounded border border-slate-300 px-1.5 py-0.5" /></label>
-                      <label className="flex flex-col"><span className="font-semibold text-slate-500">Frequency</span><input value={it.frequency || ""} onChange={(e) => updateItem(i, { frequency: e.target.value })} className="rounded border border-slate-300 px-1.5 py-0.5" placeholder="OD / BID / TID / HS" /></label>
-                      <label className="flex flex-col"><span className="font-semibold text-slate-500">Route</span><input value={it.route || ""} onChange={(e) => updateItem(i, { route: e.target.value })} className="rounded border border-slate-300 px-1.5 py-0.5" /></label>
-                      <label className="flex flex-col"><span className="font-semibold text-slate-500">Duration (days)</span><input type="number" value={it.durationDays ?? ""} onChange={(e) => updateItem(i, { durationDays: Number(e.target.value) || undefined })} className="rounded border border-slate-300 px-1.5 py-0.5" /></label>
-                      <label className="flex flex-col col-span-2"><span className="font-semibold text-slate-500">Notes</span><input value={it.instructions || ""} onChange={(e) => updateItem(i, { instructions: e.target.value })} className="rounded border border-slate-300 px-1.5 py-0.5" placeholder="before food / after meals" /></label>
+                      <label className="flex flex-col"><span className="font-semibold text-slate-500 dark:text-slate-400">Strength</span><input value={it.strength || ""} onChange={(e) => updateItem(i, { strength: e.target.value })} className="rounded border border-slate-300 px-1.5 py-0.5" /></label>
+                      <label className="flex flex-col"><span className="font-semibold text-slate-500 dark:text-slate-400">Frequency</span><input value={it.frequency || ""} onChange={(e) => updateItem(i, { frequency: e.target.value })} className="rounded border border-slate-300 px-1.5 py-0.5" placeholder="OD / BID / TID / HS" /></label>
+                      <label className="flex flex-col"><span className="font-semibold text-slate-500 dark:text-slate-400">Route</span><input value={it.route || ""} onChange={(e) => updateItem(i, { route: e.target.value })} className="rounded border border-slate-300 px-1.5 py-0.5" /></label>
+                      <label className="flex flex-col"><span className="font-semibold text-slate-500 dark:text-slate-400">Duration (days)</span><input type="number" value={it.durationDays ?? ""} onChange={(e) => updateItem(i, { durationDays: Number(e.target.value) || undefined })} className="rounded border border-slate-300 px-1.5 py-0.5" /></label>
+                      <label className="flex flex-col col-span-2"><span className="font-semibold text-slate-500 dark:text-slate-400">Notes</span><input value={it.instructions || ""} onChange={(e) => updateItem(i, { instructions: e.target.value })} className="rounded border border-slate-300 px-1.5 py-0.5" placeholder="before food / after meals" /></label>
                     </div>
-                    <p className="mt-1 text-[10px] italic text-slate-500">From: &ldquo;{it.rawLine}&rdquo;</p>
+                    <p className="mt-1 text-[10px] italic text-slate-500 dark:text-slate-400">From: &ldquo;{it.rawLine}&rdquo;</p>
                   </li>
                 ))}
               </ul>
@@ -253,8 +253,8 @@ export default function RxImportPage() {
 
           {/* Drug-safety check */}
           {newDrugs.length > 0 && (
-            <section className="rounded-xl bg-white p-4 shadow-sm">
-              <p className="mb-2 text-sm font-bold text-slate-900">4. Safety check</p>
+            <section className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
+              <p className="mb-2 text-sm font-bold text-slate-900 dark:text-slate-100">4. Safety check</p>
               <RxSafetyPanel newDrugs={newDrugs} hideWhenClean={false} />
             </section>
           )}
@@ -265,21 +265,21 @@ export default function RxImportPage() {
         </div>
       </div>
 
-      <section className="mt-8 rounded-xl bg-white p-4 shadow-sm">
-        <p className="mb-3 text-sm font-bold text-slate-900">Past imports ({imports.length})</p>
+      <section className="mt-8 rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
+        <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Past imports ({imports.length})</p>
         {imports.length === 0 ? (
           <p className="text-sm text-slate-400">No imports yet.</p>
         ) : (
           <ul className="space-y-2">
             {imports.map((r) => (
-              <li key={r.id} className="rounded-lg border border-slate-200 p-3 text-sm">
+              <li key={r.id} className="rounded-lg border border-slate-200 dark:border-slate-800 p-3 text-sm">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="font-semibold text-slate-900">{new Date(r.createdAt).toLocaleString()} · {r.items.length} medication{r.items.length === 1 ? "" : "s"}</p>
-                    <p className="text-[11px] text-slate-500">{r.items.map((x) => x.drugName).join(", ")}</p>
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">{new Date(r.createdAt).toLocaleString()} · {r.items.length} medication{r.items.length === 1 ? "" : "s"}</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">{r.items.map((x) => x.drugName).join(", ")}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${r.status === "saved" ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"}`}>{r.status}</span>
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${r.status === "saved" ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600 dark:text-slate-300"}`}>{r.status}</span>
                     {r.status === "saved" && <button onClick={() => discard(r.id)} className="text-[10px] text-rose-600">Discard</button>}
                   </div>
                 </div>

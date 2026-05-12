@@ -88,8 +88,8 @@ export default function VitalsPage() {
     <div className="mx-auto max-w-4xl px-4 py-6">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">My vitals</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">My vitals</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Self-reported readings. Track trends between consults — your doctor sees the same chart.
           </p>
         </div>
@@ -112,22 +112,22 @@ export default function VitalsPage() {
               key={k}
               onClick={() => setActiveKind(k)}
               className={`text-left rounded-2xl border p-4 transition-all ${
-                activeKind === k ? "border-indigo-300 bg-indigo-50 shadow-sm" : "border-slate-200 bg-white hover:border-slate-300"
+                activeKind === k ? "border-indigo-300 bg-indigo-50 shadow-sm" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300"
               }`}
             >
               <div className="flex items-center justify-between">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-500">{KIND_LABEL[k]}</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{KIND_LABEL[k]}</p>
                 <span className="text-base">{KIND_EMOJI[k]}</span>
               </div>
               {r ? (
                 <>
-                  <p className="mt-1.5 text-2xl font-extrabold text-slate-900">
+                  <p className="mt-1.5 text-2xl font-extrabold text-slate-900 dark:text-slate-100">
                     {fmtVal(r)}
-                    <span className="ml-1 text-xs font-medium text-slate-500">{KIND_UNIT[k]}</span>
+                    <span className="ml-1 text-xs font-medium text-slate-500 dark:text-slate-400">{KIND_UNIT[k]}</span>
                   </p>
                   <div className="mt-1 flex items-center gap-1.5 text-[10px]">
                     <span className={`h-1.5 w-1.5 rounded-full ${DOT[r.severity]}`} />
-                    <span className="text-slate-500">{timeAgo(r.takenAt)}</span>
+                    <span className="text-slate-500 dark:text-slate-400">{timeAgo(r.takenAt)}</span>
                   </div>
                 </>
               ) : (
@@ -139,30 +139,30 @@ export default function VitalsPage() {
       </div>
 
       {/* Trend + table */}
-      <section className="mt-8 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+      <section className="mt-8 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-bold text-slate-900">{KIND_LABEL[activeKind]} trend</p>
-          <p className="text-xs text-slate-500">{trend.length} reading{trend.length === 1 ? "" : "s"}</p>
+          <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{KIND_LABEL[activeKind]} trend</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{trend.length} reading{trend.length === 1 ? "" : "s"}</p>
         </div>
         <Sparkline readings={trend} kind={activeKind} />
         <div className="mt-4">
           {loading ? (
             <p className="text-sm text-slate-400">Loading…</p>
           ) : trend.length === 0 ? (
-            <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">
+            <p className="rounded-lg bg-slate-50 dark:bg-slate-900 p-4 text-sm text-slate-500 dark:text-slate-400">
               No {KIND_LABEL[activeKind].toLowerCase()} readings yet. Log one above.
             </p>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-slate-100 dark:divide-slate-800">
               {[...trend].reverse().map((r) => (
                 <li key={r.id} className="flex items-center justify-between gap-3 py-2.5">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${TONE[r.severity]}`}>{r.severity}</span>
-                      <p className="text-sm font-semibold tabular-nums text-slate-900">{fmtVal(r)} <span className="text-xs font-normal text-slate-500">{r.unit}</span></p>
+                      <p className="text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-100">{fmtVal(r)} <span className="text-xs font-normal text-slate-500 dark:text-slate-400">{r.unit}</span></p>
                       {r.context && <p className="text-[10px] uppercase tracking-wider text-slate-400">{r.context.replace(/_/g, " ")}</p>}
                     </div>
-                    {r.note && <p className="mt-0.5 text-xs text-slate-600">{r.note}</p>}
+                    {r.note && <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">{r.note}</p>}
                     <p className="text-[10px] text-slate-400">{new Date(r.takenAt).toLocaleString()}</p>
                   </div>
                   <button
@@ -219,28 +219,28 @@ function LogForm({ onSaved }: { onSaved: () => void }) {
   };
 
   return (
-    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-      <p className="text-sm font-bold text-slate-900">Log a reading</p>
+    <div className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Log a reading</p>
       {error && <p className="mt-2 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="text-xs font-semibold text-slate-700">
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
           Type
           <select
             value={kind}
             onChange={(e) => setKind(e.target.value as VitalKind)}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal"
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal"
           >
             {KIND_ORDER.map((k) => (
               <option key={k} value={k}>{KIND_EMOJI[k]} {KIND_LABEL[k]}</option>
             ))}
           </select>
         </label>
-        <label className="text-xs font-semibold text-slate-700">
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
           Context (optional)
           <select
             value={context}
             onChange={(e) => setContext(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal"
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal"
           >
             <option value="">—</option>
             <option value="fasting">Fasting</option>
@@ -251,7 +251,7 @@ function LogForm({ onSaved }: { onSaved: () => void }) {
             <option value="after_med">After medication</option>
           </select>
         </label>
-        <label className="text-xs font-semibold text-slate-700">
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
           {kind === "bp" ? "Systolic" : "Value"} ({KIND_UNIT[kind]})
           <input
             type="number"
@@ -259,11 +259,11 @@ function LogForm({ onSaved }: { onSaved: () => void }) {
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder={kind === "bp" ? "120" : kind === "glucose" ? "95" : kind === "weight" ? "68.5" : kind === "temperature" ? "36.7" : kind === "spo2" ? "98" : "72"}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal tabular-nums"
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal tabular-nums"
           />
         </label>
         {kind === "bp" && (
-          <label className="text-xs font-semibold text-slate-700">
+          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
             Diastolic (mmHg)
             <input
               type="number"
@@ -271,17 +271,17 @@ function LogForm({ onSaved }: { onSaved: () => void }) {
               value={value2}
               onChange={(e) => setValue2(e.target.value)}
               placeholder="80"
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal tabular-nums"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal tabular-nums"
             />
           </label>
         )}
-        <label className="sm:col-span-2 text-xs font-semibold text-slate-700">
+        <label className="sm:col-span-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
           Note (optional)
           <input
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="After a long walk, slightly nervous, etc."
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal"
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-normal"
           />
         </label>
       </div>
@@ -304,7 +304,7 @@ function LogForm({ onSaved }: { onSaved: () => void }) {
 function Sparkline({ readings, kind }: { readings: Reading[]; kind: VitalKind }) {
   if (readings.length < 2) {
     return (
-      <div className="mt-3 flex h-32 items-center justify-center rounded-xl border border-dashed border-slate-200 text-xs text-slate-400">
+      <div className="mt-3 flex h-32 items-center justify-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-xs text-slate-400">
         Log at least 2 readings to see a trend.
       </div>
     );
@@ -334,7 +334,7 @@ function Sparkline({ readings, kind }: { readings: Reading[]; kind: VitalKind })
   }
 
   return (
-    <div className="mt-3 overflow-hidden rounded-xl bg-gradient-to-br from-indigo-50/40 via-white to-emerald-50/40 p-3 ring-1 ring-slate-200">
+    <div className="mt-3 overflow-hidden rounded-xl bg-gradient-to-br from-indigo-50/40 via-white to-emerald-50/40 p-3 ring-1 ring-slate-200 dark:ring-slate-800">
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="none">
         <polyline fill="none" stroke="#4f46e5" strokeWidth="2.5" points={points} strokeLinejoin="round" strokeLinecap="round" />
         {diastolicPath && (
@@ -344,7 +344,7 @@ function Sparkline({ readings, kind }: { readings: Reading[]; kind: VitalKind })
           <circle key={r.id} cx={xs[i]} cy={H - pad - ((r.value - min) / range) * (H - pad * 2)} r="3" fill="#4f46e5" />
         ))}
       </svg>
-      <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500">
+      <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400">
         <span>{new Date(readings[0].takenAt).toLocaleDateString()}</span>
         <span>min {min} · max {max}</span>
         <span>{new Date(readings[readings.length - 1].takenAt).toLocaleDateString()}</span>

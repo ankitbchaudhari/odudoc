@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { COUNTRIES } from "@/lib/countries";
 import PhoneInput from "@/components/PhoneInput";
+import Logo from "@/components/Logo";
 import AppDownloadBadges from "@/components/AppDownloadBadges";
 
 // Tiny inline icon helpers to keep JSX readable.
@@ -145,14 +146,7 @@ export default function RegisterPage() {
         {/* Form column */}
         <div className="order-2 w-full max-w-xl justify-self-center lg:order-1 lg:justify-self-end">
           <div className="mb-6 text-center lg:text-left">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/images/logo.svg"
-              alt="OduDoc"
-              width={440}
-              height={108}
-              className="mx-auto h-12 w-auto lg:mx-0"
-            />
+            <Logo size="md" className="mx-auto lg:mx-0" link={false} />
             <h1 className="mt-6 text-3xl font-bold tracking-tight text-gray-900 dark:text-slate-100">
               Create your account
             </h1>

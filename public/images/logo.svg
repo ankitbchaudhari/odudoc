@@ -1,123 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 108" role="img">
-  <title>OduDoc — AI-Powered Telehealth</title>
-  <desc>OduDoc medical AI telehealth SaaS logo: monitoring ring with heartbeat pulse, AI neural accent, and medical cross badge</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 338 64">
 
   <defs>
-
-    <!-- Icon background: midnight → deep navy -->
-    <linearGradient id="g-icon" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stop-color="#112680"/>
-      <stop offset="100%" stop-color="#040E2C"/>
+    <linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#22C98A"/>
+      <stop offset="100%" stop-color="#0EA5A0"/>
     </linearGradient>
-
-    <!-- Ring stroke gradient: electric cyan → vivid blue -->
-    <linearGradient id="g-ring" x1="0" y1="24" x2="66" y2="72" gradientUnits="userSpaceOnUse">
-      <stop offset="0%"   stop-color="#00E5FF"/>
-      <stop offset="100%" stop-color="#1A7BFF"/>
-    </linearGradient>
-
-    <!-- "Doc" wordmark gradient: navy → electric cyan -->
-    <linearGradient id="g-doc" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#1452C8"/>
-      <stop offset="100%" stop-color="#00C8F5"/>
-    </linearGradient>
-
-    <!-- Subtle inner glow for icon (soft highlight at top-left) -->
-    <radialGradient id="g-glow" cx="25%" cy="20%" r="60%">
-      <stop offset="0%"   stop-color="#1E4FCC" stop-opacity="0.6"/>
-      <stop offset="100%" stop-color="#040E2C" stop-opacity="0"/>
-    </radialGradient>
-
   </defs>
 
+  <!-- Icon: rounded square + cross -->
+  <rect x="0" y="0" width="64" height="64" rx="18" fill="url(#ig)"/>
+  <rect x="25" y="12" width="14" height="40" rx="5" fill="white"/>
+  <rect x="12" y="25" width="40" height="14" rx="5" fill="white"/>
 
-  <!-- ╔══════════════════╗ -->
-  <!-- ║      ICON        ║ -->
-  <!-- ╚══════════════════╝ -->
-
-  <!-- Rounded-square base -->
-  <rect x="2" y="9" width="80" height="80" rx="18" fill="url(#g-icon)"/>
-  <!-- Soft inner highlight -->
-  <rect x="2" y="9" width="80" height="80" rx="18" fill="url(#g-glow)"/>
-
-  <!-- ── 270° monitoring ring ──
-       Center (42,49), r=24
-       Start  = 6 o'clock  → (42, 73)
-       End    = 3 o'clock  → (66, 49)
-       Arc travels CW: bottom → left → top → right
-       Gap at SE quadrant (bottom-right) -->
-  <path d="M 42,73 A 24,24 0 1,1 66,49"
-        fill="none"
-        stroke="url(#g-ring)"
-        stroke-width="3.8"
-        stroke-linecap="round"/>
-
-  <!-- ── AI neural node: 12 o'clock ── -->
-  <!-- Outer pulse ring -->
-  <circle cx="42" cy="25" r="9"   fill="none" stroke="#9B3FE8" stroke-width="1.2" opacity="0.35"/>
-  <!-- Inner glow disc -->
-  <circle cx="42" cy="25" r="5.5" fill="#A64FEF" opacity="0.25"/>
-  <!-- Core dot -->
-  <circle cx="42" cy="25" r="3.5" fill="#B860FF"/>
-
-  <!-- ── EKG / Heartbeat line (white) ──
-       Spans ring interior: 9 o'clock (18,49) → 3 o'clock (66,49) -->
-  <path d="M 18,49
-           L 24,49
-           L 27,41
-           L 31,58
-           L 35,29
-           L 39,49
-           L 46,49
-           L 49,43
-           L 52,49
-           L 66,49"
-        fill="none"
-        stroke="white"
-        stroke-width="2.2"
-        stroke-linecap="round"
-        stroke-linejoin="round"/>
-
-  <!-- Peak highlight dots -->
-  <!-- Main spike (cyan) -->
-  <circle cx="35" cy="29" r="3"   fill="#00E5FF"/>
-  <circle cx="35" cy="29" r="5.5" fill="#00E5FF" opacity="0.20"/>
-  <!-- Small bump (purple, AI-tinted) -->
-  <circle cx="49" cy="43" r="2"   fill="#C078FF"/>
-
-  <!-- ── Thin neural connector lines (AI motif) ──
-       Three short lines from AI dot (42,25) to ring points -->
-  <line x1="42" y1="29" x2="35" y2="35" stroke="#9B3FE8" stroke-width="0.8" opacity="0.55" stroke-linecap="round"/>
-  <line x1="42" y1="29" x2="49" y2="35" stroke="#9B3FE8" stroke-width="0.8" opacity="0.55" stroke-linecap="round"/>
-  <line x1="42" y1="29" x2="42" y2="38" stroke="#9B3FE8" stroke-width="0.8" opacity="0.55" stroke-linecap="round"/>
-
-  <!-- ── Medical cross badge (top-right, partially overlapping corner) ── -->
-  <!-- Horizontal arm -->
-  <rect x="71" y="12" width="20" height="7" rx="2.5" fill="#00D8FF"/>
-  <!-- Vertical arm -->
-  <rect x="77" y="6"  width="7"  height="20" rx="2.5" fill="#00D8FF"/>
-  <!-- Small glow behind cross -->
-  <rect x="70" y="11" width="22" height="9"  rx="3"   fill="#00D8FF" opacity="0.15"/>
-
-  <!-- ── Small "AI" text label at bottom of icon ── -->
-  <text x="42" y="83"
-    text-anchor="middle"
-    font-family="'Nunito','Varela Round','Century Gothic','Trebuchet MS',sans-serif"
-    font-size="9" font-weight="700" letter-spacing="2.5"
-    fill="#00D8FF" opacity="0.85">A I</text>
-
-
-  <!-- ╔══════════════════╗ -->
-  <!-- ║    WORDMARK      ║ -->
-  <!-- ╚══════════════════╝ -->
-
-  <!-- "OduDoc" — Odu in midnight navy, Doc in gradient cyan-blue -->
-  <text x="100" y="69"
-    font-family="'Nunito','Varela Round','Century Gothic','Trebuchet MS',sans-serif"
-    font-size="63" font-weight="800">
-    <tspan fill="#040E2C">Odu</tspan><tspan fill="url(#g-doc)">Doc</tspan>
-  </text>
-
-
+  <!-- Wordmark -->
+  <text
+    x="70" y="46"
+    font-family="'Nunito','Poppins','Comfortaa','Arial Rounded MT Bold',Arial,sans-serif"
+    font-size="52"
+    font-weight="800"
+    letter-spacing="-1"
+    fill="#0F3570">OduDoc</text>
 
 </svg>

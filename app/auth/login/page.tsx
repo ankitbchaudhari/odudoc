@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import AppDownloadBadges from "@/components/AppDownloadBadges";
+import Logo from "@/components/Logo";
 
 function LoginForm() {
   const router = useRouter();
@@ -136,14 +137,7 @@ function LoginForm() {
       {/* Right — the form */}
       <div className="w-full max-w-md justify-self-center lg:justify-self-start">
         <div className="mb-6 text-center lg:text-left">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/logo.svg"
-            alt="OduDoc"
-            width={440}
-            height={108}
-            className="mx-auto h-12 w-auto lg:mx-0"
-          />
+          <Logo size="md" className="mx-auto lg:mx-0" link={false} />
           <h1 className="mt-6 text-3xl font-bold tracking-tight text-gray-900 dark:text-slate-100">
             Welcome back
           </h1>

@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Logo from "@/components/Logo";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
@@ -30,14 +31,7 @@ function SuccessContent() {
 
         {/* Logo */}
         <div className="mb-6">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/logo.svg"
-            alt="OduDoc"
-            width={440}
-            height={108}
-            className="mx-auto h-10 w-auto"
-          />
+          <Logo size="sm" className="mx-auto" link={false} />
         </div>
 
         {/* Heading */}

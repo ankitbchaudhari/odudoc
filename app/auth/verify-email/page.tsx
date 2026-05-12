@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import Logo from "@/components/Logo";
 
 // Status codes set by /api/auth/verify when it can't complete the flow:
 //   missing  — no token param
@@ -35,14 +36,7 @@ function VerifyResult() {
   return (
     <div className="w-full max-w-md">
       <div className="mb-8 text-center">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/images/logo.svg"
-          alt="OduDoc"
-          width={440}
-          height={108}
-          className="mx-auto mb-6 h-14 w-auto"
-        />
+        <Logo size="md" className="mx-auto mb-6" link={false} />
       </div>
       <div className="rounded-2xl bg-white dark:bg-slate-900 p-8 shadow-lg text-center">
         <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-red-50">

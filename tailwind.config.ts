@@ -1,6 +1,10 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  // Class-based dark mode so the user-toggle works deterministically.
+  // `prefers-color-scheme` is honored by ThemeProvider on first paint
+  // and stored in localStorage thereafter.
+  darkMode: "class",
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",

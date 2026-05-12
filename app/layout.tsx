@@ -15,6 +15,7 @@ import LoadingBar from "@/components/LoadingBar";
 import ReferralAttribution from "@/components/ReferralAttribution";
 import { OrganizationLd, WebsiteLd } from "@/components/StructuredData";
 import ClientErrorBoundary from "@/components/ClientErrorBoundary";
+import { ThemeProvider, NO_FLASH_SCRIPT } from "@/components/ThemeProvider";
 
 // AIChatbot is a 500+ line client component that ships on every page
 // load but is only ever rendered as a floating bubble until a user
@@ -150,8 +151,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           title="OduDoc Blog"
           href="/feed.xml"
         />
+        {/* No-flash theme init — sets `dark` on <html> BEFORE first paint
+            using localStorage / prefers-color-scheme so the page doesn't
+            briefly render light mode before flipping to dark. */}
+        <script dangerouslySetInnerHTML={{ __html: NO_FLASH_SCRIPT }} />
       </head>
-      <body className={`${inter.className} flex min-h-screen flex-col`} suppressHydrationWarning>
+      <body className={`${inter.className} flex min-h-screen flex-col bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors`} suppressHydrationWarning>
+        <ThemeProvider>
         <AuthProvider>
           <CartProvider>
             <LanguageProvider>
@@ -167,6 +173,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </LanguageProvider>
           </CartProvider>
         </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

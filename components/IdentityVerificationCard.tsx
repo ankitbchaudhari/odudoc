@@ -164,8 +164,8 @@ export default function IdentityVerificationCard() {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <p className="text-sm text-gray-500">Loading identity…</p>
+      <div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <p className="text-sm text-gray-500 dark:text-slate-400">Loading identity…</p>
       </div>
     );
   }
@@ -175,11 +175,11 @@ export default function IdentityVerificationCard() {
     identity.status === "unverified" || identity.status === "rejected";
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Identity & Medical ID</h2>
-          <p className="mt-1 text-sm text-gray-500">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Identity & Medical ID</h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
             Your OduDoc Medical ID is permanent and links every consultation,
             prescription, and record on your account.
           </p>
@@ -187,18 +187,18 @@ export default function IdentityVerificationCard() {
         <IdentityBadge status={identity.status} />
       </div>
 
-      <div className="mt-5 rounded-lg border border-gray-100 bg-gray-50 p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+      <div className="mt-5 rounded-lg border border-gray-100 bg-gray-50 dark:bg-slate-900 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
           Your Medical ID
         </p>
         <div className="mt-1 flex items-center gap-3">
-          <p className="font-mono text-lg font-semibold tracking-wider text-gray-900">
+          <p className="font-mono text-lg font-semibold tracking-wider text-gray-900 dark:text-slate-100">
             {identity.medicalId || "Not assigned"}
           </p>
           {identity.medicalId && (
             <button
               onClick={copyId}
-              className="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50"
+              className="rounded-md border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 py-1 text-xs font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
             >
               {copied ? "Copied!" : "Copy"}
             </button>
@@ -232,20 +232,20 @@ export default function IdentityVerificationCard() {
 
       {canSubmit && (
         <div className="mt-6 space-y-3 border-t border-gray-100 pt-5">
-          <p className="text-sm font-semibold text-gray-900">
+          <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">
             Upload a government-issued photo ID
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 dark:text-slate-400">
             Accepted: PDF, PNG, JPEG, or WebP · max 4&nbsp;MB. Your name on the
             document should match your OduDoc account name.
           </p>
 
           <div>
-            <label className="text-xs font-medium text-gray-700">Document type</label>
+            <label className="text-xs font-medium text-gray-700 dark:text-slate-300">Document type</label>
             <select
               value={docType}
               onChange={(e) => setDocType(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
               {docTypeOptions.map((t) => (
                 <option key={t} value={t}>{t}</option>
@@ -254,13 +254,13 @@ export default function IdentityVerificationCard() {
           </div>
 
           <div>
-            <label className="text-xs font-medium text-gray-700">File</label>
+            <label className="text-xs font-medium text-gray-700 dark:text-slate-300">File</label>
             <input
               ref={fileInputRef}
               type="file"
               accept="application/pdf,image/png,image/jpeg,image/webp"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
-              className="mt-1 block w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-primary-50 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-primary-700 hover:file:bg-primary-100"
+              className="mt-1 block w-full text-sm text-gray-700 dark:text-slate-300 file:mr-3 file:rounded-md file:border-0 file:bg-primary-50 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-primary-700 hover:file:bg-primary-100"
             />
           </div>
 

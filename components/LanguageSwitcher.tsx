@@ -115,7 +115,7 @@ export default function LanguageSwitcher() {
     <div className="relative" ref={ref}>
       <button
         onClick={handleOpen}
-        className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+        className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:bg-slate-900 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
         aria-label="Change language"
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -131,7 +131,7 @@ export default function LanguageSwitcher() {
 
       {open && (
         <div
-          className="notranslate absolute right-0 mt-2 w-72 rounded-xl bg-white shadow-lg ring-1 ring-gray-100"
+          className="notranslate absolute right-0 mt-2 w-72 rounded-xl bg-white dark:bg-slate-900 shadow-lg ring-1 ring-gray-100"
           translate="no"
         >
           <div className="p-2">
@@ -140,12 +140,12 @@ export default function LanguageSwitcher() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search language…"
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+              className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
           <div className="max-h-80 overflow-y-auto py-1">
             {filtered.length === 0 ? (
-              <p className="px-4 py-3 text-center text-xs text-gray-400">No languages match.</p>
+              <p className="px-4 py-3 text-center text-xs text-gray-400 dark:text-slate-500">No languages match.</p>
             ) : (
               filtered.map((l) => {
                 const isActive = l.code === activeCode;
@@ -153,13 +153,13 @@ export default function LanguageSwitcher() {
                   <button
                     key={l.code}
                     onClick={() => handlePick(l.code)}
-                    className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-gray-50 ${
-                      isActive ? "bg-primary-50 font-semibold text-primary-600" : "text-gray-700"
+                    className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:bg-slate-900 ${
+                      isActive ? "bg-primary-50 font-semibold text-primary-600" : "text-gray-700 dark:text-slate-300"
                     }`}
                   >
-                    <span className="w-7 text-[10px] font-bold text-gray-400">{l.code.toUpperCase()}</span>
+                    <span className="w-7 text-[10px] font-bold text-gray-400 dark:text-slate-500">{l.code.toUpperCase()}</span>
                     <span className="flex-1 text-left">{l.native}</span>
-                    <span className="text-[11px] text-gray-400">{l.name}</span>
+                    <span className="text-[11px] text-gray-400 dark:text-slate-500">{l.name}</span>
                     {isActive && (
                       <svg className="h-4 w-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

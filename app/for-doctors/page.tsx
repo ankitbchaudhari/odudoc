@@ -158,7 +158,7 @@ export default async function ForDoctorsPage() {
       ];
 
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-slate-900">
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary-600 to-primary-800 py-20 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -194,7 +194,7 @@ export default async function ForDoctorsPage() {
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link
                 href="/for-doctors/register"
-                className="rounded-lg bg-white px-8 py-3 font-semibold text-primary-700 hover:bg-gray-100"
+                className="rounded-lg bg-white dark:bg-slate-900 px-8 py-3 font-semibold text-primary-700 hover:bg-gray-100 dark:bg-slate-800"
               >
                 Join as a Doctor →
               </Link>
@@ -215,7 +215,7 @@ export default async function ForDoctorsPage() {
       <ComparisonMatrix />
 
       {/* Stats */}
-      <section className="border-b border-gray-100 bg-gray-50 py-12">
+      <section className="border-b border-gray-100 bg-gray-50 dark:bg-slate-900 py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
             {stats.map((s) => (
@@ -223,7 +223,7 @@ export default async function ForDoctorsPage() {
                 <div className="text-3xl font-bold text-primary-600 md:text-4xl">
                   {s.value}
                 </div>
-                <div className="mt-1 text-sm text-gray-600">{s.label}</div>
+                <div className="mt-1 text-sm text-gray-600 dark:text-slate-300">{s.label}</div>
               </div>
             ))}
           </div>
@@ -232,17 +232,17 @@ export default async function ForDoctorsPage() {
 
       {/* Country coverage — sets expectations early so visitors
           from non-IN markets don't bounce assuming this is India-only. */}
-      <section className="bg-white py-16">
+      <section className="bg-white dark:bg-slate-900 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center">
             <div>
               <span className="inline-block rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-indigo-700">
                 🌐 Global by default
               </span>
-              <h2 className="mt-3 text-3xl font-bold text-gray-900 md:text-4xl">
+              <h2 className="mt-3 text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
                 Available in every country
               </h2>
-              <p className="mt-4 text-gray-600">
+              <p className="mt-4 text-gray-600 dark:text-slate-300">
                 OduDoc isn&apos;t India-only. The platform handles country-specific tax (GST split, VAT, sales tax),
                 regional health-IDs (ABHA in India, NHS Number in UK, NPI in US, MyHealth in SG), local medical-council
                 lookups, and 11 UI languages with RTL flip for Arabic. Pick your country at signup; the right rules apply automatically.
@@ -269,12 +269,12 @@ export default async function ForDoctorsPage() {
                   "🇵🇭 Philippines · 12% VAT",
                   "🇯🇵 Japan · 10% VAT",
                 ].map((c) => (
-                  <span key={c} className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
+                  <span key={c} className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-medium text-gray-700 dark:text-slate-300 shadow-sm">
                     {c}
                   </span>
                 ))}
               </div>
-              <p className="mt-4 text-xs text-gray-500">
+              <p className="mt-4 text-xs text-gray-500 dark:text-slate-400">
                 Country missing? <Link href="/contact" className="font-semibold text-indigo-600 hover:underline">Tell us</Link> — adding a new country is one row in the tax-engine config.
               </p>
             </div>
@@ -292,8 +292,8 @@ export default async function ForDoctorsPage() {
                   <li key={title} className="flex items-start gap-3">
                     <span className="text-xl">{icon}</span>
                     <div>
-                      <p className="font-semibold text-gray-900">{title}</p>
-                      <p className="text-xs text-gray-600">{body}</p>
+                      <p className="font-semibold text-gray-900 dark:text-slate-100">{title}</p>
+                      <p className="text-xs text-gray-600 dark:text-slate-300">{body}</p>
                     </div>
                   </li>
                 ))}
@@ -310,10 +310,10 @@ export default async function ForDoctorsPage() {
             <span className="inline-block rounded-full bg-green-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-green-700">
               No Subscription · No Hidden Fees
             </span>
-            <h2 className="mt-4 text-3xl font-bold text-gray-900 md:text-4xl">
+            <h2 className="mt-4 text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
               You Earn First. We Earn Later.
             </h2>
-            <p className="mt-4 text-lg text-gray-600">
+            <p className="mt-4 text-lg text-gray-600 dark:text-slate-300">
               OduDoc is completely free for doctors to join. We charge a flat
               <span className="font-semibold text-primary-600"> 30% commission </span>
               per successful consultation — you keep
@@ -329,19 +329,19 @@ export default async function ForDoctorsPage() {
             </h3>
             <div className="mt-6 grid grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-xs text-gray-500">Consultation Fee</div>
-                <div className="mt-1 text-3xl font-extrabold text-gray-900">$100</div>
+                <div className="text-xs text-gray-500 dark:text-slate-400">Consultation Fee</div>
+                <div className="mt-1 text-3xl font-extrabold text-gray-900 dark:text-slate-100">$100</div>
               </div>
               <div>
-                <div className="text-xs text-gray-500">You Keep (70%)</div>
+                <div className="text-xs text-gray-500 dark:text-slate-400">You Keep (70%)</div>
                 <div className="mt-1 text-3xl font-extrabold text-green-600">$70</div>
               </div>
               <div>
-                <div className="text-xs text-gray-500">OduDoc (30%)</div>
+                <div className="text-xs text-gray-500 dark:text-slate-400">OduDoc (30%)</div>
                 <div className="mt-1 text-3xl font-extrabold text-primary-600">$30</div>
               </div>
             </div>
-            <div className="mt-6 h-3 overflow-hidden rounded-full bg-gray-100">
+            <div className="mt-6 h-3 overflow-hidden rounded-full bg-gray-100 dark:bg-slate-800">
               <div className="flex h-full">
                 <div className="flex h-full w-[70%] items-center justify-center bg-green-500 text-xs font-bold text-white">
                   70% to Doctor
@@ -351,7 +351,7 @@ export default async function ForDoctorsPage() {
                 </div>
               </div>
             </div>
-            <p className="mt-6 text-center text-xs text-gray-500">
+            <p className="mt-6 text-center text-xs text-gray-500 dark:text-slate-400">
               No consultation = No charge. We only earn when you successfully consult a patient.
             </p>
           </div>
@@ -361,15 +361,15 @@ export default async function ForDoctorsPage() {
             {commissionPerks.map((p) => (
               <div
                 key={p.title}
-                className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+                className="group rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
               >
                 <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl ${p.bg}`}>
                   <svg className={`h-6 w-6 ${p.color}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={p.icon} />
                   </svg>
                 </div>
-                <h3 className="mb-2 font-bold text-gray-900">{p.title}</h3>
-                <p className="text-sm leading-relaxed text-gray-600">{p.desc}</p>
+                <h3 className="mb-2 font-bold text-gray-900 dark:text-slate-100">{p.title}</h3>
+                <p className="text-sm leading-relaxed text-gray-600 dark:text-slate-300">{p.desc}</p>
               </div>
             ))}
           </div>
@@ -381,7 +381,7 @@ export default async function ForDoctorsPage() {
             >
               Start Earning Today
             </Link>
-            <p className="mt-3 text-xs text-gray-500">
+            <p className="mt-3 text-xs text-gray-500 dark:text-slate-400">
               Takes 10 minutes to apply · Get verified within 48 hours
             </p>
           </div>
@@ -399,10 +399,10 @@ export default async function ForDoctorsPage() {
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
               Now included · No extra cost
             </span>
-            <h2 className="mt-3 text-3xl font-bold text-gray-900 md:text-4xl">
+            <h2 className="mt-3 text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
               Run your whole clinic on OduDoc
             </h2>
-            <p className="mt-4 text-lg text-gray-600">
+            <p className="mt-4 text-lg text-gray-600 dark:text-slate-300">
               The platform just upgraded into a full small-clinic EMR. Patients,
               SOAP notes, prescriptions, lab files, invoices, payments, staff —
               all in your dashboard. <b>50 patients/month free</b>, then $50 to
@@ -424,26 +424,26 @@ export default async function ForDoctorsPage() {
                 className={`rounded-2xl border border-white/60 bg-gradient-to-br ${f.tone} p-6 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-md`}
               >
                 <div className="mb-3 text-3xl">{f.icon}</div>
-                <h3 className="mb-1.5 font-bold text-gray-900">{f.title}</h3>
-                <p className="text-sm leading-relaxed text-gray-600">{f.desc}</p>
+                <h3 className="mb-1.5 font-bold text-gray-900 dark:text-slate-100">{f.title}</h3>
+                <p className="text-sm leading-relaxed text-gray-600 dark:text-slate-300">{f.desc}</p>
               </div>
             ))}
           </div>
 
           {/* Pricing card */}
           <div className="mt-14 grid gap-5 lg:grid-cols-2">
-            <div className="rounded-3xl border border-gray-100 bg-white p-7 shadow-sm">
+            <div className="rounded-3xl border border-gray-100 bg-white dark:bg-slate-900 p-7 shadow-sm">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">
                 Free forever
               </p>
-              <h3 className="mt-1 text-2xl font-bold text-gray-900">
+              <h3 className="mt-1 text-2xl font-bold text-gray-900 dark:text-slate-100">
                 Solo doctor + 50 patients / month
               </h3>
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-gray-600 dark:text-slate-300">
                 Perfect for solo practitioners. Everything works — no asterisks,
                 no demo data, no time limit.
               </p>
-              <ul className="mt-5 space-y-2 text-sm text-gray-700">
+              <ul className="mt-5 space-y-2 text-sm text-gray-700 dark:text-slate-300">
                 {[
                   "50 new patients / month",
                   "1 nurse + 1 front desk seat (you don't count)",
@@ -458,8 +458,8 @@ export default async function ForDoctorsPage() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-5 text-3xl font-bold text-gray-900">
-                $0 <span className="text-base font-normal text-gray-500">/ month</span>
+              <p className="mt-5 text-3xl font-bold text-gray-900 dark:text-slate-100">
+                $0 <span className="text-base font-normal text-gray-500 dark:text-slate-400">/ month</span>
               </p>
             </div>
 
@@ -483,7 +483,7 @@ export default async function ForDoctorsPage() {
                   "Cancel anytime by simply not paying next time",
                 ].map((line) => (
                   <li key={line} className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white dark:bg-slate-900" />
                     <span>{line}</span>
                   </li>
                 ))}
@@ -495,16 +495,16 @@ export default async function ForDoctorsPage() {
           </div>
 
           {/* Corporate strip */}
-          <div className="mt-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mt-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   Multi-clinic / hospital
                 </p>
-                <h3 className="mt-1 text-lg font-bold text-slate-900">
+                <h3 className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">
                   More than 250 patients/month or 3+3+3 staff? OduDoc Corporate.
                 </h3>
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm text-gray-600 dark:text-slate-300">
                   Unlimited patients, unlimited staff &amp; roles, multi-clinic
                   admin, BAA / DPA available, custom SLA. Talk to us.
                 </p>
@@ -527,7 +527,7 @@ export default async function ForDoctorsPage() {
               Get your free clinic dashboard
               <span>→</span>
             </Link>
-            <p className="mt-3 text-xs text-gray-500">
+            <p className="mt-3 text-xs text-gray-500 dark:text-slate-400">
               Already on OduDoc? It&apos;s already in your dashboard under{" "}
               <b>Clinic EMR</b>.
             </p>
@@ -536,13 +536,13 @@ export default async function ForDoctorsPage() {
       </section>
 
       {/* How It Works */}
-      <section className="bg-gray-50 py-20">
+      <section className="bg-gray-50 dark:bg-slate-900 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
               How It Works
             </h2>
-            <p className="mt-4 text-lg text-gray-600">
+            <p className="mt-4 text-lg text-gray-600 dark:text-slate-300">
               Get up and running in 4 simple steps
             </p>
           </div>
@@ -550,7 +550,7 @@ export default async function ForDoctorsPage() {
             {steps.map((s) => (
               <div
                 key={s.num}
-                className="relative rounded-xl bg-white p-6 shadow-sm"
+                className="relative rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm"
               >
                 <div className="absolute -top-4 left-6 flex h-10 w-10 items-center justify-center rounded-full bg-primary-600 text-sm font-bold text-white">
                   {s.num}
@@ -570,8 +570,8 @@ export default async function ForDoctorsPage() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">{s.title}</h3>
-                <p className="mt-2 text-sm text-gray-600">{s.desc}</p>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{s.title}</h3>
+                <p className="mt-2 text-sm text-gray-600 dark:text-slate-300">{s.desc}</p>
               </div>
             ))}
           </div>
@@ -582,10 +582,10 @@ export default async function ForDoctorsPage() {
       <section className="py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
               Doctors Love OduDoc
             </h2>
-            <p className="mt-4 text-lg text-gray-600">
+            <p className="mt-4 text-lg text-gray-600 dark:text-slate-300">
               Here&apos;s what our medical community says
             </p>
           </div>
@@ -593,7 +593,7 @@ export default async function ForDoctorsPage() {
             {testimonials.map((t) => (
               <div
                 key={t.name}
-                className="rounded-xl border border-gray-200 bg-white p-6"
+                className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6"
               >
                 <div className="mb-4 flex text-yellow-400">
                   {[1, 2, 3, 4, 5].map((i) => (
@@ -602,16 +602,16 @@ export default async function ForDoctorsPage() {
                     </svg>
                   ))}
                 </div>
-                <p className="text-sm text-gray-700">&ldquo;{t.quote}&rdquo;</p>
+                <p className="text-sm text-gray-700 dark:text-slate-300">&ldquo;{t.quote}&rdquo;</p>
                 <div className="mt-5 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 font-bold text-primary-700">
                     {t.initials}
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-gray-900">
+                    <div className="text-sm font-semibold text-gray-900 dark:text-slate-100">
                       {t.name}
                     </div>
-                    <div className="text-xs text-gray-500">{t.specialty}</div>
+                    <div className="text-xs text-gray-500 dark:text-slate-400">{t.specialty}</div>
                   </div>
                 </div>
               </div>
@@ -621,10 +621,10 @@ export default async function ForDoctorsPage() {
       </section>
 
       {/* FAQ */}
-      <section className="bg-gray-50 py-20">
+      <section className="bg-gray-50 dark:bg-slate-900 py-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
               Frequently Asked Questions
             </h2>
           </div>
@@ -632,12 +632,12 @@ export default async function ForDoctorsPage() {
             {faqs.map((f) => (
               <details
                 key={f.q}
-                className="group rounded-xl border border-gray-200 bg-white p-5"
+                className="group rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5"
               >
-                <summary className="flex cursor-pointer items-center justify-between font-semibold text-gray-900">
+                <summary className="flex cursor-pointer items-center justify-between font-semibold text-gray-900 dark:text-slate-100">
                   {f.q}
                   <svg
-                    className="h-5 w-5 text-gray-400 transition-transform group-open:rotate-180"
+                    className="h-5 w-5 text-gray-400 dark:text-slate-500 transition-transform group-open:rotate-180"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -650,7 +650,7 @@ export default async function ForDoctorsPage() {
                     />
                   </svg>
                 </summary>
-                <p className="mt-3 text-sm text-gray-600">{f.a}</p>
+                <p className="mt-3 text-sm text-gray-600 dark:text-slate-300">{f.a}</p>
               </details>
             ))}
           </div>
@@ -658,7 +658,7 @@ export default async function ForDoctorsPage() {
       </section>
 
       {/* OduDoc for Doctors — mobile app */}
-      <section className="bg-white py-16">
+      <section className="bg-white dark:bg-slate-900 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AppDownloadBadges variant="doctor" tone="indigo" />
         </div>
@@ -677,7 +677,7 @@ export default async function ForDoctorsPage() {
           </p>
           <Link
             href="/for-doctors/register"
-            className="mt-8 inline-block rounded-lg bg-white px-8 py-3 font-semibold text-primary-700 hover:bg-gray-100"
+            className="mt-8 inline-block rounded-lg bg-white dark:bg-slate-900 px-8 py-3 font-semibold text-primary-700 hover:bg-gray-100 dark:bg-slate-800"
           >
             Start Your Application
           </Link>

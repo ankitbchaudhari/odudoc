@@ -154,30 +154,30 @@ export default function LiveTranscriber({
       {supportError && (
         <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">{supportError}</div>
       )}
-      <div className="flex flex-wrap items-center gap-2 rounded-xl bg-white p-3 shadow-sm">
+      <div className="flex flex-wrap items-center gap-2 rounded-xl bg-white dark:bg-slate-900 p-3 shadow-sm">
         {recording ? (
           <button onClick={stop} className="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-sm font-bold text-white">
-            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-white" /> Stop
+            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-white dark:bg-slate-900" /> Stop
           </button>
         ) : (
           <button onClick={start} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white">
             🎙 Start live capture
           </button>
         )}
-        <div className="flex gap-1 rounded-lg bg-slate-100 p-1 text-xs font-semibold">
+        <div className="flex gap-1 rounded-lg bg-slate-100 dark:bg-slate-800 p-1 text-xs font-semibold">
           {(["doctor", "patient", "nurse"] as Speaker[]).map((s) => (
-            <button key={s} onClick={() => setSpeaker(s)} className={`rounded-md px-3 py-1.5 capitalize ${speaker === s ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>
+            <button key={s} onClick={() => setSpeaker(s)} className={`rounded-md px-3 py-1.5 capitalize ${speaker === s ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm" : "text-slate-500 dark:text-slate-400"}`}>
               {s} <span className="text-[10px] text-slate-400">[{s[0].toUpperCase()}]</span>
             </button>
           ))}
         </div>
-        <select value={lang} onChange={(e) => setLang(e.target.value)} className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs">
+        <select value={lang} onChange={(e) => setLang(e.target.value)} className="rounded-md border border-slate-300 bg-white dark:bg-slate-900 px-2 py-1 text-xs">
           {LANGS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
-        <button onClick={clear} className="ml-auto rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700">Clear</button>
+        <button onClick={clear} className="ml-auto rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">Clear</button>
       </div>
       <div>
-        <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+        <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           Transcript
           {recording && <span className="ml-2 rounded-full bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-rose-700">live</span>}
           <span className="ml-2 text-slate-400 normal-case">— hot-keys D / P / N to switch speaker</span>
@@ -187,7 +187,7 @@ export default function LiveTranscriber({
           value={transcript + (interim ? "\n" + prefixForSpeaker(speaker) + interim : "")}
           onChange={(e) => setTranscript(e.target.value)}
           placeholder="Press Start, or paste / type the consultation transcript here. Use prefixes 'Doctor:' / 'Patient:' / 'Nurse:' to label speakers (auto-added when recording)."
-          className="w-full rounded-lg border border-slate-300 bg-white p-3 font-mono text-sm leading-6"
+          className="w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 p-3 font-mono text-sm leading-6"
         />
       </div>
     </div>

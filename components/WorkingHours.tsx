@@ -23,9 +23,9 @@ export default function WorkingHours() {
   }, []);
 
   return (
-    <div className="rounded-xl bg-white p-6 shadow-md">
+    <div className="rounded-xl bg-white dark:bg-slate-900 p-6 shadow-md">
       <div className="mb-1 flex items-center justify-between">
-        <h3 className="text-lg font-bold text-gray-900">Working Hours</h3>
+        <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">Working Hours</h3>
         <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-green-700">
           24/7
         </span>
@@ -45,7 +45,7 @@ export default function WorkingHours() {
             className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${
               s.day === currentDay
                 ? "bg-primary-50 font-semibold text-primary-700"
-                : "text-gray-600"
+                : "text-gray-600 dark:text-slate-300"
             }`}
           >
             <span>{s.day}</span>

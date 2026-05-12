@@ -26,7 +26,7 @@ export default function DoctorAppointmentsPage() {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Link href="/dashboard/doctor" className="rounded-lg p-2 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300">
+            <Link href="/dashboard/doctor" className="rounded-lg p-2 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300">
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
@@ -90,7 +90,7 @@ export default function DoctorAppointmentsPage() {
                       <td className="px-4 py-3">
                         <StatusBadge status={b.paymentStatus} />
                       </td>
-                      <td className="px-4 py-3 text-xs text-gray-400 dark:text-slate-500">
+                      <td className="px-4 py-3 text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">
                         {new Date(b.createdAt).toLocaleString()}
                       </td>
                     </tr>

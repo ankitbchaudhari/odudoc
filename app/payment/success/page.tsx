@@ -11,9 +11,9 @@ function SuccessContent() {
   const amount = searchParams.get("amount") || "0";
 
   return (
-    <div className="bg-gray-50 py-16">
+    <div className="bg-gray-50 dark:bg-slate-900 py-16">
       <div className="mx-auto max-w-lg px-4">
-        <div className="rounded-2xl bg-white p-8 shadow-sm">
+        <div className="rounded-2xl bg-white dark:bg-slate-900 p-8 shadow-sm">
           {/* Animated Checkmark */}
           <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-green-100">
             <svg
@@ -37,37 +37,37 @@ function SuccessContent() {
           </div>
 
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
               Payment Successful!
             </h1>
-            <p className="mt-2 text-gray-500">
+            <p className="mt-2 text-gray-500 dark:text-slate-400">
               Your appointment has been booked and confirmed.
             </p>
           </div>
 
           {/* Booking Details */}
-          <div className="mt-8 rounded-lg bg-gray-50 p-5">
-            <h3 className="mb-3 text-sm font-semibold text-gray-900">
+          <div className="mt-8 rounded-lg bg-gray-50 dark:bg-slate-900 p-5">
+            <h3 className="mb-3 text-sm font-semibold text-gray-900 dark:text-slate-100">
               Booking Details
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Booking Reference</span>
+                <span className="text-gray-500 dark:text-slate-400">Booking Reference</span>
                 <span className="font-mono font-semibold text-primary-600">
                   {bookingId}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Doctor</span>
-                <span className="font-medium text-gray-900">{doctorName}</span>
+                <span className="text-gray-500 dark:text-slate-400">Doctor</span>
+                <span className="font-medium text-gray-900 dark:text-slate-100">{doctorName}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Time Slot</span>
-                <span className="font-medium text-gray-900">{timeSlot}</span>
+                <span className="text-gray-500 dark:text-slate-400">Time Slot</span>
+                <span className="font-medium text-gray-900 dark:text-slate-100">{timeSlot}</span>
               </div>
-              <div className="border-t border-gray-200 pt-3">
+              <div className="border-t border-gray-200 dark:border-slate-800 pt-3">
                 <div className="flex justify-between text-sm font-semibold">
-                  <span className="text-gray-900">Amount Paid</span>
+                  <span className="text-gray-900 dark:text-slate-100">Amount Paid</span>
                   <span className="text-green-600">${amount}</span>
                 </div>
               </div>
@@ -75,7 +75,7 @@ function SuccessContent() {
           </div>
 
           {/* Receipt Note */}
-          <p className="mt-4 text-center text-xs text-gray-400">
+          <p className="mt-4 text-center text-xs text-gray-400 dark:text-slate-500">
             A receipt has been sent to your registered email address.
           </p>
 
@@ -89,7 +89,7 @@ function SuccessContent() {
             </a>
             <a
               href="/"
-              className="flex-1 rounded-lg border border-gray-300 px-6 py-2.5 text-center text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+              className="flex-1 rounded-lg border border-gray-300 dark:border-slate-700 px-6 py-2.5 text-center text-sm font-semibold text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:bg-slate-900"
             >
               Back to Home
             </a>

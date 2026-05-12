@@ -69,10 +69,10 @@ export default async function DoctorsAZPage() {
 
       <section className="bg-gradient-to-br from-primary-50 via-white to-teal-50 py-14">
         <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-extrabold text-gray-900 md:text-5xl">
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 md:text-5xl">
             All Doctors <span className="text-primary-600">A–Z</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600 dark:text-slate-300">
             {available.length} verified specialists available for video
             consultations. Jump to a letter, or browse by specialty or city.
           </p>
@@ -109,7 +109,7 @@ export default async function DoctorsAZPage() {
       <section className="py-10">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           {activeLetters.length === 0 ? (
-            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-10 text-center text-gray-500">
+            <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 p-10 text-center text-gray-500 dark:text-slate-400">
               No doctors listed yet. Check back soon.
             </div>
           ) : (
@@ -125,10 +125,10 @@ export default async function DoctorsAZPage() {
                         href={`/doctors/${d.id}`}
                         className="group block border-b border-gray-100 py-3"
                       >
-                        <span className="font-medium text-gray-900 group-hover:text-primary-700">
+                        <span className="font-medium text-gray-900 dark:text-slate-100 group-hover:text-primary-700">
                           {d.name}
                         </span>
-                        <span className="block text-xs text-gray-500">
+                        <span className="block text-xs text-gray-500 dark:text-slate-400">
                           {d.specialty}
                           {d.city ? ` · ${d.city}` : ""}
                         </span>
@@ -143,10 +143,10 @@ export default async function DoctorsAZPage() {
       </section>
 
       {/* Cross-links */}
-      <section className="bg-gray-50 py-12">
+      <section className="bg-gray-50 dark:bg-slate-900 py-12">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 md:grid-cols-2 lg:px-8">
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-600">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-slate-300">
               Browse by specialty
             </h3>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -154,7 +154,7 @@ export default async function DoctorsAZPage() {
                 <Link
                   key={s.slug}
                   href={`/specialty/${s.slug}`}
-                  className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-700 hover:border-primary-400 hover:text-primary-700"
+                  className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1 text-xs text-gray-700 dark:text-slate-300 hover:border-primary-400 hover:text-primary-700"
                 >
                   {s.displayName}
                 </Link>
@@ -162,7 +162,7 @@ export default async function DoctorsAZPage() {
             </div>
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-600">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-slate-300">
               Browse by city
             </h3>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -170,7 +170,7 @@ export default async function DoctorsAZPage() {
                 <Link
                   key={c.slug}
                   href={`/doctors-in/${c.slug}`}
-                  className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-700 hover:border-primary-400 hover:text-primary-700"
+                  className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1 text-xs text-gray-700 dark:text-slate-300 hover:border-primary-400 hover:text-primary-700"
                 >
                   {c.displayName}
                 </Link>

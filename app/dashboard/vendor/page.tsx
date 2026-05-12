@@ -195,7 +195,7 @@ export default function VendorDashboard() {
   if (loading || authStatus !== "authenticated")
     return (
       <div className="flex min-h-[60vh] items-center justify-center bg-gradient-to-b from-indigo-50/40 via-white to-white">
-        <div className="flex flex-col items-center gap-3 text-gray-400 dark:text-slate-500">
+        <div className="flex flex-col items-center gap-3 text-gray-400 dark:text-slate-500 dark:text-slate-400">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-100 border-t-indigo-600" />
           <p className="text-sm">Loading your dashboard…</p>
         </div>
@@ -435,7 +435,7 @@ export default function VendorDashboard() {
             <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">Last 30 days</p>
             <div className="mt-4 space-y-2">
               {statusBreakdown.length === 0 ? (
-                <p className="py-4 text-center text-xs text-gray-400 dark:text-slate-500">
+                <p className="py-4 text-center text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">
                   No orders yet in this window.
                 </p>
               ) : (
@@ -720,7 +720,7 @@ export default function VendorDashboard() {
                         className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] ${
                           s.done
                             ? "bg-emerald-100 text-emerald-700"
-                            : "bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500"
+                            : "bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500 dark:text-slate-400"
                         }`}
                       >
                         {s.done ? "✓" : ""}
@@ -748,10 +748,10 @@ export default function VendorDashboard() {
                 <h2 className="text-sm font-bold uppercase tracking-wide text-gray-700 dark:text-slate-300">
                   Top sellers
                 </h2>
-                <span className="text-[10px] text-gray-400 dark:text-slate-500">last 30d</span>
+                <span className="text-[10px] text-gray-400 dark:text-slate-500 dark:text-slate-400">last 30d</span>
               </div>
               {topProducts.length === 0 ? (
-                <p className="mt-4 text-center text-xs text-gray-400 dark:text-slate-500">
+                <p className="mt-4 text-center text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">
                   No sales yet.
                 </p>
               ) : (
@@ -961,7 +961,7 @@ function SparkBar({
   maxRevenue: number;
 }) {
   if (series.length === 0)
-    return <p className="py-8 text-center text-xs text-gray-400 dark:text-slate-500">No data.</p>;
+    return <p className="py-8 text-center text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">No data.</p>;
   return (
     <div>
       <div className="flex h-32 items-end gap-[3px]">
@@ -986,7 +986,7 @@ function SparkBar({
           );
         })}
       </div>
-      <div className="mt-2 flex items-center justify-between text-[10px] text-gray-400 dark:text-slate-500">
+      <div className="mt-2 flex items-center justify-between text-[10px] text-gray-400 dark:text-slate-500 dark:text-slate-400">
         <span>{series[0]?.date}</span>
         <span>peak {money(maxRevenue)}</span>
         <span>{series[series.length - 1]?.date}</span>

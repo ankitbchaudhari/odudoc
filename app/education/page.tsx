@@ -55,44 +55,44 @@ export default function EducationFeedPage() {
       <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
         <header className="mb-8">
           <p className="text-xs font-bold uppercase tracking-widest text-amber-700">Education partners</p>
-          <h1 className="mt-2 text-4xl font-extrabold text-slate-900 sm:text-5xl">Courses &amp; training</h1>
-          <p className="mt-3 max-w-2xl text-slate-600">
+          <h1 className="mt-2 text-4xl font-extrabold text-slate-900 dark:text-slate-100 sm:text-5xl">Courses &amp; training</h1>
+          <p className="mt-3 max-w-2xl text-slate-600 dark:text-slate-300">
             Certificates, diplomas, fellowships, CME, and 1:1 online training from OduDoc education partners.
           </p>
         </header>
 
         <div className="mb-6 grid gap-3 sm:grid-cols-3">
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search title or description" className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm" />
-          <select value={level} onChange={(e) => setLevel(e.target.value)} className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm">
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search title or description" className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm shadow-sm" />
+          <select value={level} onChange={(e) => setLevel(e.target.value)} className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm">
             <option value="">All levels</option>
             {Object.keys(LEVEL_LABEL).map((k) => <option key={k} value={k}>{LEVEL_LABEL[k]}{counts[k] ? ` (${counts[k]})` : ""}</option>)}
           </select>
-          <select value={mode} onChange={(e) => setMode(e.target.value)} className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm">
+          <select value={mode} onChange={(e) => setMode(e.target.value)} className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm">
             <option value="">All modes</option>
             {Object.keys(MODE_LABEL).map((k) => <option key={k} value={k}>{MODE_LABEL[k]}</option>)}
           </select>
         </div>
 
         {loading ? (
-          <p className="rounded-xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>
+          <p className="rounded-xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>
         ) : courses.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white dark:bg-slate-900 p-10 text-center">
             <p className="text-3xl">🎓</p>
-            <p className="mt-2 text-base font-bold text-slate-700">No matching courses</p>
-            <p className="mt-1 text-sm text-slate-500">Try a different filter.</p>
+            <p className="mt-2 text-base font-bold text-slate-700 dark:text-slate-300">No matching courses</p>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Try a different filter.</p>
           </div>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2">
             {courses.map((c) => (
-              <li key={c.id} className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+              <li key={c.id} className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
                 <p className="text-xs font-bold uppercase tracking-wider text-amber-700">{LEVEL_LABEL[c.level]} · {MODE_LABEL[c.mode]}</p>
-                <h3 className="mt-1 text-base font-bold text-slate-900">{c.title}</h3>
-                <p className="text-xs text-slate-500">
+                <h3 className="mt-1 text-base font-bold text-slate-900 dark:text-slate-100">{c.title}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {c.specialty && <>{c.specialty} · </>}
                   {c.duration && <>{c.duration} · </>}
                   {c.feeRupees ? <>₹{c.feeRupees.toLocaleString("en-IN")}</> : "Free"}
                 </p>
-                <p className="mt-2 line-clamp-3 text-sm text-slate-700">{c.description}</p>
+                <p className="mt-2 line-clamp-3 text-sm text-slate-700 dark:text-slate-300">{c.description}</p>
                 {(c.websiteUrl || c.enrollOnPlatform) && (
                   <div className="mt-3 flex justify-end">
                     {c.websiteUrl ? (

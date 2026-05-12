@@ -62,19 +62,19 @@ export default function TestimonialsPage() {
   };
 
   return (
-    <div className="bg-gray-50 py-16">
+    <div className="bg-gray-50 dark:bg-slate-900 py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Hero */}
         <div className="text-center">
-          <h1 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 md:text-4xl">
             What Our <span className="text-primary-600">Patients Say</span>
           </h1>
-          <p className="mt-3 text-gray-500">Real experiences from real patients</p>
+          <p className="mt-3 text-gray-500 dark:text-slate-400">Real experiences from real patients</p>
         </div>
 
         {/* Stats bar */}
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-xl bg-white p-6 text-center shadow-sm">
+          <div className="rounded-xl bg-white dark:bg-slate-900 p-6 text-center shadow-sm">
             <p className="text-3xl font-bold text-primary-600">{avgRating}{avgRating !== "—" ? "/5" : ""}</p>
             <div className="mt-1 flex justify-center gap-0.5">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -90,13 +90,13 @@ export default function TestimonialsPage() {
                 </svg>
               ))}
             </div>
-            <p className="mt-1 text-sm text-gray-500">Average Rating</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Average Rating</p>
           </div>
-          <div className="rounded-xl bg-white p-6 text-center shadow-sm">
+          <div className="rounded-xl bg-white dark:bg-slate-900 p-6 text-center shadow-sm">
             <p className="text-3xl font-bold text-primary-600">{testimonials.length}</p>
-            <p className="mt-1 text-sm text-gray-500">Total Reviews</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Total Reviews</p>
           </div>
-          <div className="rounded-xl bg-white p-6 text-center shadow-sm">
+          <div className="rounded-xl bg-white dark:bg-slate-900 p-6 text-center shadow-sm">
             <p className="text-3xl font-bold text-primary-600">
               {testimonials.length
                 ? `${Math.round(
@@ -104,7 +104,7 @@ export default function TestimonialsPage() {
                   )}%`
                 : "—"}
             </p>
-            <p className="mt-1 text-sm text-gray-500">Would Recommend</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Would Recommend</p>
           </div>
         </div>
 
@@ -116,15 +116,15 @@ export default function TestimonialsPage() {
             ))}
           </div>
         ) : (
-          <div className="mt-12 rounded-xl bg-white p-12 text-center text-sm text-gray-400 shadow-sm">
+          <div className="mt-12 rounded-xl bg-white dark:bg-slate-900 p-12 text-center text-sm text-gray-400 dark:text-slate-500 shadow-sm">
             Be the first to share your experience below.
           </div>
         )}
 
         {/* Share experience form */}
-        <div className="mt-16 rounded-xl bg-white p-8 shadow-md">
-          <h2 className="text-center text-2xl font-bold text-gray-900">Share Your Experience</h2>
-          <p className="mt-2 text-center text-sm text-gray-500">
+        <div className="mt-16 rounded-xl bg-white dark:bg-slate-900 p-8 shadow-md">
+          <h2 className="text-center text-2xl font-bold text-gray-900 dark:text-slate-100">Share Your Experience</h2>
+          <p className="mt-2 text-center text-sm text-gray-500 dark:text-slate-400">
             Your feedback helps us improve and helps others make informed decisions. Submissions are
             reviewed before being published.
           </p>
@@ -134,8 +134,8 @@ export default function TestimonialsPage() {
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl">
                 &#10003;
               </div>
-              <h3 className="text-xl font-bold text-gray-900">Thank You!</h3>
-              <p className="mt-2 text-gray-500">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-slate-100">Thank You!</h3>
+              <p className="mt-2 text-gray-500 dark:text-slate-400">
                 Your review has been submitted and will be published after admin review.
               </p>
               <button onClick={() => setSubmitted(false)} className="btn-primary mt-6">
@@ -146,39 +146,39 @@ export default function TestimonialsPage() {
             <form onSubmit={handleSubmit} className="mx-auto mt-8 max-w-2xl space-y-5">
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Full Name</label>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Full Name</label>
                   <input
                     required
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Your name"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-sm outline-none transition focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Email Address</label>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Email Address</label>
                   <input
                     required
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="your@email.com"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-sm outline-none transition focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Location</label>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Location</label>
                   <input
                     type="text"
                     value={formData.location}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     placeholder="City, State"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-sm outline-none transition focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
                     Doctor (optional)
                   </label>
                   <input
@@ -186,13 +186,13 @@ export default function TestimonialsPage() {
                     value={formData.doctor}
                     onChange={(e) => setFormData({ ...formData, doctor: e.target.value })}
                     placeholder="Dr. Name"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-sm outline-none transition focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">Rating</label>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Rating</label>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -217,14 +217,14 @@ export default function TestimonialsPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">Your Review</label>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Your Review</label>
                 <textarea
                   required
                   rows={4}
                   value={formData.review}
                   onChange={(e) => setFormData({ ...formData, review: e.target.value })}
                   placeholder="Tell us about your experience..."
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-sm outline-none transition focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 />
               </div>
 

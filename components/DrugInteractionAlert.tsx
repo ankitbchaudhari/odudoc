@@ -134,7 +134,7 @@ export default function DrugInteractionAlert({
   if (!result || result.severity === "none") {
     if (loading && medicines.some((m) => m.name?.trim())) {
       return (
-        <div className={`flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500 ${className}`}>
+        <div className={`flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-xs text-slate-500 dark:text-slate-400 ${className}`}>
           <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
@@ -144,7 +144,7 @@ export default function DrugInteractionAlert({
     }
     if (error) {
       return (
-        <div className={`rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500 ${className}`}>
+        <div className={`rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-xs text-slate-500 dark:text-slate-400 ${className}`}>
           Drug-safety check unavailable: {error}
         </div>
       );

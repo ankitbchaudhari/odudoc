@@ -299,7 +299,7 @@ export default function PatientConsultationDetail() {
           <p className="mb-3 text-xs text-gray-500 dark:text-slate-400">Share lab reports, previous prescriptions, or photos with your doctor (max 10MB).</p>
           {error && !showMhForm && <p className="mb-2 text-sm text-red-600">{error}</p>}
           {c.documents.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-slate-500">No documents uploaded yet.</p>
+            <p className="text-sm text-gray-400 dark:text-slate-500 dark:text-slate-400">No documents uploaded yet.</p>
           ) : (
             <ul className="space-y-2">
               {c.documents.map((d) => (

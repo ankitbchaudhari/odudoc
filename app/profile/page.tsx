@@ -186,9 +186,9 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        <h1 className="mb-8 text-2xl font-bold text-gray-900">My Profile</h1>
+        <h1 className="mb-8 text-2xl font-bold text-gray-900 dark:text-slate-100">My Profile</h1>
 
         {saved && (
           <div className="mb-6 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
@@ -207,7 +207,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Profile Header */}
-        <div className="mb-6 rounded-xl bg-white p-6 shadow-sm">
+        <div className="mb-6 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="relative">
               {avatar ? (
@@ -242,10 +242,10 @@ export default function ProfilePage() {
               />
             </div>
             <div className="flex-1">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
                 {session?.user?.name}
               </h2>
-              <p className="text-sm text-gray-500">{session?.user?.email}</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">{session?.user?.email}</p>
               <span className="mt-1 inline-block rounded-full bg-primary-50 px-2.5 py-0.5 text-xs font-medium capitalize text-primary-700">
                 {session?.user?.role}
               </span>
@@ -254,7 +254,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                className="rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
               >
                 {avatar ? "Change photo" : "Upload photo"}
               </button>
@@ -272,42 +272,42 @@ export default function ProfilePage() {
           {avatarError && (
             <p className="mt-3 text-xs text-red-600">{avatarError}</p>
           )}
-          <p className="mt-3 text-xs text-gray-400">
+          <p className="mt-3 text-xs text-gray-400 dark:text-slate-500">
             JPG, PNG or GIF · max 2 MB
           </p>
         </div>
 
         {/* Personal Information */}
         <form onSubmit={handleSave}>
-          <div className="rounded-xl bg-white p-6 shadow-sm">
-            <h3 className="mb-5 text-lg font-semibold text-gray-900">
+          <div className="rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <h3 className="mb-5 text-lg font-semibold text-gray-900 dark:text-slate-100">
               Personal Information
             </h3>
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
                   Full name
                 </label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
                   Email address
                 </label>
                 <input
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
                   Phone number
                 </label>
                 <PhoneInput
@@ -316,22 +316,22 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
                   Date of birth
                 </label>
                 <input
                   type="date"
                   value={form.dob}
                   onChange={(e) => setForm({ ...form, dob: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                 />
               </div>
             </div>
           </div>
 
           {/* Medical History */}
-          <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
-            <h3 className="mb-5 text-lg font-semibold text-gray-900">
+          <div className="mt-6 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <h3 className="mb-5 text-lg font-semibold text-gray-900 dark:text-slate-100">
               Medical History
             </h3>
 
@@ -340,9 +340,9 @@ export default function ProfilePage() {
                 {history.map((entry, i) => (
                   <li
                     key={i}
-                    className="flex items-start justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50 px-4 py-3"
+                    className="flex items-start justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50 dark:bg-slate-900 px-4 py-3"
                   >
-                    <p className="flex-1 whitespace-pre-wrap text-sm text-gray-700">
+                    <p className="flex-1 whitespace-pre-wrap text-sm text-gray-700 dark:text-slate-300">
                       {entry}
                     </p>
                     <button
@@ -372,7 +372,7 @@ export default function ProfilePage() {
                   }
                 }}
                 placeholder="e.g. Diabetes (since 2019), allergic to penicillin, asthma"
-                className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                className="flex-1 rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
               <button
                 type="button"
@@ -384,7 +384,7 @@ export default function ProfilePage() {
               </button>
             </div>
             {history.length === 0 && (
-              <p className="mt-3 text-xs text-gray-400">
+              <p className="mt-3 text-xs text-gray-400 dark:text-slate-500">
                 No medical history records yet. Add conditions, allergies, or past
                 surgeries so your doctors see them at a glance.
               </p>
@@ -408,43 +408,43 @@ export default function ProfilePage() {
         </form>
 
         {/* Change Password */}
-        <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
-          <h3 className="mb-5 text-lg font-semibold text-gray-900">
+        <div className="mt-6 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+          <h3 className="mb-5 text-lg font-semibold text-gray-900 dark:text-slate-100">
             Change Password
           </h3>
           <div className="space-y-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
                 Current password
               </label>
               <input
                 type="password"
                 value={passwords.current}
                 onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
                   New password
                 </label>
                 <input
                   type="password"
                   value={passwords.newPass}
                   onChange={(e) => setPasswords({ ...passwords, newPass: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
                   Confirm new password
                 </label>
                 <input
                   type="password"
                   value={passwords.confirm}
                   onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                 />
               </div>
             </div>

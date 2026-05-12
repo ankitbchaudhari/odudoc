@@ -81,7 +81,7 @@ export default function InvoicePrintPage() {
   }, []);
 
   if (error) return <p className="mx-auto mt-12 max-w-md rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{error}</p>;
-  if (!data) return <p className="mx-auto mt-12 max-w-md rounded-xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>;
+  if (!data) return <p className="mx-auto mt-12 max-w-md rounded-xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>;
 
   const { render, watermark } = data;
   const { invoice, branding, tax } = render;
@@ -89,11 +89,11 @@ export default function InvoicePrintPage() {
   const interGst = tax.igstRupees !== undefined;
 
   return (
-    <div className="min-h-screen bg-slate-100 print:bg-white">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-800 print:bg-white dark:bg-slate-900">
       {/* Action bar — hidden on print */}
-      <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-md print:hidden">
+      <div className="sticky top-0 z-20 border-b border-slate-200 dark:border-slate-800 bg-white/95 backdrop-blur-md print:hidden">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-3">
-          <Link href="/dashboard" className="text-sm font-semibold text-slate-700 hover:text-indigo-700">← Back</Link>
+          <Link href="/dashboard" className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-700">← Back</Link>
           <div className="flex items-center gap-2">
             <span className="rounded-full bg-rose-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-rose-700 ring-1 ring-rose-200">
               View-only · download disabled
@@ -103,16 +103,16 @@ export default function InvoicePrintPage() {
             </button>
           </div>
         </div>
-        <p className="mx-auto max-w-4xl px-4 pb-2 text-[10px] text-slate-500">
+        <p className="mx-auto max-w-4xl px-4 pb-2 text-[10px] text-slate-500 dark:text-slate-400">
           Tax recomputed against {render.org?.country || "country"} rules. Every view + print is logged on
           {" "}<Link href="/dashboard/audit" className="font-semibold text-indigo-600 hover:underline">Audit log</Link>.
         </p>
       </div>
 
       <div className="mx-auto max-w-4xl px-4 py-6 print:max-w-none print:p-0">
-        <div className="relative overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 print:shadow-none print:ring-0">
+        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 print:shadow-none print:ring-0">
           {/* Brand stripe + header */}
-          <div className="border-b border-slate-200 px-8 py-6" style={{ borderTopColor: render.primaryColor, borderTopWidth: 6 }}>
+          <div className="border-b border-slate-200 dark:border-slate-800 px-8 py-6" style={{ borderTopColor: render.primaryColor, borderTopWidth: 6 }}>
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-4">
                 {branding?.logoLight ? (
@@ -124,14 +124,14 @@ export default function InvoicePrintPage() {
                   </div>
                 )}
                 <div>
-                  <p className="text-lg font-extrabold text-slate-900">{render.displayName}</p>
-                  {branding?.websiteUrl && <p className="text-xs text-slate-500">{branding.websiteUrl}</p>}
-                  <p className="text-xs text-slate-500">{render.org?.country}</p>
+                  <p className="text-lg font-extrabold text-slate-900 dark:text-slate-100">{render.displayName}</p>
+                  {branding?.websiteUrl && <p className="text-xs text-slate-500 dark:text-slate-400">{branding.websiteUrl}</p>}
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{render.org?.country}</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-[10px] uppercase tracking-widest text-slate-500">Tax invoice</p>
-                <p className="mt-0.5 font-mono text-sm font-bold text-slate-900">{invoice.invoiceNumber}</p>
+                <p className="text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400">Tax invoice</p>
+                <p className="mt-0.5 font-mono text-sm font-bold text-slate-900 dark:text-slate-100">{invoice.invoiceNumber}</p>
                 <p className="mt-1 text-[10px] uppercase tracking-wider" style={{ color: render.primaryColor }}>{invoice.status}</p>
               </div>
             </div>
@@ -140,20 +140,20 @@ export default function InvoicePrintPage() {
           {/* Patient + dates */}
           <div className="grid grid-cols-2 border-b border-slate-100 px-8 py-4 text-xs">
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-slate-500">Bill to</p>
-              <p className="mt-1 font-bold text-slate-900">Patient ID {invoice.patientId}</p>
-              {invoice.encounterId && <p className="text-slate-500">Encounter {invoice.encounterId}</p>}
+              <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Bill to</p>
+              <p className="mt-1 font-bold text-slate-900 dark:text-slate-100">Patient ID {invoice.patientId}</p>
+              {invoice.encounterId && <p className="text-slate-500 dark:text-slate-400">Encounter {invoice.encounterId}</p>}
             </div>
             <div className="text-right">
-              {invoice.issuedAt && <p className="text-slate-500">Issued <b className="text-slate-900">{new Date(invoice.issuedAt).toLocaleDateString()}</b></p>}
-              {invoice.dueAt && <p className="text-slate-500">Due <b className="text-slate-900">{new Date(invoice.dueAt).toLocaleDateString()}</b></p>}
+              {invoice.issuedAt && <p className="text-slate-500 dark:text-slate-400">Issued <b className="text-slate-900 dark:text-slate-100">{new Date(invoice.issuedAt).toLocaleDateString()}</b></p>}
+              {invoice.dueAt && <p className="text-slate-500 dark:text-slate-400">Due <b className="text-slate-900 dark:text-slate-100">{new Date(invoice.dueAt).toLocaleDateString()}</b></p>}
             </div>
           </div>
 
           {/* Line items + tax */}
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-[10px] uppercase tracking-wider text-slate-600">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-[10px] uppercase tracking-wider text-slate-600 dark:text-slate-300">
                 <th className="px-8 py-2 text-left">Description</th>
                 <th className="px-3 py-2 text-right">Qty</th>
                 <th className="px-3 py-2 text-right">Unit</th>
@@ -168,13 +168,13 @@ export default function InvoicePrintPage() {
                 return (
                   <tr key={it.id} className="border-b border-slate-100">
                     <td className="px-8 py-3">
-                      <p className="font-semibold text-slate-900">{it.description}</p>
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">{it.description}</p>
                       <p className="text-[10px] uppercase tracking-wider text-slate-400">{it.category} · {tx?.bucketLabel || "—"}</p>
                     </td>
-                    <td className="px-3 py-3 text-right tabular-nums text-slate-700">{it.quantity}</td>
-                    <td className="px-3 py-3 text-right tabular-nums text-slate-700">{fmtMoney(it.unitPrice, render.currency)}</td>
-                    <td className="px-3 py-3 text-right text-[10px] tabular-nums text-slate-500">{tx?.appliedRatePct ?? 0}%</td>
-                    <td className="px-8 py-3 text-right tabular-nums font-semibold text-slate-900">{fmtMoney(lineSubtotal, render.currency)}</td>
+                    <td className="px-3 py-3 text-right tabular-nums text-slate-700 dark:text-slate-300">{it.quantity}</td>
+                    <td className="px-3 py-3 text-right tabular-nums text-slate-700 dark:text-slate-300">{fmtMoney(it.unitPrice, render.currency)}</td>
+                    <td className="px-3 py-3 text-right text-[10px] tabular-nums text-slate-500 dark:text-slate-400">{tx?.appliedRatePct ?? 0}%</td>
+                    <td className="px-8 py-3 text-right tabular-nums font-semibold text-slate-900 dark:text-slate-100">{fmtMoney(lineSubtotal, render.currency)}</td>
                   </tr>
                 );
               })}
@@ -182,7 +182,7 @@ export default function InvoicePrintPage() {
           </table>
 
           {/* Totals */}
-          <div className="border-t border-slate-200 px-8 py-4 text-sm">
+          <div className="border-t border-slate-200 dark:border-slate-800 px-8 py-4 text-sm">
             <div className="ml-auto max-w-sm space-y-1.5">
               <Row label="Exempt subtotal" value={fmtMoney(tax.exemptSubtotal, render.currency)} />
               <Row label="Standard-rate subtotal" value={fmtMoney(tax.taxableStandardSubtotal, render.currency)} />
@@ -198,7 +198,7 @@ export default function InvoicePrintPage() {
               {interGst && <Row label="IGST" value={fmtMoney(tax.igstRupees!, render.currency)} muted />}
               {tax.vatRupees !== undefined && tax.vatRupees > 0 && <Row label="VAT" value={fmtMoney(tax.vatRupees, render.currency)} muted />}
               {tax.salesTaxRupees !== undefined && tax.salesTaxRupees > 0 && <Row label="Sales tax" value={fmtMoney(tax.salesTaxRupees, render.currency)} muted />}
-              <div className="border-t border-slate-200 pt-2 mt-2">
+              <div className="border-t border-slate-200 dark:border-slate-800 pt-2 mt-2">
                 <Row label="Grand total" value={fmtMoney(tax.grandTotalRupees, render.currency)} bold colorHex={render.primaryColor} />
               </div>
               {invoice.paidTotal > 0 && (
@@ -211,15 +211,15 @@ export default function InvoicePrintPage() {
           {/* Payments log */}
           {invoice.payments.length > 0 && (
             <div className="border-t border-slate-100 px-8 py-4 text-xs">
-              <p className="text-[10px] uppercase tracking-wider text-slate-500">Payments</p>
+              <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Payments</p>
               <ul className="mt-2 space-y-1">
                 {invoice.payments.map((p, i) => (
-                  <li key={i} className="flex justify-between text-slate-600">
+                  <li key={i} className="flex justify-between text-slate-600 dark:text-slate-300">
                     <span>
                       {new Date(p.receivedAt).toLocaleDateString()} · {p.method.toUpperCase()}
                       {p.reference && <span className="ml-2 text-slate-400">{p.reference}</span>}
                     </span>
-                    <span className="tabular-nums font-semibold text-slate-900">{fmtMoney(p.amount, render.currency)}</span>
+                    <span className="tabular-nums font-semibold text-slate-900 dark:text-slate-100">{fmtMoney(p.amount, render.currency)}</span>
                   </li>
                 ))}
               </ul>
@@ -227,11 +227,11 @@ export default function InvoicePrintPage() {
           )}
 
           {invoice.notes && (
-            <div className="border-t border-slate-100 px-8 py-3 text-xs italic text-slate-500">{invoice.notes}</div>
+            <div className="border-t border-slate-100 px-8 py-3 text-xs italic text-slate-500 dark:text-slate-400">{invoice.notes}</div>
           )}
 
           {/* Footer */}
-          <div className="border-t border-slate-200 bg-slate-50 px-8 py-3 text-[10px] text-slate-500">
+          <div className="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-8 py-3 text-[10px] text-slate-500 dark:text-slate-400">
             {branding?.invoiceFooter || `${render.displayName} · ${render.org?.country || ""}`}
             <span className="ml-2 text-slate-400">· Generated by OduDoc</span>
           </div>
@@ -255,7 +255,7 @@ export default function InvoicePrintPage() {
 
         {/* Print-only audit footer */}
         <div className="hidden print:block">
-          <p className="mt-4 px-4 text-[10px] text-slate-500">
+          <p className="mt-4 px-4 text-[10px] text-slate-500 dark:text-slate-400">
             Printed from OduDoc · Patient ID {watermark.patientUserId} · IP {watermark.ip || "unknown"} · {new Date(watermark.viewedAt).toLocaleString()}.
           </p>
         </div>
@@ -274,7 +274,7 @@ export default function InvoicePrintPage() {
 function Row({ label, value, bold, muted, colorHex }: { label: string; value: string; bold?: boolean; muted?: boolean; colorHex?: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4">
-      <span className={`text-xs ${muted ? "text-slate-500" : "text-slate-700"} ${bold ? "font-bold" : ""}`}>{label}</span>
+      <span className={`text-xs ${muted ? "text-slate-500 dark:text-slate-400" : "text-slate-700 dark:text-slate-300"} ${bold ? "font-bold" : ""}`}>{label}</span>
       <span
         className={`tabular-nums ${bold ? "text-base font-extrabold" : "text-sm font-semibold"}`}
         style={colorHex && bold ? { color: colorHex } : undefined}

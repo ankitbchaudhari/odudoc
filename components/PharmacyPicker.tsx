@@ -153,13 +153,13 @@ export default function PharmacyPicker({ medicines, onPick }: PharmacyPickerProp
   };
 
   return (
-    <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm print:hidden">
+    <div className="mt-6 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm print:hidden">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="text-base font-semibold text-gray-900">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">
             Find a pharmacy near you
           </h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
             We&apos;ll match your prescription against nearby stores and show
             prices side-by-side.
           </p>
@@ -181,7 +181,7 @@ export default function PharmacyPicker({ medicines, onPick }: PharmacyPickerProp
           </button>
           <button
             onClick={useFallback}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
           >
             Show online delivery pharmacies
           </button>
@@ -189,8 +189,8 @@ export default function PharmacyPicker({ medicines, onPick }: PharmacyPickerProp
       )}
 
       {loading && (
-        <div className="mt-5 flex items-center gap-3 text-sm text-gray-500">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-primary-500" />
+        <div className="mt-5 flex items-center gap-3 text-sm text-gray-500 dark:text-slate-400">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 dark:border-slate-700 border-t-primary-500" />
           Searching pharmacies…
         </div>
       )}
@@ -200,13 +200,13 @@ export default function PharmacyPicker({ medicines, onPick }: PharmacyPickerProp
       {result && (
         <>
           <div className="mt-5 flex items-center justify-between">
-            <div className="inline-flex rounded-lg border border-gray-200 p-1 text-xs font-medium">
+            <div className="inline-flex rounded-lg border border-gray-200 dark:border-slate-800 p-1 text-xs font-medium">
               <button
                 onClick={() => refilter(false)}
                 className={`rounded-md px-3 py-1.5 ${
                   !deliveryOnly
                     ? "bg-primary-600 text-white"
-                    : "text-gray-600 hover:bg-gray-50"
+                    : "text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
                 }`}
               >
                 Pickup or delivery
@@ -216,7 +216,7 @@ export default function PharmacyPicker({ medicines, onPick }: PharmacyPickerProp
                 className={`rounded-md px-3 py-1.5 ${
                   deliveryOnly
                     ? "bg-primary-600 text-white"
-                    : "text-gray-600 hover:bg-gray-50"
+                    : "text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
                 }`}
               >
                 Delivery only
@@ -241,7 +241,7 @@ export default function PharmacyPicker({ medicines, onPick }: PharmacyPickerProp
 
           <div className="mt-5 space-y-4">
             {result.stores.length === 0 && (
-              <p className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm text-gray-500">
+              <p className="rounded-lg border border-gray-100 bg-gray-50 dark:bg-slate-900 p-4 text-sm text-gray-500 dark:text-slate-400">
                 No pharmacies found nearby. Try the &quot;Delivery only&quot;
                 filter or use the offline pharmacy option.
               </p>
@@ -254,19 +254,19 @@ export default function PharmacyPicker({ medicines, onPick }: PharmacyPickerProp
                   className={`rounded-xl border p-4 transition ${
                     isSelected
                       ? "border-primary-500 bg-primary-50/40 shadow-sm"
-                      : "border-gray-200 bg-white"
+                      : "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900"
                   }`}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="font-semibold text-gray-900">{q.store.name}</p>
-                      <p className="mt-0.5 text-xs text-gray-500">
+                      <p className="font-semibold text-gray-900 dark:text-slate-100">{q.store.name}</p>
+                      <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
                         {q.store.addressLine} · {q.store.city}
                         {q.store.pincode && q.store.pincode !== "000000"
                           ? ` · ${q.store.pincode}`
                           : ""}
                       </p>
-                      <p className="mt-1 text-[11px] text-gray-400">
+                      <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500">
                         {q.store.distanceKm > 0
                           ? `${q.store.distanceKm.toFixed(1)} km away`
                           : "Nationwide delivery"}
@@ -274,38 +274,38 @@ export default function PharmacyPicker({ medicines, onPick }: PharmacyPickerProp
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-semibold text-gray-900">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">
                         ₹{q.totalInr.toLocaleString("en-IN")}
                       </p>
-                      <p className="text-[11px] text-gray-500">
+                      <p className="text-[11px] text-gray-500 dark:text-slate-400">
                         {q.coveredCount} of {q.lines.length} items
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-3 divide-y divide-gray-100 rounded-lg border border-gray-100 bg-gray-50 text-sm">
+                  <div className="mt-3 divide-y divide-gray-100 dark:divide-slate-800 rounded-lg border border-gray-100 bg-gray-50 dark:bg-slate-900 text-sm">
                     {q.lines.map((line, i) => (
                       <div
                         key={i}
                         className="flex items-center justify-between px-3 py-2"
                       >
                         <div>
-                          <p className="font-medium text-gray-800">
+                          <p className="font-medium text-gray-800 dark:text-slate-200">
                             {line.brandLabel || line.catalogName || line.rxLabel}
                             {line.strength ? ` · ${line.strength}` : ""}
                           </p>
-                          <p className="text-[11px] text-gray-500">
+                          <p className="text-[11px] text-gray-500 dark:text-slate-400">
                             {line.unit || "—"} · prescribed as{" "}
                             <span className="italic">{line.rxLabel}</span>
                           </p>
                         </div>
                         <div className="text-right">
                           {line.inStock && line.priceInr !== undefined ? (
-                            <p className="text-sm font-semibold text-gray-900">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">
                               ₹{line.priceInr}
                             </p>
                           ) : (
-                            <p className="text-xs font-medium text-gray-400">
+                            <p className="text-xs font-medium text-gray-400 dark:text-slate-500">
                               Not stocked
                             </p>
                           )}
@@ -321,7 +321,7 @@ export default function PharmacyPicker({ medicines, onPick }: PharmacyPickerProp
                         className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold ${
                           isSelected && selected?.fulfillment === "pickup"
                             ? "border-primary-600 bg-primary-600 text-white"
-                            : "border-gray-300 text-gray-700 hover:border-primary-400 hover:text-primary-700"
+                            : "border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:border-primary-400 hover:text-primary-700"
                         }`}
                       >
                         🏪 Pickup in-store
@@ -333,14 +333,14 @@ export default function PharmacyPicker({ medicines, onPick }: PharmacyPickerProp
                         className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold ${
                           isSelected && selected?.fulfillment === "delivery"
                             ? "border-primary-600 bg-primary-600 text-white"
-                            : "border-gray-300 text-gray-700 hover:border-primary-400 hover:text-primary-700"
+                            : "border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:border-primary-400 hover:text-primary-700"
                         }`}
                       >
                         🛵 Home delivery
                       </button>
                     )}
                     {!q.pickup && !q.delivery && (
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-400 dark:text-slate-500">
                         This store is not accepting orders right now.
                       </span>
                     )}

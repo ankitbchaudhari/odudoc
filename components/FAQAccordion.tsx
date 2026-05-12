@@ -13,7 +13,7 @@ export default function FAQAccordion({ items }: { items: FAQ[] }) {
         return (
           <div
             key={faq.id}
-            className={`overflow-hidden rounded-2xl border bg-white transition-all ${
+            className={`overflow-hidden rounded-2xl border bg-white dark:bg-slate-900 transition-all ${
               isOpen
                 ? "border-primary-300 shadow-lg shadow-primary-500/10"
                 : "border-gray-100 hover:border-primary-200 hover:shadow-md"
@@ -34,14 +34,14 @@ export default function FAQAccordion({ items }: { items: FAQ[] }) {
               </span>
               <span
                 className={`flex-1 pr-2 text-sm font-semibold ${
-                  isOpen ? "text-primary-700" : "text-gray-900"
+                  isOpen ? "text-primary-700" : "text-gray-900 dark:text-slate-100"
                 }`}
               >
                 {faq.question}
               </span>
               <svg
                 className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ${
-                  isOpen ? "rotate-180 text-primary-600" : "text-gray-400"
+                  isOpen ? "rotate-180 text-primary-600" : "text-gray-400 dark:text-slate-500"
                 }`}
                 fill="none"
                 viewBox="0 0 24 24"
@@ -55,7 +55,7 @@ export default function FAQAccordion({ items }: { items: FAQ[] }) {
                 isOpen ? "max-h-96 pb-5" : "max-h-0"
               }`}
             >
-              <p className="border-t border-gray-100 px-6 pt-4 text-sm leading-relaxed text-gray-600">
+              <p className="border-t border-gray-100 px-6 pt-4 text-sm leading-relaxed text-gray-600 dark:text-slate-300">
                 {faq.answer}
               </p>
             </div>

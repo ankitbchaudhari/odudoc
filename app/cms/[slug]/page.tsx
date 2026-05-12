@@ -17,13 +17,13 @@ export default async function CmsPageRoute({
   }
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white dark:bg-slate-900">
       <div className="mx-auto max-w-3xl px-6 py-16">
-        <h1 className="text-4xl font-bold text-gray-900">{page.title}</h1>
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-slate-100">{page.title}</h1>
         {page.seoDescription && (
-          <p className="mt-3 text-lg text-gray-600">{page.seoDescription}</p>
+          <p className="mt-3 text-lg text-gray-600 dark:text-slate-300">{page.seoDescription}</p>
         )}
-        <div className="mt-4 text-xs text-gray-400">
+        <div className="mt-4 text-xs text-gray-400 dark:text-slate-500">
           By {page.author} · Updated {page.updatedAt}
         </div>
         <article

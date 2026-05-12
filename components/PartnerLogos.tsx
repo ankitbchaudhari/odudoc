@@ -15,7 +15,7 @@ const partners = [
 
 export default function PartnerLogos() {
   return (
-    <section className="overflow-hidden bg-white py-16">
+    <section className="overflow-hidden bg-white dark:bg-slate-900 py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h2 className="section-title text-center">Our Trusted Partners</h2>
         <p className="section-subtitle text-center">
@@ -28,13 +28,13 @@ export default function PartnerLogos() {
           {[...partners, ...partners].map((partner, i) => (
             <div
               key={`${partner.name}-${i}`}
-              className="group flex h-20 w-44 flex-shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white px-6 shadow-sm transition-all duration-300 hover:shadow-md"
+              className="group flex h-20 w-44 flex-shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white dark:bg-slate-900 px-6 shadow-sm transition-all duration-300 hover:shadow-md"
             >
               <div className="flex items-center gap-3 grayscale transition-all duration-300 group-hover:grayscale-0">
                 <div className={`h-8 w-8 rounded-lg ${partner.color} flex items-center justify-center text-xs font-bold text-white`}>
                   {partner.name.charAt(0)}
                 </div>
-                <span className="whitespace-nowrap text-sm font-semibold text-gray-600 group-hover:text-gray-900">
+                <span className="whitespace-nowrap text-sm font-semibold text-gray-600 dark:text-slate-300 group-hover:text-gray-900 dark:text-slate-100">
                   {partner.name}
                 </span>
               </div>

@@ -84,7 +84,7 @@ export default function HelpPage() {
     : [];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-sky-50 to-purple-50 py-24">
         <div className="pointer-events-none absolute -top-32 -left-24 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-indigo-200/40 to-sky-200/40 blur-3xl" />
@@ -93,13 +93,13 @@ export default function HelpPage() {
           <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-100 to-sky-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-indigo-700">
             <span>💡</span> Help Center
           </span>
-          <h1 className="mt-6 text-4xl font-bold text-gray-900 md:text-6xl">
+          <h1 className="mt-6 text-4xl font-bold text-gray-900 dark:text-slate-100 md:text-6xl">
             How can we{" "}
             <span className="bg-gradient-to-r from-indigo-600 via-sky-500 to-purple-500 bg-clip-text text-transparent">
               help?
             </span>
           </h1>
-          <p className="mx-auto mt-6 max-w-xl text-lg text-gray-600">
+          <p className="mx-auto mt-6 max-w-xl text-lg text-gray-600 dark:text-slate-300">
             Search our knowledge base or browse topics below. We're here 24/7.
           </p>
           <div className="relative mt-10">
@@ -107,9 +107,9 @@ export default function HelpPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search for answers..."
-              className="w-full rounded-2xl border-2 border-gray-200 bg-white px-6 py-4 text-gray-900 shadow-lg outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+              className="w-full rounded-2xl border-2 border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-4 text-gray-900 dark:text-slate-100 shadow-lg outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
             />
-            <svg className="pointer-events-none absolute right-5 top-5 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="pointer-events-none absolute right-5 top-5 h-5 w-5 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
@@ -118,18 +118,18 @@ export default function HelpPage() {
 
       {/* Search results */}
       {search.trim() && (
-        <section className="border-b border-gray-100 bg-white py-10">
+        <section className="border-b border-gray-100 bg-white dark:bg-slate-900 py-10">
           <div className="mx-auto max-w-3xl px-4">
-            <p className="mb-4 text-sm font-medium text-gray-500">{filtered.length} result(s) for "{search}"</p>
+            <p className="mb-4 text-sm font-medium text-gray-500 dark:text-slate-400">{filtered.length} result(s) for "{search}"</p>
             <div className="space-y-3">
               {filtered.map((a, i) => (
                 <div
                   key={i}
-                  className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-xl"
+                  className="rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-xl"
                 >
                   <p className="mb-1 text-xs font-bold uppercase tracking-wider text-indigo-600">{a.category}</p>
-                  <h3 className="font-semibold text-gray-900">{a.q}</h3>
-                  <p className="mt-1 text-sm leading-relaxed text-gray-600">{a.a}</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-slate-100">{a.q}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-gray-600 dark:text-slate-300">{a.a}</p>
                 </div>
               ))}
             </div>
@@ -146,7 +146,7 @@ export default function HelpPage() {
             <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-100 to-indigo-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-sky-700">
               <span>📚</span> Browse Topics
             </span>
-            <h2 className="mt-4 text-3xl font-bold text-gray-900 md:text-4xl">
+            <h2 className="mt-4 text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
               Popular{" "}
               <span className="bg-gradient-to-r from-indigo-600 via-sky-500 to-purple-500 bg-clip-text text-transparent">
                 Categories
@@ -157,7 +157,7 @@ export default function HelpPage() {
             {categories.map((cat) => (
               <div
                 key={cat.title}
-                className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+                className="rounded-3xl border border-gray-100 bg-white dark:bg-slate-900 p-8 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
               >
                 <div className="mb-6 flex items-center gap-4">
                   <div
@@ -173,7 +173,7 @@ export default function HelpPage() {
                     >
                       {cat.articles.length} articles
                     </span>
-                    <h2 className="mt-1 text-xl font-bold text-gray-900">{cat.title}</h2>
+                    <h2 className="mt-1 text-xl font-bold text-gray-900 dark:text-slate-100">{cat.title}</h2>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -181,18 +181,18 @@ export default function HelpPage() {
                     const key = `${cat.title}-${i}`;
                     const open = openIdx === key;
                     return (
-                      <div key={i} className="rounded-xl border border-gray-100 bg-gray-50/50 transition hover:border-gray-200">
+                      <div key={i} className="rounded-xl border border-gray-100 bg-gray-50/50 transition hover:border-gray-200 dark:border-slate-800">
                         <button
                           onClick={() => setOpenIdx(open ? null : key)}
-                          className="flex w-full items-center justify-between px-5 py-4 text-left text-sm font-semibold text-gray-900 hover:text-indigo-700"
+                          className="flex w-full items-center justify-between px-5 py-4 text-left text-sm font-semibold text-gray-900 dark:text-slate-100 hover:text-indigo-700"
                         >
                           {a.q}
-                          <svg className={`h-4 w-4 flex-shrink-0 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg className={`h-4 w-4 flex-shrink-0 text-gray-400 dark:text-slate-500 transition-transform ${open ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                           </svg>
                         </button>
                         {open && (
-                          <div className="border-t border-gray-100 bg-white px-5 py-4 text-sm leading-relaxed text-gray-600">
+                          <div className="border-t border-gray-100 bg-white dark:bg-slate-900 px-5 py-4 text-sm leading-relaxed text-gray-600 dark:text-slate-300">
                             {a.a}
                           </div>
                         )}
@@ -216,8 +216,8 @@ export default function HelpPage() {
             <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
             <span className="relative inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white backdrop-blur">
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white dark:bg-slate-900 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-white dark:bg-slate-900" />
               </span>
               Support online 24/7
             </span>
@@ -228,7 +228,7 @@ export default function HelpPage() {
             <div className="relative mt-8 flex flex-wrap justify-center gap-4">
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3.5 text-sm font-semibold text-indigo-700 shadow-lg transition-all hover:scale-105"
+                className="inline-flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 px-8 py-3.5 text-sm font-semibold text-indigo-700 shadow-lg transition-all hover:scale-105"
               >
                 Contact Support →
               </Link>

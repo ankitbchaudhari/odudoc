@@ -17,7 +17,7 @@ const sections = [
     title: "Information We Collect",
     content: (
       <>
-        <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-500">Personal Information</h4>
+        <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">Personal Information</h4>
         <div className="grid gap-3 sm:grid-cols-2">
           {[
             { label: "Account Data", desc: "Name, email, phone, date of birth, and gender when you create an account.", color: "border-blue-200 bg-blue-50" },
@@ -26,15 +26,15 @@ const sections = [
             { label: "Doctor Info", desc: "Medical license, qualifications, clinic details, and professional experience for doctor profiles.", color: "border-amber-200 bg-amber-50" },
           ].map((item) => (
             <div key={item.label} className={`rounded-xl border p-4 ${item.color}`}>
-              <h5 className="mb-1 text-sm font-bold text-gray-900">{item.label}</h5>
-              <p className="text-xs leading-relaxed text-gray-600">{item.desc}</p>
+              <h5 className="mb-1 text-sm font-bold text-gray-900 dark:text-slate-100">{item.label}</h5>
+              <p className="text-xs leading-relaxed text-gray-600 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
         </div>
-        <h4 className="mb-3 mt-6 text-sm font-bold uppercase tracking-wider text-gray-500">Automatically Collected</h4>
+        <h4 className="mb-3 mt-6 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">Automatically Collected</h4>
         <div className="flex flex-wrap gap-2">
           {["IP address", "Browser type", "Device info", "Pages visited", "Time spent", "Referring URLs", "Cookies"].map((item) => (
-            <span key={item} className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-600">{item}</span>
+            <span key={item} className="rounded-full border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 px-3 py-1 text-xs font-medium text-gray-600 dark:text-slate-300">{item}</span>
           ))}
         </div>
       </>
@@ -55,11 +55,11 @@ const sections = [
           "Comply with legal and regulatory requirements",
           "Analyze usage patterns to improve user experience",
         ].map((item, i) => (
-          <div key={i} className="flex items-start gap-3 rounded-lg bg-gray-50 px-4 py-3">
+          <div key={i} className="flex items-start gap-3 rounded-lg bg-gray-50 dark:bg-slate-900 px-4 py-3">
             <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            <span className="text-sm text-gray-700">{item}</span>
+            <span className="text-sm text-gray-700 dark:text-slate-300">{item}</span>
           </div>
         ))}
       </div>
@@ -77,7 +77,7 @@ const sections = [
           </svg>
           <span className="text-sm font-semibold text-green-800">We do not sell your personal data. Ever.</span>
         </div>
-        <p className="mb-4 text-sm text-gray-600">We may share information with:</p>
+        <p className="mb-4 text-sm text-gray-600 dark:text-slate-300">We may share information with:</p>
         <div className="space-y-3">
           {[
             { who: "Healthcare Providers", why: "Doctors you consult with receive your relevant medical information." },
@@ -90,8 +90,8 @@ const sections = [
                 {item.who[0]}
               </div>
               <div>
-                <h5 className="text-sm font-bold text-gray-900">{item.who}</h5>
-                <p className="text-xs text-gray-600">{item.why}</p>
+                <h5 className="text-sm font-bold text-gray-900 dark:text-slate-100">{item.who}</h5>
+                <p className="text-xs text-gray-600 dark:text-slate-300">{item.why}</p>
               </div>
             </div>
           ))}
@@ -118,8 +118,8 @@ const sections = [
               </svg>
             </div>
             <div>
-              <h5 className="text-sm font-bold text-gray-900">{item.label}</h5>
-              <p className="text-xs text-gray-500">{item.desc}</p>
+              <h5 className="text-sm font-bold text-gray-900 dark:text-slate-100">{item.label}</h5>
+              <p className="text-xs text-gray-500 dark:text-slate-400">{item.desc}</p>
             </div>
           </div>
         ))}
@@ -166,8 +166,8 @@ const sections = [
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
               </svg>
             </div>
-            <h5 className="mb-1 text-sm font-bold text-gray-900">{item.right}</h5>
-            <p className="text-xs text-gray-500">{item.desc}</p>
+            <h5 className="mb-1 text-sm font-bold text-gray-900 dark:text-slate-100">{item.right}</h5>
+            <p className="text-xs text-gray-500 dark:text-slate-400">{item.desc}</p>
           </div>
         ))}
       </div>
@@ -271,27 +271,27 @@ const sections = [
     title: "Contact Us",
     content: (
       <div className="flex flex-col gap-3 sm:flex-row">
-        <a href="mailto:privacy@odudoc.com" className="flex flex-1 items-center gap-3 rounded-xl border border-gray-200 p-4 transition-all hover:border-primary-300 hover:shadow-md">
+        <a href="mailto:privacy@odudoc.com" className="flex flex-1 items-center gap-3 rounded-xl border border-gray-200 dark:border-slate-800 p-4 transition-all hover:border-primary-300 hover:shadow-md">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-50">
             <svg className="h-5 w-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
           <div>
-            <p className="text-xs text-gray-500">Email</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400">Email</p>
             <p className="text-sm font-semibold text-primary-600">privacy@odudoc.com</p>
           </div>
         </a>
-        <div className="flex flex-1 items-center gap-3 rounded-xl border border-gray-200 p-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100">
-            <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="flex flex-1 items-center gap-3 rounded-xl border border-gray-200 dark:border-slate-800 p-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800">
+            <svg className="h-5 w-5 text-gray-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </div>
           <div>
-            <p className="text-xs text-gray-500">Address</p>
-            <p className="text-sm font-medium text-gray-900">8 The Green, Ste A, Dover, DE 19901</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400">Address</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-slate-100">8 The Green, Ste A, Dover, DE 19901</p>
           </div>
         </div>
       </div>
@@ -305,8 +305,8 @@ export default function PrivacyPolicyPage() {
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 py-20 text-white">
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute left-1/4 top-1/4 h-64 w-64 rounded-full bg-white blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 h-48 w-48 rounded-full bg-white blur-3xl" />
+          <div className="absolute left-1/4 top-1/4 h-64 w-64 rounded-full bg-white dark:bg-slate-900 blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 h-48 w-48 rounded-full bg-white dark:bg-slate-900 blur-3xl" />
         </div>
         <div className="relative mx-auto max-w-4xl px-4 text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium backdrop-blur-sm">
@@ -325,14 +325,14 @@ export default function PrivacyPolicyPage() {
 
       {/* Table of contents */}
       <div className="relative z-10 mx-auto -mt-12 max-w-4xl px-4 sm:-mt-16">
-        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xl">
-          <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-gray-700">Quick Navigation</h3>
+        <div className="rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-6 shadow-xl">
+          <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-gray-700 dark:text-slate-300">Quick Navigation</h3>
           <div className="flex flex-wrap gap-2">
             {sections.map((s, i) => (
               <a
                 key={s.id}
                 href={`#${s.id}`}
-                className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+                className="rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
               >
                 {i + 1}. {s.title}
               </a>
@@ -345,7 +345,7 @@ export default function PrivacyPolicyPage() {
       <div className="mx-auto max-w-4xl px-4 py-12">
         <div className="space-y-8">
           {sections.map((s, i) => (
-            <section key={s.id} id={s.id} className="scroll-mt-24 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md sm:p-8">
+            <section key={s.id} id={s.id} className="scroll-mt-24 rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-6 shadow-sm transition-shadow hover:shadow-md sm:p-8">
               <div className="mb-5 flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50">
                   <svg className="h-5 w-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -353,24 +353,24 @@ export default function PrivacyPolicyPage() {
                   </svg>
                 </div>
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Section {i + 1}</span>
-                  <h2 className="text-lg font-bold text-gray-900">{s.title}</h2>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-slate-500">Section {i + 1}</span>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">{s.title}</h2>
                 </div>
               </div>
-              <div className="text-sm leading-relaxed text-gray-600">{s.content}</div>
+              <div className="text-sm leading-relaxed text-gray-600 dark:text-slate-300">{s.content}</div>
             </section>
           ))}
         </div>
       </div>
 
       {/* Bottom CTA */}
-      <section className="border-t border-gray-100 bg-gray-50 py-12">
+      <section className="border-t border-gray-100 bg-gray-50 dark:bg-slate-900 py-12">
         <div className="mx-auto max-w-3xl px-4 text-center">
-          <h3 className="mb-2 text-lg font-bold text-gray-900">Have questions about your data?</h3>
-          <p className="mb-5 text-sm text-gray-500">We&apos;re happy to help. Reach out any time.</p>
+          <h3 className="mb-2 text-lg font-bold text-gray-900 dark:text-slate-100">Have questions about your data?</h3>
+          <p className="mb-5 text-sm text-gray-500 dark:text-slate-400">We&apos;re happy to help. Reach out any time.</p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link href="/contact" className="btn-primary !text-sm">Contact Support</Link>
-            <Link href="/terms" className="rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">Read Terms & Conditions</Link>
+            <Link href="/terms" className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900">Read Terms & Conditions</Link>
           </div>
         </div>
       </section>

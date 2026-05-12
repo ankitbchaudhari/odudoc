@@ -74,7 +74,7 @@ export default function SharedSurgeryViewerPage() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
+      <main className="min-h-screen bg-slate-100 dark:bg-slate-800 flex items-center justify-center p-6">
         <div className="max-w-md rounded-2xl border border-rose-200 bg-rose-50 p-6 text-center">
           <p className="text-3xl">🔒</p>
           <p className="mt-2 font-bold text-rose-900">{error}</p>
@@ -83,15 +83,15 @@ export default function SharedSurgeryViewerPage() {
       </main>
     );
   }
-  if (!data) return <p className="mx-auto mt-12 max-w-md rounded-xl bg-white p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>;
+  if (!data) return <p className="mx-auto mt-12 max-w-md rounded-xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>;
 
   const wmText = `OduDoc · ${data.watermark.patientUserId} · ${data.watermark.ip || "no-ip"} · ${new Date(data.watermark.viewedAt).toLocaleString()}`;
 
   return (
-    <main className="min-h-screen bg-slate-100">
+    <main className="min-h-screen bg-slate-100 dark:bg-slate-800">
       <div className="mx-auto max-w-4xl px-4 py-6">
-        <p className="mb-2 text-[10px] uppercase tracking-widest text-slate-500">Shared via secure link · OduDoc</p>
-        <div className="relative overflow-hidden rounded-2xl bg-black shadow-sm ring-1 ring-slate-200" style={{ aspectRatio: "16 / 9" }}>
+        <p className="mb-2 text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400">Shared via secure link · OduDoc</p>
+        <div className="relative overflow-hidden rounded-2xl bg-black shadow-sm ring-1 ring-slate-200 dark:ring-slate-800" style={{ aspectRatio: "16 / 9" }}>
           {data.playbackUrl ? (
             <>
               <video

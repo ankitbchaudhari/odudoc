@@ -18,8 +18,8 @@ export default function HeroSearch() {
 
   return (
     <form onSubmit={handleSearch} className="mx-auto w-full max-w-2xl">
-      <div className="flex items-center overflow-hidden rounded-xl border-2 border-gray-200 bg-white shadow-lg transition-all duration-300 focus-within:border-primary-500 focus-within:shadow-xl">
-        <div className="pl-4 text-gray-400">
+      <div className="flex items-center overflow-hidden rounded-xl border-2 border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg transition-all duration-300 focus-within:border-primary-500 focus-within:shadow-xl">
+        <div className="pl-4 text-gray-400 dark:text-slate-500">
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
@@ -27,7 +27,7 @@ export default function HeroSearch() {
         <input
           type="text"
           placeholder="Search doctors, clinics, hospitals, etc."
-          className="flex-1 px-4 py-4 text-gray-700 outline-none placeholder:text-gray-400"
+          className="flex-1 px-4 py-4 text-gray-700 dark:text-slate-300 outline-none placeholder:text-gray-400 dark:text-slate-500"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />

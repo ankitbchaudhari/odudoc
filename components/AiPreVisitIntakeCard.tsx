@@ -72,8 +72,8 @@ export default function AiPreVisitIntakeCard({
             </svg>
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-900">Pre-visit intake</h3>
-            <p className="text-[11px] text-slate-500">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Pre-visit intake</h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
               Patient&rsquo;s history, structured for the doctor
             </p>
           </div>
@@ -103,7 +103,7 @@ export default function AiPreVisitIntakeCard({
 
       {intake && !error && (
         <div className="space-y-3">
-          <p className="text-sm font-semibold text-slate-900">{intake.headline}</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{intake.headline}</p>
 
           {intake.redFlags.length > 0 && (
             <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-3">
@@ -126,7 +126,7 @@ export default function AiPreVisitIntakeCard({
               <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-cyan-700">
                 Ask the patient
               </p>
-              <ul className="space-y-1 text-sm text-slate-700">
+              <ul className="space-y-1 text-sm text-slate-700 dark:text-slate-300">
                 {intake.suggestedQuestions.map((q, i) => (
                   <li key={i} className="flex gap-2">
                     <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-500" />
@@ -142,7 +142,7 @@ export default function AiPreVisitIntakeCard({
               <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-sky-700">
                 Exams / quick checks
               </p>
-              <ul className="space-y-1 text-sm text-slate-700">
+              <ul className="space-y-1 text-sm text-slate-700 dark:text-slate-300">
                 {intake.suggestedExams.map((q, i) => (
                   <li key={i} className="flex gap-2">
                     <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />

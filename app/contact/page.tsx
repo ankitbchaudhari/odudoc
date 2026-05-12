@@ -125,7 +125,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-teal-50 to-rose-50 py-24">
         <div className="pointer-events-none absolute -top-32 -left-24 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-primary-200/40 to-teal-200/40 blur-3xl" />
@@ -134,13 +134,13 @@ export default function ContactPage() {
           <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary-100 to-teal-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-primary-700">
             <span>🏥</span> For Hospitals Worldwide
           </span>
-          <h1 className="mt-6 text-4xl font-bold text-gray-900 md:text-6xl">
+          <h1 className="mt-6 text-4xl font-bold text-gray-900 dark:text-slate-100 md:text-6xl">
             Talk to{" "}
             <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-rose-500 bg-clip-text text-transparent">
               our team
             </span>
           </h1>
-          <p className="mx-auto mt-6 max-w-xl text-lg text-gray-600">
+          <p className="mx-auto mt-6 max-w-xl text-lg text-gray-600 dark:text-slate-300">
             We work with hospitals, clinics and diagnostic chains in 100+ countries.
             Tell us about your facility — we'll line up a 30-min walkthrough tailored to it.
           </p>
@@ -157,7 +157,7 @@ export default function ContactPage() {
               {contactInfo.map((c) => (
                 <div
                   key={c.title}
-                  className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+                  className="rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
                 >
                   <div className="flex items-start gap-4">
                     <div
@@ -166,9 +166,9 @@ export default function ContactPage() {
                       {c.icon}
                     </div>
                     <div>
-                      <h3 className="font-bold text-gray-900">{c.title}</h3>
+                      <h3 className="font-bold text-gray-900 dark:text-slate-100">{c.title}</h3>
                       {c.lines.map((line) => (
-                        <p key={line} className="text-sm text-gray-500">{line}</p>
+                        <p key={line} className="text-sm text-gray-500 dark:text-slate-400">{line}</p>
                       ))}
                     </div>
                   </div>
@@ -176,23 +176,23 @@ export default function ContactPage() {
               ))}
 
               {/* Working Hours */}
-              <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl">
+              <div className="rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl">
                 <div className="mb-4 flex items-center gap-3">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg ring-4 ring-white">
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <h3 className="font-bold text-gray-900">Working Hours</h3>
+                  <h3 className="font-bold text-gray-900 dark:text-slate-100">Working Hours</h3>
                 </div>
                 <WorkingHours />
               </div>
 
               {/* Trust strip — replaces the US-only office map with a worldwide
                   signal so visitors from any region see themselves in the page. */}
-              <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:shadow-xl">
-                <h3 className="mb-3 font-bold text-gray-900">Where we serve</h3>
-                <p className="text-sm text-gray-500">
+              <div className="rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all hover:shadow-xl">
+                <h3 className="mb-3 font-bold text-gray-900 dark:text-slate-100">Where we serve</h3>
+                <p className="text-sm text-gray-500 dark:text-slate-400">
                   Hospitals, clinics and diagnostic chains across North America,
                   Europe, the GCC, Africa, South Asia, Southeast Asia and Latin
                   America. Localized currency, language, and compliance in every region.
@@ -206,14 +206,14 @@ export default function ContactPage() {
             </div>
 
             {/* Form */}
-            <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm transition-all hover:shadow-xl lg:col-span-2">
+            <div className="rounded-3xl border border-gray-100 bg-white dark:bg-slate-900 p-8 shadow-sm transition-all hover:shadow-xl lg:col-span-2">
               {submitted ? (
                 <div className="flex min-h-[400px] flex-col items-center justify-center text-center">
                   <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-3xl text-white shadow-lg ring-4 ring-white">
                     ✓
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Request received!</h2>
-                  <p className="mt-2 max-w-md text-gray-500">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Request received!</h2>
+                  <p className="mt-2 max-w-md text-gray-500 dark:text-slate-400">
                     Thank you for reaching out. Our hospital partnerships team will
                     get back to you within 24 hours with a tailored walkthrough plan.
                   </p>
@@ -229,18 +229,18 @@ export default function ContactPage() {
                   <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary-100 to-rose-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-primary-700">
                     <span>✨</span> Book a walkthrough
                   </span>
-                  <h2 className="mt-4 mb-1 text-2xl font-bold text-gray-900">
+                  <h2 className="mt-4 mb-1 text-2xl font-bold text-gray-900 dark:text-slate-100">
                     Tell us about your{" "}
                     <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-rose-500 bg-clip-text text-transparent">
                       hospital
                     </span>
                   </h2>
-                  <p className="mb-6 text-sm text-gray-500">
+                  <p className="mb-6 text-sm text-gray-500 dark:text-slate-400">
                     30-minute walkthrough tailored to your facility — modules, migration, and pricing.
                   </p>
                   <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
-                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                         Hospital / Organization Name *
                       </label>
                       <input
@@ -249,13 +249,13 @@ export default function ContactPage() {
                         value={orgName}
                         onChange={(e) => setOrgName(e.target.value)}
                         placeholder="St. Mary's General Hospital"
-                        className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+                        className="w-full rounded-xl border-2 border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
                       />
                     </div>
 
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                       <div>
-                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                           Your Name *
                         </label>
                         <input
@@ -264,11 +264,11 @@ export default function ContactPage() {
                           value={contactName}
                           onChange={(e) => setContactName(e.target.value)}
                           placeholder="Dr. Anjali Mehta"
-                          className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+                          className="w-full rounded-xl border-2 border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
                         />
                       </div>
                       <div>
-                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                           Work Email *
                         </label>
                         <input
@@ -277,14 +277,14 @@ export default function ContactPage() {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="you@hospital.org"
-                          className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+                          className="w-full rounded-xl border-2 border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                       <div>
-                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                           Phone
                         </label>
                         <PhoneInput
@@ -293,13 +293,13 @@ export default function ContactPage() {
                         />
                       </div>
                       <div>
-                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                           Country
                         </label>
                         <select
                           value={country}
                           onChange={(e) => setCountry(e.target.value)}
-                          className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+                          className="w-full rounded-xl border-2 border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-gray-700 dark:text-slate-300 outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
                         >
                           <option value="">Select a country…</option>
                           {COUNTRIES.map((c) => (
@@ -310,7 +310,7 @@ export default function ContactPage() {
                     </div>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                         Beds / Capacity
                       </label>
                       <div className="flex flex-wrap gap-2">
@@ -324,7 +324,7 @@ export default function ContactPage() {
                               className={`rounded-full border-2 px-4 py-1.5 text-sm font-medium transition ${
                                 active
                                   ? "border-primary-500 bg-gradient-to-r from-primary-500 to-teal-500 text-white shadow-md"
-                                  : "border-gray-200 bg-white text-gray-700 hover:border-primary-300 hover:bg-primary-50"
+                                  : "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-primary-300 hover:bg-primary-50"
                               }`}
                             >
                               {b.label}
@@ -335,7 +335,7 @@ export default function ContactPage() {
                     </div>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                         Which modules interest you?
                       </label>
                       <div className="flex flex-wrap gap-2">
@@ -349,7 +349,7 @@ export default function ContactPage() {
                               className={`rounded-full border-2 px-3 py-1.5 text-sm font-medium transition ${
                                 active
                                   ? "border-primary-500 bg-gradient-to-r from-primary-500 to-teal-500 text-white shadow-md"
-                                  : "border-gray-200 bg-white text-gray-700 hover:border-primary-300 hover:bg-primary-50"
+                                  : "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-primary-300 hover:bg-primary-50"
                               }`}
                             >
                               {m}
@@ -360,7 +360,7 @@ export default function ContactPage() {
                     </div>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                         Current HMS / system (if any)
                       </label>
                       <input
@@ -368,12 +368,12 @@ export default function ContactPage() {
                         value={currentSystem}
                         onChange={(e) => setCurrentSystem(e.target.value)}
                         placeholder="e.g. eHospital, paper records, in-house tool"
-                        className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+                        className="w-full rounded-xl border-2 border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
                       />
                     </div>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500">
+                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                         Anything else?
                       </label>
                       <textarea
@@ -381,7 +381,7 @@ export default function ContactPage() {
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Migration timeline, regulatory needs, languages required…"
-                        className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+                        className="w-full rounded-xl border-2 border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
                       />
                     </div>
 
@@ -399,7 +399,7 @@ export default function ContactPage() {
                       {submitting ? "Sending…" : "Request walkthrough →"}
                     </button>
 
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-400 dark:text-slate-500">
                       We reply within 24 hours. By submitting you agree to our
                       privacy policy. No spam — promise.
                     </p>

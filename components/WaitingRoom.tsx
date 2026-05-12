@@ -118,10 +118,10 @@ export default function WaitingRoom({ patientName, doctorName, specialty, onJoin
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-white">Ready to Join?</h1>
-          <p className="mt-2 text-gray-400">
+          <p className="mt-2 text-gray-400 dark:text-slate-500">
             Consultation with <span className="font-medium text-white">{doctorName}</span>
           </p>
-          <p className="text-sm text-gray-500">{specialty}</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">{specialty}</p>
         </div>
 
         {/* Video Preview */}
@@ -145,7 +145,7 @@ export default function WaitingRoom({ patientName, doctorName, specialty, onJoin
                 <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-700 text-2xl font-bold text-white">
                   {patientName.charAt(0).toUpperCase()}
                 </div>
-                <p className="mt-3 text-sm text-gray-400">Camera is off</p>
+                <p className="mt-3 text-sm text-gray-400 dark:text-slate-500">Camera is off</p>
               </div>
             ) : (
               <video
@@ -172,7 +172,7 @@ export default function WaitingRoom({ patientName, doctorName, specialty, onJoin
                   />
                 ))}
               </div>
-              <span className="text-xs text-gray-400">Mic</span>
+              <span className="text-xs text-gray-400 dark:text-slate-500">Mic</span>
             </div>
           )}
 
@@ -224,7 +224,7 @@ export default function WaitingRoom({ patientName, doctorName, specialty, onJoin
           <h3 className="mb-3 text-sm font-medium text-gray-300">Device Settings</h3>
           {cameras.length > 0 && (
             <div>
-              <label className="mb-1 block text-xs text-gray-500">Camera</label>
+              <label className="mb-1 block text-xs text-gray-500 dark:text-slate-400">Camera</label>
               <select
                 value={selectedCamera}
                 onChange={(e) => setSelectedCamera(e.target.value)}
@@ -240,7 +240,7 @@ export default function WaitingRoom({ patientName, doctorName, specialty, onJoin
           )}
           {microphones.length > 0 && (
             <div>
-              <label className="mb-1 block text-xs text-gray-500">Microphone</label>
+              <label className="mb-1 block text-xs text-gray-500 dark:text-slate-400">Microphone</label>
               <select
                 value={selectedMic}
                 onChange={(e) => setSelectedMic(e.target.value)}
@@ -256,7 +256,7 @@ export default function WaitingRoom({ patientName, doctorName, specialty, onJoin
           )}
           {speakers.length > 0 && (
             <div>
-              <label className="mb-1 block text-xs text-gray-500">Speaker</label>
+              <label className="mb-1 block text-xs text-gray-500 dark:text-slate-400">Speaker</label>
               <select
                 value={selectedSpeaker}
                 onChange={(e) => setSelectedSpeaker(e.target.value)}
@@ -276,7 +276,7 @@ export default function WaitingRoom({ patientName, doctorName, specialty, onJoin
         <div className="mb-6 text-center">
           <div className="mb-3 flex items-center justify-center gap-2">
             <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
-            <span className="text-sm text-gray-400">Your doctor will join shortly</span>
+            <span className="text-sm text-gray-400 dark:text-slate-500">Your doctor will join shortly</span>
           </div>
         </div>
 

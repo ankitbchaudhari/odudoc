@@ -91,8 +91,8 @@ export default function AiPatientSummaryCard({ patientId, staleKey }: Props) {
             </svg>
           </div>
           <div>
-            <h2 className="text-base font-bold text-slate-900">AI chart summary</h2>
-            <p className="text-xs text-slate-500">
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">AI chart summary</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {loading
                 ? "Reading the chart…"
                 : summary
@@ -130,7 +130,7 @@ export default function AiPatientSummaryCard({ patientId, staleKey }: Props) {
 
       {summary && !error && (
         <div className="space-y-4">
-          <p className="text-sm font-semibold text-slate-900">
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             {summary.headline}
           </p>
 
@@ -143,7 +143,7 @@ export default function AiPatientSummaryCard({ patientId, staleKey }: Props) {
                 {summary.keyPoints.map((p, i) => {
                   const src = sourceLabel(p.source);
                   return (
-                    <li key={i} className="flex gap-2 text-sm text-slate-700">
+                    <li key={i} className="flex gap-2 text-sm text-slate-700 dark:text-slate-300">
                       <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-500" />
                       <span className="flex-1">
                         {p.text}
@@ -191,7 +191,7 @@ export default function AiPatientSummaryCard({ patientId, staleKey }: Props) {
               <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-indigo-700">
                 Today&rsquo;s focus
               </p>
-              <p className="text-sm text-slate-700">{summary.suggestedFocus}</p>
+              <p className="text-sm text-slate-700 dark:text-slate-300">{summary.suggestedFocus}</p>
             </div>
           )}
         </div>

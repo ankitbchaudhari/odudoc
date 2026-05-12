@@ -93,7 +93,7 @@ const safetyStats = [
 
 export default function SurgeriesPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-900">
       <ServiceLd
         name="Surgery Packages"
         description="Transparent surgery packages with verified hospitals — laparoscopic, cardiac, orthopaedic, bariatric, cosmetic."
@@ -114,13 +114,13 @@ export default function SurgeriesPage() {
           <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary-100 to-teal-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-primary-700">
             <span>🩺</span> World-class surgical care
           </span>
-          <h1 className="mt-5 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">
+          <h1 className="mt-5 text-4xl font-bold tracking-tight text-gray-900 dark:text-slate-100 md:text-6xl">
             Safe, affordable{" "}
             <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-rose-500 bg-clip-text text-transparent">
               surgeries
             </span>
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600 dark:text-slate-300">
             Top specialists. Transparent pricing. Zero surprises. Every procedure backed by our quality guarantee.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
@@ -132,7 +132,7 @@ export default function SurgeriesPage() {
             </Link>
             <a
               href="tel:+15550001234"
-              className="rounded-xl border-2 border-primary-200 bg-white/80 px-8 py-3 text-sm font-semibold text-primary-700 backdrop-blur transition-all hover:bg-white hover:shadow-md"
+              className="rounded-xl border-2 border-primary-200 bg-white/80 px-8 py-3 text-sm font-semibold text-primary-700 backdrop-blur transition-all hover:bg-white dark:bg-slate-900 hover:shadow-md"
             >
               Call: +1 (555) 000-1234
             </a>
@@ -141,7 +141,7 @@ export default function SurgeriesPage() {
       </section>
 
       {/* Safety Trust Bar */}
-      <section className="bg-white py-12">
+      <section className="bg-white dark:bg-slate-900 py-12">
         <div className="mx-auto max-w-6xl px-4">
           <div className="mb-8 text-center">
             <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-100 to-teal-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700">
@@ -152,12 +152,12 @@ export default function SurgeriesPage() {
             {safetyStats.map((s) => (
               <div
                 key={s.label}
-                className="rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+                className="rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-6 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
               >
                 <p className={`bg-gradient-to-r ${s.gradient} bg-clip-text text-3xl font-extrabold text-transparent`}>
                   {s.value}
                 </p>
-                <p className="mt-2 text-sm font-semibold text-gray-600">{s.label}</p>
+                <p className="mt-2 text-sm font-semibold text-gray-600 dark:text-slate-300">{s.label}</p>
               </div>
             ))}
           </div>
@@ -168,18 +168,18 @@ export default function SurgeriesPage() {
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50/40 py-16">
         <div className="pointer-events-none absolute top-20 -right-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-primary-200/30 to-teal-200/30 blur-3xl" />
         <div className="relative mx-auto max-w-6xl px-4">
-          <h2 className="mb-3 text-center text-3xl font-bold text-gray-900 md:text-4xl">
+          <h2 className="mb-3 text-center text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
             Our{" "}
             <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-emerald-500 bg-clip-text text-transparent">
               surgery categories
             </span>
           </h2>
-          <p className="mb-10 text-center text-gray-600">Expert care across every major specialty.</p>
+          <p className="mb-10 text-center text-gray-600 dark:text-slate-300">Expert care across every major specialty.</p>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {surgeryCategories.map((cat) => (
               <div
                 key={cat.name}
-                className="group rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+                className="group rounded-3xl border border-gray-100 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
               >
                 <div className="mb-4 flex items-center gap-3">
                   <div
@@ -190,14 +190,14 @@ export default function SurgeriesPage() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900">{cat.name}</h3>
+                    <h3 className="font-bold text-gray-900 dark:text-slate-100">{cat.name}</h3>
                     <p className="text-xs font-semibold text-primary-600">Starting {cat.startingPrice}</p>
                   </div>
                 </div>
-                <p className="mb-4 text-sm text-gray-600">{cat.description}</p>
+                <p className="mb-4 text-sm text-gray-600 dark:text-slate-300">{cat.description}</p>
                 <ul className="space-y-1.5">
                   {cat.procedures.map((p) => (
-                    <li key={p} className="flex items-center gap-2 text-sm text-gray-700">
+                    <li key={p} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
                       <svg className="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
@@ -222,7 +222,7 @@ export default function SurgeriesPage() {
         <div className="pointer-events-none absolute -top-20 -left-20 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-teal-200/40 to-emerald-200/40 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-20 -right-20 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-purple-200/40 to-rose-200/40 blur-3xl" />
         <div className="relative mx-auto max-w-5xl px-4">
-          <h2 className="mb-10 text-center text-3xl font-bold text-gray-900 md:text-4xl">
+          <h2 className="mb-10 text-center text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
             Why choose{" "}
             <span className="bg-gradient-to-r from-primary-600 via-purple-500 to-rose-500 bg-clip-text text-transparent">
               OduDoc
@@ -233,7 +233,7 @@ export default function SurgeriesPage() {
             {whyChoose.map((item) => (
               <div
                 key={item.title}
-                className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+                className="rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
               >
                 <div
                   className={`mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${item.gradient} text-white shadow-lg ring-4 ring-white`}
@@ -242,8 +242,8 @@ export default function SurgeriesPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h3 className="mb-1 font-bold text-gray-900">{item.title}</h3>
-                <p className="text-sm text-gray-600">{item.desc}</p>
+                <h3 className="mb-1 font-bold text-gray-900 dark:text-slate-100">{item.title}</h3>
+                <p className="text-sm text-gray-600 dark:text-slate-300">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -251,15 +251,15 @@ export default function SurgeriesPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-white py-16">
+      <section className="bg-white dark:bg-slate-900 py-16">
         <div className="mx-auto max-w-3xl px-4 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
+          <h2 className="mb-4 text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
             Need a{" "}
             <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-emerald-500 bg-clip-text text-transparent">
               surgery consultation?
             </span>
           </h2>
-          <p className="mb-8 text-gray-600">
+          <p className="mb-8 text-gray-600 dark:text-slate-300">
             Talk to our medical coordinators for free. We&apos;ll help you understand your options, compare costs, and connect you with the best surgeon.
           </p>
           <Link

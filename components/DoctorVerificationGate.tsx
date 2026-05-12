@@ -174,7 +174,7 @@ export default function DoctorVerificationGate({
                       ? "Verification needs another look"
                       : "Get verified to activate your dashboard"}
                 </h1>
-                <p className="mt-2 max-w-xl text-sm text-slate-600">
+                <p className="mt-2 max-w-xl text-sm text-slate-600 dark:text-slate-300">
                   {submitted
                     ? "Our team typically responds within 24–48 hours. You'll get an email once the review is complete and your dashboard activates."
                     : rejected
@@ -245,8 +245,8 @@ export default function DoctorVerificationGate({
                 />
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-4">
+                <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                   License details
                 </p>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -271,7 +271,7 @@ export default function DoctorVerificationGate({
                 </div>
               </div>
 
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Files are stored privately on OduDoc's verification server and
                 are only viewable by our admin team. By submitting you confirm
                 the documents are genuine and current.
@@ -291,7 +291,7 @@ export default function DoctorVerificationGate({
           )}
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 text-xs text-slate-600 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 text-xs text-slate-600 dark:text-slate-300 shadow-sm">
           <b>While verification is pending,</b> all dashboard features
           (consultations, EMR, prescriptions, payouts, AI tools) are paused.
           Verified doctors can still book consultations through your public
@@ -308,12 +308,12 @@ function Status({ label, value }: { label: string; value: boolean }) {
       className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${
         value
           ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-          : "border-slate-200 bg-slate-50 text-slate-500"
+          : "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400"
       }`}
     >
       <span
         className={`flex h-5 w-5 items-center justify-center rounded-full ${
-          value ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-500"
+          value ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-500 dark:text-slate-400"
         }`}
       >
         {value ? "✓" : "—"}
@@ -338,7 +338,7 @@ function FileField({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 flex items-center justify-between gap-2 text-xs font-semibold text-slate-700">
+      <span className="mb-1 flex items-center justify-between gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
         <span>
           {label} {required && <span className="text-rose-500">*</span>}
         </span>
@@ -352,9 +352,9 @@ function FileField({
         type="file"
         name={name}
         accept="image/*,application/pdf"
-        className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-amber-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-amber-700 hover:file:bg-amber-200"
+        className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-amber-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-amber-700 hover:file:bg-amber-200"
       />
-      {hint && <span className="mt-1 block text-[11px] text-slate-500">{hint}</span>}
+      {hint && <span className="mt-1 block text-[11px] text-slate-500 dark:text-slate-400">{hint}</span>}
     </label>
   );
 }
@@ -374,7 +374,7 @@ function Input({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-semibold text-slate-700">
+      <span className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
         {label}
       </span>
       <input
@@ -382,7 +382,7 @@ function Input({
         name={name}
         placeholder={placeholder}
         defaultValue={defaultValue || ""}
-        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15"
+        className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15"
       />
     </label>
   );

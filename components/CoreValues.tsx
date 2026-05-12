@@ -56,13 +56,13 @@ export default function CoreValues() {
           {values.map((value) => (
             <div
               key={value.title}
-              className="group rounded-2xl bg-white p-8 text-center shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+              className="group rounded-2xl bg-white dark:bg-slate-900 p-8 text-center shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
             >
               <div className={`mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full ${value.color}`}>
                 {value.icon}
               </div>
-              <h3 className="mb-3 text-lg font-bold text-gray-900">{value.title}</h3>
-              <p className="text-sm leading-relaxed text-gray-500">{value.description}</p>
+              <h3 className="mb-3 text-lg font-bold text-gray-900 dark:text-slate-100">{value.title}</h3>
+              <p className="text-sm leading-relaxed text-gray-500 dark:text-slate-400">{value.description}</p>
             </div>
           ))}
         </div>

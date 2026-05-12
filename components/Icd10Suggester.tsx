@@ -104,10 +104,10 @@ export default function Icd10Suggester({
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-xl rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900">Suggested ICD-10-CM codes</h3>
-              <button onClick={() => setOpen(false)} className="rounded-lg p-2 hover:bg-slate-100">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Suggested ICD-10-CM codes</h3>
+              <button onClick={() => setOpen(false)} className="rounded-lg p-2 hover:bg-slate-100 dark:bg-slate-800">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -125,7 +125,7 @@ export default function Icd10Suggester({
             )}
 
             {!loading && !error && suggestions.length === 0 && (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 No codes suggested. Add more detail to the assessment and try again.
               </p>
             )}
@@ -143,18 +143,18 @@ export default function Icd10Suggester({
                           onAccept(formatted);
                           setOpen(false);
                         }}
-                        className="block w-full rounded-xl border border-slate-200 p-3 text-left transition hover:border-indigo-400 hover:bg-indigo-50"
+                        className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 p-3 text-left transition hover:border-indigo-400 hover:bg-indigo-50"
                       >
                         <div className="flex items-baseline justify-between gap-3">
                           <div>
                             <span className="font-mono text-sm font-bold text-indigo-700">{s.code}</span>
-                            <span className="ml-2 text-sm text-slate-800">{s.description}</span>
+                            <span className="ml-2 text-sm text-slate-800 dark:text-slate-200">{s.description}</span>
                           </div>
                           <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${conf.cls}`}>
                             {conf.label}
                           </span>
                         </div>
-                        <p className="mt-1 text-xs text-slate-500">{s.rationale}</p>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{s.rationale}</p>
                       </button>
                     </li>
                   );

@@ -36,9 +36,9 @@ interface PayoutDetails {
 const DAY = 24 * 60 * 60 * 1000;
 
 function expiryUrgency(iso?: string): { label: string; cls: string } {
-  if (!iso) return { label: "—", cls: "text-gray-400" };
+  if (!iso) return { label: "—", cls: "text-gray-400 dark:text-slate-500" };
   const ms = Date.parse(iso);
-  if (!Number.isFinite(ms)) return { label: "—", cls: "text-gray-400" };
+  if (!Number.isFinite(ms)) return { label: "—", cls: "text-gray-400 dark:text-slate-500" };
   const days = Math.floor((ms - Date.now()) / DAY);
   if (days < 0) return { label: "Expired", cls: "text-rose-700 bg-rose-50 ring-rose-200" };
   if (days <= 3) return { label: `Expires in ${days}d`, cls: "text-rose-700 bg-rose-50 ring-rose-200" };
@@ -152,21 +152,21 @@ export default function DoctorComplianceTile() {
   const hasLicense = Boolean(me.licenseNumber);
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+    <section className="overflow-hidden rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 shadow-sm">
       <div className="h-1 bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500" />
       <div className="p-5">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-base font-bold text-gray-900">Compliance &amp; payouts</h3>
-          <span className="text-xs text-gray-400">Status</span>
+          <h3 className="text-base font-bold text-gray-900 dark:text-slate-100">Compliance &amp; payouts</h3>
+          <span className="text-xs text-gray-400 dark:text-slate-500">Status</span>
         </div>
 
         <ul className="space-y-3 text-sm">
           {/* Verification */}
-          <li className="rounded-xl border border-gray-100 bg-gray-50 px-3 py-2">
+          <li className="rounded-xl border border-gray-100 bg-gray-50 dark:bg-slate-900 px-3 py-2">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="font-semibold text-gray-900">Identity verified</p>
-                <p className="text-xs text-gray-500">
+                <p className="font-semibold text-gray-900 dark:text-slate-100">Identity verified</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400">
                   {me.verified
                     ? `Verified${me.verifiedAt ? ` on ${new Date(me.verifiedAt).toLocaleDateString()}` : ""}`
                     : "Submit ID + selfie + license documents to activate your dashboard."}
@@ -189,11 +189,11 @@ export default function DoctorComplianceTile() {
               verification flow. Identity-critical so we POST to a
               dedicated /api/doctors/me/license endpoint with strict
               validation rather than the open PATCH on /api/doctors/me. */}
-          <li className="rounded-xl border border-gray-100 bg-gray-50 px-3 py-2">
+          <li className="rounded-xl border border-gray-100 bg-gray-50 dark:bg-slate-900 px-3 py-2">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="font-semibold text-gray-900">Medical license</p>
-                <p className="text-xs text-gray-500">
+                <p className="font-semibold text-gray-900 dark:text-slate-100">Medical license</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400">
                   {hasLicense
                     ? `${me.licenseCountry || ""} · ${me.licenseNumber}`
                     : "Not on file — add your medical board registration to complete your card."}
@@ -210,7 +210,7 @@ export default function DoctorComplianceTile() {
                   onClick={() => setLicenseOpen((v) => !v)}
                   className={`rounded-lg px-3 py-1 text-xs font-semibold transition ${
                     hasLicense
-                      ? "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                      ? "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
                       : "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-sm hover:-translate-y-0.5"
                   }`}
                 >
@@ -220,13 +220,13 @@ export default function DoctorComplianceTile() {
             </div>
 
             {licenseOpen && (
-              <div className="mt-3 grid gap-3 rounded-xl border border-sky-100 bg-white p-3 sm:grid-cols-3">
+              <div className="mt-3 grid gap-3 rounded-xl border border-sky-100 bg-white dark:bg-slate-900 p-3 sm:grid-cols-3">
                 <label className="block text-xs">
-                  <span className="font-bold uppercase tracking-wider text-slate-500">Country</span>
+                  <span className="font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Country</span>
                   <select
                     value={licenseForm.country}
                     onChange={(e) => setLicenseForm({ ...licenseForm, country: e.target.value })}
-                    className="mt-1 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm"
+                    className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-800 px-2 py-1.5 text-sm"
                   >
                     <option value="">Select…</option>
                     {ISO_COUNTRIES.map((c) => (
@@ -235,21 +235,21 @@ export default function DoctorComplianceTile() {
                   </select>
                 </label>
                 <label className="block text-xs">
-                  <span className="font-bold uppercase tracking-wider text-slate-500">License number</span>
+                  <span className="font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">License number</span>
                   <input
                     value={licenseForm.number}
                     onChange={(e) => setLicenseForm({ ...licenseForm, number: e.target.value })}
                     placeholder="e.g. ME12345 / MCI-67890"
-                    className="mt-1 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm"
+                    className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-800 px-2 py-1.5 text-sm"
                   />
                 </label>
                 <label className="block text-xs">
-                  <span className="font-bold uppercase tracking-wider text-slate-500">Expiry (optional)</span>
+                  <span className="font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Expiry (optional)</span>
                   <input
                     type="date"
                     value={licenseForm.expiry}
                     onChange={(e) => setLicenseForm({ ...licenseForm, expiry: e.target.value })}
-                    className="mt-1 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm"
+                    className="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-800 px-2 py-1.5 text-sm"
                   />
                 </label>
                 <div className="sm:col-span-3 flex items-center gap-2">
@@ -267,7 +267,7 @@ export default function DoctorComplianceTile() {
                     </span>
                   )}
                 </div>
-                <p className="sm:col-span-3 text-[11px] text-slate-500">
+                <p className="sm:col-span-3 text-[11px] text-slate-500 dark:text-slate-400">
                   This is your medical board / council registration number
                   (e.g. State Medical Council in India, GMC in the UK,
                   state license # in the US). It appears on your ID card
@@ -280,11 +280,11 @@ export default function DoctorComplianceTile() {
           {/* Manual payout — universal, country-agnostic. Doctor enters
               bank / PayPal / Wise / UPI / other, admin processes
               payouts off-platform. */}
-          <li className="rounded-xl border border-gray-100 bg-gray-50 px-3 py-3">
+          <li className="rounded-xl border border-gray-100 bg-gray-50 dark:bg-slate-900 px-3 py-3">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="font-semibold text-gray-900">Payout details</p>
-                <p className="mt-0.5 text-xs text-gray-500">
+                <p className="font-semibold text-gray-900 dark:text-slate-100">Payout details</p>
+                <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
                   {payoutReady
                     ? `${methodLabel(payout?.method)} · ${payoutSummary(payout)}`
                     : "Add your bank, PayPal, Wise, UPI, or other payout details so we can send your earnings."}
@@ -308,7 +308,7 @@ export default function DoctorComplianceTile() {
               >
                 {payoutReady ? "Update payout details →" : "Add payout details →"}
               </a>
-              <p className="mt-2 text-[11px] text-slate-500">
+              <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
                 Payouts are processed manually by our finance team every 7–14 days. Works in every country.
               </p>
             </div>

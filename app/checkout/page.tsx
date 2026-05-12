@@ -142,8 +142,8 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">Payment Successful!</h2>
-        <p className="mt-2 text-gray-500">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Payment Successful!</h2>
+        <p className="mt-2 text-gray-500 dark:text-slate-400">
           Your order for {item.name} has been confirmed.
         </p>
         <div className="mt-6 flex items-center justify-center gap-4">
@@ -152,7 +152,7 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
           </a>
           <a
             href="/"
-            className="rounded-lg border border-gray-300 px-6 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            className="rounded-lg border border-gray-300 dark:border-slate-700 px-6 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
           >
             Back to Home
           </a>
@@ -167,13 +167,13 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
         {/* Left: Form */}
         <div className="space-y-6 lg:col-span-2">
           {/* Billing Address */}
-          <div className="rounded-xl bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-lg font-bold text-gray-900">
+          <div className="rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <h2 className="mb-4 text-lg font-bold text-gray-900 dark:text-slate-100">
               Billing Details
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-gray-700">
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">
                   Full Name
                 </label>
                 <input
@@ -181,12 +181,12 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
                   type="text"
                   value={billingName}
                   onChange={(e) => setBillingName(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                   placeholder="John Doe"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-gray-700">
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">
                   Email
                 </label>
                 <input
@@ -194,12 +194,12 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
                   type="email"
                   value={billingEmail}
                   onChange={(e) => setBillingEmail(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                   placeholder="john@example.com"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-gray-700">
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">
                   Street Address
                 </label>
                 <input
@@ -207,12 +207,12 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
                   type="text"
                   value={billingAddress}
                   onChange={(e) => setBillingAddress(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                   placeholder="123 Main St"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">
                   City
                 </label>
                 <input
@@ -220,13 +220,13 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
                   type="text"
                   value={billingCity}
                   onChange={(e) => setBillingCity(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                   placeholder="New York"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">
                     State
                   </label>
                   <input
@@ -234,12 +234,12 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
                     type="text"
                     value={billingState}
                     onChange={(e) => setBillingState(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                     placeholder="NY"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">
                     ZIP
                   </label>
                   <input
@@ -247,7 +247,7 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
                     type="text"
                     value={billingZip}
                     onChange={(e) => setBillingZip(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                     placeholder="10001"
                   />
                 </div>
@@ -256,11 +256,11 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
           </div>
 
           {/* Card Details */}
-          <div className="rounded-xl bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-lg font-bold text-gray-900">
+          <div className="rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <h2 className="mb-4 text-lg font-bold text-gray-900 dark:text-slate-100">
               Payment Method
             </h2>
-            <div className="rounded-lg border border-gray-300 px-4 py-3 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500">
+            <div className="rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-3 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500">
               <CardElement
                 options={{
                   style: {
@@ -275,7 +275,7 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
                 }}
               />
             </div>
-            <div className="mt-3 flex items-center gap-2 text-xs text-gray-400">
+            <div className="mt-3 flex items-center gap-2 text-xs text-gray-400 dark:text-slate-500">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
@@ -310,14 +310,14 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
 
         {/* Right: Order Summary Sidebar */}
         <div className="lg:col-span-1">
-          <div className="sticky top-24 rounded-xl bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-lg font-bold text-gray-900">
+          <div className="sticky top-24 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <h2 className="mb-4 text-lg font-bold text-gray-900 dark:text-slate-100">
               Order Summary
             </h2>
 
             <div className="border-b border-gray-100 pb-4">
-              <h3 className="font-semibold text-gray-900">{item.name}</h3>
-              <p className="mt-1 text-sm text-gray-500">{item.description}</p>
+              <h3 className="font-semibold text-gray-900 dark:text-slate-100">{item.name}</h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{item.description}</p>
               <div className="mt-2">
                 <PricingBadge
                   price={item.price}
@@ -328,7 +328,7 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
 
             {/* Promo Code */}
             <div className="border-b border-gray-100 py-4">
-              <label className="mb-2 block text-sm font-medium text-gray-700">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">
                 Promo Code
               </label>
               <div className="flex gap-2">
@@ -337,14 +337,14 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value)}
                   disabled={promoApplied}
-                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary-500 disabled:bg-gray-50"
+                  className="flex-1 rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm outline-none focus:border-primary-500 disabled:bg-gray-50 dark:bg-slate-900"
                   placeholder="Enter code"
                 />
                 <button
                   type="button"
                   onClick={handlePromo}
                   disabled={promoApplied || !promoCode || promoBusy}
-                  className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-lg bg-gray-100 dark:bg-slate-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {promoApplied ? "Applied" : promoBusy ? "…" : "Apply"}
                 </button>
@@ -362,8 +362,8 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
             {/* Totals */}
             <div className="space-y-2 pt-4">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Subtotal</span>
-                <span className="text-gray-900">${item.price.toFixed(2)}</span>
+                <span className="text-gray-500 dark:text-slate-400">Subtotal</span>
+                <span className="text-gray-900 dark:text-slate-100">${item.price.toFixed(2)}</span>
               </div>
               {promoApplied && (
                 <div className="flex justify-between text-sm">
@@ -381,9 +381,9 @@ function CheckoutFormInner({ item }: { item: CheckoutItem }) {
                   </span>
                 </div>
               )}
-              <div className="border-t border-gray-200 pt-2">
+              <div className="border-t border-gray-200 dark:border-slate-800 pt-2">
                 <div className="flex justify-between text-base font-bold">
-                  <span className="text-gray-900">Total</span>
+                  <span className="text-gray-900 dark:text-slate-100">Total</span>
                   <span className="text-primary-600">
                     ${finalPrice.toFixed(2)}
                   </span>
@@ -401,11 +401,11 @@ export default function CheckoutPage() {
   const stripePromise = getStripePromise();
 
   return (
-    <div className="bg-gray-50 py-8">
+    <div className="bg-gray-50 dark:bg-slate-900 py-8">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
-          <p className="mt-1 text-gray-500">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100">Checkout</h1>
+          <p className="mt-1 text-gray-500 dark:text-slate-400">
             Complete your payment securely
           </p>
         </div>

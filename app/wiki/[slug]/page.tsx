@@ -24,7 +24,7 @@ export default function WikiArticlePage({ params }: { params: { slug: string } }
     .slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       {/* Hero */}
       <section className="bg-gradient-to-br from-primary-700 to-primary-900 py-12 text-white">
         <div className="mx-auto max-w-3xl px-4">
@@ -57,7 +57,7 @@ export default function WikiArticlePage({ params }: { params: { slug: string } }
               </h2>
               <ul className="space-y-2">
                 {article.keyPoints.map((p, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-gray-700">
+                  <li key={i} className="flex gap-2 text-sm text-gray-700 dark:text-slate-300">
                     <span className="mt-0.5 text-primary-600">•</span>
                     <span>{p}</span>
                   </li>
@@ -69,9 +69,9 @@ export default function WikiArticlePage({ params }: { params: { slug: string } }
           {/* Sections */}
           <article className="space-y-8">
             {article.sections.map((s, i) => (
-              <section key={i} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h2 className="mb-2 text-xl font-bold text-gray-900">{s.heading}</h2>
-                <p className="text-sm leading-relaxed text-gray-700">{s.body}</p>
+              <section key={i} className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                <h2 className="mb-2 text-xl font-bold text-gray-900 dark:text-slate-100">{s.heading}</h2>
+                <p className="text-sm leading-relaxed text-gray-700 dark:text-slate-300">{s.body}</p>
               </section>
             ))}
           </article>
@@ -84,7 +84,7 @@ export default function WikiArticlePage({ params }: { params: { slug: string } }
               </h2>
               <ul className="space-y-2">
                 {article.whenToSeeDoctor.map((p, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-gray-700">
+                  <li key={i} className="flex gap-2 text-sm text-gray-700 dark:text-slate-300">
                     <span className="mt-0.5 text-red-600">•</span>
                     <span>{p}</span>
                   </li>
@@ -99,7 +99,7 @@ export default function WikiArticlePage({ params }: { params: { slug: string } }
                 </Link>
                 <Link
                   href="/doctors"
-                  className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                  className="rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
                 >
                   Browse doctors
                 </Link>
@@ -108,8 +108,8 @@ export default function WikiArticlePage({ params }: { params: { slug: string } }
           )}
 
           {/* Disclaimer */}
-          <div className="mt-8 rounded-xl border border-gray-200 bg-white p-4 text-xs leading-relaxed text-gray-500">
-            <strong className="text-gray-700">Medical Disclaimer:</strong> This article is for educational purposes only
+          <div className="mt-8 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 text-xs leading-relaxed text-gray-500 dark:text-slate-400">
+            <strong className="text-gray-700 dark:text-slate-300">Medical Disclaimer:</strong> This article is for educational purposes only
             and is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of
             your physician or qualified health provider.
           </div>
@@ -117,22 +117,22 @@ export default function WikiArticlePage({ params }: { params: { slug: string } }
           {/* Related */}
           {related.length > 0 && (
             <div className="mt-10">
-              <h2 className="mb-4 text-lg font-bold text-gray-900">Related articles</h2>
+              <h2 className="mb-4 text-lg font-bold text-gray-900 dark:text-slate-100">Related articles</h2>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {related.map((r) => (
                   <Link
                     key={r.title}
                     href={`/wiki/${slugify(r.title)}`}
-                    className="group rounded-xl border border-gray-200 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-md"
+                    className="group rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 transition-all hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-md"
                   >
                     <div className="mb-2 flex items-center gap-2">
                       <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${r.color}`}>
                         <span>{r.icon}</span>
                         {r.category}
                       </span>
-                      <span className="text-[10px] text-gray-400">{r.readTime}</span>
+                      <span className="text-[10px] text-gray-400 dark:text-slate-500">{r.readTime}</span>
                     </div>
-                    <h3 className="text-sm font-bold text-gray-900 group-hover:text-primary-700">{r.title}</h3>
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-slate-100 group-hover:text-primary-700">{r.title}</h3>
                   </Link>
                 ))}
               </div>

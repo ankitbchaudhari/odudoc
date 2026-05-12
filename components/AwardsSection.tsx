@@ -22,13 +22,13 @@ export default function AwardsSection() {
           <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-orange-700">
             🏆 Recognition
           </span>
-          <h2 className="mt-4 text-3xl font-bold text-gray-900 md:text-5xl">
+          <h2 className="mt-4 text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-5xl">
             Awards &amp;{" "}
             <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 bg-clip-text text-transparent">
               Certifications
             </span>
           </h2>
-          <p className="mt-3 text-gray-500">
+          <p className="mt-3 text-gray-500 dark:text-slate-400">
             Recognized for excellence in healthcare delivery
           </p>
         </div>
@@ -41,7 +41,7 @@ export default function AwardsSection() {
           {[...awards, ...awards].map((award, i) => (
             <div
               key={`${award.name}-${i}`}
-              className="group relative inline-flex w-64 flex-shrink-0 flex-col items-center overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-md transition-all hover:-translate-y-1 hover:shadow-xl"
+              className="group relative inline-flex w-64 flex-shrink-0 flex-col items-center overflow-hidden rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-6 shadow-md transition-all hover:-translate-y-1 hover:shadow-xl"
             >
               <div
                 className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${award.gradient}`}
@@ -51,7 +51,7 @@ export default function AwardsSection() {
               >
                 {award.icon}
               </div>
-              <h3 className="whitespace-normal text-center text-sm font-bold text-gray-900">
+              <h3 className="whitespace-normal text-center text-sm font-bold text-gray-900 dark:text-slate-100">
                 {award.name}
               </h3>
               <span
@@ -59,7 +59,7 @@ export default function AwardsSection() {
               >
                 {award.year}
               </span>
-              <p className="mt-2 whitespace-normal text-center text-xs text-gray-500">
+              <p className="mt-2 whitespace-normal text-center text-xs text-gray-500 dark:text-slate-400">
                 {award.body}
               </p>
             </div>

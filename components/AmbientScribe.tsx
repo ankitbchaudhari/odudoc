@@ -388,7 +388,7 @@ export default function AmbientScribe({ onResult, patientId, className = "" }: P
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:border-violet-400 focus:outline-none"
+            className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 py-1.5 text-xs text-slate-700 dark:text-slate-300 focus:border-violet-400 focus:outline-none"
             title="Primary language spoken in the consultation"
           >
             {LANGUAGES.map((l) => (
@@ -400,24 +400,24 @@ export default function AmbientScribe({ onResult, patientId, className = "" }: P
 
       {phase === "consent" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-bold text-slate-900">Patient consent required</h3>
-            <p className="mt-2 text-sm text-slate-600">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Patient consent required</h3>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
               The ambient scribe will record audio of this consultation and transcribe it into a SOAP note. Before you start:
             </p>
-            <ul className="mt-3 space-y-1.5 text-sm text-slate-700">
+            <ul className="mt-3 space-y-1.5 text-sm text-slate-700 dark:text-slate-300">
               <li>✓ Tell the patient the visit is being recorded for note-taking.</li>
               <li>✓ Confirm verbally that they consent.</li>
               <li>✓ Stop the recording before discussing anything off-topic.</li>
             </ul>
-            <p className="mt-3 text-xs text-slate-500">
+            <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
               Audio is sent to Google Gemini for transcription and is not stored on OduDoc servers. The doctor reviews and edits every note before saving. Consent + recording lifecycle is written to the EMR audit log.
             </p>
             <div className="mt-6 flex gap-3">
               <button
                 type="button"
                 onClick={reset}
-                className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
               >
                 Cancel
               </button>

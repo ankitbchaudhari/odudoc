@@ -28,10 +28,10 @@ export default function CitiesIndexPage() {
 
       <section className="bg-gradient-to-br from-indigo-50 via-white to-primary-50 py-16">
         <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-extrabold text-gray-900 md:text-5xl">
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 md:text-5xl">
             Doctors by <span className="text-primary-600">city</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600 dark:text-slate-300">
             Video consultations are available across every location — we list
             cities separately so it's easy to find a doctor who knows your
             healthcare landscape.
@@ -46,16 +46,16 @@ export default function CitiesIndexPage() {
               <Link
                 key={c.slug}
                 href={`/doctors-in/${c.slug}`}
-                className="group rounded-2xl border border-gray-200 bg-white p-6 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:shadow-lg"
+                className="group rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:shadow-lg"
               >
-                <h2 className="text-xl font-bold text-gray-900 group-hover:text-primary-700">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100 group-hover:text-primary-700">
                   {c.displayName}
-                  {c.state && <span className="text-sm font-normal text-gray-500">, {c.state}</span>}
+                  {c.state && <span className="text-sm font-normal text-gray-500 dark:text-slate-400">, {c.state}</span>}
                 </h2>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                   {c.country}
                 </p>
-                <p className="mt-3 text-sm text-gray-600 leading-relaxed">
+                <p className="mt-3 text-sm text-gray-600 dark:text-slate-300 leading-relaxed">
                   {c.tagline}
                 </p>
               </Link>

@@ -129,17 +129,17 @@ export default function ReferralModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-2xl">
         <div className="flex items-start justify-between border-b border-gray-100 p-5">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Refer patient to another doctor</h2>
-            <p className="mt-0.5 text-sm text-gray-500">
-              Referring <span className="font-medium text-gray-700">{patientName}</span> — they&apos;ll be notified.
+            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Refer patient to another doctor</h2>
+            <p className="mt-0.5 text-sm text-gray-500 dark:text-slate-400">
+              Referring <span className="font-medium text-gray-700 dark:text-slate-300">{patientName}</span> — they&apos;ll be notified.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-2 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -150,7 +150,7 @@ export default function ReferralModal({
         <div className="flex-1 overflow-y-auto p-5">
           {/* Step 1 — pick doctor */}
           <div className="mb-5">
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
               1 · Choose a doctor
             </label>
             <div className="mb-3 flex flex-col gap-2 sm:flex-row">
@@ -158,12 +158,12 @@ export default function ReferralModal({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by name, specialty, or city…"
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
               />
               <select
                 value={specialtyFilter}
                 onChange={(e) => setSpecialtyFilter(e.target.value)}
-                className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500"
+                className="rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500"
               >
                 {specialties.map((s) => (
                   <option key={s} value={s}>
@@ -173,11 +173,11 @@ export default function ReferralModal({
               </select>
             </div>
 
-            <div className="max-h-64 overflow-y-auto rounded-lg border border-gray-200">
+            <div className="max-h-64 overflow-y-auto rounded-lg border border-gray-200 dark:border-slate-800">
               {candidates.length === 0 ? (
-                <p className="p-6 text-center text-sm text-gray-500">No doctors match your filters.</p>
+                <p className="p-6 text-center text-sm text-gray-500 dark:text-slate-400">No doctors match your filters.</p>
               ) : (
-                <ul className="divide-y divide-gray-100">
+                <ul className="divide-y divide-gray-100 dark:divide-slate-800">
                   {candidates.map((d) => {
                     const isSelected = d.id === selectedId;
                     return (
@@ -186,7 +186,7 @@ export default function ReferralModal({
                           type="button"
                           onClick={() => setSelectedId(d.id)}
                           className={`flex w-full items-center gap-3 p-3 text-left transition-colors ${
-                            isSelected ? "bg-primary-50" : "hover:bg-gray-50"
+                            isSelected ? "bg-primary-50" : "hover:bg-gray-50 dark:bg-slate-900"
                           }`}
                         >
                           <div
@@ -195,14 +195,14 @@ export default function ReferralModal({
                             {d.initials}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-semibold text-gray-900">{d.name}</p>
-                            <p className="truncate text-xs text-gray-500">
+                            <p className="truncate text-sm font-semibold text-gray-900 dark:text-slate-100">{d.name}</p>
+                            <p className="truncate text-xs text-gray-500 dark:text-slate-400">
                               {d.specialty} · {d.city} · {d.experience}y exp
                             </p>
                           </div>
                           <span
                             className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                              isSelected ? "bg-primary-600 text-white" : "bg-gray-100 text-gray-600"
+                              isSelected ? "bg-primary-600 text-white" : "bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300"
                             }`}
                           >
                             {isSelected ? "Selected" : "Select"}
@@ -223,27 +223,27 @@ export default function ReferralModal({
 
           {/* Step 2 — details */}
           <div className="mb-5">
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
               2 · Reason & notes
             </label>
             <input
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Reason for referral (e.g. specialist opinion on ECG abnormality)"
-              className="mb-3 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+              className="mb-3 w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
             />
             <textarea
               value={clinicalNotes}
               onChange={(e) => setClinicalNotes(e.target.value)}
               rows={4}
               placeholder="Clinical summary, relevant history, medications, investigations (visible to the receiving doctor)"
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+              className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
           {/* Step 3 — urgency */}
           <div className="mb-5">
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
               3 · Urgency
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -259,7 +259,7 @@ export default function ReferralModal({
                         : u === "urgent"
                         ? "border-amber-500 bg-amber-50 text-amber-700"
                         : "border-primary-500 bg-primary-50 text-primary-700"
-                      : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                      : "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
                   }`}
                 >
                   {u}
@@ -273,10 +273,10 @@ export default function ReferralModal({
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t border-gray-100 bg-gray-50 p-4">
+        <div className="flex items-center justify-end gap-2 border-t border-gray-100 bg-gray-50 dark:bg-slate-900 p-4">
           <button
             onClick={onClose}
-            className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+            className="rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:bg-slate-800"
           >
             Cancel
           </button>

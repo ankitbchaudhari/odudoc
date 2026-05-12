@@ -149,11 +149,11 @@ export default function DictationRecorder({ context, onResult }: DictationRecord
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="text-base font-semibold text-gray-900">Dictate findings & prescription</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">Dictate findings & prescription</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
             Record a short voice note; Gemini transcribes it and auto-fills the Rx form.
           </p>
         </div>
@@ -189,8 +189,8 @@ export default function DictationRecorder({ context, onResult }: DictationRecord
           </button>
         )}
         {uploading && (
-          <span className="inline-flex items-center gap-2 text-sm text-gray-500">
-            <span className="h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-primary-500" />
+          <span className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400">
+            <span className="h-3 w-3 animate-spin rounded-full border-2 border-gray-300 dark:border-slate-700 border-t-primary-500" />
             Sending to Gemini…
           </span>
         )}
@@ -199,11 +199,11 @@ export default function DictationRecorder({ context, onResult }: DictationRecord
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {transcript && (
-        <div className="mt-4 rounded-lg border border-gray-100 bg-gray-50 p-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+        <div className="mt-4 rounded-lg border border-gray-100 bg-gray-50 dark:bg-slate-900 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
             Transcript
           </p>
-          <p className="mt-1 whitespace-pre-wrap text-sm text-gray-800">{transcript}</p>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-gray-800 dark:text-slate-200">{transcript}</p>
         </div>
       )}
     </div>

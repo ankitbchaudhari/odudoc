@@ -84,22 +84,22 @@ export default async function ComparePage(
       {/* Comparison table */}
       <section className="py-14">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">Side by side</h2>
-          <div className="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Side by side</h2>
+          <div className="mt-6 overflow-hidden rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                <tr className="bg-gray-50 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-slate-300">
                   <th className="px-4 py-3">Factor</th>
                   <th className="px-4 py-3">{c.a}</th>
                   <th className="px-4 py-3">{c.b}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
                 {c.rows.map((r) => (
                   <tr key={r.label} className="align-top">
-                    <td className="px-4 py-3 font-medium text-gray-900">{r.label}</td>
-                    <td className="px-4 py-3 text-gray-700">{r.a}</td>
-                    <td className="px-4 py-3 text-gray-700">{r.b}</td>
+                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-slate-100">{r.label}</td>
+                    <td className="px-4 py-3 text-gray-700 dark:text-slate-300">{r.a}</td>
+                    <td className="px-4 py-3 text-gray-700 dark:text-slate-300">{r.b}</td>
                   </tr>
                 ))}
               </tbody>
@@ -109,13 +109,13 @@ export default async function ComparePage(
       </section>
 
       {/* When to choose */}
-      <section className="bg-gray-50 py-14">
+      <section className="bg-gray-50 dark:bg-slate-900 py-14">
         <div className="mx-auto grid max-w-5xl gap-6 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-          <div className="rounded-2xl border border-primary-200 bg-white p-6">
+          <div className="rounded-2xl border border-primary-200 bg-white dark:bg-slate-900 p-6">
             <h3 className="text-lg font-bold text-primary-800">
               Choose {c.a} when
             </h3>
-            <ul className="mt-4 space-y-2 text-sm text-gray-700">
+            <ul className="mt-4 space-y-2 text-sm text-gray-700 dark:text-slate-300">
               {c.whenToChoose.a.map((x) => (
                 <li key={x} className="flex items-start gap-2">
                   <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-primary-500" />
@@ -124,11 +124,11 @@ export default async function ComparePage(
               ))}
             </ul>
           </div>
-          <div className="rounded-2xl border border-indigo-200 bg-white p-6">
+          <div className="rounded-2xl border border-indigo-200 bg-white dark:bg-slate-900 p-6">
             <h3 className="text-lg font-bold text-indigo-800">
               Choose {c.b} when
             </h3>
-            <ul className="mt-4 space-y-2 text-sm text-gray-700">
+            <ul className="mt-4 space-y-2 text-sm text-gray-700 dark:text-slate-300">
               {c.whenToChoose.b.map((x) => (
                 <li key={x} className="flex items-start gap-2">
                   <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-indigo-500" />
@@ -143,8 +143,8 @@ export default async function ComparePage(
       {/* Verdict */}
       <section className="py-14">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">The verdict</h2>
-          <p className="mt-4 text-base leading-relaxed text-gray-700">{c.verdict}</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">The verdict</h2>
+          <p className="mt-4 text-base leading-relaxed text-gray-700 dark:text-slate-300">{c.verdict}</p>
 
           <div className="mt-8 flex flex-wrap gap-3">
             {/* Always-on booking CTA with deep-link context so /consult can
@@ -159,7 +159,7 @@ export default async function ComparePage(
               <Link
                 key={l.href}
                 href={l.href}
-                className="inline-flex items-center gap-2 rounded-xl border-2 border-primary-200 bg-white px-5 py-2.5 text-sm font-semibold text-primary-700 hover:bg-primary-50"
+                className="inline-flex items-center gap-2 rounded-xl border-2 border-primary-200 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-primary-700 hover:bg-primary-50"
               >
                 {l.label} →
               </Link>
@@ -170,20 +170,20 @@ export default async function ComparePage(
 
       {/* Related compares */}
       {related.length > 0 && (
-        <section className="bg-gray-50 py-14">
+        <section className="bg-gray-50 dark:bg-slate-900 py-14">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-gray-900">Related comparisons</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Related comparisons</h2>
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {related.map((r) => (
                 <Link
                   key={r.slug}
                   href={`/compare/${r.slug}`}
-                  className="group rounded-2xl border border-gray-200 bg-white p-6 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:shadow-lg"
+                  className="group rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:shadow-lg"
                 >
-                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary-700">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 group-hover:text-primary-700">
                     {r.a} vs {r.b}
                   </h3>
-                  <p className="mt-2 text-sm text-gray-600">{r.tagline}</p>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-slate-300">{r.tagline}</p>
                 </Link>
               ))}
             </div>
@@ -194,13 +194,13 @@ export default async function ComparePage(
       {/* All compares fallback */}
       <section className="py-14">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">Browse all comparisons</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Browse all comparisons</h2>
           <div className="mt-6 flex flex-wrap gap-2">
             {COMPARES.filter((x) => x.slug !== c.slug).map((x) => (
               <Link
                 key={x.slug}
                 href={`/compare/${x.slug}`}
-                className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:border-primary-400 hover:text-primary-700"
+                className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-1.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:border-primary-400 hover:text-primary-700"
               >
                 {x.a} vs {x.b}
               </Link>

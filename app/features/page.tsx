@@ -169,13 +169,13 @@ export default function FeaturesPage() {
         {/* Hero */}
         <header className="mb-16 text-center">
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-indigo-700">The OduDoc platform</p>
-          <h1 className="mt-3 text-4xl font-extrabold leading-tight text-slate-900 sm:text-6xl">
+          <h1 className="mt-3 text-4xl font-extrabold leading-tight text-slate-900 dark:text-slate-100 sm:text-6xl">
             One stack for the<br />
             <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent">
               entire healthcare ecosystem
             </span>
           </h1>
-          <p className="mx-auto mt-5 max-w-3xl text-lg text-slate-600">
+          <p className="mx-auto mt-5 max-w-3xl text-lg text-slate-600 dark:text-slate-300">
             Patients book + track care. Doctors consult + prescribe with AI assist. Hospitals run wards, OT, and billing.
             Labs, pharmacies, pharma, insurers, education partners plug into the same registry.
           </p>
@@ -183,7 +183,7 @@ export default function FeaturesPage() {
             <Link href="/auth/register" className="rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-600/30 transition-transform hover:-translate-y-0.5">
               Get started — free for patients
             </Link>
-            <Link href="/corporate" className="rounded-xl border-2 border-indigo-200 bg-white px-6 py-3 text-sm font-bold text-indigo-700">
+            <Link href="/corporate" className="rounded-xl border-2 border-indigo-200 bg-white dark:bg-slate-900 px-6 py-3 text-sm font-bold text-indigo-700">
               For hospitals + corporates
             </Link>
             <Link href="/verify-medicine" className="rounded-xl bg-emerald-50 px-6 py-3 text-sm font-bold text-emerald-700 ring-1 ring-emerald-200">
@@ -201,12 +201,12 @@ export default function FeaturesPage() {
         </header>
 
         {/* Audience tabs (anchors) */}
-        <nav className="mb-10 flex flex-wrap justify-center gap-2 sticky top-2 z-10 bg-white/80 p-2 rounded-full shadow-sm ring-1 ring-slate-200 backdrop-blur">
+        <nav className="mb-10 flex flex-wrap justify-center gap-2 sticky top-2 z-10 bg-white/80 p-2 rounded-full shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 backdrop-blur">
           {GROUPS.map((g) => (
             <a
               key={g.audience}
               href={`#${g.audience.toLowerCase().replace(/\s+/g, "-")}`}
-              className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-indigo-50 hover:ring-indigo-300"
+              className="inline-flex items-center gap-1.5 rounded-full bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-indigo-50 hover:ring-indigo-300"
             >
               <span>{g.emoji}</span>{g.audience}
             </a>
@@ -220,10 +220,10 @@ export default function FeaturesPage() {
               <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest text-indigo-700">{g.emoji} For {g.audience}</p>
-                  <h2 className="mt-1 text-3xl font-extrabold text-slate-900 sm:text-4xl">{g.audience}</h2>
-                  <p className="mt-1 text-sm text-slate-600">{g.blurb}</p>
+                  <h2 className="mt-1 text-3xl font-extrabold text-slate-900 dark:text-slate-100 sm:text-4xl">{g.audience}</h2>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{g.blurb}</p>
                 </div>
-                <p className="text-xs text-slate-500">{g.features.length} features</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{g.features.length} features</p>
               </header>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {g.features.map((f) => (
@@ -261,7 +261,7 @@ export default function FeaturesPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link href="/auth/register" className="rounded-xl bg-white px-6 py-3 text-sm font-bold text-emerald-700 shadow-md">
+              <Link href="/auth/register" className="rounded-xl bg-white dark:bg-slate-900 px-6 py-3 text-sm font-bold text-emerald-700 shadow-md">
                 Patient signup
               </Link>
               <Link href="/corporate" className="rounded-xl border-2 border-white/40 bg-white/10 px-6 py-3 text-sm font-bold text-white backdrop-blur">
@@ -277,9 +277,9 @@ export default function FeaturesPage() {
 
 function Stat({ n, label }: { n: string; label: string }) {
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-      <p className="text-3xl font-extrabold text-slate-900">{n}</p>
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">{label}</p>
+    <div className="rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+      <p className="text-3xl font-extrabold text-slate-900 dark:text-slate-100">{n}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">{label}</p>
     </div>
   );
 }
@@ -293,16 +293,16 @@ function FeatureCard({ feature }: { feature: FeatureGroup["features"][number] })
     Compliance: "bg-sky-100 text-sky-800",
   };
   const inner = (
-    <article className="group h-full rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-indigo-300">
+    <article className="group h-full rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-indigo-300">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-base font-bold text-slate-900">{feature.title}</p>
+        <p className="text-base font-bold text-slate-900 dark:text-slate-100">{feature.title}</p>
         {feature.tag && (
-          <span className={`flex-none rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${tagClass[feature.tag] || "bg-slate-100 text-slate-700"}`}>
+          <span className={`flex-none rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${tagClass[feature.tag] || "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"}`}>
             {feature.tag}
           </span>
         )}
       </div>
-      <p className="mt-1.5 text-sm text-slate-600">{feature.body}</p>
+      <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-300">{feature.body}</p>
       {feature.href && (
         <p className="mt-3 text-xs font-semibold text-indigo-600 group-hover:underline">Open →</p>
       )}

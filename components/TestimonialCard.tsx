@@ -17,7 +17,7 @@ export default function TestimonialCard({ t }: { t: Testimonial }) {
             </svg>
           ))}
         </div>
-        <p className="text-sm leading-relaxed text-gray-600">&ldquo;{t.text}&rdquo;</p>
+        <p className="text-sm leading-relaxed text-gray-600 dark:text-slate-300">&ldquo;{t.text}&rdquo;</p>
       </div>
 
       {/* Author */}
@@ -26,8 +26,8 @@ export default function TestimonialCard({ t }: { t: Testimonial }) {
           {t.initials}
         </div>
         <div>
-          <p className="text-sm font-semibold text-gray-900">{t.name}</p>
-          <p className="text-xs text-gray-400">
+          <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">{t.name}</p>
+          <p className="text-xs text-gray-400 dark:text-slate-500">
             {t.location} &middot; {t.doctor}
           </p>
         </div>

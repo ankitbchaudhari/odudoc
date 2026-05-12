@@ -66,13 +66,13 @@ export default function WorkingProcess() {
           <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary-100 to-teal-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-primary-700">
             Simple Process
           </span>
-          <h2 className="mt-4 text-3xl font-bold text-gray-900 md:text-5xl">
+          <h2 className="mt-4 text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-5xl">
             How It{" "}
             <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-emerald-500 bg-clip-text text-transparent">
               Works
             </span>
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-gray-500">
+          <p className="mx-auto mt-3 max-w-2xl text-gray-500 dark:text-slate-400">
             Getting quality healthcare has never been easier. Follow these simple steps.
           </p>
         </div>
@@ -95,7 +95,7 @@ export default function WorkingProcess() {
                     {step.icon}
                   </div>
                   <span
-                    className={`absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm font-bold shadow-md ring-2 ${step.ring}`}
+                    className={`absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-slate-900 text-sm font-bold shadow-md ring-2 ${step.ring}`}
                   >
                     <span className={`bg-gradient-to-br ${step.gradient} bg-clip-text text-transparent`}>
                       {step.number}
@@ -103,8 +103,8 @@ export default function WorkingProcess() {
                   </span>
                 </div>
 
-                <h3 className="mb-2 text-lg font-bold text-gray-900">{step.title}</h3>
-                <p className="max-w-xs text-sm leading-relaxed text-gray-500">
+                <h3 className="mb-2 text-lg font-bold text-gray-900 dark:text-slate-100">{step.title}</h3>
+                <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-slate-400">
                   {step.description}
                 </p>
               </div>

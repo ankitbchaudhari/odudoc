@@ -114,7 +114,7 @@ export default function PublicPayPage({
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="animate-pulse text-slate-400">Loading invoice…</div>
       </div>
     );
@@ -122,10 +122,10 @@ export default function PublicPayPage({
 
   if (!invoice) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
-        <div className="rounded-3xl bg-white p-8 text-center shadow">
-          <p className="text-sm text-slate-700">{error || "Invoice not found."}</p>
-          <p className="mt-1 text-xs text-slate-500">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900 p-4">
+        <div className="rounded-3xl bg-white dark:bg-slate-900 p-8 text-center shadow">
+          <p className="text-sm text-slate-700 dark:text-slate-300">{error || "Invoice not found."}</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             If you got this link by mistake, please contact your clinic.
           </p>
         </div>
@@ -136,7 +136,7 @@ export default function PublicPayPage({
   const isPaid = invoice.status === "paid";
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 py-10">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 py-10">
       <div className="pointer-events-none absolute inset-0 -z-0">
         <div className="absolute -top-40 left-1/2 h-[420px] w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-br from-indigo-200/40 via-violet-200/40 to-fuchsia-200/40 blur-3xl" />
       </div>
@@ -178,47 +178,47 @@ export default function PublicPayPage({
           <div className="px-6 py-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   Bill to
                 </p>
-                <p className="mt-0.5 text-sm font-bold text-slate-900">
+                <p className="mt-0.5 text-sm font-bold text-slate-900 dark:text-slate-100">
                   {patientName || "Patient"}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   Issued
                 </p>
-                <p className="mt-0.5 text-sm font-medium text-slate-700">
+                <p className="mt-0.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                   {invoice.issueDate}
                 </p>
                 {invoice.dueDate && (
-                  <p className="text-[11px] text-slate-500">Due {invoice.dueDate}</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Due {invoice.dueDate}</p>
                 )}
               </div>
             </div>
 
             <div className="mt-5 overflow-hidden rounded-2xl border border-slate-100">
               <table className="w-full text-sm">
-                <thead className="bg-slate-50">
-                  <tr className="text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                <thead className="bg-slate-50 dark:bg-slate-900">
+                  <tr className="text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     <th className="px-4 py-2">Description</th>
                     <th className="px-2 py-2 text-center">Qty</th>
                     <th className="px-2 py-2 text-right">Unit</th>
                     <th className="px-4 py-2 text-right">Amount</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {invoice.lineItems.map((li, i) => (
                     <tr key={i}>
-                      <td className="px-4 py-2.5 text-slate-800">{li.description}</td>
-                      <td className="px-2 py-2.5 text-center tabular-nums text-slate-700">
+                      <td className="px-4 py-2.5 text-slate-800 dark:text-slate-200">{li.description}</td>
+                      <td className="px-2 py-2.5 text-center tabular-nums text-slate-700 dark:text-slate-300">
                         {li.quantity}
                       </td>
-                      <td className="px-2 py-2.5 text-right tabular-nums text-slate-700">
+                      <td className="px-2 py-2.5 text-right tabular-nums text-slate-700 dark:text-slate-300">
                         {invoice.currency} {li.unitPrice.toFixed(2)}
                       </td>
-                      <td className="px-4 py-2.5 text-right tabular-nums font-medium text-slate-900">
+                      <td className="px-4 py-2.5 text-right tabular-nums font-medium text-slate-900 dark:text-slate-100">
                         {invoice.currency} {(li.quantity * li.unitPrice).toFixed(2)}
                       </td>
                     </tr>
@@ -228,21 +228,21 @@ export default function PublicPayPage({
             </div>
 
             <div className="mt-4 ml-auto w-full max-w-xs space-y-1.5 text-sm">
-              <div className="flex items-center justify-between text-slate-600">
+              <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                 <span>Subtotal</span>
                 <span className="tabular-nums">
                   {invoice.currency} {invoice.subtotal.toFixed(2)}
                 </span>
               </div>
               {invoice.taxAmount ? (
-                <div className="flex items-center justify-between text-slate-600">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                   <span>Tax{invoice.taxRate ? ` (${invoice.taxRate}%)` : ""}</span>
                   <span className="tabular-nums">
                     {invoice.currency} {invoice.taxAmount.toFixed(2)}
                   </span>
                 </div>
               ) : null}
-              <div className="border-t border-slate-200 pt-1.5 flex items-center justify-between text-base font-bold text-slate-900">
+              <div className="border-t border-slate-200 dark:border-slate-800 pt-1.5 flex items-center justify-between text-base font-bold text-slate-900 dark:text-slate-100">
                 <span>Total</span>
                 <span className="tabular-nums">
                   {invoice.currency} {invoice.total.toFixed(2)}
@@ -251,8 +251,8 @@ export default function PublicPayPage({
             </div>
 
             {invoice.notes && (
-              <div className="mt-5 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-slate-700">
-                <p className="mb-0.5 font-semibold uppercase tracking-wide text-slate-500">
+              <div className="mt-5 rounded-xl border border-slate-100 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-xs text-slate-700 dark:text-slate-300">
+                <p className="mb-0.5 font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   Note
                 </p>
                 {invoice.notes}
@@ -263,7 +263,7 @@ export default function PublicPayPage({
           {!isPaid && (
             <div className="border-t border-slate-100 bg-slate-50/40 px-6 py-5">
               <label className="block">
-                <span className="mb-1 block text-xs font-semibold text-slate-700">
+                <span className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Email for receipt (optional)
                 </span>
                 <input
@@ -271,7 +271,7 @@ export default function PublicPayPage({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15"
                 />
               </label>
               <button
@@ -291,7 +291,7 @@ export default function PublicPayPage({
                   </>
                 )}
               </button>
-              <p className="mt-3 text-center text-[11px] text-slate-500">
+              <p className="mt-3 text-center text-[11px] text-slate-500 dark:text-slate-400">
                 Payments are processed by Stripe. Your card details never touch our servers.
               </p>
             </div>

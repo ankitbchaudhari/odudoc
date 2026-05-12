@@ -113,15 +113,15 @@ export default function TriageChatbot({ doctorName, doctorSpecialty }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
-          <p className="text-sm font-bold text-slate-900">Quick symptom check</p>
+          <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Quick symptom check</p>
           <button onClick={() => { setOpen(false); reset(); }} className="text-slate-400">✕</button>
         </div>
 
         {step === 1 && (
           <div>
-            <p className="mb-2 text-xs text-slate-500">In 1-2 sentences, what&apos;s bothering you?</p>
+            <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">In 1-2 sentences, what&apos;s bothering you?</p>
             <textarea
               autoFocus
               rows={3}
@@ -138,12 +138,12 @@ export default function TriageChatbot({ doctorName, doctorSpecialty }: Props) {
 
         {step === 2 && (
           <div>
-            <p className="mb-2 text-sm text-slate-700">How severe?</p>
-            <p className="mb-3 text-xs text-slate-500">1 = barely noticeable, 5 = worst it&apos;s ever been</p>
+            <p className="mb-2 text-sm text-slate-700 dark:text-slate-300">How severe?</p>
+            <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">1 = barely noticeable, 5 = worst it&apos;s ever been</p>
             <input type="range" min={1} max={5} value={severity} onChange={(e) => setSeverity(Number(e.target.value))} className="w-full accent-indigo-500" />
             <p className="mt-2 text-center text-3xl font-extrabold text-indigo-700">{severity}</p>
             <div className="mt-4 flex justify-between">
-              <button onClick={() => setStep(1)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Back</button>
+              <button onClick={() => setStep(1)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Back</button>
               <button onClick={() => setStep(3)} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white">Next</button>
             </div>
           </div>
@@ -151,7 +151,7 @@ export default function TriageChatbot({ doctorName, doctorSpecialty }: Props) {
 
         {step === 3 && (
           <div>
-            <p className="mb-3 text-sm text-slate-700">How long has this been going on?</p>
+            <p className="mb-3 text-sm text-slate-700 dark:text-slate-300">How long has this been going on?</p>
             <div className="grid grid-cols-2 gap-2">
               {[
                 { label: "Today", v: 1 }, { label: "2-3 days", v: 3 },
@@ -159,13 +159,13 @@ export default function TriageChatbot({ doctorName, doctorSpecialty }: Props) {
                 { label: "1-2 months", v: 60 }, { label: "More than 3 months", v: 100 },
               ].map((o) => (
                 <button key={o.label} onClick={() => setDuration(o.v)}
-                  className={`rounded-lg border-2 p-2 text-sm ${duration === o.v ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-slate-200"}`}>
+                  className={`rounded-lg border-2 p-2 text-sm ${duration === o.v ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-slate-200 dark:border-slate-800"}`}>
                   {o.label}
                 </button>
               ))}
             </div>
             <div className="mt-4 flex justify-between">
-              <button onClick={() => setStep(2)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Back</button>
+              <button onClick={() => setStep(2)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Back</button>
               <button onClick={proceedToFollowUps} disabled={duration === undefined || busy} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{busy ? "…" : "Next"}</button>
             </div>
           </div>
@@ -173,17 +173,17 @@ export default function TriageChatbot({ doctorName, doctorSpecialty }: Props) {
 
         {step === 4 && (
           <div>
-            <p className="mb-3 text-sm text-slate-700">Anything else applies?</p>
+            <p className="mb-3 text-sm text-slate-700 dark:text-slate-300">Anything else applies?</p>
             {followUps.length === 0 ? (
-              <p className="rounded-md bg-slate-50 p-3 text-xs text-slate-500">We don&apos;t have follow-up questions for this. Continue.</p>
+              <p className="rounded-md bg-slate-50 dark:bg-slate-900 p-3 text-xs text-slate-500 dark:text-slate-400">We don&apos;t have follow-up questions for this. Continue.</p>
             ) : (
               followUps.map((q) => (
                 <div key={q.id} className="mb-3">
-                  <p className="mb-1 text-xs font-semibold text-slate-600">{q.prompt}</p>
+                  <p className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-300">{q.prompt}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {q.options.map((o) => (
                       <button key={o.value} onClick={() => toggleMod(o.value)}
-                        className={`rounded-full border px-3 py-1 text-xs ${modifiers.has(o.value) ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-slate-300 bg-white text-slate-600"}`}>
+                        className={`rounded-full border px-3 py-1 text-xs ${modifiers.has(o.value) ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-slate-300 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}>
                         {o.label}
                       </button>
                     ))}
@@ -192,7 +192,7 @@ export default function TriageChatbot({ doctorName, doctorSpecialty }: Props) {
               ))
             )}
             <div className="mt-4 flex justify-between">
-              <button onClick={() => setStep(3)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Back</button>
+              <button onClick={() => setStep(3)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Back</button>
               <button onClick={submit} disabled={busy} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{busy ? "Analysing…" : "Get recommendation"}</button>
             </div>
           </div>
@@ -219,18 +219,18 @@ export default function TriageChatbot({ doctorName, doctorSpecialty }: Props) {
               </p>
             )}
 
-            <div className="mt-3 rounded-md bg-slate-50 p-3 text-xs">
+            <div className="mt-3 rounded-md bg-slate-50 dark:bg-slate-900 p-3 text-xs">
               <div className="mb-1 flex items-center justify-between">
-                <p className="font-semibold text-slate-700">Pre-visit note (copy to booking)</p>
+                <p className="font-semibold text-slate-700 dark:text-slate-300">Pre-visit note (copy to booking)</p>
                 <button onClick={() => navigator.clipboard?.writeText(result.preVisitNote)} className="text-[11px] font-semibold text-indigo-600">Copy</button>
               </div>
-              <pre className="whitespace-pre-wrap font-mono text-[11px] text-slate-600">{result.preVisitNote}</pre>
+              <pre className="whitespace-pre-wrap font-mono text-[11px] text-slate-600 dark:text-slate-300">{result.preVisitNote}</pre>
             </div>
 
             <p className="mt-3 text-[10px] text-slate-400">Confidence {Math.round(result.confidence * 100)}%. This is a guidance tool, not a diagnosis. If unsure, see a doctor in person.</p>
 
             <div className="mt-4 flex justify-end gap-2">
-              <button onClick={reset} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">Start over</button>
+              <button onClick={reset} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Start over</button>
               <button onClick={() => { setOpen(false); reset(); }} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white">Done</button>
             </div>
           </div>

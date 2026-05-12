@@ -28,10 +28,10 @@ export default function SymptomsIndexPage() {
 
       <section className="bg-gradient-to-br from-primary-50 via-white to-teal-50 py-16">
         <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-extrabold text-gray-900 md:text-5xl">
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 md:text-5xl">
             Symptoms <span className="text-primary-600">A–Z</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600 dark:text-slate-300">
             Quick, evidence-based guides for the most common reasons people book
             a doctor — with red flags, self-care, and one-tap booking.
           </p>
@@ -45,12 +45,12 @@ export default function SymptomsIndexPage() {
               <Link
                 key={s.slug}
                 href={`/symptoms/${s.slug}`}
-                className="group rounded-2xl border border-gray-200 bg-white p-6 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:shadow-lg"
+                className="group rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:shadow-lg"
               >
-                <h2 className="text-xl font-bold text-gray-900 group-hover:text-primary-700">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100 group-hover:text-primary-700">
                   {s.name}
                 </h2>
-                <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                <p className="mt-2 text-sm text-gray-600 dark:text-slate-300 leading-relaxed">
                   {s.tagline}
                 </p>
               </Link>

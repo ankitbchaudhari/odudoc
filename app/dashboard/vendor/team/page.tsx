@@ -178,7 +178,7 @@ export default function VendorTeamPage() {
                       {s.email} ·{" "}
                       <StatusPill status={s.status} />
                     </p>
-                    <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500">
+                    <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500 dark:text-slate-400">
                       {s.storeIds.length === 0
                         ? "All stores"
                         : s.storeIds

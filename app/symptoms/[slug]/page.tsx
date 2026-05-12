@@ -89,7 +89,7 @@ export default async function SymptomPage(
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/consult"
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-primary-700 shadow-lg hover:scale-105 transition-transform"
+              className="inline-flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-primary-700 shadow-lg hover:scale-105 transition-transform"
             >
               Book a consultation
             </Link>
@@ -141,9 +141,9 @@ export default async function SymptomPage(
 
       {/* Related specialties */}
       {relatedSpecialties.length > 0 && (
-        <section className="bg-gray-50 py-14">
+        <section className="bg-gray-50 dark:bg-slate-900 py-14">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
               Which specialist treats {s.name.toLowerCase()}?
             </h2>
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -151,12 +151,12 @@ export default async function SymptomPage(
                 <Link
                   key={sp.slug}
                   href={`/specialty/${sp.slug}`}
-                  className="group rounded-2xl border border-gray-200 bg-white p-6 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:shadow-lg"
+                  className="group rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:shadow-lg"
                 >
-                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary-700">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 group-hover:text-primary-700">
                     {sp.displayName}
                   </h3>
-                  <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                  <p className="mt-2 text-sm text-gray-600 dark:text-slate-300 leading-relaxed">
                     {sp.tagline}
                   </p>
                 </Link>
@@ -171,19 +171,19 @@ export default async function SymptomPage(
       {/* FAQ */}
       <section className="py-14">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
             {s.name} — FAQ
           </h2>
           <div className="mt-6 space-y-4">
             {s.faqs.map((f) => (
               <details
                 key={f.q}
-                className="group rounded-xl border border-gray-200 bg-white p-5 open:bg-primary-50/30"
+                className="group rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 open:bg-primary-50/30"
               >
-                <summary className="cursor-pointer list-none text-base font-semibold text-gray-900">
+                <summary className="cursor-pointer list-none text-base font-semibold text-gray-900 dark:text-slate-100">
                   {f.q}
                 </summary>
-                <p className="mt-3 text-sm text-gray-600 leading-relaxed">{f.a}</p>
+                <p className="mt-3 text-sm text-gray-600 dark:text-slate-300 leading-relaxed">{f.a}</p>
               </details>
             ))}
           </div>
@@ -191,21 +191,21 @@ export default async function SymptomPage(
       </section>
 
       {/* Other symptoms */}
-      <section className="bg-gray-50 py-14">
+      <section className="bg-gray-50 dark:bg-slate-900 py-14">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">Other symptoms</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Other symptoms</h2>
           <div className="mt-6 flex flex-wrap gap-2">
             {SYMPTOMS.filter((x) => x.slug !== s.slug).map((x) => (
               <Link
                 key={x.slug}
                 href={`/symptoms/${x.slug}`}
-                className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:border-primary-400 hover:text-primary-700"
+                className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-1.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:border-primary-400 hover:text-primary-700"
               >
                 {x.name}
               </Link>
             ))}
           </div>
-          <p className="mt-8 text-xs text-gray-500 leading-relaxed">
+          <p className="mt-8 text-xs text-gray-500 dark:text-slate-400 leading-relaxed">
             This page is general information, not medical advice for any specific
             person. If in doubt, book a consultation or seek emergency care.
           </p>

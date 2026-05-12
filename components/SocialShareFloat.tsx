@@ -71,7 +71,7 @@ export default function SocialShareFloat({ url, title }: SocialShareFloatProps) 
           target="_blank"
           rel="noopener noreferrer"
           title={`Share on ${s.name}`}
-          className={`flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-600 shadow-md transition-all duration-200 hover:scale-110 ${s.color}`}
+          className={`flex h-9 w-9 items-center justify-center rounded-full bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 shadow-md transition-all duration-200 hover:scale-110 ${s.color}`}
         >
           {s.icon}
         </a>

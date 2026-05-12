@@ -211,7 +211,7 @@ export default function PaymentsPage() {
                         ${booking.fee.toFixed(2)}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
+                    <p className="mt-1 text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">
                       {new Date(booking.createdAt).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",

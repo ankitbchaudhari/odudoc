@@ -51,7 +51,7 @@ export default function LocaleSwitcher({ className = "" }: { className?: string 
     <select
       value={locale}
       onChange={(e) => change(e.target.value as Locale)}
-      className={`rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700 ${className}`}
+      className={`rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-2 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 ${className}`}
     >
       {LOCALES.map((l) => (
         <option key={l.id} value={l.id}>{l.nativeLabel}</option>

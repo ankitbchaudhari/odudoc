@@ -77,9 +77,9 @@ export default function VendorOrdersPage() {
         {err && <p className="mb-4 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">{err}</p>}
 
         {loading ? (
-          <div className="rounded-2xl bg-white dark:bg-slate-900 p-12 text-center text-sm text-gray-400 dark:text-slate-500 shadow-sm">Loading…</div>
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-12 text-center text-sm text-gray-400 dark:text-slate-500 dark:text-slate-400 shadow-sm">Loading…</div>
         ) : orders.length === 0 ? (
-          <div className="rounded-2xl bg-white dark:bg-slate-900 p-12 text-center text-sm text-gray-400 dark:text-slate-500 shadow-sm">
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-12 text-center text-sm text-gray-400 dark:text-slate-500 dark:text-slate-400 shadow-sm">
             No orders in this view yet.
           </div>
         ) : (
@@ -103,8 +103,8 @@ export default function VendorOrdersPage() {
                       }
                       label={o.orderStatus}
                     />
-                    <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">Placed {new Date(o.createdAt).toLocaleDateString()}</p>
-                    <p className="mt-0.5 text-xs text-gray-400 dark:text-slate-500">Payment: {o.paymentStatus}</p>
+                    <p className="mt-1 text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">Placed {new Date(o.createdAt).toLocaleDateString()}</p>
+                    <p className="mt-0.5 text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">Payment: {o.paymentStatus}</p>
                   </div>
                 </div>
 

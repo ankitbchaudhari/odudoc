@@ -169,7 +169,7 @@ export default async function SpecialtyInCityPage(
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/consult"
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-primary-700 shadow-lg hover:scale-105 transition-transform"
+              className="inline-flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-primary-700 shadow-lg hover:scale-105 transition-transform"
             >
               Book a consultation
             </Link>
@@ -186,7 +186,7 @@ export default async function SpecialtyInCityPage(
       {/* Why an online {specialty} from {city} */}
       <section className="py-12">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
             Why {c.displayName} patients use OduDoc for {s.displayName.toLowerCase()} visits
           </h2>
           <div className="mt-6 grid gap-5 md:grid-cols-3">
@@ -209,11 +209,11 @@ export default async function SpecialtyInCityPage(
             ].map((b) => (
               <div
                 key={b.title}
-                className="rounded-2xl border border-gray-200 bg-white p-6"
+                className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6"
               >
                 <div className="text-3xl">{b.icon}</div>
-                <h3 className="mt-3 text-base font-bold text-gray-900">{b.title}</h3>
-                <p className="mt-1 text-sm text-gray-600">{b.desc}</p>
+                <h3 className="mt-3 text-base font-bold text-gray-900 dark:text-slate-100">{b.title}</h3>
+                <p className="mt-1 text-sm text-gray-600 dark:text-slate-300">{b.desc}</p>
               </div>
             ))}
           </div>
@@ -221,13 +221,13 @@ export default async function SpecialtyInCityPage(
       </section>
 
       {/* Conditions */}
-      <section className="bg-gray-50 py-12">
+      <section className="bg-gray-50 dark:bg-slate-900 py-12">
         <div className="mx-auto grid max-w-5xl gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
               What {s.displayName}s on OduDoc treat
             </h2>
-            <ul className="mt-4 space-y-2 text-gray-700">
+            <ul className="mt-4 space-y-2 text-gray-700 dark:text-slate-300">
               {s.conditions.map((cond) => (
                 <li key={cond} className="flex items-start gap-2">
                   <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-primary-500" />
@@ -237,20 +237,20 @@ export default async function SpecialtyInCityPage(
             </ul>
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
               Common search terms in {c.displayName}
             </h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {s.symptoms.map((sym) => (
                 <span
                   key={sym}
-                  className="rounded-full border border-gray-200 bg-white px-3 py-1 text-sm text-gray-700"
+                  className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1 text-sm text-gray-700 dark:text-slate-300"
                 >
                   {sym}
                 </span>
               ))}
             </div>
-            <p className="mt-6 text-sm text-gray-500 leading-relaxed">
+            <p className="mt-6 text-sm text-gray-500 dark:text-slate-400 leading-relaxed">
               Every {s.displayName.toLowerCase()} listed here consults over video — the physical location of the doctor rarely matters for telemedicine, but we surface doctors with {c.displayName} context first.
             </p>
           </div>
@@ -261,7 +261,7 @@ export default async function SpecialtyInCityPage(
       {doctorsToShow.length > 0 && (
         <section className="py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
               {inCitySpecialists.length > 0
                 ? `${s.displayName}s for ${c.displayName} patients`
                 : `${s.displayName}s available online`}
@@ -276,21 +276,21 @@ export default async function SpecialtyInCityPage(
       )}
 
       {/* FAQ */}
-      <section className="bg-gray-50 py-12">
+      <section className="bg-gray-50 dark:bg-slate-900 py-12">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
             {s.displayName} consultation in {c.displayName} — FAQ
           </h2>
           <div className="mt-6 space-y-4">
             {faqs.slice(0, 6).map((f) => (
               <details
                 key={f.q}
-                className="group rounded-xl border border-gray-200 bg-white p-5 open:bg-primary-50/30"
+                className="group rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 open:bg-primary-50/30"
               >
-                <summary className="cursor-pointer list-none text-base font-semibold text-gray-900">
+                <summary className="cursor-pointer list-none text-base font-semibold text-gray-900 dark:text-slate-100">
                   {f.q}
                 </summary>
-                <p className="mt-3 text-sm text-gray-600 leading-relaxed">{f.a}</p>
+                <p className="mt-3 text-sm text-gray-600 dark:text-slate-300 leading-relaxed">{f.a}</p>
               </details>
             ))}
           </div>
@@ -300,7 +300,7 @@ export default async function SpecialtyInCityPage(
       {/* Cross-link: same specialty, other cities */}
       <section className="py-12">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
             {s.displayName} consultations in other cities
           </h2>
           <div className="mt-6 flex flex-wrap gap-2">
@@ -308,7 +308,7 @@ export default async function SpecialtyInCityPage(
               <Link
                 key={x.slug}
                 href={`/specialty/${s.slug}/in/${x.slug}`}
-                className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm text-gray-700 hover:border-primary-400 hover:text-primary-700"
+                className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-1.5 text-sm text-gray-700 dark:text-slate-300 hover:border-primary-400 hover:text-primary-700"
               >
                 {s.displayName} in {x.displayName}
               </Link>
@@ -318,9 +318,9 @@ export default async function SpecialtyInCityPage(
       </section>
 
       {/* Cross-link: other specialties, same city */}
-      <section className="bg-gray-50 py-12">
+      <section className="bg-gray-50 dark:bg-slate-900 py-12">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
             Other specialists in {c.displayName}
           </h2>
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
@@ -328,7 +328,7 @@ export default async function SpecialtyInCityPage(
               <Link
                 key={x.slug}
                 href={`/specialty/${x.slug}/in/${c.slug}`}
-                className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:border-primary-400 hover:text-primary-700"
+                className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm font-medium text-gray-700 dark:text-slate-300 transition-colors hover:border-primary-400 hover:text-primary-700"
               >
                 {x.displayName} in {c.displayName}
               </Link>

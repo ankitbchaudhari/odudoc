@@ -13,7 +13,7 @@ export default function DoctorCard({ doctor, hidePhoto = false }: { doctor: Doct
   });
 
   return (
-    <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+    <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       {/* Photo — full-bleed top section */}
       <Link href={`/doctors/${doctor.id}`} className="relative block">
         <div className={`relative aspect-[4/5] w-full overflow-hidden ${doctor.imageColor}`}>
@@ -25,7 +25,7 @@ export default function DoctorCard({ doctor, hidePhoto = false }: { doctor: Doct
               </div>
               <Link
                 href={`/auth/login?callbackUrl=/consult`}
-                className="absolute inset-x-3 bottom-12 flex items-center justify-center gap-1.5 rounded-lg bg-white/95 px-3 py-1.5 text-[11px] font-semibold text-primary-700 shadow-sm backdrop-blur-sm transition-colors hover:bg-white"
+                className="absolute inset-x-3 bottom-12 flex items-center justify-center gap-1.5 rounded-lg bg-white/95 px-3 py-1.5 text-[11px] font-semibold text-primary-700 shadow-sm backdrop-blur-sm transition-colors hover:bg-white dark:bg-slate-900"
                 onClick={(e) => e.stopPropagation()}
               >
                 <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -81,22 +81,22 @@ export default function DoctorCard({ doctor, hidePhoto = false }: { doctor: Doct
             </span>
           )}
         </Link>
-        <p className="mt-0.5 text-xs text-gray-400 line-clamp-1">{doctor.qualifications}</p>
+        <p className="mt-0.5 text-xs text-gray-400 dark:text-slate-500 line-clamp-1">{doctor.qualifications}</p>
 
         {/* Presence */}
         <div className="mt-2 flex">
           <DoctorPresenceBadge doctorId={doctor.id} />
         </div>
 
-        <div className="mt-3 flex items-center gap-1 text-sm text-gray-600">
+        <div className="mt-3 flex items-center gap-1 text-sm text-gray-600 dark:text-slate-300">
           <svg className="h-4 w-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
           <span className="font-medium">{doctor.rating}</span>
-          <span className="text-gray-400">({doctor.reviewCount})</span>
+          <span className="text-gray-400 dark:text-slate-500">({doctor.reviewCount})</span>
         </div>
 
-        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-slate-400">
           <span>{doctor.experience} yrs exp</span>
           <span>•</span>
           <span>{doctor.city}</span>
@@ -104,8 +104,8 @@ export default function DoctorCard({ doctor, hidePhoto = false }: { doctor: Doct
 
         {/* Price + Actions */}
         <div className="mt-auto w-full border-t border-gray-100 pt-4">
-          <p className="text-xs text-gray-400">Consultation fee</p>
-          <p className="text-xl font-bold text-gray-900">${doctor.fee}</p>
+          <p className="text-xs text-gray-400 dark:text-slate-500">Consultation fee</p>
+          <p className="text-xl font-bold text-gray-900 dark:text-slate-100">${doctor.fee}</p>
           <div className="mt-3 flex flex-col gap-2">
             <Link
               href={`/doctors/${doctor.id}`}

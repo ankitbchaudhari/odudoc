@@ -127,7 +127,7 @@ export default function RxSafetyPanel({
       : "bg-emerald-500 text-white";
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
       <div className={`flex items-center justify-between rounded-t-xl px-4 py-2 ${headerColor}`}>
         <div className="flex items-center gap-2">
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -151,7 +151,7 @@ export default function RxSafetyPanel({
         </div>
       </div>
       {result.warnings.length > 0 && (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-slate-100 dark:divide-slate-800">
           {result.warnings.map((w, i) => {
             const open = expanded.has(i);
             return (
@@ -184,7 +184,7 @@ export default function RxSafetyPanel({
                     <p>
                       <strong>Recommendation:</strong> {w.recommendation}
                     </p>
-                    {w.source && <p className="text-slate-500">Source: {w.source}</p>}
+                    {w.source && <p className="text-slate-500 dark:text-slate-400">Source: {w.source}</p>}
                   </div>
                 )}
               </li>

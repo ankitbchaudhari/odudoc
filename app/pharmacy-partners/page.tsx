@@ -103,13 +103,13 @@ export default function PharmacyPartnersPage() {
                 </span>
                 Pharmacy partner program · India
               </div>
-              <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+              <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-slate-900 dark:text-slate-100 sm:text-5xl lg:text-6xl">
                 Your pharmacy on{" "}
                 <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-primary-600 bg-clip-text text-transparent">
                   OduDoc
                 </span>
               </h1>
-              <p className="mt-5 max-w-xl text-lg text-slate-600">
+              <p className="mt-5 max-w-xl text-lg text-slate-600 dark:text-slate-300">
                 Receive doctor e-prescriptions in real time, fulfil online medicine orders, and stay anti-counterfeit compliant — from one beautiful dashboard. Free to list, 4% on online sales, ₹0 on walk-in Rx.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -124,12 +124,12 @@ export default function PharmacyPartnersPage() {
                 </Link>
                 <Link
                   href="/contact?topic=pharmacy"
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md"
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-50 dark:bg-slate-900 hover:shadow-md"
                 >
                   Talk to partnerships
                 </Link>
               </div>
-              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-500">
+              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-500 dark:text-slate-400">
                 <span className="inline-flex items-center gap-1.5">
                   <span className="text-emerald-600">✓</span> Same-day approval
                 </span>
@@ -144,11 +144,11 @@ export default function PharmacyPartnersPage() {
             {/* Mock dashboard preview */}
             <div className="relative">
               <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-emerald-200/50 to-primary-200/50 blur-2xl" />
-              <div className="relative rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+              <div className="relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xl">
                 <div className="mb-4 flex items-center justify-between">
                   <div>
                     <p className="text-[11px] font-bold uppercase tracking-widest text-emerald-600">Today</p>
-                    <p className="text-2xl font-extrabold text-slate-900">₹ 84,210</p>
+                    <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">₹ 84,210</p>
                   </div>
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">↑ 18%</span>
                 </div>
@@ -158,19 +158,19 @@ export default function PharmacyPartnersPage() {
                     { l: "Orders", v: "47", tone: "bg-gradient-to-br from-sky-50 to-indigo-50 text-sky-700" },
                     { l: "Walk-ins", v: "112", tone: "bg-gradient-to-br from-amber-50 to-orange-50 text-amber-700" },
                   ].map((s) => (
-                    <div key={s.l} className={`rounded-xl ${s.tone} p-3 ring-1 ring-slate-200/60`}>
+                    <div key={s.l} className={`rounded-xl ${s.tone} p-3 ring-1 ring-slate-200 dark:ring-slate-800/60`}>
                       <p className="text-[10px] font-semibold uppercase tracking-wider opacity-70">{s.l}</p>
                       <p className="mt-1 text-xl font-extrabold">{s.v}</p>
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+                <div className="mt-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 p-3">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-semibold text-slate-600">⏱ New e-prescription · 2 min ago</span>
+                    <span className="font-semibold text-slate-600 dark:text-slate-300">⏱ New e-prescription · 2 min ago</span>
                     <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-bold text-emerald-700">Ready</span>
                   </div>
-                  <p className="mt-1 text-sm font-semibold text-slate-800">Dr. Sharma — Paracetamol 500 × 10</p>
-                  <p className="text-[11px] text-slate-500">Patient: Ananya R · Pickup · ₹ 42</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-200">Dr. Sharma — Paracetamol 500 × 10</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Patient: Ananya R · Pickup · ₹ 42</p>
                 </div>
               </div>
             </div>
@@ -182,10 +182,10 @@ export default function PharmacyPartnersPage() {
       <section className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
         <div className="mb-12 text-center">
           <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-emerald-700">Everything in one console</p>
-          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
             Built for the way pharmacies actually run
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-slate-600">
+          <p className="mx-auto mt-3 max-w-2xl text-slate-600 dark:text-slate-300">
             E-prescriptions, online orders, inventory, billing, and compliance — without juggling four apps and a WhatsApp group.
           </p>
         </div>
@@ -196,8 +196,8 @@ export default function PharmacyPartnersPage() {
               className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${b.tone} p-6 ring-1 transition-all hover:-translate-y-1 hover:shadow-lg`}
             >
               <div className="mb-3 text-3xl">{b.icon}</div>
-              <h3 className="text-base font-bold text-slate-900">{b.title}</h3>
-              <p className="mt-1.5 text-sm text-slate-700/90">{b.body}</p>
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">{b.title}</h3>
+              <p className="mt-1.5 text-sm text-slate-700 dark:text-slate-300/90">{b.body}</p>
             </div>
           ))}
         </div>
@@ -208,16 +208,16 @@ export default function PharmacyPartnersPage() {
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10 text-center">
             <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-emerald-700">3 steps · 24 hours</p>
-            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">From sign-up to first sale</h2>
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">From sign-up to first sale</h2>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {STEPS.map((s) => (
-              <div key={s.n} className="relative rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div key={s.n} className="relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
                 <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-primary-600 text-base font-extrabold text-white shadow-md">
                   {s.n}
                 </div>
-                <h3 className="text-lg font-bold text-slate-900">{s.title}</h3>
-                <p className="mt-1.5 text-sm text-slate-600">{s.body}</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{s.title}</h3>
+                <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-300">{s.body}</p>
               </div>
             ))}
           </div>
@@ -228,16 +228,16 @@ export default function PharmacyPartnersPage() {
       <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
         <div className="mb-10 text-center">
           <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-emerald-700">FAQs</p>
-          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Common questions</h2>
+          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">Common questions</h2>
         </div>
         <div className="space-y-3">
           {FAQS.map((f) => (
-            <details key={f.q} className="group rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-emerald-300 hover:shadow-sm">
-              <summary className="flex cursor-pointer items-center justify-between text-base font-semibold text-slate-900">
+            <details key={f.q} className="group rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 transition-all hover:border-emerald-300 hover:shadow-sm">
+              <summary className="flex cursor-pointer items-center justify-between text-base font-semibold text-slate-900 dark:text-slate-100">
                 {f.q}
                 <span className="text-emerald-600 transition-transform group-open:rotate-45">+</span>
               </summary>
-              <p className="mt-2.5 text-sm text-slate-600">{f.a}</p>
+              <p className="mt-2.5 text-sm text-slate-600 dark:text-slate-300">{f.a}</p>
             </details>
           ))}
         </div>
@@ -259,7 +259,7 @@ export default function PharmacyPartnersPage() {
               <div className="flex flex-wrap gap-3">
                 <Link
                   href="/auth/register?role=pharmacy"
-                  className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-emerald-700 shadow-md transition-transform hover:-translate-y-0.5"
+                  className="inline-flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 px-5 py-3 text-sm font-bold text-emerald-700 shadow-md transition-transform hover:-translate-y-0.5"
                 >
                   💊 List my pharmacy
                 </Link>

@@ -100,7 +100,7 @@ export default async function CityPage(
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/consult"
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-primary-700 shadow-lg hover:scale-105 transition-transform"
+              className="inline-flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-primary-700 shadow-lg hover:scale-105 transition-transform"
             >
               Book now
             </Link>
@@ -117,7 +117,7 @@ export default async function CityPage(
       {cityDoctors.length > 0 && (
         <section className="py-14">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
               Doctors available in {c.displayName}
             </h2>
             <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -129,12 +129,12 @@ export default async function CityPage(
         </section>
       )}
 
-      <section className="bg-gray-50 py-14">
+      <section className="bg-gray-50 dark:bg-slate-900 py-14">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
             Find a specialist in {c.displayName}
           </h2>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-gray-600 dark:text-slate-300">
             Most OduDoc specialists offer video consultations nationwide, so you
             can book any of these even if no one is listed specifically in {c.displayName}.
           </p>
@@ -143,7 +143,7 @@ export default async function CityPage(
               <Link
                 key={s.slug}
                 href={`/specialty/${s.slug}/in/${c.slug}`}
-                className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:border-primary-400 hover:text-primary-700"
+                className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm font-medium text-gray-700 dark:text-slate-300 transition-colors hover:border-primary-400 hover:text-primary-700"
               >
                 {s.displayName} in {c.displayName}
               </Link>
@@ -154,13 +154,13 @@ export default async function CityPage(
 
       <section className="py-14">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">Other cities</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Other cities</h2>
           <div className="mt-6 flex flex-wrap gap-2">
             {CITIES.filter((x) => x.slug !== c.slug).map((x) => (
               <Link
                 key={x.slug}
                 href={`/doctors-in/${x.slug}`}
-                className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm text-gray-700 hover:border-primary-400 hover:text-primary-700"
+                className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-1.5 text-sm text-gray-700 dark:text-slate-300 hover:border-primary-400 hover:text-primary-700"
               >
                 {x.displayName}
               </Link>

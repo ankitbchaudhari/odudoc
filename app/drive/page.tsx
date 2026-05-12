@@ -32,7 +32,7 @@ const storagePlans = [
 
 export default function DrivePage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Hero */}
       <section className="bg-gradient-to-br from-blue-800 to-blue-900 py-20 text-white">
         <div className="mx-auto max-w-5xl px-4 text-center">
@@ -46,7 +46,7 @@ export default function DrivePage() {
           <p className="mt-4 text-lg text-blue-200">
             HIPAA-compliant cloud storage for medical records. Store, organize, and share patient files securely.
           </p>
-          <Link href="/for-doctors/register" className="mt-8 inline-block rounded-xl bg-white px-8 py-3 text-sm font-semibold text-blue-700 shadow-lg hover:bg-gray-50">
+          <Link href="/for-doctors/register" className="mt-8 inline-block rounded-xl bg-white dark:bg-slate-900 px-8 py-3 text-sm font-semibold text-blue-700 shadow-lg hover:bg-gray-50 dark:bg-slate-900">
             Get 5 GB Free
           </Link>
         </div>
@@ -55,7 +55,7 @@ export default function DrivePage() {
       {/* Features */}
       <section className="py-16">
         <div className="mx-auto max-w-6xl px-4">
-          <h2 className="mb-10 text-center text-2xl font-bold text-gray-900">Built for Healthcare</h2>
+          <h2 className="mb-10 text-center text-2xl font-bold text-gray-900 dark:text-slate-100">Built for Healthcare</h2>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
               <div key={f.title} className="rounded-2xl border border-gray-100 p-6 transition-shadow hover:shadow-md">
@@ -64,8 +64,8 @@ export default function DrivePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={f.icon} />
                   </svg>
                 </div>
-                <h3 className="mb-2 font-bold text-gray-900">{f.title}</h3>
-                <p className="text-sm leading-relaxed text-gray-600">{f.desc}</p>
+                <h3 className="mb-2 font-bold text-gray-900 dark:text-slate-100">{f.title}</h3>
+                <p className="text-sm leading-relaxed text-gray-600 dark:text-slate-300">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -73,18 +73,18 @@ export default function DrivePage() {
       </section>
 
       {/* Pricing */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-gray-50 dark:bg-slate-900 py-16">
         <div className="mx-auto max-w-5xl px-4">
-          <h2 className="mb-10 text-center text-2xl font-bold text-gray-900">Storage Plans</h2>
+          <h2 className="mb-10 text-center text-2xl font-bold text-gray-900 dark:text-slate-100">Storage Plans</h2>
           <div className="grid gap-6 md:grid-cols-3">
             {storagePlans.map((p, i) => (
-              <div key={p.name} className={`rounded-2xl border-2 p-6 ${i === 1 ? "border-blue-500 bg-white shadow-lg" : "border-gray-100 bg-white"}`}>
-                <h3 className="text-lg font-bold text-gray-900">{p.name}</h3>
+              <div key={p.name} className={`rounded-2xl border-2 p-6 ${i === 1 ? "border-blue-500 bg-white dark:bg-slate-900 shadow-lg" : "border-gray-100 bg-white dark:bg-slate-900"}`}>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">{p.name}</h3>
                 <p className="mt-1 text-sm text-blue-600 font-semibold">{p.storage}</p>
-                <p className="mt-2 mb-6 text-2xl font-bold text-gray-900">{p.price}</p>
+                <p className="mt-2 mb-6 text-2xl font-bold text-gray-900 dark:text-slate-100">{p.price}</p>
                 <ul className="mb-6 space-y-2">
                   {p.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-gray-700">
+                    <li key={f} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
                       <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
@@ -92,7 +92,7 @@ export default function DrivePage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/for-doctors/register" className={`block rounded-lg py-2.5 text-center text-sm font-semibold ${i === 1 ? "bg-blue-600 text-white hover:bg-blue-700" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}>
+                <Link href="/for-doctors/register" className={`block rounded-lg py-2.5 text-center text-sm font-semibold ${i === 1 ? "bg-blue-600 text-white hover:bg-blue-700" : "border border-gray-200 dark:border-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"}`}>
                   Get Started
                 </Link>
               </div>

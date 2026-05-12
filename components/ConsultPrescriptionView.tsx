@@ -53,23 +53,23 @@ export default function ConsultPrescriptionView({ rx, showPharmacyOptions = true
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm print:border-0 print:shadow-none">
+      <div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-sm print:border-0 print:shadow-none">
         {/* Header */}
         <div className="border-b-2 border-primary-600 pb-4 text-center">
           <h2 className="text-xl font-bold text-primary-600">{CLINIC_NAME}</h2>
-          <p className="mt-1 text-sm text-gray-600">{rx.doctorName}</p>
-          <p className="text-xs text-gray-400">{rx.specialty}</p>
+          <p className="mt-1 text-sm text-gray-600 dark:text-slate-300">{rx.doctorName}</p>
+          <p className="text-xs text-gray-400 dark:text-slate-500">{rx.specialty}</p>
         </div>
 
         {/* Patient + date */}
         <div className="mt-4 grid grid-cols-2 gap-4 border-b border-gray-100 pb-4 text-sm">
           <div>
-            <p className="text-xs font-medium uppercase text-gray-400">Patient</p>
-            <p className="font-semibold text-gray-900">{rx.patientName || "—"}</p>
+            <p className="text-xs font-medium uppercase text-gray-400 dark:text-slate-500">Patient</p>
+            <p className="font-semibold text-gray-900 dark:text-slate-100">{rx.patientName || "—"}</p>
           </div>
           <div className="text-right">
-            <p className="text-xs font-medium uppercase text-gray-400">Date</p>
-            <p className="font-semibold text-gray-900">
+            <p className="text-xs font-medium uppercase text-gray-400 dark:text-slate-500">Date</p>
+            <p className="font-semibold text-gray-900 dark:text-slate-100">
               {new Date(rx.issuedAt).toLocaleDateString(undefined, {
                 year: "numeric",
                 month: "long",
@@ -84,20 +84,20 @@ export default function ConsultPrescriptionView({ rx, showPharmacyOptions = true
           <div className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
             {rx.symptoms && (
               <div>
-                <p className="text-xs font-semibold uppercase text-gray-400">
+                <p className="text-xs font-semibold uppercase text-gray-400 dark:text-slate-500">
                   Symptoms
                 </p>
-                <p className="mt-1 whitespace-pre-wrap text-gray-700">
+                <p className="mt-1 whitespace-pre-wrap text-gray-700 dark:text-slate-300">
                   {rx.symptoms}
                 </p>
               </div>
             )}
             {rx.diagnosis && (
               <div>
-                <p className="text-xs font-semibold uppercase text-gray-400">
+                <p className="text-xs font-semibold uppercase text-gray-400 dark:text-slate-500">
                   Diagnosis
                 </p>
-                <p className="mt-1 whitespace-pre-wrap text-gray-700">
+                <p className="mt-1 whitespace-pre-wrap text-gray-700 dark:text-slate-300">
                   {rx.diagnosis}
                 </p>
               </div>
@@ -110,20 +110,20 @@ export default function ConsultPrescriptionView({ rx, showPharmacyOptions = true
           <div className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
             {rx.treatment && (
               <div>
-                <p className="text-xs font-semibold uppercase text-gray-400">
+                <p className="text-xs font-semibold uppercase text-gray-400 dark:text-slate-500">
                   Treatment
                 </p>
-                <p className="mt-1 whitespace-pre-wrap text-gray-700">
+                <p className="mt-1 whitespace-pre-wrap text-gray-700 dark:text-slate-300">
                   {rx.treatment}
                 </p>
               </div>
             )}
             {rx.investigations && (
               <div>
-                <p className="text-xs font-semibold uppercase text-gray-400">
+                <p className="text-xs font-semibold uppercase text-gray-400 dark:text-slate-500">
                   Investigations
                 </p>
-                <p className="mt-1 whitespace-pre-wrap text-gray-700">
+                <p className="mt-1 whitespace-pre-wrap text-gray-700 dark:text-slate-300">
                   {rx.investigations}
                 </p>
               </div>
@@ -133,17 +133,17 @@ export default function ConsultPrescriptionView({ rx, showPharmacyOptions = true
 
         {/* Medicines */}
         <div className="mt-6">
-          <h3 className="mb-3 text-sm font-semibold text-gray-900">
+          <h3 className="mb-3 text-sm font-semibold text-gray-900 dark:text-slate-100">
             Medicines
           </h3>
           {rx.medicines.length === 0 ? (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-slate-400">
               No medicines prescribed for this consultation.
             </p>
           ) : (
-            <div className="overflow-hidden rounded-lg border border-gray-200">
+            <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
+                <thead className="bg-gray-50 dark:bg-slate-900 text-left text-xs uppercase text-gray-500 dark:text-slate-400">
                   <tr>
                     <th className="px-3 py-2">Medicine</th>
                     <th className="px-3 py-2">Dose</th>
@@ -151,17 +151,17 @@ export default function ConsultPrescriptionView({ rx, showPharmacyOptions = true
                     <th className="px-3 py-2">Duration</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
                   {rx.medicines.map((m, i) => (
                     <tr key={i}>
-                      <td className="px-3 py-2 font-medium text-gray-900">
+                      <td className="px-3 py-2 font-medium text-gray-900 dark:text-slate-100">
                         {m.name}
                       </td>
-                      <td className="px-3 py-2 text-gray-600">{m.dose || "—"}</td>
-                      <td className="px-3 py-2 text-gray-600">
+                      <td className="px-3 py-2 text-gray-600 dark:text-slate-300">{m.dose || "—"}</td>
+                      <td className="px-3 py-2 text-gray-600 dark:text-slate-300">
                         {m.frequency || "—"}
                       </td>
-                      <td className="px-3 py-2 text-gray-600">
+                      <td className="px-3 py-2 text-gray-600 dark:text-slate-300">
                         {m.duration || "—"}
                       </td>
                     </tr>
@@ -184,23 +184,23 @@ export default function ConsultPrescriptionView({ rx, showPharmacyOptions = true
 
         {/* Signature */}
         <div className="mt-8 flex items-end justify-between border-t border-gray-100 pt-4">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-400 dark:text-slate-500">
             Digitally issued via OduDoc video consultation.
           </p>
           <div className="text-right">
-            <p className="font-medium text-gray-900">{rx.doctorName}</p>
-            <p className="text-xs text-gray-500">Digital Signature</p>
+            <p className="font-medium text-gray-900 dark:text-slate-100">{rx.doctorName}</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400">Digital Signature</p>
           </div>
         </div>
       </div>
 
       {/* Pharmacy choice */}
       {showPharmacyOptions && rx.medicines.length > 0 && (
-        <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm print:hidden">
-          <h3 className="text-base font-semibold text-gray-900">
+        <div className="mt-6 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm print:hidden">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">
             How would you like to get your medicines?
           </h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
             Choose a pharmacy to fill this prescription.
           </p>
 
@@ -211,14 +211,14 @@ export default function ConsultPrescriptionView({ rx, showPharmacyOptions = true
               className={`rounded-xl border-2 p-4 text-left transition-all ${
                 choice === "odudoc"
                   ? "border-primary-600 bg-primary-50"
-                  : "border-gray-200 hover:border-primary-300 hover:bg-gray-50"
+                  : "border-gray-200 dark:border-slate-800 hover:border-primary-300 hover:bg-gray-50 dark:bg-slate-900"
               }`}
             >
               <div className="flex items-center gap-3">
                 <span className="text-2xl">🏥</span>
                 <div>
-                  <p className="font-semibold text-gray-900">OduDoc Pharmacy</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="font-semibold text-gray-900 dark:text-slate-100">OduDoc Pharmacy</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">
                     Home delivery · auto-matched to your Rx
                   </p>
                 </div>
@@ -231,14 +231,14 @@ export default function ConsultPrescriptionView({ rx, showPharmacyOptions = true
               className={`rounded-xl border-2 p-4 text-left transition-all ${
                 choice === "offline"
                   ? "border-primary-600 bg-primary-50"
-                  : "border-gray-200 hover:border-primary-300 hover:bg-gray-50"
+                  : "border-gray-200 dark:border-slate-800 hover:border-primary-300 hover:bg-gray-50 dark:bg-slate-900"
               }`}
             >
               <div className="flex items-center gap-3">
                 <span className="text-2xl">🏪</span>
                 <div>
-                  <p className="font-semibold text-gray-900">Offline Pharmacy</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="font-semibold text-gray-900 dark:text-slate-100">Offline Pharmacy</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">
                     Print or save Rx and take it to your local pharmacy
                   </p>
                 </div>
@@ -256,7 +256,7 @@ export default function ConsultPrescriptionView({ rx, showPharmacyOptions = true
                 </p>
                 <Link
                   href={shopHref}
-                  className="mt-3 inline-flex items-center gap-2 rounded-lg border border-primary-600 bg-white px-4 py-2 text-sm font-semibold text-primary-700 shadow-sm hover:bg-primary-50"
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg border border-primary-600 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-primary-700 shadow-sm hover:bg-primary-50"
                 >
                   Browse catalog →
                 </Link>
@@ -285,8 +285,8 @@ export default function ConsultPrescriptionView({ rx, showPharmacyOptions = true
           )}
 
           {choice === "offline" && (
-            <div className="mt-5 rounded-lg border border-gray-200 bg-gray-50 p-4">
-              <p className="text-sm text-gray-700">
+            <div className="mt-5 rounded-lg border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 p-4">
+              <p className="text-sm text-gray-700 dark:text-slate-300">
                 No problem — print or save this prescription and take it to any
                 licensed pharmacy. Keep a digital copy for your records.
               </p>

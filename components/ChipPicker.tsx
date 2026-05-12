@@ -92,13 +92,13 @@ export default function ChipPicker({
       </button>
 
       {open && (
-        <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-2">
+        <div className="mt-2 rounded-lg border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 p-2">
           {showSearch && (
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search…"
-              className="mb-2 w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-400"
+              className="mb-2 w-full rounded-md border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 py-1 text-xs outline-none focus:border-indigo-400"
             />
           )}
           <div
@@ -116,7 +116,7 @@ export default function ChipPicker({
                     className={`rounded-full border px-2.5 py-1 text-[11px] transition ${
                       on
                         ? "border-indigo-600 bg-indigo-600 text-white shadow-sm"
-                        : "border-gray-300 bg-white text-gray-700 hover:border-indigo-400 hover:text-indigo-700"
+                        : "border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 hover:border-indigo-400 hover:text-indigo-700"
                     }`}
                   >
                     {on ? "✓ " : "+ "}
@@ -125,13 +125,13 @@ export default function ChipPicker({
                 );
               })}
               {filtered.length === 0 && (
-                <p className="px-2 py-1 text-[11px] text-gray-500">
+                <p className="px-2 py-1 text-[11px] text-gray-500 dark:text-slate-400">
                   No matches.
                 </p>
               )}
             </div>
           </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-gray-500">
+          <div className="mt-2 flex items-center justify-between text-[11px] text-gray-500 dark:text-slate-400">
             <span>{selected.size} selected</span>
             {selected.size > 0 && (
               <button

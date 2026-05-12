@@ -230,7 +230,7 @@ export default function DoctorDashboardPage() {
               </div>
               <p className="mt-4 text-3xl font-bold text-gray-900 dark:text-slate-100">{s.value}</p>
               <p className="text-sm text-gray-500 dark:text-slate-400">{s.label}</p>
-              <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">{s.sub}</p>
+              <p className="mt-1 text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">{s.sub}</p>
             </Link>
           ))}
         </div>
@@ -455,7 +455,7 @@ function EmptyState({ emoji, label, sub }: { emoji: string; label: string; sub?:
     <div className="py-10 text-center">
       <div className="text-4xl">{emoji}</div>
       <p className="mt-2 text-sm font-medium text-gray-500 dark:text-slate-400">{label}</p>
-      {sub && <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">{sub}</p>}
+      {sub && <p className="mt-1 text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">{sub}</p>}
     </div>
   );
 }

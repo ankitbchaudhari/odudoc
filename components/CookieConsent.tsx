@@ -23,7 +23,7 @@ export default function CookieConsent() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-40 translate-y-0 bg-white shadow-2xl transition-transform duration-500"
+      className="fixed bottom-0 left-0 right-0 z-40 translate-y-0 bg-white dark:bg-slate-900 shadow-2xl transition-transform duration-500"
       style={{ animation: "slideUp 0.5s ease-out" }}
     >
       <style jsx>{`
@@ -37,7 +37,7 @@ export default function CookieConsent() {
         }
       `}</style>
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 py-4 sm:flex-row sm:px-6 lg:px-8">
-        <p className="flex-1 text-sm text-gray-600">
+        <p className="flex-1 text-sm text-gray-600 dark:text-slate-300">
           We use cookies to improve your experience on our website. By continuing to browse, you
           agree to our use of cookies.{" "}
           <Link href="/privacy" className="font-medium text-primary-600 underline hover:text-primary-700">

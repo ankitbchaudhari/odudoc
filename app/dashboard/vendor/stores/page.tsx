@@ -484,7 +484,7 @@ function StoreCard({
           <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
             {store.addressLine} · {store.city} · {store.pincode}
           </p>
-          <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500">
+          <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500 dark:text-slate-400">
             {store.lat.toFixed(4)}, {store.lng.toFixed(4)}
             {store.hours ? ` · ${store.hours}` : ""}
           </p>

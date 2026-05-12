@@ -11,14 +11,14 @@ const treatments = [
 
 export default function ResultsPage() {
   return (
-    <div className="bg-gray-50 py-16">
+    <div className="bg-gray-50 dark:bg-slate-900 py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Hero */}
         <div className="text-center">
-          <h1 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 md:text-4xl">
             Treatment <span className="text-primary-600">Results</span>
           </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-gray-500">
+          <p className="mx-auto mt-3 max-w-2xl text-gray-500 dark:text-slate-400">
             See the real results our patients have experienced. Drag the slider to compare before and after treatment outcomes.
           </p>
         </div>
@@ -26,13 +26,13 @@ export default function ResultsPage() {
         {/* Grid */}
         <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {treatments.map((t) => (
-            <div key={t.name} className="rounded-xl bg-white p-5 shadow-md">
+            <div key={t.name} className="rounded-xl bg-white dark:bg-slate-900 p-5 shadow-md">
               <BeforeAfterSlider
                 beforeColor={t.beforeColor}
                 afterColor={t.afterColor}
                 treatmentName={t.name}
               />
-              <p className="mt-2 text-center text-xs text-gray-500">{t.description}</p>
+              <p className="mt-2 text-center text-xs text-gray-500 dark:text-slate-400">{t.description}</p>
             </div>
           ))}
         </div>
@@ -46,7 +46,7 @@ export default function ResultsPage() {
             </p>
             <a
               href="/doctors"
-              className="mt-6 inline-block rounded-lg bg-white px-6 py-3 text-sm font-semibold text-primary-600 shadow-lg transition-transform hover:scale-105"
+              className="mt-6 inline-block rounded-lg bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-primary-600 shadow-lg transition-transform hover:scale-105"
             >
               Find a Doctor
             </a>

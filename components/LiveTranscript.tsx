@@ -226,7 +226,7 @@ export default function LiveTranscript({ roomId, enabled, selfRole }: LiveTransc
           <header className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <div>
               <p className="text-sm font-semibold">Live transcript</p>
-              <p className="text-[11px] text-gray-400">
+              <p className="text-[11px] text-gray-400 dark:text-slate-500">
                 {supported ? "Web Speech API · English" : "Receive-only on this browser"}
               </p>
             </div>
@@ -245,7 +245,7 @@ export default function LiveTranscript({ roomId, enabled, selfRole }: LiveTransc
           </header>
           <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3 text-sm">
             {fragments.length === 0 ? (
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-400 dark:text-slate-500">
                 Transcript will appear here as you and {selfRole === "doctor" ? "the patient" : "the doctor"} speak.
               </p>
             ) : (
@@ -261,7 +261,7 @@ export default function LiveTranscript({ roomId, enabled, selfRole }: LiveTransc
               ))
             )}
           </div>
-          <footer className="border-t border-white/10 px-4 py-2 text-[11px] text-gray-400">
+          <footer className="border-t border-white/10 px-4 py-2 text-[11px] text-gray-400 dark:text-slate-500">
             Transcripts are for clinical notes. Dictate full findings after
             the call using the Dictation panel.
           </footer>

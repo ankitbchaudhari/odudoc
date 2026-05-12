@@ -56,7 +56,7 @@ export default function DoctorReferralsPage() {
         <div className="mb-6 flex items-start gap-3">
           <Link
             href="/dashboard/doctor"
-            className="rounded-lg p-2 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
+            className="rounded-lg p-2 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -154,26 +154,26 @@ function ReferralCard({
             {r.patientPhone ? ` · ${r.patientPhone}` : ""}
           </p>
         </div>
-        <p className="text-xs text-gray-400 dark:text-slate-500">
+        <p className="text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">
           {new Date(r.createdAt).toLocaleString()}
         </p>
       </div>
 
       <div className="mt-3 grid gap-2 text-xs text-gray-600 dark:text-slate-300 sm:grid-cols-2">
         <div className="rounded-lg bg-gray-50 dark:bg-slate-900 p-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">From</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500 dark:text-slate-400">From</p>
           <p className="mt-0.5 font-medium text-gray-900 dark:text-slate-100">{r.fromDoctorName}</p>
           <p className="text-gray-500 dark:text-slate-400">{r.fromSpecialty}</p>
         </div>
         <div className="rounded-lg bg-gray-50 dark:bg-slate-900 p-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">To</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500 dark:text-slate-400">To</p>
           <p className="mt-0.5 font-medium text-gray-900 dark:text-slate-100">{r.toDoctorName}</p>
           <p className="text-gray-500 dark:text-slate-400">{r.toSpecialty}</p>
         </div>
       </div>
 
       <div className="mt-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500 dark:text-slate-400">
           Reason
         </p>
         <p className="mt-0.5 text-sm text-gray-800 dark:text-slate-200">{r.reason}</p>
@@ -181,7 +181,7 @@ function ReferralCard({
 
       {r.clinicalNotes && (
         <div className="mt-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500 dark:text-slate-400">
             Clinical notes
           </p>
           <p className="mt-0.5 whitespace-pre-wrap text-sm text-gray-700 dark:text-slate-300">{r.clinicalNotes}</p>

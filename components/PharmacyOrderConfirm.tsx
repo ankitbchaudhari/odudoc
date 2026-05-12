@@ -164,14 +164,14 @@ export default function PharmacyOrderConfirm({ draft, onCancel }: Props) {
         </div>
 
         {order.fulfillment === "pickup" && (
-          <div className="mt-5 rounded-lg bg-white p-4 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+          <div className="mt-5 rounded-lg bg-white dark:bg-slate-900 p-4 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
               Show this PIN at the counter
             </p>
-            <p className="mt-1 font-mono text-4xl font-bold tracking-widest text-gray-900">
+            <p className="mt-1 font-mono text-4xl font-bold tracking-widest text-gray-900 dark:text-slate-100">
               {order.pickupPin}
             </p>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
               Staff will ask for it before handing over the medicines.
             </p>
           </div>
@@ -192,14 +192,14 @@ export default function PharmacyOrderConfirm({ draft, onCancel }: Props) {
           <div className="mt-4 flex gap-2">
             <button
               onClick={() => refresh(order.id)}
-              className="rounded-md border border-emerald-300 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
+              className="rounded-md border border-emerald-300 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
             >
               Refresh status
             </button>
             {order.status === "placed" && (
               <button
                 onClick={cancelOrder}
-                className="rounded-md border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50"
+                className="rounded-md border border-red-200 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50"
               >
                 Cancel order
               </button>
@@ -218,15 +218,15 @@ export default function PharmacyOrderConfirm({ draft, onCancel }: Props) {
           <p className="text-xs font-semibold uppercase tracking-wider text-primary-700">
             Confirm your order
           </p>
-          <p className="mt-1 font-semibold text-gray-900">{draft.store.name}</p>
-          <p className="text-xs text-gray-600">
+          <p className="mt-1 font-semibold text-gray-900 dark:text-slate-100">{draft.store.name}</p>
+          <p className="text-xs text-gray-600 dark:text-slate-300">
             {draft.store.addressLine} · {draft.store.city}
             {draft.store.distanceKm > 0 && ` · ${draft.store.distanceKm.toFixed(1)} km`}
           </p>
         </div>
         <button
           onClick={onCancel}
-          className="text-xs font-semibold text-gray-500 hover:underline"
+          className="text-xs font-semibold text-gray-500 dark:text-slate-400 hover:underline"
         >
           Choose a different store
         </button>
@@ -237,18 +237,18 @@ export default function PharmacyOrderConfirm({ draft, onCancel }: Props) {
           .filter((l) => l.inStock)
           .map((l, i) => (
             <li key={i} className="flex justify-between">
-              <span className="text-gray-700">
+              <span className="text-gray-700 dark:text-slate-300">
                 {l.brandLabel || l.catalogName || l.rxLabel}
                 {l.strength ? ` · ${l.strength}` : ""}
               </span>
-              <span className="font-semibold text-gray-900">
+              <span className="font-semibold text-gray-900 dark:text-slate-100">
                 ₹{l.priceInr}
               </span>
             </li>
           ))}
       </ul>
 
-      <div className="mt-3 flex justify-between border-t border-gray-200 pt-2 text-sm font-semibold text-gray-900">
+      <div className="mt-3 flex justify-between border-t border-gray-200 dark:border-slate-800 pt-2 text-sm font-semibold text-gray-900 dark:text-slate-100">
         <span>Total · {draft.fulfillment === "pickup" ? "pay at counter" : "pay on delivery"}</span>
         <span>₹{draft.totalInr.toLocaleString("en-IN")}</span>
       </div>
@@ -256,7 +256,7 @@ export default function PharmacyOrderConfirm({ draft, onCancel }: Props) {
       <div className="mt-5 space-y-3">
         {draft.fulfillment === "delivery" && (
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <label className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
               Delivery address
             </label>
             <textarea
@@ -264,19 +264,19 @@ export default function PharmacyOrderConfirm({ draft, onCancel }: Props) {
               rows={2}
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-md border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm"
               placeholder="Flat, street, landmark, city, pincode"
             />
           </div>
         )}
         <div>
-          <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <label className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
             Contact phone (optional)
           </label>
           <input
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-md border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm"
             placeholder="Phone (with country code, e.g. +1 …)"
           />
         </div>
@@ -294,7 +294,7 @@ export default function PharmacyOrderConfirm({ draft, onCancel }: Props) {
         >
           {placing ? "Placing order…" : "Place order"}
         </button>
-        <p className="mt-2 text-[11px] text-gray-500">
+        <p className="mt-2 text-[11px] text-gray-500 dark:text-slate-400">
           Payment is collected at the pharmacy — either at pickup or on delivery.
         </p>
       </div>

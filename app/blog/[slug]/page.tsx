@@ -84,8 +84,8 @@ export default function BlogPostPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">Article Not Found</h1>
-        <p className="text-gray-500">This article doesn't exist or may have been removed.</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Article Not Found</h1>
+        <p className="text-gray-500 dark:text-slate-400">This article doesn't exist or may have been removed.</p>
         <Link href="/blog" className="btn-primary mt-2">
           ← Back to Blog
         </Link>
@@ -135,7 +135,7 @@ export default function BlogPostPage() {
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       {isPreview && (post as BlogPost & { status?: string }).status === "Draft" && (
         <div className="bg-yellow-400 py-2 text-center text-sm font-semibold text-yellow-900">
           👁️ Draft preview — this article is not published yet and is not visible to the public.
@@ -213,7 +213,7 @@ export default function BlogPostPage() {
         <div className="flex flex-col gap-8 lg:flex-row">
           {/* Main article */}
           <article className="flex-1 min-w-0">
-            <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8 md:p-10">
+            <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8 md:p-10">
               <div
                 className="blog-content max-w-none"
                 dangerouslySetInnerHTML={{ __html: autolinkBlogHtml(post.content) }}
@@ -221,12 +221,12 @@ export default function BlogPostPage() {
 
               {/* Tags */}
               <div className="mt-10 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-6">
-                <span className="text-sm font-semibold text-gray-500">Tags:</span>
+                <span className="text-sm font-semibold text-gray-500 dark:text-slate-400">Tags:</span>
                 {post.tags.map((tag) => (
                   <Link
                     key={tag}
                     href={`/blog?q=${encodeURIComponent(tag)}`}
-                    className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs text-gray-600 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+                    className="rounded-full border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 px-3 py-1 text-xs text-gray-600 dark:text-slate-300 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
                   >
                     #{tag}
                   </Link>
@@ -235,7 +235,7 @@ export default function BlogPostPage() {
 
               {/* Share */}
               <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-6">
-                <span className="text-sm font-semibold text-gray-500">Share:</span>
+                <span className="text-sm font-semibold text-gray-500 dark:text-slate-400">Share:</span>
                 <a
                   href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(currentUrl)}`}
                   target="_blank"
@@ -259,7 +259,7 @@ export default function BlogPostPage() {
                 >in</a>
                 <button
                   onClick={handleCopyLink}
-                  className="flex h-9 items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100"
+                  className="flex h-9 items-center gap-1.5 rounded-full border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 px-3 text-xs font-medium text-gray-600 dark:text-slate-300 transition-colors hover:bg-gray-100 dark:bg-slate-800"
                 >
                   {copied ? (
                     <><svg className="h-3.5 w-3.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>Copied!</>
@@ -270,21 +270,21 @@ export default function BlogPostPage() {
               </div>
 
               {/* Author Bio */}
-              <div className="mt-8 flex flex-col gap-4 rounded-2xl border border-gray-100 bg-gray-50 p-6 sm:flex-row sm:items-start">
+              <div className="mt-8 flex flex-col gap-4 rounded-2xl border border-gray-100 bg-gray-50 dark:bg-slate-900 p-6 sm:flex-row sm:items-start">
                 <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-primary-100 text-xl font-bold text-primary-700">
                   {post.authorInitials}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Written by</p>
-                  <p className="mt-0.5 font-bold text-gray-900">{post.author}</p>
-                  <p className="mt-2 text-sm leading-relaxed text-gray-600">{post.authorBio}</p>
+                  <p className="text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Written by</p>
+                  <p className="mt-0.5 font-bold text-gray-900 dark:text-slate-100">{post.author}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-slate-300">{post.authorBio}</p>
                 </div>
               </div>
             </div>
 
             {/* Comments */}
-            <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm sm:p-8">
-              <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-gray-900">
+            <div className="mt-8 rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8">
+              <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-slate-100">
                 <svg className="h-5 w-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
@@ -292,8 +292,8 @@ export default function BlogPostPage() {
               </h2>
 
               {/* Comment form */}
-              <form onSubmit={handleCommentSubmit} className="mb-8 rounded-xl border border-gray-100 bg-gray-50 p-5">
-                <h3 className="mb-4 font-semibold text-gray-800">Leave a Comment</h3>
+              <form onSubmit={handleCommentSubmit} className="mb-8 rounded-xl border border-gray-100 bg-gray-50 dark:bg-slate-900 p-5">
+                <h3 className="mb-4 font-semibold text-gray-800 dark:text-slate-200">Leave a Comment</h3>
                 {commentSuccess && (
                   <div className="mb-4 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
                     ✓ Comment posted successfully!
@@ -306,14 +306,14 @@ export default function BlogPostPage() {
                     onChange={(e) => setCommentName(e.target.value)}
                     placeholder="Your Name *"
                     required
-                    className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                    className="rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-gray-900 dark:text-slate-100 outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
                   />
                   <input
                     type="email"
                     value={commentEmail}
                     onChange={(e) => setCommentEmail(e.target.value)}
                     placeholder="Your Email (optional)"
-                    className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                    className="rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-gray-900 dark:text-slate-100 outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
                   />
                 </div>
                 <textarea
@@ -322,7 +322,7 @@ export default function BlogPostPage() {
                   placeholder="Write your thoughts..."
                   required
                   rows={4}
-                  className="mt-3 w-full resize-none rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                  className="mt-3 w-full resize-none rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-gray-900 dark:text-slate-100 outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
                 />
                 <button type="submit" className="btn-primary mt-3">
                   Post Comment
@@ -332,7 +332,7 @@ export default function BlogPostPage() {
               {/* Comments list */}
               <div className="space-y-5">
                 {postComments.length === 0 ? (
-                  <p className="rounded-xl bg-gray-50 py-10 text-center text-sm text-gray-400">
+                  <p className="rounded-xl bg-gray-50 dark:bg-slate-900 py-10 text-center text-sm text-gray-400 dark:text-slate-500">
                     No comments yet. Be the first to share your thoughts!
                   </p>
                 ) : (
@@ -341,14 +341,14 @@ export default function BlogPostPage() {
                       <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700">
                         {comment.name.charAt(0).toUpperCase()}
                       </div>
-                      <div className="flex-1 rounded-xl border border-gray-100 bg-gray-50 p-4">
+                      <div className="flex-1 rounded-xl border border-gray-100 bg-gray-50 dark:bg-slate-900 p-4">
                         <div className="mb-2 flex items-center justify-between">
-                          <p className="text-sm font-semibold text-gray-900">{comment.name}</p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">{comment.name}</p>
+                          <p className="text-xs text-gray-400 dark:text-slate-500">
                             <RelativeTime date={comment.date} fallback={comment.date} />
                           </p>
                         </div>
-                        <p className="text-sm leading-relaxed text-gray-700">{comment.text}</p>
+                        <p className="text-sm leading-relaxed text-gray-700 dark:text-slate-300">{comment.text}</p>
                       </div>
                     </div>
                   ))
@@ -363,7 +363,7 @@ export default function BlogPostPage() {
               {/* Back to blog */}
               <Link
                 href="/blog"
-                className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-600 shadow-sm hover:bg-primary-50 hover:text-primary-700"
+                className="flex items-center gap-2 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm font-medium text-gray-600 dark:text-slate-300 shadow-sm hover:bg-primary-50 hover:text-primary-700"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -373,18 +373,18 @@ export default function BlogPostPage() {
 
               {/* Related posts */}
               {relatedPosts.length > 0 && (
-                <div className="rounded-2xl bg-white p-5 shadow-sm">
-                  <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-gray-500">
+                <div className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+                  <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                     Related Articles
                   </h3>
                   <div className="space-y-4">
                     {relatedPosts.map((rp) => (
                       <Link key={rp.id} href={`/blog/${rp.slug}`} className="group block">
                         <div className={`mb-2 h-2 w-8 rounded-full bg-gradient-to-r ${categoryGradients[rp.category] || "from-gray-300 to-gray-400"}`} />
-                        <p className="text-sm font-medium text-gray-700 line-clamp-2 transition-colors group-hover:text-primary-600">
+                        <p className="text-sm font-medium text-gray-700 dark:text-slate-300 line-clamp-2 transition-colors group-hover:text-primary-600">
                           {rp.title}
                         </p>
-                        <p className="mt-1 text-xs text-gray-400">{rp.readTime}</p>
+                        <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">{rp.readTime}</p>
                       </Link>
                     ))}
                   </div>
@@ -399,7 +399,7 @@ export default function BlogPostPage() {
                 </p>
                 <Link
                   href="/doctors"
-                  className="mt-4 block rounded-xl bg-white px-4 py-2.5 text-center text-sm font-bold text-primary-700 hover:bg-gray-50"
+                  className="mt-4 block rounded-xl bg-white dark:bg-slate-900 px-4 py-2.5 text-center text-sm font-bold text-primary-700 hover:bg-gray-50 dark:bg-slate-900"
                 >
                   Find Doctors →
                 </Link>
@@ -411,7 +411,7 @@ export default function BlogPostPage() {
         {/* Related articles (mobile) */}
         {relatedPosts.length > 0 && (
           <section className="mt-10 lg:hidden">
-            <h2 className="mb-5 text-xl font-bold text-gray-900">Related Articles</h2>
+            <h2 className="mb-5 text-xl font-bold text-gray-900 dark:text-slate-100">Related Articles</h2>
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               {relatedPosts.map((rp) => (
                 <BlogCard key={rp.id} post={rp} />

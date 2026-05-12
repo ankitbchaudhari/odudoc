@@ -33,10 +33,10 @@ export default function ForDoctorsGuidePage() {
           <p className="text-xs font-bold uppercase tracking-widest text-primary-600">
             For doctors · Public preview
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100 sm:text-4xl">
             How OduDoc works — a doctor&apos;s guide
           </h1>
-          <p className="mt-3 max-w-2xl text-base text-slate-600">
+          <p className="mt-3 max-w-2xl text-base text-slate-600 dark:text-slate-300">
             A complete walkthrough of every feature you&apos;ll use as a doctor
             on OduDoc — telemedicine consultations, AI prescriptions, free EMR,
             payouts, and more. Read the whole thing in 5 minutes, or jump to a
@@ -51,7 +51,7 @@ export default function ForDoctorsGuidePage() {
             </Link>
             <Link
               href="/auth/login"
-              className="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
             >
               Already a doctor? Sign in
             </Link>
@@ -61,10 +61,10 @@ export default function ForDoctorsGuidePage() {
         <GuideRenderer audience="public" />
 
         <div className="mt-12 rounded-2xl border border-primary-200 bg-gradient-to-br from-primary-50 to-sky-50 p-8 text-center">
-          <h2 className="text-2xl font-bold text-slate-900">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
             Ready to start consulting on OduDoc?
           </h2>
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
             Free profile, 70% commission, weekly payouts, no monthly subscription.
             Verification takes 48 hours.
           </p>
@@ -77,7 +77,7 @@ export default function ForDoctorsGuidePage() {
             </Link>
             <Link
               href="/contact"
-              className="rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-xl border border-slate-300 bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
             >
               Talk to our team
             </Link>

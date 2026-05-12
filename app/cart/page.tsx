@@ -79,15 +79,15 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center bg-gray-50 px-4">
+      <div className="flex min-h-[60vh] items-center justify-center bg-gray-50 dark:bg-slate-900 px-4">
         <div className="text-center">
-          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gray-100">
-            <svg className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800">
+            <svg className="h-12 w-12 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
             </svg>
           </div>
-          <h2 className="mt-6 text-2xl font-bold text-gray-900">Your cart is empty</h2>
-          <p className="mt-2 text-gray-500">Looks like you have not added any products yet.</p>
+          <h2 className="mt-6 text-2xl font-bold text-gray-900 dark:text-slate-100">Your cart is empty</h2>
+          <p className="mt-2 text-gray-500 dark:text-slate-400">Looks like you have not added any products yet.</p>
           <Link href="/shop" className="btn-primary mt-6 inline-block">
             Start Shopping
           </Link>
@@ -97,12 +97,12 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 md:text-3xl">
             Shopping Cart
-            <span className="ml-2 text-base font-normal text-gray-500">({totalItems} item{totalItems !== 1 ? "s" : ""})</span>
+            <span className="ml-2 text-base font-normal text-gray-500 dark:text-slate-400">({totalItems} item{totalItems !== 1 ? "s" : ""})</span>
           </h1>
           <button
             onClick={clearCart}
@@ -119,7 +119,7 @@ export default function CartPage() {
               {items.map(({ product, quantity }) => (
                 <div
                   key={product.id}
-                  className="flex gap-4 rounded-xl border border-gray-200 bg-white p-4 sm:p-5"
+                  className="flex gap-4 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5"
                 >
                   {/* Product image */}
                   <Link href={`/shop/${product.id}`}>
@@ -132,10 +132,10 @@ export default function CartPage() {
                   <div className="flex flex-1 flex-col justify-between">
                     <div className="flex justify-between">
                       <div>
-                        <Link href={`/shop/${product.id}`} className="font-semibold text-gray-900 hover:text-primary-600">
+                        <Link href={`/shop/${product.id}`} className="font-semibold text-gray-900 dark:text-slate-100 hover:text-primary-600">
                           {product.name}
                         </Link>
-                        <p className="mt-0.5 text-xs text-gray-400">{product.category}</p>
+                        <p className="mt-0.5 text-xs text-gray-400 dark:text-slate-500">{product.category}</p>
                         {product.prescriptionRequired && (
                           <>
                             <span className="mt-1 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
@@ -152,7 +152,7 @@ export default function CartPage() {
                       </div>
                       <button
                         onClick={() => removeFromCart(product.id)}
-                        className="h-8 w-8 shrink-0 rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
+                        className="h-8 w-8 shrink-0 rounded-lg text-gray-400 dark:text-slate-500 transition-colors hover:bg-red-50 hover:text-red-500"
                         aria-label="Remove item"
                       >
                         <svg className="h-5 w-5 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -163,10 +163,10 @@ export default function CartPage() {
 
                     <div className="mt-3 flex items-center justify-between">
                       {/* Quantity */}
-                      <div className="flex items-center rounded-lg border border-gray-200">
+                      <div className="flex items-center rounded-lg border border-gray-200 dark:border-slate-800">
                         <button
                           onClick={() => updateQuantity(product.id, quantity - 1)}
-                          className="px-2.5 py-1.5 text-gray-600 hover:bg-gray-50"
+                          className="px-2.5 py-1.5 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
                         >
                           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -175,7 +175,7 @@ export default function CartPage() {
                         <span className="w-8 text-center text-sm font-medium">{quantity}</span>
                         <button
                           onClick={() => updateQuantity(product.id, quantity + 1)}
-                          className="px-2.5 py-1.5 text-gray-600 hover:bg-gray-50"
+                          className="px-2.5 py-1.5 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
                         >
                           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -185,9 +185,9 @@ export default function CartPage() {
 
                       {/* Price */}
                       <div className="text-right">
-                        <p className="font-semibold text-gray-900">${(product.price * quantity).toFixed(2)}</p>
+                        <p className="font-semibold text-gray-900 dark:text-slate-100">${(product.price * quantity).toFixed(2)}</p>
                         {quantity > 1 && (
-                          <p className="text-xs text-gray-400">${product.price.toFixed(2)} each</p>
+                          <p className="text-xs text-gray-400 dark:text-slate-500">${product.price.toFixed(2)} each</p>
                         )}
                       </div>
                     </div>
@@ -209,28 +209,28 @@ export default function CartPage() {
 
           {/* Order Summary */}
           <div>
-            <div className="sticky top-24 rounded-xl border border-gray-200 bg-white p-6">
-              <h2 className="text-lg font-bold text-gray-900">Order Summary</h2>
+            <div className="sticky top-24 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Order Summary</h2>
 
               <div className="mt-4 space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Subtotal</span>
-                  <span className="font-medium text-gray-900">${subtotal.toFixed(2)}</span>
+                  <span className="text-gray-500 dark:text-slate-400">Subtotal</span>
+                  <span className="font-medium text-gray-900 dark:text-slate-100">${subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Shipping</span>
-                  <span className={`font-medium ${shipping === 0 ? "text-green-600" : "text-gray-900"}`}>
+                  <span className="text-gray-500 dark:text-slate-400">Shipping</span>
+                  <span className={`font-medium ${shipping === 0 ? "text-green-600" : "text-gray-900 dark:text-slate-100"}`}>
                     {shipping === 0 ? "FREE" : `$${shipping.toFixed(2)}`}
                   </span>
                 </div>
                 {shipping > 0 && (
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-400 dark:text-slate-500">
                     Free shipping on orders above $50 (add ${(50 - subtotal).toFixed(2)} more)
                   </p>
                 )}
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Tax (8%)</span>
-                  <span className="font-medium text-gray-900">${tax.toFixed(2)}</span>
+                  <span className="text-gray-500 dark:text-slate-400">Tax (8%)</span>
+                  <span className="font-medium text-gray-900 dark:text-slate-100">${tax.toFixed(2)}</span>
                 </div>
                 {promoApplied && (
                   <div className="flex justify-between text-sm">
@@ -252,12 +252,12 @@ export default function CartPage() {
                       if (promoError) setPromoError("");
                     }}
                     disabled={promoApplied}
-                    className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:bg-gray-50"
+                    className="flex-1 rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm placeholder:text-gray-400 dark:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:bg-gray-50 dark:bg-slate-900"
                   />
                   {promoApplied ? (
                     <button
                       onClick={handleRemovePromo}
-                      className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
+                      className="rounded-lg bg-gray-100 dark:bg-slate-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-200"
                     >
                       Remove
                     </button>
@@ -265,7 +265,7 @@ export default function CartPage() {
                     <button
                       onClick={handleApplyPromo}
                       disabled={promoBusy || !promoCode.trim()}
-                      className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 disabled:opacity-50"
+                      className="rounded-lg bg-gray-100 dark:bg-slate-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-200 disabled:opacity-50"
                     >
                       {promoBusy ? "…" : "Apply"}
                     </button>
@@ -284,8 +284,8 @@ export default function CartPage() {
               {/* Total */}
               <div className="mt-4 border-t border-gray-100 pt-4">
                 <div className="flex justify-between">
-                  <span className="text-base font-bold text-gray-900">Total</span>
-                  <span className="text-xl font-bold text-gray-900">${total.toFixed(2)}</span>
+                  <span className="text-base font-bold text-gray-900 dark:text-slate-100">Total</span>
+                  <span className="text-xl font-bold text-gray-900 dark:text-slate-100">${total.toFixed(2)}</span>
                 </div>
               </div>
 
@@ -301,7 +301,7 @@ export default function CartPage() {
                 Proceed to Checkout
               </button>
 
-              <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400">
+              <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400 dark:text-slate-500">
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>

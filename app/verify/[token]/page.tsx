@@ -73,7 +73,7 @@ export default function VerifyCertificatePage({
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="animate-pulse text-slate-400">Verifying…</div>
       </div>
     );
@@ -83,7 +83,7 @@ export default function VerifyCertificatePage({
   const cert = data?.certificate;
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 py-10">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 py-10">
       <div className="pointer-events-none absolute inset-0 -z-0">
         <div
           className={`absolute -top-40 left-1/2 h-[420px] w-[700px] -translate-x-1/2 rounded-full blur-3xl ${
@@ -150,10 +150,10 @@ export default function VerifyCertificatePage({
 
           {verified && cert && (
             <div className="px-6 py-5">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 {CERT_TYPE_LABEL[cert.type] || "Medical certificate"}
               </p>
-              <h1 className="mt-1 text-xl font-bold text-slate-900">
+              <h1 className="mt-1 text-xl font-bold text-slate-900 dark:text-slate-100">
                 {data?.patientName || "Patient"}
               </h1>
 
@@ -178,25 +178,25 @@ export default function VerifyCertificatePage({
                 )}
               </dl>
 
-              <div className="mt-6 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              <div className="mt-6 rounded-2xl border border-slate-100 bg-slate-50 dark:bg-slate-900 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   Issuing doctor
                 </p>
-                <p className="mt-1 text-sm font-bold text-slate-900">
+                <p className="mt-1 text-sm font-bold text-slate-900 dark:text-slate-100">
                   {cert.doctorName}
                   {cert.doctorQualification ? `, ${cert.doctorQualification}` : ""}
                 </p>
                 {cert.doctorRegistration && (
-                  <p className="text-xs text-slate-600">
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
                     Reg. no: <span className="font-mono">{cert.doctorRegistration}</span>
                   </p>
                 )}
                 {cert.clinicName && (
-                  <p className="mt-0.5 text-xs text-slate-600">{cert.clinicName}</p>
+                  <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">{cert.clinicName}</p>
                 )}
               </div>
 
-              <p className="mt-5 text-center text-[11px] text-slate-500">
+              <p className="mt-5 text-center text-[11px] text-slate-500 dark:text-slate-400">
                 Verification audited at <span className="tabular-nums">{new Date().toISOString().slice(0, 19).replace("T", " ")} UTC</span>.
                 If the printed certificate doesn&apos;t match these details, it
                 may be forged — contact the issuing clinic.
@@ -222,11 +222,11 @@ function Field({
 }) {
   return (
     <div className={wide ? "sm:col-span-2" : ""}>
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
         {label}
       </p>
       <p
-        className={`mt-0.5 text-sm text-slate-800 ${mono ? "font-mono" : ""}`}
+        className={`mt-0.5 text-sm text-slate-800 dark:text-slate-200 ${mono ? "font-mono" : ""}`}
       >
         {value}
       </p>

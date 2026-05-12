@@ -129,7 +129,7 @@ export default function ConsultationRoomPage() {
         <div className="text-center">
           <p className="text-5xl">😔</p>
           <h1 className="mt-4 text-2xl font-bold text-white">Consultation Error</h1>
-          <p className="mt-2 text-gray-400">{error}</p>
+          <p className="mt-2 text-gray-400 dark:text-slate-500">{error}</p>
           <Link href="/consult" className="mt-6 inline-block rounded-lg bg-primary-600 px-6 py-3 text-white hover:bg-primary-700">
             Back to Consult
           </Link>
@@ -143,7 +143,7 @@ export default function ConsultationRoomPage() {
       <div className="flex min-h-screen items-center justify-center bg-gray-900">
         <div className="text-center">
           <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />
-          <p className="mt-4 text-gray-400">Loading consultation room...</p>
+          <p className="mt-4 text-gray-400 dark:text-slate-500">Loading consultation room...</p>
         </div>
       </div>
     );
@@ -212,7 +212,7 @@ export default function ConsultationRoomPage() {
   // Post-call screen
   if (stage === "post-call" && roomInfo) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-12">
         {/* Phase C: doctor-only post-call dictation. Records voice,
             transcribes via Gemini, auto-fills the Rx form in the still-
             mounted DoctorNotesPanel below. */}
@@ -240,36 +240,36 @@ export default function ConsultationRoomPage() {
         )}
         <div className="mx-auto max-w-3xl px-4">
           {/* Summary card */}
-          <div className="mb-8 rounded-2xl bg-white p-8 text-center shadow-sm">
+          <div className="mb-8 rounded-2xl bg-white dark:bg-slate-900 p-8 text-center shadow-sm">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
               <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Consultation Complete</h1>
-            <p className="mt-2 text-gray-500">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Consultation Complete</h1>
+            <p className="mt-2 text-gray-500 dark:text-slate-400">
               Your consultation with <span className="font-medium">{roomInfo.doctorName}</span> has ended.
             </p>
 
             {/* Call details */}
             <div className="mt-6 flex justify-center gap-8">
               <div>
-                <p className="text-sm text-gray-400">Duration</p>
-                <p className="text-lg font-semibold text-gray-900">{callDuration || "N/A"}</p>
+                <p className="text-sm text-gray-400 dark:text-slate-500">Duration</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-slate-100">{callDuration || "N/A"}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-400">Specialty</p>
-                <p className="text-lg font-semibold text-gray-900">{roomInfo.specialty}</p>
+                <p className="text-sm text-gray-400 dark:text-slate-500">Specialty</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-slate-100">{roomInfo.specialty}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-400">Fee</p>
-                <p className="text-lg font-semibold text-gray-900">${roomInfo.fee}</p>
+                <p className="text-sm text-gray-400 dark:text-slate-500">Fee</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-slate-100">${roomInfo.fee}</p>
               </div>
             </div>
 
             {/* Rating */}
             <div className="mt-8">
-              <p className="mb-3 text-sm font-medium text-gray-700">Rate this consultation</p>
+              <p className="mb-3 text-sm font-medium text-gray-700 dark:text-slate-300">Rate this consultation</p>
               <div className="flex justify-center gap-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -303,7 +303,7 @@ export default function ConsultationRoomPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <button
               onClick={() => setShowPrescription(!showPrescription)}
-              className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-4 text-sm font-medium text-gray-700 shadow-sm transition-all hover:shadow-md"
+              className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-4 text-sm font-medium text-gray-700 dark:text-slate-300 shadow-sm transition-all hover:shadow-md"
             >
               <svg className="h-5 w-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -323,7 +323,7 @@ export default function ConsultationRoomPage() {
 
             <Link
               href="/"
-              className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-4 text-sm font-medium text-gray-700 shadow-sm transition-all hover:shadow-md"
+              className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-4 text-sm font-medium text-gray-700 dark:text-slate-300 shadow-sm transition-all hover:shadow-md"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />

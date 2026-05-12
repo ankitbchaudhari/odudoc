@@ -101,13 +101,13 @@ export default function DifferentialDxButton({
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Differential diagnosis</h3>
-                <p className="text-xs text-slate-500">Decision support — your assessment is final.</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Differential diagnosis</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Decision support — your assessment is final.</p>
               </div>
-              <button onClick={() => setOpen(false)} className="rounded-lg p-2 hover:bg-slate-100">
+              <button onClick={() => setOpen(false)} className="rounded-lg p-2 hover:bg-slate-100 dark:bg-slate-800">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -134,7 +134,7 @@ export default function DifferentialDxButton({
             )}
 
             {!loading && !error && differentials.length === 0 && (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 No clear differential. Add more detail to chief complaint / subjective / objective and try again.
               </p>
             )}
@@ -144,18 +144,18 @@ export default function DifferentialDxButton({
                 {differentials.map((d, i) => {
                   const u = URGENCY_STYLE[d.urgency];
                   return (
-                    <li key={i} className="rounded-xl border border-slate-200 p-3">
+                    <li key={i} className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
                           <div className="flex items-baseline gap-2">
-                            <span className="text-sm font-bold text-slate-900">{d.diagnosis}</span>
-                            <span className="text-xs text-slate-500">{Math.round(d.probability * 100)}%</span>
+                            <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{d.diagnosis}</span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">{Math.round(d.probability * 100)}%</span>
                           </div>
-                          <p className="mt-0.5 text-xs text-slate-600">{d.rationale}</p>
+                          <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">{d.rationale}</p>
                           {d.rulingOutQuestions.length > 0 && (
                             <ul className="mt-2 space-y-0.5">
                               {d.rulingOutQuestions.map((q, qi) => (
-                                <li key={qi} className="flex gap-1.5 text-[12px] text-slate-700">
+                                <li key={qi} className="flex gap-1.5 text-[12px] text-slate-700 dark:text-slate-300">
                                   <span className="text-slate-400">·</span>
                                   <span>{q}</span>
                                 </li>

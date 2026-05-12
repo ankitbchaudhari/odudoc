@@ -93,7 +93,7 @@ export default function SellPage() {
   // "sign in to continue" / "you're already a vendor" / the real form
   // based on auth + vendor state.
   if (authStatus === "loading" || loading) {
-    return <div className="p-12 text-center text-gray-500">Loading…</div>;
+    return <div className="p-12 text-center text-gray-500 dark:text-slate-400">Loading…</div>;
   }
 
   if (vendor) {
@@ -101,7 +101,7 @@ export default function SellPage() {
       <div className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-white to-rose-50">
         <div className="pointer-events-none absolute -top-20 -right-20 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-amber-200/40 to-orange-200/40 blur-3xl" />
         <div className="relative mx-auto max-w-xl px-4 py-16">
-          <h1 className="text-3xl font-bold text-gray-900 md:text-4xl">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
             Vendor{" "}
             <span className="bg-gradient-to-r from-amber-600 via-orange-500 to-rose-500 bg-clip-text text-transparent">
               application
@@ -112,14 +112,14 @@ export default function SellPage() {
               : vendor.status === "pending" ? "border-amber-200 bg-amber-50"
               : "border-rose-200 bg-rose-50"
           }`}>
-            <p className="text-sm font-semibold text-gray-900">{vendor.name}</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">{vendor.name}</p>
             <p className="mt-1 text-sm">
               Status: <span className="font-bold">{vendor.status.toUpperCase()}</span>
               {vendor.commissionPercent > 0 && (
-                <span className="ml-3 text-xs text-gray-600">Platform commission: {vendor.commissionPercent}%</span>
+                <span className="ml-3 text-xs text-gray-600 dark:text-slate-300">Platform commission: {vendor.commissionPercent}%</span>
               )}
             </p>
-            {vendor.statusReason && <p className="mt-1 text-xs text-gray-700">Note: {vendor.statusReason}</p>}
+            {vendor.statusReason && <p className="mt-1 text-xs text-gray-700 dark:text-slate-300">Note: {vendor.statusReason}</p>}
 
             {vendor.status === "pending" && (
               <p className="mt-3 text-xs text-amber-800">Our team reviews applications within 24 hours. You&apos;ll be emailed once approved.</p>
@@ -142,7 +142,7 @@ export default function SellPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 py-20">
         <div className="pointer-events-none absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-amber-200/40 to-orange-200/40 blur-3xl" />
@@ -151,13 +151,13 @@ export default function SellPage() {
           <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-amber-700">
             <span>💼</span> Grow your pharmacy
           </span>
-          <h1 className="mt-5 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">
+          <h1 className="mt-5 text-4xl font-bold tracking-tight text-gray-900 dark:text-slate-100 md:text-6xl">
             Your Pharmacy on{" "}
             <span className="bg-gradient-to-r from-amber-600 via-orange-500 to-rose-500 bg-clip-text text-transparent">
               OduDoc
             </span>
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600 dark:text-slate-300">
             Join OduDoc&apos;s multivendor pharmacy marketplace. List products, fulfill orders, and track earnings from your dashboard.
           </p>
           <a
@@ -170,18 +170,18 @@ export default function SellPage() {
       </section>
 
       {/* Stats */}
-      <section className="bg-white py-12">
+      <section className="bg-white dark:bg-slate-900 py-12">
         <div className="mx-auto max-w-6xl px-4">
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {stats.map((s) => (
               <div
                 key={s.label}
-                className="rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+                className="rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-6 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
               >
                 <p className={`bg-gradient-to-r ${s.gradient} bg-clip-text text-4xl font-extrabold text-transparent`}>
                   {s.value}
                 </p>
-                <p className="mt-2 text-sm font-semibold text-gray-600">{s.label}</p>
+                <p className="mt-2 text-sm font-semibold text-gray-600 dark:text-slate-300">{s.label}</p>
               </div>
             ))}
           </div>
@@ -192,18 +192,18 @@ export default function SellPage() {
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-amber-50/40 py-16">
         <div className="pointer-events-none absolute top-10 -right-20 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-amber-200/30 to-orange-200/30 blur-3xl" />
         <div className="relative mx-auto max-w-6xl px-4">
-          <h2 className="mb-3 text-center text-3xl font-bold text-gray-900 md:text-4xl">
+          <h2 className="mb-3 text-center text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
             Why partner with{" "}
             <span className="bg-gradient-to-r from-amber-600 via-orange-500 to-rose-500 bg-clip-text text-transparent">
               OduDoc
             </span>
           </h2>
-          <p className="mb-10 text-center text-gray-600">Everything you need to grow your pharmacy business online.</p>
+          <p className="mb-10 text-center text-gray-600 dark:text-slate-300">Everything you need to grow your pharmacy business online.</p>
           <div className="grid gap-6 md:grid-cols-3">
             {benefits.map((b) => (
               <div
                 key={b.title}
-                className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+                className="rounded-3xl border border-gray-100 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
               >
                 <div
                   className={`mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${b.gradient} text-white shadow-lg ring-4 ring-white`}
@@ -212,8 +212,8 @@ export default function SellPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d={b.icon} />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">{b.title}</h3>
-                <p className="mt-2 text-sm text-gray-600">{b.desc}</p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">{b.title}</h3>
+                <p className="mt-2 text-sm text-gray-600 dark:text-slate-300">{b.desc}</p>
               </div>
             ))}
           </div>
@@ -228,23 +228,23 @@ export default function SellPage() {
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 text-2xl text-white shadow-lg ring-4 ring-white">
             💬
           </div>
-          <p className="mt-6 text-xl font-semibold text-gray-900 md:text-2xl">
+          <p className="mt-6 text-xl font-semibold text-gray-900 dark:text-slate-100 md:text-2xl">
             &ldquo;Onboarding was effortless and our orders doubled in the first month. The weekly payouts are a game-changer.&rdquo;
           </p>
-          <p className="mt-4 text-sm font-semibold text-gray-600">— Sutariya Medical Store, Ahmedabad</p>
+          <p className="mt-4 text-sm font-semibold text-gray-600 dark:text-slate-300">— Sutariya Medical Store, Ahmedabad</p>
         </div>
       </section>
 
       {/* Application form */}
-      <section id="apply" className="bg-white py-16">
+      <section id="apply" className="bg-white dark:bg-slate-900 py-16">
         <div className="mx-auto max-w-2xl px-4">
-          <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
             Register your{" "}
             <span className="bg-gradient-to-r from-amber-600 via-orange-500 to-rose-500 bg-clip-text text-transparent">
               pharmacy
             </span>
           </h2>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-gray-600 dark:text-slate-300">
             Fill out the form below. Our team reviews applications within 24 hours.
           </p>
 
@@ -258,8 +258,8 @@ export default function SellPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M12 11c0-1.104.896-2 2-2s2 .896 2 2-.896 2-2 2-2-.896-2-2zm-6 0c0-1.104.896-2 2-2s2 .896 2 2-.896 2-2 2-2-.896-2-2zm12 0c0-1.104.896-2 2-2s2 .896 2 2-.896 2-2 2-2-.896-2-2z" />
                 </svg>
               </div>
-              <h3 className="mt-5 text-xl font-bold text-gray-900">Sign in to apply</h3>
-              <p className="mx-auto mt-2 max-w-md text-sm text-gray-600">
+              <h3 className="mt-5 text-xl font-bold text-gray-900 dark:text-slate-100">Sign in to apply</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm text-gray-600 dark:text-slate-300">
                 We need a verified account on file so we can email you about approval status and payouts. It&rsquo;s free and takes under a minute.
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
@@ -271,19 +271,19 @@ export default function SellPage() {
                 </Link>
                 <Link
                   href="/auth/register?callbackUrl=/sell%23apply"
-                  className="inline-flex items-center justify-center rounded-xl border border-amber-200 bg-white px-8 py-3 text-sm font-semibold text-amber-700 shadow-sm transition-colors hover:border-amber-300 hover:bg-amber-50"
+                  className="inline-flex items-center justify-center rounded-xl border border-amber-200 bg-white dark:bg-slate-900 px-8 py-3 text-sm font-semibold text-amber-700 shadow-sm transition-colors hover:border-amber-300 hover:bg-amber-50"
                 >
                   Create an account
                 </Link>
               </div>
-              <p className="mt-4 text-xs text-gray-400">
+              <p className="mt-4 text-xs text-gray-400 dark:text-slate-500">
                 Already signed in as a patient? The same login works for vendors.
               </p>
             </div>
           ) : (
           <form
             onSubmit={submit}
-            className="mt-8 space-y-4 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:shadow-xl"
+            className="mt-8 space-y-4 rounded-3xl border border-gray-100 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all hover:shadow-xl"
           >
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Pharmacy / business name *" value={form.name} onChange={(v) => setForm({ ...form, name: v })} required placeholder="e.g. Sutariya Medical Store" />
@@ -297,21 +297,21 @@ export default function SellPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600">
+              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">
                 License document (PDF / image, max 5MB)
               </label>
               <input
                 type="file"
                 accept="application/pdf,image/png,image/jpeg,image/webp"
                 onChange={(e) => setLicenseDoc(e.target.files?.[0] || null)}
-                className="block w-full text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-amber-100 file:to-orange-100 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-amber-700 hover:file:from-amber-200 hover:file:to-orange-200"
+                className="block w-full text-sm text-gray-700 dark:text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-amber-100 file:to-orange-100 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-amber-700 hover:file:from-amber-200 hover:file:to-orange-200"
               />
               {licenseDoc && (
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
                   {licenseDoc.name} · {(licenseDoc.size / 1024).toFixed(0)} KB
                 </p>
               )}
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
                 Upload a clear scan or photo of your pharmacy/drug license. Optional now, required before first payout.
               </p>
             </div>
@@ -326,7 +326,7 @@ export default function SellPage() {
               {saving ? "Submitting…" : "Start Selling"}
             </button>
 
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-400 dark:text-slate-500">
               By submitting, you agree that you are a licensed pharmacy in your jurisdiction. We verify licenses before approving listings.
             </p>
           </form>
@@ -342,9 +342,9 @@ function Field({
 }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; required?: boolean; wide?: boolean }) {
   return (
     <div className={wide ? "sm:col-span-2" : ""}>
-      <label className="mb-1 block text-xs font-medium text-gray-600">{label}</label>
+      <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">{label}</label>
       <input required={required} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-amber-500 focus:ring-2 focus:ring-amber-100" />
+        className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2.5 text-sm outline-none transition-colors focus:border-amber-500 focus:ring-2 focus:ring-amber-100" />
     </div>
   );
 }

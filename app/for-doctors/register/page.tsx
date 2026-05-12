@@ -472,10 +472,10 @@ function DoctorRegisterForm() {
             </svg>
             Verified doctor program
           </span>
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-gray-900 dark:text-slate-100 sm:text-4xl">
             Join OduDoc as a <span className="bg-gradient-to-r from-primary-600 to-indigo-600 bg-clip-text text-transparent">trusted physician</span>
           </h1>
-          <p className="mx-auto mt-3 max-w-xl text-sm text-gray-500 sm:text-base">
+          <p className="mx-auto mt-3 max-w-xl text-sm text-gray-500 dark:text-slate-400 sm:text-base">
             Complete five quick steps to submit your application. Verification usually takes 24–48 hours.
           </p>
         </div>
@@ -492,7 +492,7 @@ function DoctorRegisterForm() {
                         ? "bg-gradient-to-br from-primary-500 to-primary-700 text-white"
                         : step === s.num
                           ? "bg-gradient-to-br from-primary-500 to-indigo-600 text-white ring-4 ring-primary-100"
-                          : "bg-gray-100 text-gray-400"
+                          : "bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500"
                     }`}
                   >
                     {step > s.num ? (
@@ -505,14 +505,14 @@ function DoctorRegisterForm() {
                   </div>
                   <span
                     className={`mt-2 hidden text-xs font-semibold sm:block ${
-                      step >= s.num ? "text-primary-700" : "text-gray-400"
+                      step >= s.num ? "text-primary-700" : "text-gray-400 dark:text-slate-500"
                     }`}
                   >
                     {s.label}
                   </span>
                 </div>
                 {idx < STEPS.length - 1 && (
-                  <div className="mx-2 h-1 flex-1 overflow-hidden rounded-full bg-gray-100">
+                  <div className="mx-2 h-1 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-slate-800">
                     <div
                       className={`h-full rounded-full bg-gradient-to-r from-primary-500 to-indigo-500 transition-all duration-500 ${
                         step > s.num ? "w-full" : "w-0"
@@ -547,15 +547,15 @@ function DoctorRegisterForm() {
             <button
               onClick={prev}
               disabled={step === 1}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:bg-gray-50 disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 shadow-sm transition-all hover:border-gray-300 dark:border-slate-700 hover:bg-gray-50 dark:bg-slate-900 disabled:opacity-40"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
               Back
             </button>
-            <p className="hidden text-xs text-gray-400 sm:block">
-              Step <span className="font-bold text-gray-700">{step}</span> of {STEPS.length}
+            <p className="hidden text-xs text-gray-400 dark:text-slate-500 sm:block">
+              Step <span className="font-bold text-gray-700 dark:text-slate-300">{step}</span> of {STEPS.length}
             </p>
             {step < 5 ? (
               <button
@@ -600,7 +600,7 @@ function DoctorRegisterForm() {
 
 export default function DoctorRegisterPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 py-12 text-center text-gray-500">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-12 text-center text-gray-500 dark:text-slate-400">Loading...</div>}>
       <DoctorRegisterForm />
     </Suspense>
   );
@@ -623,13 +623,13 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 flex items-center gap-1.5 text-sm font-semibold text-gray-800">
+      <label className="mb-1.5 flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-slate-200">
         {icon && <span className="text-primary-500">{icon}</span>}
         <span>{label}</span>
         {required && <span className="text-red-500">*</span>}
       </label>
       {children}
-      {hint && !error && <p className="mt-1 text-xs text-gray-400">{hint}</p>}
+      {hint && !error && <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">{hint}</p>}
       {error && (
         <p className="mt-1 flex items-center gap-1 text-xs font-medium text-red-600">
           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -643,7 +643,7 @@ function Field({
 }
 
 const inputClass =
-  "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition-all placeholder:text-gray-400 hover:border-gray-300 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100";
+  "w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 shadow-sm transition-all placeholder:text-gray-400 dark:text-slate-500 hover:border-gray-300 dark:border-slate-700 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100";
 
 const ICONS = {
   user: (
@@ -715,8 +715,8 @@ function Step1({
           </svg>
         </span>
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Personal Information</h2>
-          <p className="text-sm text-gray-500">Tell us about yourself — we keep this private.</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">Personal Information</h2>
+          <p className="text-sm text-gray-500 dark:text-slate-400">Tell us about yourself — we keep this private.</p>
         </div>
       </div>
 
@@ -794,7 +794,7 @@ function Step1({
                   className={`flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-all ${
                     on
                       ? "border-primary-500 bg-gradient-to-br from-primary-50 to-indigo-50 text-primary-700 shadow-sm"
-                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                      : "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:border-gray-300 dark:border-slate-700 hover:bg-gray-50 dark:bg-slate-900"
                   }`}
                 >
                   {svg}
@@ -912,8 +912,8 @@ function Step2({
           </svg>
         </span>
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Professional Details</h2>
-          <p className="text-sm text-gray-500">Your medical background and credentials.</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">Professional Details</h2>
+          <p className="text-sm text-gray-500 dark:text-slate-400">Your medical background and credentials.</p>
         </div>
       </div>
 
@@ -1030,7 +1030,7 @@ function Step2({
         {/* Languages */}
         <div className="sm:col-span-2">
           <div className="mb-2 flex items-center justify-between gap-4">
-            <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-800">
+            <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-slate-200">
               <span className="text-primary-500">{PROFESSIONAL_ICONS.chat}</span>
               Languages Spoken <span className="text-red-500">*</span>
             </label>
@@ -1039,17 +1039,17 @@ function Step2({
             </span>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-primary-50/30 p-4 shadow-sm">
+          <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-gradient-to-br from-white to-primary-50/30 p-4 shadow-sm">
             {/* Search */}
             <div className="relative">
-              <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 110-16 8 8 0 010 16z" />
               </svg>
               <input
                 value={langQuery}
                 onChange={(e) => setLangQuery(e.target.value)}
                 placeholder={`Search ${LANGUAGES.length}+ languages…`}
-                className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm transition-all placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100"
+                className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 pl-9 pr-3 text-sm transition-all placeholder:text-gray-400 dark:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100"
               />
             </div>
 
@@ -1075,11 +1075,11 @@ function Step2({
             {/* Groups */}
             <div className="mt-4 max-h-80 space-y-4 overflow-y-auto pr-1">
               {filteredGroups.length === 0 ? (
-                <p className="py-6 text-center text-sm text-gray-400">No languages match &quot;{langQuery}&quot;.</p>
+                <p className="py-6 text-center text-sm text-gray-400 dark:text-slate-500">No languages match &quot;{langQuery}&quot;.</p>
               ) : (
                 filteredGroups.map((g) => (
                   <div key={g.label}>
-                    <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                    <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                       {g.label}
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -1093,7 +1093,7 @@ function Step2({
                             className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
                               on
                                 ? "border-primary-500 bg-primary-500/10 text-primary-700"
-                                : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 hover:bg-primary-50/50"
+                                : "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:border-primary-300 hover:bg-primary-50/50"
                             }`}
                           >
                             {on ? "✓ " : ""}
@@ -1168,16 +1168,16 @@ function DropZone({
 
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-medium text-gray-700">
+      <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       {!file ? (
-        <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-6 text-center transition-colors hover:border-primary-500 hover:bg-primary-50/30">
-          <svg className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-slate-700 p-6 text-center transition-colors hover:border-primary-500 hover:bg-primary-50/30">
+          <svg className="h-8 w-8 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
           </svg>
-          <p className="mt-2 text-sm text-gray-600"><span className="font-semibold text-primary-600">Click to upload</span> or drag and drop</p>
-          <p className="text-xs text-gray-400">PDF, PNG, JPG (max 4MB)</p>
+          <p className="mt-2 text-sm text-gray-600 dark:text-slate-300"><span className="font-semibold text-primary-600">Click to upload</span> or drag and drop</p>
+          <p className="text-xs text-gray-400 dark:text-slate-500">PDF, PNG, JPG (max 4MB)</p>
           <input
             type="file"
             className="hidden"
@@ -1189,7 +1189,7 @@ function DropZone({
           />
         </label>
       ) : (
-        <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+        <div className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 p-3">
           <div className="flex h-10 w-10 items-center justify-center rounded bg-primary-100 text-primary-700">
             {uploading ? (
               <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -1207,8 +1207,8 @@ function DropZone({
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-gray-900">{file.name}</p>
-            <p className="text-xs text-gray-500">
+            <p className="truncate text-sm font-medium text-gray-900 dark:text-slate-100">{file.name}</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400">
               {(file.size / 1024).toFixed(1)} KB
               {uploading && <span className="ml-2 text-primary-600">· uploading…</span>}
               {!uploading && file.url && <span className="ml-2 text-emerald-600">· uploaded ✓</span>}
@@ -1217,7 +1217,7 @@ function DropZone({
           <button
             type="button"
             onClick={() => onChange(null)}
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+            className="rounded-lg p-1.5 text-gray-400 dark:text-slate-500 hover:bg-red-50 hover:text-red-600"
             aria-label="Remove file"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1248,8 +1248,8 @@ function Step3({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900">Document Upload</h2>
-      <p className="mt-1 text-sm text-gray-500">
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Document Upload</h2>
+      <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
         Upload clear scans or photos. Required documents marked with *.
       </p>
       <div className="mt-6 grid gap-5 md:grid-cols-2">
@@ -1287,10 +1287,10 @@ function Step3({
           onChange={(f) => setDoc("hospitalAffiliationLetter", f)}
         />
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">
+          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
             Specialty Certifications (multiple)
           </label>
-          <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-6 text-center hover:border-primary-500 hover:bg-primary-50/30">
+          <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-slate-700 p-6 text-center hover:border-primary-500 hover:bg-primary-50/30">
             <span className="text-sm font-semibold text-primary-600">+ Add Certification</span>
             <input
               type="file"
@@ -1365,7 +1365,7 @@ function Step3({
           {form.documents.specialtyCertifications.length > 0 && (
             <ul className="mt-3 space-y-2">
               {form.documents.specialtyCertifications.map((f, i) => (
-                <li key={i} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 text-sm">
+                <li key={i} className="flex items-center justify-between rounded-lg bg-gray-50 dark:bg-slate-900 px-3 py-2 text-sm">
                   <span className="truncate">{f.name}</span>
                   <button
                     type="button"
@@ -1404,8 +1404,8 @@ function Step4({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900">Set Your Fee</h2>
-      <p className="mt-1 text-sm text-gray-500">
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Set Your Fee</h2>
+      <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
         No subscription. No monthly fee. OduDoc takes a flat 30% commission per successful consultation.
       </p>
 
@@ -1427,10 +1427,10 @@ function Step4({
       </div>
 
       {/* Fee input */}
-      <div className="mt-6 rounded-xl border border-gray-200 p-5">
+      <div className="mt-6 rounded-xl border border-gray-200 dark:border-slate-800 p-5">
         <Field label="Your per-consultation fee ($20 – $1,000)" error={errors.fee} required>
           <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold text-gray-700">$</span>
+            <span className="text-lg font-semibold text-gray-700 dark:text-slate-300">$</span>
             <input
               type="number"
               min="20"
@@ -1445,9 +1445,9 @@ function Step4({
 
         {feeNum > 0 && (
           <div className="mt-5 grid grid-cols-3 gap-3">
-            <div className="rounded-lg bg-gray-50 p-3 text-center">
-              <div className="text-xs text-gray-500">Patient Pays</div>
-              <div className="mt-1 text-xl font-bold text-gray-900">${feeNum.toFixed(2)}</div>
+            <div className="rounded-lg bg-gray-50 dark:bg-slate-900 p-3 text-center">
+              <div className="text-xs text-gray-500 dark:text-slate-400">Patient Pays</div>
+              <div className="mt-1 text-xl font-bold text-gray-900 dark:text-slate-100">${feeNum.toFixed(2)}</div>
             </div>
             <div className="rounded-lg bg-green-50 p-3 text-center">
               <div className="text-xs text-green-700">You Get (70%)</div>
@@ -1489,8 +1489,8 @@ function Step5({
 }) {
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900">Review & Submit</h2>
-      <p className="mt-1 text-sm text-gray-500">Please review your information before submitting</p>
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Review & Submit</h2>
+      <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Please review your information before submitting</p>
 
       <div className="mt-6 space-y-5">
         <Summary title="Personal Information">
@@ -1540,9 +1540,9 @@ function Step5({
             type="checkbox"
             checked={form.acceptTerms}
             onChange={(e) => update("acceptTerms", e.target.checked)}
-            className="mt-1 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-slate-700 text-primary-600 focus:ring-primary-500"
           />
-          <span className="text-sm text-gray-700">
+          <span className="text-sm text-gray-700 dark:text-slate-300">
             I agree to the <a className="font-semibold text-primary-600 underline">Terms &amp; Conditions</a> for medical professionals.
           </span>
         </label>
@@ -1553,9 +1553,9 @@ function Step5({
             type="checkbox"
             checked={form.acceptPrivacy}
             onChange={(e) => update("acceptPrivacy", e.target.checked)}
-            className="mt-1 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-slate-700 text-primary-600 focus:ring-primary-500"
           />
-          <span className="text-sm text-gray-700">
+          <span className="text-sm text-gray-700 dark:text-slate-300">
             I agree to the <a className="font-semibold text-primary-600 underline">Privacy Policy</a> and consent to document verification.
           </span>
         </label>
@@ -1585,20 +1585,20 @@ function Step5({
               <p className="mb-1 text-xs font-bold uppercase tracking-wider text-primary-700">
                 Required — {titles[meta.framework]}
               </p>
-              <p className="mb-3 text-sm text-gray-700">{summaries[meta.framework]}</p>
+              <p className="mb-3 text-sm text-gray-700 dark:text-slate-300">{summaries[meta.framework]}</p>
               <label className="flex cursor-pointer items-start gap-3">
                 <input
                   type="checkbox"
                   checked={form.complianceAccepted}
                   onChange={(e) => update("complianceAccepted", e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                  className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-slate-700 text-primary-600 focus:ring-primary-500"
                 />
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-gray-700 dark:text-slate-300">
                   I have read and accept the <strong>{titles[meta.framework]}</strong>. I confirm I am authorised to bind my practice to this agreement.
                 </span>
               </label>
               <div className="mt-3">
-                <label className="mb-1 block text-xs font-semibold text-gray-600">
+                <label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-slate-300">
                   Type your full name as a signature *
                 </label>
                 <input
@@ -1621,8 +1621,8 @@ function Step5({
 
 function Summary({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-gray-200 p-4">
-      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500">{title}</h3>
+    <div className="rounded-xl border border-gray-200 dark:border-slate-800 p-4">
+      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">{title}</h3>
       <dl className="grid gap-2 sm:grid-cols-2">{children}</dl>
     </div>
   );
@@ -1631,8 +1631,8 @@ function Summary({ title, children }: { title: string; children: React.ReactNode
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <div className="text-sm">
-      <dt className="text-gray-500">{k}</dt>
-      <dd className="font-medium text-gray-900">{v || "-"}</dd>
+      <dt className="text-gray-500 dark:text-slate-400">{k}</dt>
+      <dd className="font-medium text-gray-900 dark:text-slate-100">{v || "-"}</dd>
     </div>
   );
 }

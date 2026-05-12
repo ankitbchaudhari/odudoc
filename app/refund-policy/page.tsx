@@ -108,11 +108,11 @@ const sections = [
             "Pharmacy could not fulfil the order (drug unavailable) — full refund within 24 hours.",
             "Patient cancels after the order is dispatched — only the un-dispensed portion is refundable; dispensed medicines are non-returnable.",
           ].map((item, i) => (
-            <li key={i} className="flex items-start gap-3 rounded-lg bg-gray-50 px-4 py-3">
+            <li key={i} className="flex items-start gap-3 rounded-lg bg-gray-50 dark:bg-slate-900 px-4 py-3">
               <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <span className="text-sm text-gray-700">{item}</span>
+              <span className="text-sm text-gray-700 dark:text-slate-300">{item}</span>
             </li>
           ))}
         </ul>
@@ -186,15 +186,15 @@ const sections = [
           Once a refund is approved, the time it takes to land back in your
           account depends on your payment method:
         </p>
-        <div className="overflow-hidden rounded-xl border border-gray-200">
+        <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-slate-800">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs font-bold uppercase tracking-wider text-gray-500">
+            <thead className="bg-gray-50 dark:bg-slate-900 text-left text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
               <tr>
                 <th className="px-4 py-2">Payment method</th>
                 <th className="px-4 py-2">Typical refund time</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 bg-white">
+            <tbody className="divide-y divide-gray-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
               {[
                 ["UPI / Wallet", "1–3 business days"],
                 ["Credit / Debit card", "5–7 business days"],
@@ -203,14 +203,14 @@ const sections = [
                 ["Cash on delivery (pharmacy)", "Immediate (refund processed at pickup or via bank transfer within 3 days)"],
               ].map(([method, time]) => (
                 <tr key={method}>
-                  <td className="px-4 py-3 font-medium text-gray-900">{method}</td>
-                  <td className="px-4 py-3 text-gray-700">{time}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-slate-100">{method}</td>
+                  <td className="px-4 py-3 text-gray-700 dark:text-slate-300">{time}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <p className="mt-4 text-xs text-gray-500">
+        <p className="mt-4 text-xs text-gray-500 dark:text-slate-400">
           Refunds are issued only to the original payment instrument used at
           checkout. We are unable to redirect a refund to a different card,
           UPI id, or bank account.
@@ -282,7 +282,7 @@ const sections = [
             <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-            <span className="text-sm text-gray-700">{item}</span>
+            <span className="text-sm text-gray-700 dark:text-slate-300">{item}</span>
           </li>
         ))}
       </ul>
@@ -298,7 +298,7 @@ const sections = [
           We hope to resolve every concern directly via support. If you
           remain unsatisfied with our refund decision, you can:
         </p>
-        <ol className="list-inside list-decimal space-y-2 text-sm text-gray-700">
+        <ol className="list-inside list-decimal space-y-2 text-sm text-gray-700 dark:text-slate-300">
           <li>
             Escalate by emailing{" "}
             <a href="mailto:grievance@odudoc.com" className="font-semibold text-primary-600 hover:underline">
@@ -365,7 +365,7 @@ export default function RefundPolicyPage() {
           <div className="mt-6 flex flex-wrap gap-2">
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
-              className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-sm font-semibold text-primary-700 shadow-md transition hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 rounded-full bg-white dark:bg-slate-900 px-5 py-2 text-sm font-semibold text-primary-700 shadow-md transition hover:-translate-y-0.5"
             >
               ✉ Contact support
             </a>
@@ -382,8 +382,8 @@ export default function RefundPolicyPage() {
       {/* Body */}
       <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Table of contents */}
-        <nav className="mb-10 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500">
+        <nav className="mb-10 rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-5 shadow-sm">
+          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500 dark:text-slate-400">
             On this page
           </p>
           <ul className="grid gap-1 sm:grid-cols-2">
@@ -391,7 +391,7 @@ export default function RefundPolicyPage() {
               <li key={s.id}>
                 <a
                   href={`#${s.id}`}
-                  className="block rounded-lg px-2 py-1 text-sm text-gray-700 transition hover:bg-primary-50 hover:text-primary-700"
+                  className="block rounded-lg px-2 py-1 text-sm text-gray-700 dark:text-slate-300 transition hover:bg-primary-50 hover:text-primary-700"
                 >
                   {s.title}
                 </a>
@@ -409,9 +409,9 @@ export default function RefundPolicyPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={s.icon} />
                   </svg>
                 </div>
-                <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">{s.title}</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100 sm:text-2xl">{s.title}</h2>
               </div>
-              <div className="ml-13 text-sm leading-relaxed text-gray-700 sm:ml-13">
+              <div className="ml-13 text-sm leading-relaxed text-gray-700 dark:text-slate-300 sm:ml-13">
                 {s.content}
               </div>
             </section>
@@ -420,8 +420,8 @@ export default function RefundPolicyPage() {
 
         {/* Closing card */}
         <div className="mt-12 overflow-hidden rounded-3xl border border-primary-100 bg-gradient-to-br from-primary-50 via-indigo-50/60 to-fuchsia-50/40 p-8 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900">Still have questions?</h3>
-          <p className="mt-2 max-w-xl text-sm text-gray-700">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">Still have questions?</h3>
+          <p className="mt-2 max-w-xl text-sm text-gray-700 dark:text-slate-300">
             Our support team is real humans, not chatbots, and we genuinely
             want every refund situation to end in a satisfied user. Reach
             out and we&apos;ll figure it out together.
@@ -435,13 +435,13 @@ export default function RefundPolicyPage() {
             </a>
             <Link
               href="/contact"
-              className="rounded-full border border-gray-200 bg-white px-5 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+              className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-2 text-sm font-semibold text-gray-700 dark:text-slate-300 transition hover:bg-gray-50 dark:bg-slate-900"
             >
               Contact form
             </Link>
             <Link
               href="/legal"
-              className="rounded-full border border-gray-200 bg-white px-5 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+              className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-2 text-sm font-semibold text-gray-700 dark:text-slate-300 transition hover:bg-gray-50 dark:bg-slate-900"
             >
               All legal pages
             </Link>
@@ -449,7 +449,7 @@ export default function RefundPolicyPage() {
         </div>
 
         {/* Cross-links */}
-        <p className="mt-8 text-center text-xs text-gray-500">
+        <p className="mt-8 text-center text-xs text-gray-500 dark:text-slate-400">
           See also:{" "}
           <Link href="/privacy" className="font-semibold text-primary-600 hover:underline">
             Privacy Policy

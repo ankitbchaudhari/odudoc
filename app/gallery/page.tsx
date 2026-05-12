@@ -86,13 +86,13 @@ export default function GalleryPage() {
           <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-100 to-purple-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-indigo-700">
             <span>📸</span> Virtual tour
           </span>
-          <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-6xl">
+          <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-gray-900 dark:text-slate-100 sm:text-6xl">
             Our facilities &amp;{" "}
             <span className="bg-gradient-to-r from-indigo-600 via-purple-500 to-rose-500 bg-clip-text text-transparent">
               gallery
             </span>
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600 dark:text-slate-300">
             Take a virtual tour of our world-class healthcare facilities, meet our doctors, and explore our medical equipment.
           </p>
         </div>
@@ -111,7 +111,7 @@ export default function GalleryPage() {
                 className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
                   isActive
                     ? `bg-gradient-to-r ${grad} text-white shadow-lg hover:scale-105`
-                    : "border border-gray-200 bg-white text-gray-600 hover:border-primary-200 hover:text-primary-700 hover:shadow-sm"
+                    : "border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:border-primary-200 hover:text-primary-700 hover:shadow-sm"
                 }`}
               >
                 {cat}
@@ -157,7 +157,7 @@ export default function GalleryPage() {
 
         {filteredItems.length === 0 && (
           <div className="rounded-2xl border border-gray-100 bg-gradient-to-br from-slate-50 to-primary-50/40 py-16 text-center shadow-sm">
-            <p className="text-lg font-semibold text-gray-500">No items found in this category.</p>
+            <p className="text-lg font-semibold text-gray-500 dark:text-slate-400">No items found in this category.</p>
           </div>
         )}
       </div>
@@ -167,13 +167,13 @@ export default function GalleryPage() {
         <div className="pointer-events-none absolute -top-20 -left-20 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-sky-200/40 to-indigo-200/40 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-20 -right-20 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-rose-200/40 to-amber-200/40 blur-3xl" />
         <div className="relative mx-auto max-w-3xl px-4 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
             Want to{" "}
             <span className="bg-gradient-to-r from-primary-600 via-purple-500 to-rose-500 bg-clip-text text-transparent">
               visit in person?
             </span>
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-gray-600">
+          <p className="mx-auto mt-4 max-w-xl text-gray-600 dark:text-slate-300">
             Schedule a facility tour or connect with our team to learn more about our partner hospitals.
           </p>
         </div>
@@ -186,7 +186,7 @@ export default function GalleryPage() {
           onClick={() => setSelectedId(null)}
         >
           <div
-            className="relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl"
+            className="relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-3xl bg-white dark:bg-slate-900 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -228,12 +228,12 @@ export default function GalleryPage() {
                 <span className="rounded-full bg-gradient-to-r from-primary-100 to-teal-100 px-3 py-1 text-xs font-semibold text-primary-700">
                   {selected.category}
                 </span>
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-gray-400 dark:text-slate-500">
                   {currentIndex + 1} / {filteredItems.length}
                 </span>
               </div>
-              <h3 className="mt-3 text-xl font-bold text-gray-900">{selected.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-gray-600">{selected.description}</p>
+              <h3 className="mt-3 text-xl font-bold text-gray-900 dark:text-slate-100">{selected.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-slate-300">{selected.description}</p>
             </div>
           </div>
         </div>

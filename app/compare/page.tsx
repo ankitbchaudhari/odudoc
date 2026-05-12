@@ -28,10 +28,10 @@ export default function ComparesIndexPage() {
 
       <section className="bg-gradient-to-br from-indigo-50 via-white to-primary-50 py-16">
         <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-extrabold text-gray-900 md:text-5xl">
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 md:text-5xl">
             Healthcare <span className="text-primary-600">comparisons</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600 dark:text-slate-300">
             Structured side-by-sides for the decisions patients and clinics
             actually have to make — without the fluff.
           </p>
@@ -45,12 +45,12 @@ export default function ComparesIndexPage() {
               <Link
                 key={c.slug}
                 href={`/compare/${c.slug}`}
-                className="group rounded-2xl border border-gray-200 bg-white p-6 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:shadow-lg"
+                className="group rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:shadow-lg"
               >
-                <h2 className="text-xl font-bold text-gray-900 group-hover:text-primary-700">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100 group-hover:text-primary-700">
                   {c.a} vs {c.b}
                 </h2>
-                <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                <p className="mt-2 text-sm text-gray-600 dark:text-slate-300 leading-relaxed">
                   {c.tagline}
                 </p>
               </Link>

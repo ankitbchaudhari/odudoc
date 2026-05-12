@@ -8,17 +8,17 @@ export const metadata = {
 
 export default function DeleteAccountPage() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16 text-gray-800">
-      <h1 className="mb-2 text-3xl font-bold text-gray-900">
+    <main className="mx-auto max-w-3xl px-6 py-16 text-gray-800 dark:text-slate-200">
+      <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-slate-100">
         Delete your OduDoc account
       </h1>
-      <p className="mb-8 text-sm text-gray-500">
+      <p className="mb-8 text-sm text-gray-500 dark:text-slate-400">
         This page describes how to request deletion of your account on
         OduDoc and what data is removed or retained.
       </p>
 
-      <section className="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-3 text-xl font-semibold text-gray-900">
+      <section className="mb-8 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <h2 className="mb-3 text-xl font-semibold text-gray-900 dark:text-slate-100">
           From the mobile app (recommended)
         </h2>
         <ol className="list-inside list-decimal space-y-2 text-sm">
@@ -33,8 +33,8 @@ export default function DeleteAccountPage() {
         </ol>
       </section>
 
-      <section className="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-3 text-xl font-semibold text-gray-900">From email</h2>
+      <section className="mb-8 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <h2 className="mb-3 text-xl font-semibold text-gray-900 dark:text-slate-100">From email</h2>
         <p className="text-sm">
           If you can&apos;t access the app, send a deletion request to{" "}
           <a
@@ -47,8 +47,8 @@ export default function DeleteAccountPage() {
         </p>
       </section>
 
-      <section className="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-3 text-xl font-semibold text-gray-900">
+      <section className="mb-8 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <h2 className="mb-3 text-xl font-semibold text-gray-900 dark:text-slate-100">
           What gets deleted within 24 hours
         </h2>
         <ul className="list-inside list-disc space-y-2 text-sm">
@@ -94,8 +94,8 @@ export default function DeleteAccountPage() {
         </p>
       </section>
 
-      <section className="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-3 text-xl font-semibold text-gray-900">
+      <section className="mb-8 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <h2 className="mb-3 text-xl font-semibold text-gray-900 dark:text-slate-100">
           What happens to doctors who consulted with you
         </h2>
         <p className="text-sm">
@@ -106,8 +106,8 @@ export default function DeleteAccountPage() {
         </p>
       </section>
 
-      <section className="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-3 text-xl font-semibold text-gray-900">
+      <section className="mb-8 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <h2 className="mb-3 text-xl font-semibold text-gray-900 dark:text-slate-100">
           Reactivation
         </h2>
         <p className="text-sm">
@@ -123,8 +123,8 @@ export default function DeleteAccountPage() {
         </p>
       </section>
 
-      <section className="mb-2 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-3 text-xl font-semibold text-gray-900">Questions?</h2>
+      <section className="mb-2 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <h2 className="mb-3 text-xl font-semibold text-gray-900 dark:text-slate-100">Questions?</h2>
         <p className="text-sm">
           Read our full{" "}
           <Link
@@ -144,7 +144,7 @@ export default function DeleteAccountPage() {
         </p>
       </section>
 
-      <p className="mt-10 text-center text-xs text-gray-400">
+      <p className="mt-10 text-center text-xs text-gray-400 dark:text-slate-500">
         OduDoc — last updated April 2026
       </p>
     </main>

@@ -63,11 +63,11 @@ export default function SoapNotePanel({ note }: { note: SOAPNote }) {
       <div className="grid gap-3 sm:grid-cols-2">
         {sections.map(([title, lines, cls]) => (
           <div key={title} className={`rounded-lg border p-3 ${cls}`}>
-            <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-slate-700">{title}</p>
+            <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">{title}</p>
             {lines.length === 0 ? (
               <p className="text-xs text-slate-400">— nothing yet —</p>
             ) : (
-              <ul className="list-disc pl-5 text-xs text-slate-800 space-y-1">
+              <ul className="list-disc pl-5 text-xs text-slate-800 dark:text-slate-200 space-y-1">
                 {lines.map((l, i) => <li key={i}>{l}</li>)}
               </ul>
             )}
@@ -79,7 +79,7 @@ export default function SoapNotePanel({ note }: { note: SOAPNote }) {
 }
 
 function Stat({ label, v, accent }: { label: string; v: number; accent?: "indigo" | "emerald" | "rose" }) {
-  const cls = accent === "indigo" ? "bg-indigo-100 text-indigo-800" : accent === "emerald" ? "bg-emerald-100 text-emerald-800" : accent === "rose" ? "bg-rose-100 text-rose-800" : "bg-slate-100 text-slate-700";
+  const cls = accent === "indigo" ? "bg-indigo-100 text-indigo-800" : accent === "emerald" ? "bg-emerald-100 text-emerald-800" : accent === "rose" ? "bg-rose-100 text-rose-800" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300";
   return <span className={`rounded-md px-2 py-0.5 font-semibold ${cls}`}>{label}: <strong>{v}</strong></span>;
 }
 
@@ -96,5 +96,5 @@ function Strip({ title, tone, children }: { title: string; tone: "emerald" | "ro
 
 function Chip({ children, tone, rounded }: { children: React.ReactNode; tone: "emerald" | "rose" | "indigo"; rounded?: boolean }) {
   const cls = tone === "emerald" ? "text-emerald-900 ring-emerald-200" : tone === "rose" ? "text-rose-900 ring-rose-200" : "text-indigo-900 ring-indigo-200";
-  return <span className={`bg-white px-2 py-0.5 text-xs font-semibold ring-1 ${cls} ${rounded ? "rounded-full" : "rounded-md"}`}>{children}</span>;
+  return <span className={`bg-white dark:bg-slate-900 px-2 py-0.5 text-xs font-semibold ring-1 ${cls} ${rounded ? "rounded-full" : "rounded-md"}`}>{children}</span>;
 }

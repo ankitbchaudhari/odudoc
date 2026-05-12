@@ -161,7 +161,7 @@ export default async function ConsultPage() {
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href="/consult/book"
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-primary-700 shadow-lg transition-transform hover:scale-[1.02]"
+                className="inline-flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 px-6 py-3 text-sm font-bold text-primary-700 shadow-lg transition-transform hover:scale-[1.02]"
               >
                 Consult now
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -192,7 +192,7 @@ export default async function ConsultPage() {
               {/* Background circle */}
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 to-white/0 blur-xl" />
               {/* Doctor illustration card */}
-              <div className="absolute left-1/2 top-1/2 h-[360px] w-[260px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl bg-white shadow-2xl">
+              <div className="absolute left-1/2 top-1/2 h-[360px] w-[260px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl bg-white dark:bg-slate-900 shadow-2xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&q=80&auto=format&fit=crop"
@@ -201,20 +201,20 @@ export default async function ConsultPage() {
                 />
               </div>
               {/* Floating "ready to join" card */}
-              <div className="absolute -left-4 top-10 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-2 text-xs font-semibold text-gray-800 shadow-lg backdrop-blur-sm">
+              <div className="absolute -left-4 top-10 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-2 text-xs font-semibold text-gray-800 dark:text-slate-200 shadow-lg backdrop-blur-sm">
                 <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
                 Dr. Johnson is online
               </div>
               {/* Floating rating card */}
-              <div className="absolute -right-4 bottom-14 rounded-xl bg-white/95 px-3 py-2 text-xs text-gray-700 shadow-lg backdrop-blur-sm">
+              <div className="absolute -right-4 bottom-14 rounded-xl bg-white/95 px-3 py-2 text-xs text-gray-700 dark:text-slate-300 shadow-lg backdrop-blur-sm">
                 <div className="flex items-center gap-1">
                   <span className="text-yellow-500">★</span>
                   <span className="font-bold">4.9</span>
-                  <span className="text-gray-400">(5M+ ratings)</span>
+                  <span className="text-gray-400 dark:text-slate-500">(5M+ ratings)</span>
                 </div>
               </div>
               {/* Floating prescription icon */}
-              <div className="absolute -bottom-4 left-6 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-2 text-xs font-semibold text-gray-800 shadow-lg backdrop-blur-sm">
+              <div className="absolute -bottom-4 left-6 flex items-center gap-2 rounded-xl bg-white/95 px-3 py-2 text-xs font-semibold text-gray-800 dark:text-slate-200 shadow-lg backdrop-blur-sm">
                 <span className="text-base">📋</span>
                 Instant prescription
               </div>
@@ -228,10 +228,10 @@ export default async function ConsultPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-end">
             <div>
-              <h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">
+              <h2 className="text-2xl font-extrabold text-gray-900 dark:text-slate-100 sm:text-3xl">
                 Consult top doctors online for any health concern
               </h2>
-              <p className="mt-2 text-gray-500">Private · Confidential · Doctors available 24x7</p>
+              <p className="mt-2 text-gray-500 dark:text-slate-400">Private · Confidential · Doctors available 24x7</p>
             </div>
             <Link
               href="/doctors"
@@ -252,7 +252,7 @@ export default async function ConsultPage() {
                   {c.icon}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-gray-900">{c.title}</p>
+                  <p className="text-sm font-bold text-gray-900 dark:text-slate-100">{c.title}</p>
                   <p className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-primary-700">
                     Consult now
                     <svg className="h-3 w-3 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -267,19 +267,19 @@ export default async function ConsultPage() {
       </section>
 
       {/* ── 24x7 Specialist Strip ── */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-gray-50 dark:bg-slate-900 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-end">
             <div>
-              <h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">
+              <h2 className="text-2xl font-extrabold text-gray-900 dark:text-slate-100 sm:text-3xl">
                 Book appointment with experts
               </h2>
-              <p className="mt-2 text-gray-500">24x7 specialists available — no waiting rooms</p>
+              <p className="mt-2 text-gray-500 dark:text-slate-400">24x7 specialists available — no waiting rooms</p>
             </div>
           </div>
 
           {specialists.length === 0 ? (
-            <p className="mt-8 text-sm text-gray-500">
+            <p className="mt-8 text-sm text-gray-500 dark:text-slate-400">
               No specialties are active right now. Please check back soon.
             </p>
           ) : (
@@ -287,7 +287,7 @@ export default async function ConsultPage() {
               {specialists.map((s) => (
                 <div
                   key={s.id}
-                  className="flex flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  className="flex flex-col rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className="flex items-start justify-between">
                     <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-50 text-2xl">
@@ -298,10 +298,10 @@ export default async function ConsultPage() {
                       {s.waitLabel}
                     </span>
                   </div>
-                  <h3 className="mt-3 font-semibold text-gray-900">{s.name}</h3>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <h3 className="mt-3 font-semibold text-gray-900 dark:text-slate-100">{s.name}</h3>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
                     Starts at{" "}
-                    <span className="font-bold text-gray-900">${s.consultFee}</span>
+                    <span className="font-bold text-gray-900 dark:text-slate-100">${s.consultFee}</span>
                   </p>
                   <Link
                     href="/consult/book"
@@ -322,10 +322,10 @@ export default async function ConsultPage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-end">
               <div>
-                <h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">
+                <h2 className="text-2xl font-extrabold text-gray-900 dark:text-slate-100 sm:text-3xl">
                   Doctors available for consultation
                 </h2>
-                <p className="mt-2 text-gray-500">
+                <p className="mt-2 text-gray-500 dark:text-slate-400">
                   Verified specialists ready to consult with you online
                 </p>
               </div>
@@ -362,8 +362,8 @@ export default async function ConsultPage() {
                 <div className="absolute -top-2 left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-primary-600 text-xs font-bold text-white">
                   {s.num}
                 </div>
-                <h3 className="mt-2 text-lg font-bold text-gray-900">{s.title}</h3>
-                <p className="mt-1 text-sm text-gray-500">{s.desc}</p>
+                <h3 className="mt-2 text-lg font-bold text-gray-900 dark:text-slate-100">{s.title}</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{s.desc}</p>
               </div>
             ))}
           </div>
@@ -395,11 +395,11 @@ export default async function ConsultPage() {
             {whyUs.map((b) => (
               <div
                 key={b.title}
-                className="rounded-2xl border border-gray-100 bg-white p-5 text-center shadow-sm"
+                className="rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-5 text-center shadow-sm"
               >
                 <span className="mb-3 block text-4xl">{b.icon}</span>
-                <h3 className="font-semibold text-gray-900">{b.title}</h3>
-                <p className="mt-1 text-sm text-gray-500">{b.desc}</p>
+                <h3 className="font-semibold text-gray-900 dark:text-slate-100">{b.title}</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{b.desc}</p>
               </div>
             ))}
           </div>
@@ -407,7 +407,7 @@ export default async function ConsultPage() {
       </section>
 
       {/* ── FAQ ── */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-gray-50 dark:bg-slate-900 py-16">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <h2 className="section-title text-center">Frequently asked questions</h2>
           <p className="section-subtitle mb-10 text-center">Got questions? We have answers</p>
@@ -424,7 +424,7 @@ export default async function ConsultPage() {
           </div>
           <Link
             href="/consult/book"
-            className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-primary-700 shadow-lg transition-transform hover:scale-[1.02]"
+            className="inline-flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 px-6 py-3 text-sm font-bold text-primary-700 shadow-lg transition-transform hover:scale-[1.02]"
           >
             Consult now
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

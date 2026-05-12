@@ -406,7 +406,7 @@ export default function CorporatePage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-900 shadow-lg transition-transform hover:scale-[1.02]"
+                className="inline-flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 px-6 py-3 text-sm font-bold text-slate-900 dark:text-slate-100 shadow-lg transition-transform hover:scale-[1.02]"
               >
                 Request a demo
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -489,14 +489,14 @@ export default function CorporatePage() {
       </section>
 
       {/* Differentiators */}
-      <section className="bg-white py-16">
+      <section className="bg-white dark:bg-slate-900 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {differentiators.map((d) => (
               <div key={d.title} className="rounded-2xl border border-gray-100 p-6 shadow-sm">
                 <span className="mb-3 block text-3xl">{d.icon}</span>
-                <h3 className="text-lg font-bold text-gray-900">{d.title}</h3>
-                <p className="mt-2 text-sm text-gray-500">{d.desc}</p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">{d.title}</h3>
+                <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">{d.desc}</p>
               </div>
             ))}
           </div>
@@ -504,16 +504,16 @@ export default function CorporatePage() {
       </section>
 
       {/* Modules grid */}
-      <section id="modules" className="bg-gray-50 py-20">
+      <section id="modules" className="bg-gray-50 dark:bg-slate-900 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <span className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-indigo-700">
               The platform
             </span>
-            <h2 className="mt-4 text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-extrabold text-gray-900 dark:text-slate-100 sm:text-4xl">
               One system. Every module your hospital runs on.
             </h2>
-            <p className="mt-3 text-gray-500">
+            <p className="mt-3 text-gray-500 dark:text-slate-400">
               Turn modules on per branch, per department — pay only for what you use.
             </p>
           </div>
@@ -521,14 +521,14 @@ export default function CorporatePage() {
             {modules.map((m) => (
               <div
                 key={m.title}
-                className="flex gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                className="flex gap-4 rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
               >
                 <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-teal-50 text-2xl">
                   {m.icon}
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900">{m.title}</h3>
-                  <p className="mt-1 text-sm text-gray-500">{m.desc}</p>
+                  <h3 className="font-bold text-gray-900 dark:text-slate-100">{m.title}</h3>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{m.desc}</p>
                 </div>
               </div>
             ))}
@@ -545,10 +545,10 @@ export default function CorporatePage() {
             <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-teal-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm">
               Clinical AI — shipped and live
             </span>
-            <h2 className="mt-4 text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-extrabold text-gray-900 dark:text-slate-100 sm:text-4xl">
               AI that actually saves doctors time.
             </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-gray-500">
+            <p className="mx-auto mt-3 max-w-2xl text-gray-500 dark:text-slate-400">
               Three features, built on medical-grade LLMs, designed to fit the way
               OPDs actually run — anywhere in the world. Every output is advisory — the
               doctor signs off on every line.
@@ -559,7 +559,7 @@ export default function CorporatePage() {
             {clinicalAi.map((f, i) => (
               <div
                 key={f.eyebrow}
-                className={`grid grid-cols-1 gap-8 rounded-3xl border border-gray-100 bg-white p-8 shadow-sm md:grid-cols-[auto_1fr_auto] md:items-center md:p-10 ${
+                className={`grid grid-cols-1 gap-8 rounded-3xl border border-gray-100 bg-white dark:bg-slate-900 p-8 shadow-sm md:grid-cols-[auto_1fr_auto] md:items-center md:p-10 ${
                   i % 2 === 1 ? "md:bg-gradient-to-br md:from-white md:to-indigo-50/40" : ""
                 }`}
               >
@@ -570,16 +570,16 @@ export default function CorporatePage() {
                   <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">
                     {f.eyebrow}
                   </p>
-                  <h3 className="mt-2 text-xl font-extrabold text-gray-900 sm:text-2xl">
+                  <h3 className="mt-2 text-xl font-extrabold text-gray-900 dark:text-slate-100 sm:text-2xl">
                     {f.title}
                   </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-gray-600">
+                  <p className="mt-3 text-sm leading-relaxed text-gray-600 dark:text-slate-300">
                     {f.desc}
                   </p>
                 </div>
                 <ul className="space-y-2 border-t border-gray-100 pt-4 md:max-w-xs md:border-l md:border-t-0 md:pl-8 md:pt-0">
                   {f.bullets.map((b) => (
-                    <li key={b} className="flex items-start gap-2 text-sm text-gray-700">
+                    <li key={b} className="flex items-start gap-2 text-sm text-gray-700 dark:text-slate-300">
                       <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
@@ -601,7 +601,7 @@ export default function CorporatePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-slate-400">
               Available on Hospital and Enterprise plans. Doctors keep full
               editorial control — AI never writes a signed prescription.
             </p>
@@ -610,11 +610,11 @@ export default function CorporatePage() {
       </section>
 
       {/* Pricing */}
-      <section className="bg-white py-20">
+      <section className="bg-white dark:bg-slate-900 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">Simple, transparent pricing</h2>
-            <p className="mt-3 text-gray-500">Start with a 14-day trial. No credit card required.</p>
+            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 sm:text-4xl">Simple, transparent pricing</h2>
+            <p className="mt-3 text-gray-500 dark:text-slate-400">Start with a 14-day trial. No credit card required.</p>
           </div>
           <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-3">
             {plans.map((p) => (
@@ -623,7 +623,7 @@ export default function CorporatePage() {
                 className={`relative rounded-2xl border p-8 shadow-sm transition-transform hover:-translate-y-1 ${
                   p.highlight
                     ? "border-indigo-500 bg-gradient-to-br from-indigo-50 to-white ring-2 ring-indigo-500"
-                    : "border-gray-100 bg-white"
+                    : "border-gray-100 bg-white dark:bg-slate-900"
                 }`}
               >
                 {p.highlight && (
@@ -631,15 +631,15 @@ export default function CorporatePage() {
                     Most popular
                   </span>
                 )}
-                <h3 className="text-xl font-bold text-gray-900">{p.name}</h3>
-                <p className="mt-1 text-sm text-gray-500">{p.blurb}</p>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-slate-100">{p.name}</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{p.blurb}</p>
                 <div className="mt-5 flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-gray-900">{p.price}</span>
-                  <span className="text-sm text-gray-500">{p.unit}</span>
+                  <span className="text-4xl font-extrabold text-gray-900 dark:text-slate-100">{p.price}</span>
+                  <span className="text-sm text-gray-500 dark:text-slate-400">{p.unit}</span>
                 </div>
                 <ul className="mt-6 space-y-3">
                   {p.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
+                    <li key={f} className="flex items-start gap-2 text-sm text-gray-700 dark:text-slate-300">
                       <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
@@ -652,7 +652,7 @@ export default function CorporatePage() {
                   className={`mt-8 block w-full rounded-xl px-4 py-3 text-center text-sm font-bold transition-colors ${
                     p.highlight
                       ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                      : "border border-gray-300 text-gray-900 hover:bg-gray-50"
+                      : "border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-slate-100 hover:bg-gray-50 dark:bg-slate-900"
                   }`}
                 >
                   {p.cta}
@@ -670,10 +670,10 @@ export default function CorporatePage() {
             <span className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-indigo-700">
               Enterprise plan
             </span>
-            <h2 className="mt-4 text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-extrabold text-gray-900 dark:text-slate-100 sm:text-4xl">
               Build your own module stack
             </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-gray-500">
+            <p className="mx-auto mt-3 max-w-2xl text-gray-500 dark:text-slate-400">
               The Hospital tier ships all {TOTAL_MODULES} clinical modules by default. Enterprise
               buyers instead pick exactly what they want — we price against your selection and
               add any custom integrations you need.
@@ -696,10 +696,10 @@ export default function CorporatePage() {
             <span className="inline-block rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-indigo-700">
               🛠 Platform plumbing
             </span>
-            <h2 className="mt-3 text-3xl font-extrabold text-slate-900 sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-extrabold text-slate-900 dark:text-slate-100 sm:text-4xl">
               Cross-cutting capabilities every module inherits
             </h2>
-            <p className="mt-3 text-slate-600">
+            <p className="mt-3 text-slate-600 dark:text-slate-300">
               Audit logs, watermarking, biometric unlock, voice + WhatsApp booking, metered AI, anti-counterfeit
               verification, country-aware tax — these aren&apos;t per-module add-ons. They&apos;re platform-wide
               infrastructure that applies to whatever modules you pick.
@@ -707,12 +707,12 @@ export default function CorporatePage() {
           </div>
           <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {PLATFORM_CAPABILITIES.map((c) => (
-              <article key={c.title} className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition-shadow hover:shadow-md">
+              <article key={c.title} className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 transition-shadow hover:shadow-md">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">{c.icon}</span>
                   <div>
-                    <p className="text-base font-bold text-slate-900">{c.title}</p>
-                    <p className="mt-1 text-sm text-slate-600">{c.desc}</p>
+                    <p className="text-base font-bold text-slate-900 dark:text-slate-100">{c.title}</p>
+                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{c.desc}</p>
                   </div>
                 </div>
               </article>

@@ -66,7 +66,7 @@ const hospitals: { name: string; location: string }[] = [
 
 export default function HealthcareDirectoryPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Hero */}
       <section className="bg-gradient-to-br from-primary-700 to-primary-900 py-16 text-white">
         <div className="mx-auto max-w-5xl px-4 text-center">
@@ -80,13 +80,13 @@ export default function HealthcareDirectoryPage() {
       {/* Browse by Specialty */}
       <section className="py-12">
         <div className="mx-auto max-w-6xl px-4">
-          <h2 className="mb-6 text-xl font-bold text-gray-900">Browse by Specialty</h2>
+          <h2 className="mb-6 text-xl font-bold text-gray-900 dark:text-slate-100">Browse by Specialty</h2>
           <div className="flex flex-wrap gap-2">
             {specialties.map((s) => (
               <Link
                 key={s}
                 href={`/doctors?specialty=${encodeURIComponent(s)}`}
-                className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+                className="rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-gray-700 dark:text-slate-300 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
               >
                 {s}
               </Link>
@@ -96,17 +96,17 @@ export default function HealthcareDirectoryPage() {
       </section>
 
       {/* Browse by City */}
-      <section className="bg-gray-50 py-12">
+      <section className="bg-gray-50 dark:bg-slate-900 py-12">
         <div className="mx-auto max-w-6xl px-4">
-          <h2 className="mb-6 text-xl font-bold text-gray-900">Browse by City</h2>
+          <h2 className="mb-6 text-xl font-bold text-gray-900 dark:text-slate-100">Browse by City</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
             {cities.map((c) => (
               <Link
                 key={c}
                 href={`/doctors?city=${encodeURIComponent(c)}`}
-                className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:border-primary-300 hover:text-primary-700"
+                className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm font-medium text-gray-700 dark:text-slate-300 transition-colors hover:border-primary-300 hover:text-primary-700"
               >
-                <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-4 w-4 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -120,13 +120,13 @@ export default function HealthcareDirectoryPage() {
       {/* Browse by Condition */}
       <section className="py-12">
         <div className="mx-auto max-w-6xl px-4">
-          <h2 className="mb-6 text-xl font-bold text-gray-900">Browse by Condition</h2>
+          <h2 className="mb-6 text-xl font-bold text-gray-900 dark:text-slate-100">Browse by Condition</h2>
           <div className="flex flex-wrap gap-2">
             {conditions.map((c) => (
               <Link
                 key={c}
                 href={`/doctors?condition=${encodeURIComponent(c)}`}
-                className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+                className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-gray-700 dark:text-slate-300 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
               >
                 {c}
               </Link>
@@ -136,18 +136,18 @@ export default function HealthcareDirectoryPage() {
       </section>
 
       {/* Top Hospitals */}
-      <section className="bg-gray-50 py-12">
+      <section className="bg-gray-50 dark:bg-slate-900 py-12">
         <div className="mx-auto max-w-6xl px-4">
-          <h2 className="mb-6 text-xl font-bold text-gray-900">Top Hospitals</h2>
+          <h2 className="mb-6 text-xl font-bold text-gray-900 dark:text-slate-100">Top Hospitals</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {hospitals.map((h) => (
-              <div key={h.name} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md">
+              <div key={h.name} className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 transition-shadow hover:shadow-md">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50 text-sm font-bold text-primary-600">
                   {h.name[0]}
                 </div>
                 <div className="min-w-0">
-                  <h3 className="truncate text-sm font-semibold text-gray-900">{h.name}</h3>
-                  <p className="truncate text-xs text-gray-500">{h.location}</p>
+                  <h3 className="truncate text-sm font-semibold text-gray-900 dark:text-slate-100">{h.name}</h3>
+                  <p className="truncate text-xs text-gray-500 dark:text-slate-400">{h.location}</p>
                 </div>
               </div>
             ))}
@@ -158,8 +158,8 @@ export default function HealthcareDirectoryPage() {
       {/* CTA */}
       <section className="py-12">
         <div className="mx-auto max-w-3xl px-4 text-center">
-          <h2 className="mb-4 text-xl font-bold text-gray-900">Can't find what you're looking for?</h2>
-          <p className="mb-6 text-sm text-gray-600">Our care coordinators can help you find the right doctor.</p>
+          <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-slate-100">Can't find what you're looking for?</h2>
+          <p className="mb-6 text-sm text-gray-600 dark:text-slate-300">Our care coordinators can help you find the right doctor.</p>
           <Link href="/contact" className="btn-primary">Contact Us</Link>
         </div>
       </section>

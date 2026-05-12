@@ -19,24 +19,24 @@ export default function PricingPage() {
       {/* Hero */}
       <section className="bg-gradient-to-br from-primary-50 via-white to-teal-50 py-16 md:py-20">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-extrabold text-gray-900 md:text-5xl">
+          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-slate-100 md:text-5xl">
             Pricing for{" "}
             <span className="bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-600 bg-clip-text text-transparent">
               every kind of user
             </span>
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-500">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-500 dark:text-slate-400">
             One platform, two audiences. Pick yours.
           </p>
 
           {/* Audience tabs */}
-          <div className="mt-8 inline-flex items-center gap-1 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
+          <div className="mt-8 inline-flex items-center gap-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1 shadow-sm">
             <button
               onClick={() => setAudience("clinics")}
               className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all ${
                 audience === "clinics"
                   ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md"
-                  : "text-slate-600 hover:bg-slate-50"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
               }`}
             >
               For clinics &amp; doctors
@@ -46,7 +46,7 @@ export default function PricingPage() {
               className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all ${
                 audience === "patients"
                   ? "bg-gradient-to-r from-sky-600 to-blue-600 text-white shadow-md"
-                  : "text-slate-600 hover:bg-slate-50"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-900"
               }`}
             >
               For patients
@@ -56,7 +56,7 @@ export default function PricingPage() {
           {/* Annual toggle — only relevant for the patients tab. */}
           {audience === "patients" && (
             <div className="mt-6 flex items-center justify-center gap-4">
-              <span className={`text-sm font-medium ${!annual ? "text-gray-900" : "text-gray-500"}`}>
+              <span className={`text-sm font-medium ${!annual ? "text-gray-900 dark:text-slate-100" : "text-gray-500 dark:text-slate-400"}`}>
                 Monthly
               </span>
               <button
@@ -65,10 +65,10 @@ export default function PricingPage() {
                 aria-label="Toggle annual pricing"
               >
                 <span
-                  className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow-sm transition-transform ${annual ? "translate-x-5" : ""}`}
+                  className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white dark:bg-slate-900 shadow-sm transition-transform ${annual ? "translate-x-5" : ""}`}
                 />
               </button>
-              <span className={`text-sm font-medium ${annual ? "text-gray-900" : "text-gray-500"}`}>
+              <span className={`text-sm font-medium ${annual ? "text-gray-900 dark:text-slate-100" : "text-gray-500 dark:text-slate-400"}`}>
                 Annual
               </span>
               {annual && (
@@ -92,10 +92,10 @@ export default function PricingPage() {
             {pricingPlans.map((plan) => (
               <div
                 key={plan.id}
-                className={`relative rounded-2xl border-2 bg-white p-8 shadow-md transition-all duration-300 hover:shadow-xl ${
+                className={`relative rounded-2xl border-2 bg-white dark:bg-slate-900 p-8 shadow-md transition-all duration-300 hover:shadow-xl ${
                   plan.popular
                     ? "border-primary-600 scale-[1.02] md:scale-105 shadow-lg"
-                    : "border-gray-200"
+                    : "border-gray-200 dark:border-slate-800"
                 }`}
               >
                 {plan.popular && (
@@ -107,16 +107,16 @@ export default function PricingPage() {
                 )}
 
                 <div className="text-center">
-                  <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-                  <p className="mt-2 text-sm text-gray-500">{plan.description}</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-slate-100">{plan.name}</h3>
+                  <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">{plan.description}</p>
                 </div>
 
                 <div className="mt-6 text-center">
                   <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-4xl font-extrabold text-gray-900">
+                    <span className="text-4xl font-extrabold text-gray-900 dark:text-slate-100">
                       ${annual ? plan.annualPrice : plan.monthlyPrice}
                     </span>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-gray-500 dark:text-slate-400">
                       /{annual ? "year" : "month"}
                     </span>
                   </div>
@@ -139,7 +139,7 @@ export default function PricingPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       )}
-                      <span className={`text-sm ${feature.included ? "text-gray-700" : "text-gray-400"}`}>
+                      <span className={`text-sm ${feature.included ? "text-gray-700 dark:text-slate-300" : "text-gray-400 dark:text-slate-500"}`}>
                         {feature.text}
                       </span>
                     </li>
@@ -165,22 +165,22 @@ export default function PricingPage() {
       </section>
 
       {/* Feature Comparison Table (Desktop) */}
-      <section className="hidden md:block bg-gray-50 py-16">
+      <section className="hidden md:block bg-gray-50 dark:bg-slate-900 py-16">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <h2 className="section-title text-center">Feature Comparison</h2>
           <p className="section-subtitle text-center">Compare plans side-by-side to find the best fit</p>
 
-          <div className="mt-10 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="mt-10 overflow-hidden rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
             <table className="w-full">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 w-2/5">Feature</th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">Basic</th>
+                <tr className="bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800">
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-slate-100 w-2/5">Feature</th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900 dark:text-slate-100">Basic</th>
                   <th className="px-6 py-4 text-center text-sm font-semibold text-primary-600 bg-primary-50">Premium</th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">Enterprise</th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900 dark:text-slate-100">Enterprise</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
                 {[
                   { feature: "Doctor Consultations", basic: "2/month", premium: "Unlimited", enterprise: "Unlimited" },
                   { feature: "Lab Test Discount", basic: "10%", premium: "25%", enterprise: "25%" },
@@ -196,7 +196,7 @@ export default function PricingPage() {
                   { feature: "Home Visit Doctors", basic: false, premium: false, enterprise: true },
                 ].map((row) => (
                   <tr key={row.feature}>
-                    <td className="px-6 py-3.5 text-sm text-gray-700 font-medium">{row.feature}</td>
+                    <td className="px-6 py-3.5 text-sm text-gray-700 dark:text-slate-300 font-medium">{row.feature}</td>
                     {[row.basic, row.premium, row.enterprise].map((val, i) => (
                       <td key={i} className={`px-6 py-3.5 text-center ${i === 1 ? "bg-primary-50/30" : ""}`}>
                         {val === true ? (
@@ -208,7 +208,7 @@ export default function PricingPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         ) : (
-                          <span className="text-sm text-gray-700">{val}</span>
+                          <span className="text-sm text-gray-700 dark:text-slate-300">{val}</span>
                         )}
                       </td>
                     ))}
@@ -232,15 +232,15 @@ export default function PricingPage() {
             {pricingFAQs.map((faq) => (
               <div
                 key={faq.id}
-                className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden"
+                className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden"
               >
                 <button
                   onClick={() => setOpenFaq(openFaq === faq.id ? null : faq.id)}
                   className="flex w-full items-center justify-between px-6 py-4 text-left"
                 >
-                  <span className="text-sm font-semibold text-gray-900">{faq.question}</span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-slate-100">{faq.question}</span>
                   <svg
-                    className={`h-5 w-5 flex-shrink-0 text-gray-400 transition-transform ${
+                    className={`h-5 w-5 flex-shrink-0 text-gray-400 dark:text-slate-500 transition-transform ${
                       openFaq === faq.id ? "rotate-180" : ""
                     }`}
                     fill="none"
@@ -252,7 +252,7 @@ export default function PricingPage() {
                 </button>
                 {openFaq === faq.id && (
                   <div className="border-t border-gray-100 px-6 py-4">
-                    <p className="text-sm text-gray-600 leading-relaxed">{faq.answer}</p>
+                    <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">{faq.answer}</p>
                   </div>
                 )}
               </div>
@@ -274,7 +274,7 @@ export default function PricingPage() {
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center rounded-lg bg-white px-6 py-3 text-sm font-semibold text-primary-600 shadow-sm transition-all hover:bg-gray-50"
+              className="inline-flex items-center justify-center rounded-lg bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-primary-600 shadow-sm transition-all hover:bg-gray-50 dark:bg-slate-900"
             >
               Contact Sales
             </Link>

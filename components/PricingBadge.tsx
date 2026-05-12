@@ -43,7 +43,7 @@ export default function PricingBadge({
 
       {originalPrice && originalPrice > price && (
         <span
-          className={`text-gray-400 line-through ${strikeSizeClasses[size]}`}
+          className={`text-gray-400 dark:text-slate-500 line-through ${strikeSizeClasses[size]}`}
         >
           {currency}
           {originalPrice.toFixed(2)}

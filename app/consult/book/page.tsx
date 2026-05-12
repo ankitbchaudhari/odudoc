@@ -330,30 +330,30 @@ export default function BookConsultationPage() {
     <div className="flex items-center">
       <div
         className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition-all ${
-          step >= num ? "bg-primary-600 text-white" : "bg-gray-200 text-gray-500"
+          step >= num ? "bg-primary-600 text-white" : "bg-gray-200 text-gray-500 dark:text-slate-400"
         }`}
       >
         {step > num ? "✓" : num}
       </div>
-      <span className={`ml-2 hidden text-xs sm:inline ${step >= num ? "font-medium text-gray-900" : "text-gray-400"}`}>
+      <span className={`ml-2 hidden text-xs sm:inline ${step >= num ? "font-medium text-gray-900 dark:text-slate-100" : "text-gray-400 dark:text-slate-500"}`}>
         {label}
       </span>
     </div>
   );
 
   return (
-    <div className="bg-gray-50 py-8">
+    <div className="bg-gray-50 dark:bg-slate-900 py-8">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <nav className="mb-6 text-sm text-gray-400">
+        <nav className="mb-6 text-sm text-gray-400 dark:text-slate-500">
           <Link href="/" className="hover:text-primary-600">Home</Link>
           <span className="mx-2">/</span>
           <Link href="/consult" className="hover:text-primary-600">Consult</Link>
           <span className="mx-2">/</span>
-          <span className="text-gray-600">Book</span>
+          <span className="text-gray-600 dark:text-slate-300">Book</span>
         </nav>
 
-        <h1 className="mb-2 text-3xl font-bold text-gray-900">Book a Video Consultation</h1>
-        <p className="mb-4 text-gray-500">Share your concern, pick a doctor, pay, and you&apos;re set.</p>
+        <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-slate-100">Book a Video Consultation</h1>
+        <p className="mb-4 text-gray-500 dark:text-slate-400">Share your concern, pick a doctor, pay, and you&apos;re set.</p>
         {paymentsOff && (
           <div className="mb-6 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
             <span className="text-xl">🎉</span>
@@ -378,13 +378,13 @@ export default function BookConsultationPage() {
 
         {/* Step 1 */}
         {step === 1 && (
-          <div className="overflow-hidden rounded-3xl bg-white shadow-sm sm:rounded-3xl">
+          <div className="overflow-hidden rounded-3xl bg-white dark:bg-slate-900 shadow-sm sm:rounded-3xl">
             <div className="h-1.5 bg-gradient-to-r from-rose-500 via-amber-500 via-emerald-500 via-sky-500 to-violet-500" />
             <div className="p-6 sm:p-8">
               <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">Choose a Specialty</h2>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">Choose a Specialty</h2>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
                     {specialtiesLoading
                       ? "Loading departments…"
                       : `${specialties.length} specialties available · admin-managed`}
@@ -409,8 +409,8 @@ export default function BookConsultationPage() {
                   ))}
                 </div>
               ) : specialties.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-gray-200 py-12 text-center">
-                  <p className="text-sm text-gray-400">
+                <div className="rounded-2xl border border-dashed border-gray-200 dark:border-slate-800 py-12 text-center">
+                  <p className="text-sm text-gray-400 dark:text-slate-500">
                     🏥 No specialties have been published yet.
                   </p>
                 </div>
@@ -428,7 +428,7 @@ export default function BookConsultationPage() {
                         className={`group relative flex flex-col items-start overflow-hidden rounded-2xl border-2 p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 ${
                           active
                             ? `border-transparent bg-gradient-to-br ${theme.bg} ring-2 ${theme.ring} shadow-md`
-                            : "border-gray-100 bg-white hover:border-transparent hover:" + theme.ring
+                            : "border-gray-100 bg-white dark:bg-slate-900 hover:border-transparent hover:" + theme.ring
                         }`}
                       >
                         {/* Decorative blur blob — colour-themed, only visible on hover/active */}
@@ -446,11 +446,11 @@ export default function BookConsultationPage() {
                         </div>
 
                         {/* Name */}
-                        <p className="line-clamp-2 text-sm font-bold text-gray-900">{s.name}</p>
+                        <p className="line-clamp-2 text-sm font-bold text-gray-900 dark:text-slate-100">{s.name}</p>
 
                         {/* Description */}
                         {s.description && (
-                          <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-gray-500">
+                          <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-gray-500 dark:text-slate-400">
                             {s.description}
                           </p>
                         )}
@@ -462,12 +462,12 @@ export default function BookConsultationPage() {
                           >
                             ${s.consultFee}
                           </span>
-                          <span className="text-[10px] font-medium text-gray-400">
+                          <span className="text-[10px] font-medium text-gray-400 dark:text-slate-500">
                             {s.waitLabel}
                           </span>
                         </div>
                         {s.doctorCount > 0 && (
-                          <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-gray-50 px-2 py-0.5 text-[10px] font-medium text-gray-500 ring-1 ring-gray-100">
+                          <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-gray-50 dark:bg-slate-900 px-2 py-0.5 text-[10px] font-medium text-gray-500 dark:text-slate-400 ring-1 ring-gray-100">
                             <span className="h-1 w-1 rounded-full bg-emerald-500" />
                             {s.doctorCount} doctor{s.doctorCount === 1 ? "" : "s"}
                           </span>
@@ -483,14 +483,14 @@ export default function BookConsultationPage() {
 
         {/* Step 2 */}
         {step === 2 && (
-          <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-900">Choose a {selectedSpecialty}</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Choose a {selectedSpecialty}</h2>
               <button onClick={() => setStep(1)} className="text-sm text-primary-600 hover:underline">Change</button>
             </div>
             {filteredDoctors.length === 0 ? (
               <div className="py-12 text-center">
-                <p className="text-gray-500">No doctors available.</p>
+                <p className="text-gray-500 dark:text-slate-400">No doctors available.</p>
                 <button onClick={() => setStep(1)} className="mt-4 text-primary-600 hover:underline">Choose another specialty</button>
               </div>
             ) : (
@@ -506,23 +506,23 @@ export default function BookConsultationPage() {
                     ⚡
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-900">Any available {selectedSpecialty}</p>
-                    <p className="text-sm text-gray-500">Fastest path — the first doctor to accept will handle your consult.</p>
+                    <p className="font-semibold text-gray-900 dark:text-slate-100">Any available {selectedSpecialty}</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">Fastest path — the first doctor to accept will handle your consult.</p>
                     <div className="mt-1 flex items-center gap-2 text-xs">
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-medium text-emerald-700">
                         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
                         {filteredDoctors.filter((d) => d.instantAvailable).length} online now
                       </span>
-                      <span className="text-gray-400">· {filteredDoctors.length} doctor{filteredDoctors.length === 1 ? "" : "s"} in pool</span>
+                      <span className="text-gray-400 dark:text-slate-500">· {filteredDoctors.length} doctor{filteredDoctors.length === 1 ? "" : "s"} in pool</span>
                     </div>
                   </div>
                   <span className="text-sm font-semibold text-emerald-700">Pick for me →</span>
                 </button>
 
                 <div className="flex items-center gap-3 py-2">
-                  <div className="h-px flex-1 bg-gray-100" />
-                  <span className="text-xs font-medium uppercase tracking-wide text-gray-400">or pick a specific doctor</span>
-                  <div className="h-px flex-1 bg-gray-100" />
+                  <div className="h-px flex-1 bg-gray-100 dark:bg-slate-800" />
+                  <span className="text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">or pick a specific doctor</span>
+                  <div className="h-px flex-1 bg-gray-100 dark:bg-slate-800" />
                 </div>
 
                 {filteredDoctors.map((doc) => (
@@ -537,9 +537,9 @@ export default function BookConsultationPage() {
                       {doc.initials}
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-900">{doc.name}</p>
-                      <p className="text-sm text-gray-500">{doc.qualifications}</p>
-                      <div className="mt-1 flex items-center gap-3 text-xs text-gray-400">
+                      <p className="font-semibold text-gray-900 dark:text-slate-100">{doc.name}</p>
+                      <p className="text-sm text-gray-500 dark:text-slate-400">{doc.qualifications}</p>
+                      <div className="mt-1 flex items-center gap-3 text-xs text-gray-400 dark:text-slate-500">
                         <span>⭐ {doc.rating}</span>
                         <span>{doc.experience} yrs</span>
                         <span>{doc.city}</span>
@@ -565,9 +565,9 @@ export default function BookConsultationPage() {
 
         {/* Step 3 */}
         {step === 3 && (selectedDoctorData || poolMode) && (
-          <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-900">Choose a Time</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Choose a Time</h2>
               <button onClick={() => setStep(2)} className="text-sm text-primary-600 hover:underline">
                 {poolMode ? "Change" : "Change Doctor"}
               </button>
@@ -579,47 +579,47 @@ export default function BookConsultationPage() {
                   ⚡
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">Any available {selectedSpecialty}</p>
-                  <p className="text-sm text-gray-500">First matching doctor to accept will be assigned.</p>
+                  <p className="font-semibold text-gray-900 dark:text-slate-100">Any available {selectedSpecialty}</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">First matching doctor to accept will be assigned.</p>
                 </div>
               </div>
             ) : selectedDoctorData && (
-              <div className="mb-6 flex items-center gap-4 rounded-xl bg-gray-50 p-4">
+              <div className="mb-6 flex items-center gap-4 rounded-xl bg-gray-50 dark:bg-slate-900 p-4">
                 <div className={`flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold text-white ${selectedDoctorData.imageColor}`}>
                   {selectedDoctorData.initials}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">{selectedDoctorData.name}</p>
-                  <p className="text-sm text-gray-500">{selectedDoctorData.specialty}</p>
+                  <p className="font-semibold text-gray-900 dark:text-slate-100">{selectedDoctorData.name}</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">{selectedDoctorData.specialty}</p>
                 </div>
               </div>
             )}
 
             <div className="mb-6 grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">Your Full Name</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">Your Full Name</label>
                 <input type="text" value={patientName} onChange={(e) => setPatientName(e.target.value)}
                   placeholder="John Doe"
-                  className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary-500" />
+                  className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:border-primary-500" />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">Phone</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">Phone</label>
                 <PhoneInput
                   value={patientPhone}
                   onChange={(next) => setPatientPhone(next)}
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-gray-700">Email</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">Email</label>
                 <input type="email" value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)}
                   placeholder="you@email.com"
-                  className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary-500" />
-                <p className="mt-1 text-xs text-gray-400">We&apos;ll send booking confirmation and prescription here.</p>
+                  className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:border-primary-500" />
+                <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">We&apos;ll send booking confirmation and prescription here.</p>
               </div>
             </div>
 
             <div className="mb-4">
-              <p className="mb-3 text-sm font-medium text-gray-700">Pick a date</p>
+              <p className="mb-3 text-sm font-medium text-gray-700 dark:text-slate-300">Pick a date</p>
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {dateOptions.map((d) => (
                   <button
@@ -628,7 +628,7 @@ export default function BookConsultationPage() {
                     className={`shrink-0 rounded-lg border px-3 py-2 text-center text-xs font-medium transition-all ${
                       selectedDate === d.iso
                         ? "border-primary-500 bg-primary-50 text-primary-700"
-                        : "border-gray-200 text-gray-600 hover:border-primary-300"
+                        : "border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-300 hover:border-primary-300"
                     }`}
                   >
                     <div className="text-[11px] uppercase tracking-wide opacity-70">{d.weekday}</div>
@@ -640,15 +640,15 @@ export default function BookConsultationPage() {
 
             <div className="mb-6">
               <div className="mb-3 flex items-center justify-between">
-                <p className="text-sm font-medium text-gray-700">Available 15-min slots</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-slate-300">Available 15-min slots</p>
                 {slotsLoading && (
-                  <span className="text-xs text-gray-400">refreshing…</span>
+                  <span className="text-xs text-gray-400 dark:text-slate-500">refreshing…</span>
                 )}
               </div>
               {slots.length === 0 && !slotsLoading ? (
-                <div className="rounded-lg border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
+                <div className="rounded-lg border border-dashed border-gray-200 dark:border-slate-800 p-6 text-center text-sm text-gray-500 dark:text-slate-400">
                   No slots available on this date. Try another day.
-                  <p className="mt-1 text-xs text-gray-400">
+                  <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
                     Same-day slots are hidden until they&apos;re at least 30 minutes away.
                   </p>
                 </div>
@@ -661,7 +661,7 @@ export default function BookConsultationPage() {
                       className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-all ${
                         selectedSlot === slot.value
                           ? "border-primary-500 bg-primary-50 text-primary-700"
-                          : "border-gray-200 text-gray-600 hover:border-primary-300 hover:bg-primary-50"
+                          : "border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-300 hover:border-primary-300 hover:bg-primary-50"
                       }`}
                     >
                       {slot.label}
@@ -681,41 +681,41 @@ export default function BookConsultationPage() {
 
         {/* Step 4: Medical History */}
         {step === 4 && (
-          <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-900">Medical History</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Medical History</h2>
               <button onClick={() => setStep(3)} className="text-sm text-primary-600 hover:underline">Back</button>
             </div>
-            <p className="mb-6 text-sm text-gray-500">
+            <p className="mb-6 text-sm text-gray-500 dark:text-slate-400">
               The more your doctor knows before the call, the better. This information is shared only with your selected doctor.
             </p>
 
             <div className="space-y-5">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">Main concern (chief complaint) *</label>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Main concern (chief complaint) *</label>
                 <input type="text" value={history.chiefComplaint} onChange={(e) => setH("chiefComplaint", e.target.value)}
                   placeholder="e.g. Persistent cough and mild fever"
-                  className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary-500" />
+                  className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:border-primary-500" />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">Describe your symptoms *</label>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Describe your symptoms *</label>
                 <textarea rows={3} value={history.symptoms} onChange={(e) => setH("symptoms", e.target.value)}
                   placeholder="What are you experiencing? When did it start?"
-                  className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary-500" />
+                  className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:border-primary-500" />
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Duration *</label>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Duration *</label>
                   <input type="text" value={history.duration} onChange={(e) => setH("duration", e.target.value)}
                     placeholder="e.g. 3 days, 2 weeks"
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary-500" />
+                    className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:border-primary-500" />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Severity *</label>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Severity *</label>
                   <select value={history.severity} onChange={(e) => setH("severity", e.target.value as MedicalHistoryForm["severity"])}
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary-500">
+                    className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:border-primary-500">
                     <option value="">Select...</option>
                     <option value="mild">Mild</option>
                     <option value="moderate">Moderate</option>
@@ -726,42 +726,42 @@ export default function BookConsultationPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Known allergies</label>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Known allergies</label>
                   <input type="text" value={history.allergies} onChange={(e) => setH("allergies", e.target.value)}
                     placeholder="Penicillin, peanuts, etc. (or 'None')"
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary-500" />
+                    className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:border-primary-500" />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Current medications</label>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Current medications</label>
                   <input type="text" value={history.currentMedications} onChange={(e) => setH("currentMedications", e.target.value)}
                     placeholder="Anything you take regularly"
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary-500" />
+                    className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:border-primary-500" />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Past medical conditions</label>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Past medical conditions</label>
                   <input type="text" value={history.pastConditions} onChange={(e) => setH("pastConditions", e.target.value)}
                     placeholder="Diabetes, asthma, hypertension..."
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary-500" />
+                    className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:border-primary-500" />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Past surgeries</label>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Past surgeries</label>
                   <input type="text" value={history.surgeries} onChange={(e) => setH("surgeries", e.target.value)}
                     placeholder="Appendectomy 2019, etc."
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary-500" />
+                    className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:border-primary-500" />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Family history</label>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Family history</label>
                   <input type="text" value={history.familyHistory} onChange={(e) => setH("familyHistory", e.target.value)}
                     placeholder="Heart disease in father, etc."
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary-500" />
+                    className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:border-primary-500" />
                 </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-3">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Smoker?</label>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Smoker?</label>
                   <select value={history.smoker} onChange={(e) => setH("smoker", e.target.value as MedicalHistoryForm["smoker"])}
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary-500">
+                    className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:border-primary-500">
                     <option value="">Select...</option>
                     <option value="no">No</option>
                     <option value="yes">Yes</option>
@@ -769,9 +769,9 @@ export default function BookConsultationPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Alcohol</label>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Alcohol</label>
                   <select value={history.alcohol} onChange={(e) => setH("alcohol", e.target.value as MedicalHistoryForm["alcohol"])}
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary-500">
+                    className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:border-primary-500">
                     <option value="">Select...</option>
                     <option value="never">Never</option>
                     <option value="occasional">Occasional</option>
@@ -779,9 +779,9 @@ export default function BookConsultationPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Pregnant?</label>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Pregnant?</label>
                   <select value={history.pregnant} onChange={(e) => setH("pregnant", e.target.value as MedicalHistoryForm["pregnant"])}
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary-500">
+                    className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:border-primary-500">
                     <option value="na">N/A</option>
                     <option value="no">No</option>
                     <option value="yes">Yes</option>
@@ -790,10 +790,10 @@ export default function BookConsultationPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">Anything else you want the doctor to know?</label>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Anything else you want the doctor to know?</label>
                 <textarea rows={3} value={history.additional} onChange={(e) => setH("additional", e.target.value)}
                   placeholder="Lifestyle, recent travel, stress level, etc."
-                  className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-primary-500" />
+                  className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-3 text-sm outline-none focus:border-primary-500" />
               </div>
             </div>
 
@@ -806,13 +806,13 @@ export default function BookConsultationPage() {
 
         {/* Step 5: Pay & Confirm */}
         {step === 5 && (selectedDoctorData || poolMode) && (
-          <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-900">{paymentsOff ? "Review & Confirm" : "Review & Pay"}</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">{paymentsOff ? "Review & Confirm" : "Review & Pay"}</h2>
               <button onClick={() => setStep(4)} className="text-sm text-primary-600 hover:underline">Back</button>
             </div>
 
-            <div className="space-y-3 rounded-xl bg-gray-50 p-5">
+            <div className="space-y-3 rounded-xl bg-gray-50 dark:bg-slate-900 p-5">
               <Row label="Doctor" value={poolMode ? `Any available ${selectedSpecialty}` : selectedDoctorData!.name} />
               <Row label="Specialty" value={selectedSpecialty} />
               <Row label="Date" value={new Date(`${selectedDate}T00:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })} />
@@ -820,22 +820,22 @@ export default function BookConsultationPage() {
               <Row label="Patient" value={patientName} />
               <Row label="Email" value={patientEmail} />
               <Row label="Main concern" value={history.chiefComplaint} />
-              <div className="flex items-center justify-between border-t border-gray-200 pt-3">
-                <span className="font-semibold text-gray-900">Total</span>
+              <div className="flex items-center justify-between border-t border-gray-200 dark:border-slate-800 pt-3">
+                <span className="font-semibold text-gray-900 dark:text-slate-100">Total</span>
                 {paymentsOff ? (
                   <span className="flex items-center gap-2">
-                    <span className="text-sm text-gray-400 line-through">${fee}</span>
+                    <span className="text-sm text-gray-400 dark:text-slate-500 line-through">${fee}</span>
                     <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700">FREE today</span>
                   </span>
                 ) : (
                   <div className="flex flex-col items-end gap-1">
                     <span className="text-xl font-bold text-primary-600">
                       {checkout.def?.symbol || "$"}{(convertedFee ?? fee).toFixed(checkout.def?.decimals ?? 2)}{" "}
-                      <span className="text-xs font-medium text-gray-400">{checkout.code}</span>
+                      <span className="text-xs font-medium text-gray-400 dark:text-slate-500">{checkout.code}</span>
                     </span>
                     <CurrencySwitcher />
                     {checkout.code !== "USD" && (
-                      <span className="text-[10px] text-gray-400">
+                      <span className="text-[10px] text-gray-400 dark:text-slate-500">
                         Charged as ${fee} USD · live conversion lands soon
                       </span>
                     )}
@@ -861,7 +861,7 @@ export default function BookConsultationPage() {
                 ? (paymentsOff ? "Confirming..." : "Processing payment...")
                 : (paymentsOff ? "Confirm Booking (Free)" : `Pay $${fee} & Confirm Booking`)}
             </button>
-            <p className="mt-3 text-center text-xs text-gray-400">
+            <p className="mt-3 text-center text-xs text-gray-400 dark:text-slate-500">
               {paymentsOff ? "No card required · Payments are disabled today" : "Secure payment · Your card is not charged in demo mode"}
             </p>
           </div>
@@ -869,11 +869,11 @@ export default function BookConsultationPage() {
 
         {/* Step 6: Success */}
         {step === 6 && (
-          <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-8 text-center shadow-sm">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl">✓</div>
-            <h2 className="mb-2 text-2xl font-bold text-gray-900">Consultation booked!</h2>
-            <p className="mb-6 text-gray-500">We&apos;ve notified the doctor. You&apos;ll get a confirmation email shortly.</p>
-            <p className="text-sm text-gray-400">Redirecting to your dashboard…</p>
+            <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-slate-100">Consultation booked!</h2>
+            <p className="mb-6 text-gray-500 dark:text-slate-400">We&apos;ve notified the doctor. You&apos;ll get a confirmation email shortly.</p>
+            <p className="text-sm text-gray-400 dark:text-slate-500">Redirecting to your dashboard…</p>
           </div>
         )}
       </div>
@@ -884,8 +884,8 @@ export default function BookConsultationPage() {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4">
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className="text-right text-sm font-medium text-gray-900">{value}</span>
+      <span className="text-sm text-gray-500 dark:text-slate-400">{label}</span>
+      <span className="text-right text-sm font-medium text-gray-900 dark:text-slate-100">{value}</span>
     </div>
   );
 }

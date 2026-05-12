@@ -28,7 +28,7 @@ export default function CareersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       {/* Hero */}
       <section className="bg-gradient-to-br from-primary-600 to-primary-800 py-20 text-white">
         <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
@@ -42,7 +42,7 @@ export default function CareersPage() {
           </p>
           <button
             onClick={() => openApply(null)}
-            className="mt-8 inline-block rounded-lg bg-white px-6 py-3 text-sm font-semibold text-primary-700 transition-colors hover:bg-gray-100"
+            className="mt-8 inline-block rounded-lg bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-primary-700 transition-colors hover:bg-gray-100 dark:bg-slate-800"
           >
             Send General Application
           </button>
@@ -52,16 +52,16 @@ export default function CareersPage() {
       {/* Vacancies */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-10 text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Open Positions</h2>
-          <p className="mt-2 text-gray-500">Current vacancies at OduDoc</p>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100">Open Positions</h2>
+          <p className="mt-2 text-gray-500 dark:text-slate-400">Current vacancies at OduDoc</p>
         </div>
 
         {loading ? (
-          <p className="text-center text-gray-500">Loading...</p>
+          <p className="text-center text-gray-500 dark:text-slate-400">Loading...</p>
         ) : jobs.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-300 bg-white p-12 text-center">
-            <p className="text-gray-500">No open positions right now.</p>
-            <p className="mt-1 text-sm text-gray-400">
+          <div className="rounded-xl border border-dashed border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-12 text-center">
+            <p className="text-gray-500 dark:text-slate-400">No open positions right now.</p>
+            <p className="mt-1 text-sm text-gray-400 dark:text-slate-500">
               You can still send a general application and we will reach out when something opens.
             </p>
             <button
@@ -76,19 +76,19 @@ export default function CareersPage() {
             {jobs.map((job) => (
               <div
                 key={job.id}
-                className="flex flex-col gap-4 rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-4 rounded-xl border border-gray-100 bg-white dark:bg-slate-900 p-6 shadow-sm transition-shadow hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex-1">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <span className="inline-block rounded-full bg-primary-50 px-2.5 py-1 text-xs font-semibold text-primary-700">
                       {job.department}
                     </span>
-                    <span className="inline-block rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600">
+                    <span className="inline-block rounded-full bg-gray-100 dark:bg-slate-800 px-2.5 py-1 text-xs text-gray-600 dark:text-slate-300">
                       {job.employmentType}
                     </span>
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900">{job.title}</h3>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">{job.title}</h3>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-slate-400">
                     <span className="flex items-center gap-1">
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -101,7 +101,7 @@ export default function CareersPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setSelectedJob(job)}
-                    className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                    className="rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:bg-slate-900"
                   >
                     View Details
                   </button>
@@ -125,7 +125,7 @@ export default function CareersPage() {
           onClick={() => setSelectedJob(null)}
         >
           <div
-            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-8 shadow-xl"
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white dark:bg-slate-900 p-8 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-start justify-between">
@@ -133,14 +133,14 @@ export default function CareersPage() {
                 <span className="inline-block rounded-full bg-primary-50 px-2.5 py-1 text-xs font-semibold text-primary-700">
                   {selectedJob.department}
                 </span>
-                <h2 className="mt-2 text-2xl font-bold text-gray-900">{selectedJob.title}</h2>
-                <p className="mt-1 text-sm text-gray-500">
+                <h2 className="mt-2 text-2xl font-bold text-gray-900 dark:text-slate-100">{selectedJob.title}</h2>
+                <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
                   {selectedJob.location} · {selectedJob.employmentType}
                 </p>
               </div>
               <button
                 onClick={() => setSelectedJob(null)}
-                className="rounded-lg p-1 text-gray-400 hover:bg-gray-100"
+                className="rounded-lg p-1 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800"
               >
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -148,17 +148,17 @@ export default function CareersPage() {
               </button>
             </div>
 
-            <p className="text-gray-600">{selectedJob.description}</p>
+            <p className="text-gray-600 dark:text-slate-300">{selectedJob.description}</p>
 
-            <h4 className="mt-6 text-sm font-bold uppercase text-gray-500">Responsibilities</h4>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-600">
+            <h4 className="mt-6 text-sm font-bold uppercase text-gray-500 dark:text-slate-400">Responsibilities</h4>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-600 dark:text-slate-300">
               {selectedJob.responsibilities.map((r, i) => (
                 <li key={i}>{r}</li>
               ))}
             </ul>
 
-            <h4 className="mt-6 text-sm font-bold uppercase text-gray-500">Requirements</h4>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-600">
+            <h4 className="mt-6 text-sm font-bold uppercase text-gray-500 dark:text-slate-400">Requirements</h4>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-600 dark:text-slate-300">
               {selectedJob.requirements.map((r, i) => (
                 <li key={i}>{r}</li>
               ))}
@@ -258,7 +258,7 @@ function ApplicationForm({
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-8 shadow-xl"
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white dark:bg-slate-900 p-8 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {success ? (
@@ -268,8 +268,8 @@ function ApplicationForm({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 className="mt-4 text-xl font-bold text-gray-900">Application Sent!</h3>
-            <p className="mt-2 text-sm text-gray-500">
+            <h3 className="mt-4 text-xl font-bold text-gray-900 dark:text-slate-100">Application Sent!</h3>
+            <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
               Thanks for applying. Our team will review and reach out within 5-7 business days.
             </p>
             <button onClick={onClose} className="btn-primary mt-6 w-full">
@@ -280,16 +280,16 @@ function ApplicationForm({
           <>
             <div className="mb-4 flex items-start justify-between">
               <div>
-                <h3 className="text-xl font-bold text-gray-900">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-slate-100">
                   {jobTitle ? `Apply: ${jobTitle}` : "General Application"}
                 </h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
                   Fill in the details below. We will get back to you soon.
                 </p>
               </div>
               <button
                 onClick={onClose}
-                className="rounded-lg p-1 text-gray-400 hover:bg-gray-100"
+                className="rounded-lg p-1 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800"
               >
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -306,31 +306,31 @@ function ApplicationForm({
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-700">
+                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-slate-300">
                     First Name *
                   </label>
                   <input
                     required
                     value={form.firstName}
                     onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                    className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-700">
+                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-slate-300">
                     Last Name *
                   </label>
                   <input
                     required
                     value={form.lastName}
                     onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                    className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700">
+                <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-slate-300">
                   Email Address *
                 </label>
                 <input
@@ -338,12 +338,12 @@ function ApplicationForm({
                   required
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                  className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700">
+                <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-slate-300">
                   Contact Number *
                 </label>
                 <PhoneInput
@@ -353,10 +353,10 @@ function ApplicationForm({
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700">
+                <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-slate-300">
                   Upload CV / Resume *
                 </label>
-                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-5 text-sm text-gray-600 hover:border-primary-400 hover:bg-primary-50">
+                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 px-4 py-5 text-sm text-gray-600 dark:text-slate-300 hover:border-primary-400 hover:bg-primary-50">
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
@@ -368,11 +368,11 @@ function ApplicationForm({
                     className="hidden"
                   />
                 </label>
-                <p className="mt-1 text-xs text-gray-400">Max 5MB. PDF or DOC preferred.</p>
+                <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">Max 5MB. PDF or DOC preferred.</p>
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700">
+                <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-slate-300">
                   Cover Letter (optional)
                 </label>
                 <textarea
@@ -380,7 +380,7 @@ function ApplicationForm({
                   value={form.coverLetter}
                   onChange={(e) => setForm({ ...form, coverLetter: e.target.value })}
                   placeholder="Tell us why you are a great fit..."
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                  className="w-full rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                 />
               </div>
 

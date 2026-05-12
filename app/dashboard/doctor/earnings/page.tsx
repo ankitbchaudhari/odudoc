@@ -80,7 +80,7 @@ export default function DoctorEarningsPage() {
         <div className="mb-6 flex items-center gap-3">
           <Link
             href="/dashboard/doctor"
-            className="rounded-lg p-2 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
+            className="rounded-lg p-2 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -137,7 +137,7 @@ export default function DoctorEarningsPage() {
         <div className="mb-6 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-slate-100">Recent consultations</h2>
           {earnings.length === 0 ? (
-            <p className="py-6 text-center text-sm text-gray-400 dark:text-slate-500">
+            <p className="py-6 text-center text-sm text-gray-400 dark:text-slate-500 dark:text-slate-400">
               No paid consultations yet. Earnings appear here as patients complete payment.
             </p>
           ) : (
@@ -203,9 +203,9 @@ export default function DoctorEarningsPage() {
           </div>
 
           {loading ? (
-            <p className="py-10 text-center text-sm text-gray-400 dark:text-slate-500">Loading…</p>
+            <p className="py-10 text-center text-sm text-gray-400 dark:text-slate-500 dark:text-slate-400">Loading…</p>
           ) : withdrawals.length === 0 ? (
-            <p className="py-10 text-center text-sm text-gray-400 dark:text-slate-500">
+            <p className="py-10 text-center text-sm text-gray-400 dark:text-slate-500 dark:text-slate-400">
               You haven&apos;t requested any withdrawals yet.
             </p>
           ) : (
@@ -242,7 +242,7 @@ export default function DoctorEarningsPage() {
                           {w.status}
                         </span>
                         {w.adminNote && (
-                          <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500">
+                          <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500 dark:text-slate-400">
                             Note: {w.adminNote}
                           </p>
                         )}
@@ -344,7 +344,7 @@ function WithdrawalModal({
           <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Request Withdrawal</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800"
+            className="rounded-lg p-1.5 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:bg-slate-800"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -417,7 +417,7 @@ function WithdrawalModal({
 
           <div>
             <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">
-              Notes <span className="text-gray-400 dark:text-slate-500">(optional)</span>
+              Notes <span className="text-gray-400 dark:text-slate-500 dark:text-slate-400">(optional)</span>
             </label>
             <textarea
               value={notes}

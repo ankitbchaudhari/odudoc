@@ -86,7 +86,7 @@ export default function TempPasswordBanner() {
         </div>
         <Link
           href="/auth/change-password?reason=temp"
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white px-3.5 py-1.5 text-[12px] font-bold text-slate-900 shadow-sm transition-transform hover:-translate-y-0.5"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white dark:bg-slate-900 px-3.5 py-1.5 text-[12px] font-bold text-slate-900 dark:text-slate-100 shadow-sm transition-transform hover:-translate-y-0.5"
         >
           Change password
           <span aria-hidden>→</span>

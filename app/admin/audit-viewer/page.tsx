@@ -8,6 +8,7 @@
 // in front of NABH / DPDP auditors.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { PageHero } from "@/components/admin/PageShell";
 
 interface AuditEntry {
   id: string; at: string; actorEmail: string; action: string;

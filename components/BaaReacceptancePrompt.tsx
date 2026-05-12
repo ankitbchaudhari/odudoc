@@ -79,23 +79,23 @@ export default function BaaReacceptancePrompt() {
           <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-amber-800">
             ⚠ Action required
           </span>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-500 dark:text-slate-400">
             Updated {state.currentVersion}
           </span>
         </div>
-        <h3 className="text-lg font-bold text-gray-900">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">
           New version of the {state.title}
         </h3>
-        <p className="mt-1 text-sm leading-relaxed text-gray-700">{state.summary}</p>
+        <p className="mt-1 text-sm leading-relaxed text-gray-700 dark:text-slate-300">{state.summary}</p>
         <div className="mt-4">
-          <label className="mb-1 block text-xs font-semibold text-gray-600">
+          <label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-slate-300">
             Type your full name to accept the updated agreement *
           </label>
           <input
             value={signature}
             onChange={(e) => setSignature(e.target.value)}
             placeholder="Dr. Your Name"
-            className="w-full max-w-sm rounded-xl border-2 border-gray-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
+            className="w-full max-w-sm rounded-xl border-2 border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10"
           />
         </div>
         {error && <p className="mt-2 text-xs text-rose-600">{error}</p>}

@@ -36,10 +36,10 @@ export default function AboutPage() {
       {/* Hero */}
       <section className="bg-gradient-to-br from-primary-50 via-white to-teal-50 py-20">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-extrabold text-gray-900 md:text-5xl">
+          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-slate-100 md:text-5xl">
             Making Healthcare <span className="text-primary-600">Accessible</span> for Everyone
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-500">
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-500 dark:text-slate-400">
             OduDoc is on a mission to make quality healthcare accessible, affordable, and convenient for millions of people. We connect patients with the best doctors and healthcare services through technology.
           </p>
         </div>
@@ -49,14 +49,14 @@ export default function AboutPage() {
       <section className="py-16">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 md:grid-cols-2 lg:px-8">
           <div className="card border-l-4 border-primary-500">
-            <h2 className="text-xl font-bold text-gray-900">Our Mission</h2>
-            <p className="mt-3 text-sm leading-relaxed text-gray-600">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">Our Mission</h2>
+            <p className="mt-3 text-sm leading-relaxed text-gray-600 dark:text-slate-300">
               To simplify the healthcare experience by connecting patients with quality doctors and health services through a seamless digital platform. We aim to ensure that no one has to struggle to find the right care at the right time.
             </p>
           </div>
           <div className="card border-l-4 border-teal-500">
-            <h2 className="text-xl font-bold text-gray-900">Our Vision</h2>
-            <p className="mt-3 text-sm leading-relaxed text-gray-600">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">Our Vision</h2>
+            <p className="mt-3 text-sm leading-relaxed text-gray-600 dark:text-slate-300">
               To be the world&apos;s most trusted healthcare platform, where every individual can access affordable, quality healthcare with just a few taps. We envision a future where geography and cost are no longer barriers to good health.
             </p>
           </div>
@@ -64,15 +64,15 @@ export default function AboutPage() {
       </section>
 
       {/* Values */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-gray-50 dark:bg-slate-900 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="section-title text-center">Our Core Values</h2>
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {values.map((v) => (
               <div key={v.title} className="card text-center">
                 <span className="mb-4 block text-4xl">{v.icon}</span>
-                <h3 className="text-lg font-bold text-gray-900">{v.title}</h3>
-                <p className="mt-2 text-sm text-gray-500">{v.desc}</p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">{v.title}</h3>
+                <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">{v.desc}</p>
               </div>
             ))}
           </div>
@@ -106,8 +106,8 @@ export default function AboutPage() {
                     {t.initials}
                   </div>
                 )}
-                <h3 className="font-semibold text-gray-900">{t.name}</h3>
-                <p className="mt-1 text-xs text-gray-500">{t.role}</p>
+                <h3 className="font-semibold text-gray-900 dark:text-slate-100">{t.name}</h3>
+                <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{t.role}</p>
               </div>
             ))}
           </div>
@@ -115,7 +115,7 @@ export default function AboutPage() {
       </section>
 
       {/* Timeline */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-gray-50 dark:bg-slate-900 py-16">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <h2 className="section-title text-center">Our Journey</h2>
           <div className="mt-10 space-y-8">
@@ -137,7 +137,7 @@ export default function AboutPage() {
                 </div>
                 <div className="pb-8">
                   <p className="text-sm font-bold text-primary-600">{item.year}</p>
-                  <p className="mt-1 text-sm text-gray-600">{item.text}</p>
+                  <p className="mt-1 text-sm text-gray-600 dark:text-slate-300">{item.text}</p>
                 </div>
               </div>
             ))}

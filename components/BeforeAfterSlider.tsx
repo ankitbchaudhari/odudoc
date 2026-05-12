@@ -80,11 +80,11 @@ export default function BeforeAfterSlider({
 
         {/* Divider */}
         <div
-          className="absolute top-0 bottom-0 z-10 w-1 bg-white shadow-lg"
+          className="absolute top-0 bottom-0 z-10 w-1 bg-white dark:bg-slate-900 shadow-lg"
           style={{ left: `${position}%`, transform: "translateX(-50%)" }}
         >
-          <div className="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-lg">
-            <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white dark:bg-slate-900 shadow-lg">
+            <svg className="h-5 w-5 text-gray-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
             </svg>
           </div>
@@ -98,7 +98,7 @@ export default function BeforeAfterSlider({
           {afterLabel}
         </span>
       </div>
-      <p className="mt-3 text-center text-sm font-semibold text-gray-900">{treatmentName}</p>
+      <p className="mt-3 text-center text-sm font-semibold text-gray-900 dark:text-slate-100">{treatmentName}</p>
     </div>
   );
 }

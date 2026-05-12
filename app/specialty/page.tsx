@@ -35,10 +35,10 @@ export default function SpecialtyIndexPage() {
 
       <section className="bg-gradient-to-br from-primary-50 via-white to-teal-50 py-16">
         <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-extrabold text-gray-900 md:text-5xl">
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 md:text-5xl">
             Medical <span className="text-primary-600">Specialties</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600 dark:text-slate-300">
             Find the right specialist for your symptoms. Every OduDoc doctor is
             verified, and most consultations are available over video — book in
             under a minute.
@@ -53,19 +53,19 @@ export default function SpecialtyIndexPage() {
               <Link
                 key={s.slug}
                 href={`/specialty/${s.slug}`}
-                className="group rounded-2xl border border-gray-200 bg-white p-6 transition-all hover:-translate-y-1 hover:border-primary-400 hover:shadow-lg"
+                className="group rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 transition-all hover:-translate-y-1 hover:border-primary-400 hover:shadow-lg"
               >
-                <h2 className="text-xl font-bold text-gray-900 group-hover:text-primary-700">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100 group-hover:text-primary-700">
                   {s.displayName}
                 </h2>
-                <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                <p className="mt-2 text-sm text-gray-600 dark:text-slate-300 leading-relaxed">
                   {s.tagline}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {s.symptoms.slice(0, 4).map((sym) => (
                     <span
                       key={sym}
-                      className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-600"
+                      className="rounded-full bg-gray-100 dark:bg-slate-800 px-2.5 py-0.5 text-xs text-gray-600 dark:text-slate-300"
                     >
                       {sym}
                     </span>

@@ -307,7 +307,7 @@ export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, 
     <div className="relative flex h-screen w-full flex-col bg-gray-900">
       {/* Demo mode banner */}
       {demoMode && (
-        <div className="absolute left-1/2 top-4 z-40 -translate-x-1/2 rounded-lg bg-yellow-500/90 px-4 py-2 text-center text-sm font-medium text-gray-900 shadow-lg backdrop-blur-sm">
+        <div className="absolute left-1/2 top-4 z-40 -translate-x-1/2 rounded-lg bg-yellow-500/90 px-4 py-2 text-center text-sm font-medium text-gray-900 dark:text-slate-100 shadow-lg backdrop-blur-sm">
           Demo Mode - Connect your Daily.co API key for full video calling
         </div>
       )}
@@ -348,7 +348,7 @@ export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, 
                 </div>
                 <p className="mt-4 text-lg text-white">{remoteParticipant}</p>
                 {demoMode && (
-                  <p className="mt-2 text-sm text-gray-500">
+                  <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
                     Simulated participant (demo mode)
                   </p>
                 )}
@@ -364,11 +364,11 @@ export default function VideoCall({ roomUrl, roomId, userName, token, demoMode, 
         ) : (
           <div className="flex h-full flex-col items-center justify-center">
             <div className="animate-pulse">
-              <svg className="h-16 w-16 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+              <svg className="h-16 w-16 text-gray-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
-            <p className="mt-4 text-gray-500">Waiting for other participant to join...</p>
+            <p className="mt-4 text-gray-500 dark:text-slate-400">Waiting for other participant to join...</p>
           </div>
         )}
 

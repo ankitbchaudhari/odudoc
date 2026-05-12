@@ -58,7 +58,7 @@ export default function DepartmentShell({
               <Link
                 key={l.href}
                 href={l.href}
-                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300"
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300"
               >
                 {l.emoji && <span>{l.emoji}</span>}
                 {l.label}
@@ -105,8 +105,8 @@ export function StatTile({
         {emoji && <span className="text-lg">{emoji}</span>}
         <span className={`text-[10px] font-bold uppercase tracking-[0.15em] ${t.text}`}>{label}</span>
       </div>
-      <p className="mt-3 text-2xl font-bold text-slate-900">{value}</p>
-      {hint && <p className="mt-0.5 text-[11px] text-slate-500">{hint}</p>}
+      <p className="mt-3 text-2xl font-bold text-slate-900 dark:text-slate-100">{value}</p>
+      {hint && <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">{hint}</p>}
     </div>
   );
 }

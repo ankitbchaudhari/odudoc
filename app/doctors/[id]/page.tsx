@@ -40,8 +40,8 @@ export default function DoctorProfilePage() {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-gray-400">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-primary-600" />
+        <div className="flex flex-col items-center gap-3 text-gray-400 dark:text-slate-500">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 dark:border-slate-800 border-t-primary-600" />
           <p className="text-sm">Loading doctor profile…</p>
         </div>
       </div>
@@ -53,8 +53,8 @@ export default function DoctorProfilePage() {
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="text-center">
           <p className="text-5xl">😔</p>
-          <h1 className="mt-4 text-2xl font-bold text-gray-900">Doctor Not Found</h1>
-          <p className="mt-2 text-gray-500">The doctor you are looking for does not exist.</p>
+          <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-slate-100">Doctor Not Found</h1>
+          <p className="mt-2 text-gray-500 dark:text-slate-400">The doctor you are looking for does not exist.</p>
           <Link href="/doctors" className="btn-primary mt-6 inline-block">
             Browse Doctors
           </Link>
@@ -66,7 +66,7 @@ export default function DoctorProfilePage() {
   const reviews = doctorReviews[doctor.id] || [];
 
   return (
-    <div className="bg-gray-50 py-8">
+    <div className="bg-gray-50 dark:bg-slate-900 py-8">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <div className="mb-6">
@@ -103,7 +103,7 @@ export default function DoctorProfilePage() {
             </div>
             <div className="flex-1 text-center sm:text-left">
               <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:justify-start">
-                <h1 className="text-2xl font-bold text-gray-900">{doctor.name}</h1>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{doctor.name}</h1>
                 {doctor.verified && (
                   <span
                     title="Credentials verified by OduDoc"
@@ -116,8 +116,8 @@ export default function DoctorProfilePage() {
                 <DoctorPresenceBadge doctorId={doctor.id} size="md" />
               </div>
               <p className="text-primary-600">{doctor.specialty}</p>
-              <p className="text-sm text-gray-500">{doctor.qualifications}</p>
-              <div className="mt-3 flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600 sm:justify-start">
+              <p className="text-sm text-gray-500 dark:text-slate-400">{doctor.qualifications}</p>
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600 dark:text-slate-300 sm:justify-start">
                 <span className="flex items-center gap-1">
                   <svg className="h-4 w-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                   {doctor.rating} ({doctor.reviewCount} reviews)
@@ -125,10 +125,10 @@ export default function DoctorProfilePage() {
                 <span>{doctor.experience} years experience</span>
                 <span>{doctor.city}</span>
               </div>
-              <p className="mt-2 text-sm text-gray-400">{doctor.location}</p>
+              <p className="mt-2 text-sm text-gray-400 dark:text-slate-500">{doctor.location}</p>
             </div>
             <div className="flex flex-col items-center gap-3">
-              <p className="text-2xl font-bold text-gray-900">${doctor.fee}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-slate-100">${doctor.fee}</p>
               <button onClick={() => setModalOpen(true)} className="btn-primary whitespace-nowrap">
                 Book Appointment
               </button>
@@ -162,13 +162,13 @@ export default function DoctorProfilePage() {
           <div className="space-y-6 lg:col-span-2">
             {/* About */}
             <div className="card">
-              <h2 className="mb-3 text-lg font-bold text-gray-900">About</h2>
-              <p className="text-sm leading-relaxed text-gray-600">{doctor.about}</p>
+              <h2 className="mb-3 text-lg font-bold text-gray-900 dark:text-slate-100">About</h2>
+              <p className="text-sm leading-relaxed text-gray-600 dark:text-slate-300">{doctor.about}</p>
             </div>
 
             {/* Services */}
             <div className="card">
-              <h2 className="mb-3 text-lg font-bold text-gray-900">Services Offered</h2>
+              <h2 className="mb-3 text-lg font-bold text-gray-900 dark:text-slate-100">Services Offered</h2>
               <div className="flex flex-wrap gap-2">
                 {doctor.services.map((s) => (
                   <span
@@ -183,7 +183,7 @@ export default function DoctorProfilePage() {
 
             {/* Reviews */}
             <div className="card">
-              <h2 className="mb-4 text-lg font-bold text-gray-900">
+              <h2 className="mb-4 text-lg font-bold text-gray-900 dark:text-slate-100">
                 Patient Reviews ({reviews.length})
               </h2>
               {reviews.length > 0 ? (
@@ -191,8 +191,8 @@ export default function DoctorProfilePage() {
                   {reviews.map((r, i) => (
                     <div key={i} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-900">{r.name}</span>
-                        <span className="text-xs text-gray-400">{r.date}</span>
+                        <span className="font-medium text-gray-900 dark:text-slate-100">{r.name}</span>
+                        <span className="text-xs text-gray-400 dark:text-slate-500">{r.date}</span>
                       </div>
                       <div className="mt-1 flex gap-0.5">
                         {Array.from({ length: 5 }).map((_, j) => (
@@ -206,12 +206,12 @@ export default function DoctorProfilePage() {
                           </svg>
                         ))}
                       </div>
-                      <p className="mt-2 text-sm text-gray-600">{r.text}</p>
+                      <p className="mt-2 text-sm text-gray-600 dark:text-slate-300">{r.text}</p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">No reviews yet.</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">No reviews yet.</p>
               )}
             </div>
           </div>
@@ -219,13 +219,13 @@ export default function DoctorProfilePage() {
           {/* Sidebar - Time Slots */}
           <div className="space-y-6">
             <div className="card">
-              <h2 className="mb-4 text-lg font-bold text-gray-900">Available Today</h2>
+              <h2 className="mb-4 text-lg font-bold text-gray-900 dark:text-slate-100">Available Today</h2>
               <div className="grid grid-cols-2 gap-2">
                 {doctor.timeSlots.map((slot) => (
                   <button
                     key={slot}
                     onClick={() => setModalOpen(true)}
-                    className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 transition-all hover:border-primary-500 hover:bg-primary-50 hover:text-primary-700"
+                    className="rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm font-medium text-gray-600 dark:text-slate-300 transition-all hover:border-primary-500 hover:bg-primary-50 hover:text-primary-700"
                   >
                     {slot}
                   </button>
@@ -242,10 +242,10 @@ export default function DoctorProfilePage() {
             <DoctorAiAssistant doctorId={doctor.id} />
 
             <div className="card">
-              <h2 className="mb-3 text-lg font-bold text-gray-900">Clinic Location</h2>
-              <p className="text-sm text-gray-600">{doctor.location}</p>
-              <p className="text-sm text-gray-400">{doctor.city}</p>
-              <div className="mt-4 h-48 overflow-hidden rounded-lg border border-gray-200">
+              <h2 className="mb-3 text-lg font-bold text-gray-900 dark:text-slate-100">Clinic Location</h2>
+              <p className="text-sm text-gray-600 dark:text-slate-300">{doctor.location}</p>
+              <p className="text-sm text-gray-400 dark:text-slate-500">{doctor.city}</p>
+              <div className="mt-4 h-48 overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800">
                 <iframe
                   title={`${doctor.location} on map`}
                   src={`https://maps.google.com/maps?q=${encodeURIComponent(`${doctor.location}, ${doctor.city}`)}&t=&z=14&ie=UTF8&iwloc=&output=embed`}

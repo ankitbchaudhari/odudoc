@@ -39,7 +39,7 @@ const features = [
 
 export default function WhyChooseUs() {
   return (
-    <section className="bg-gray-50 py-20">
+    <section className="bg-gray-50 dark:bg-slate-900 py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
           {/* Image */}
@@ -56,10 +56,10 @@ export default function WhyChooseUs() {
             <p className="text-sm font-semibold uppercase tracking-wider text-primary-600">
               Why Choose Us
             </p>
-            <h2 className="mt-3 text-4xl font-bold text-gray-900">
+            <h2 className="mt-3 text-4xl font-bold text-gray-900 dark:text-slate-100">
               Why Patients Trust OduDoc
             </h2>
-            <p className="mt-4 text-gray-500">
+            <p className="mt-4 text-gray-500 dark:text-slate-400">
               We combine medical expertise with modern technology to deliver an exceptional healthcare experience.
             </p>
 
@@ -71,8 +71,8 @@ export default function WhyChooseUs() {
                     {f.icon}
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">{f.title}</h4>
-                    <p className="mt-1 text-sm leading-relaxed text-gray-500">{f.description}</p>
+                    <h4 className="font-semibold text-gray-900 dark:text-slate-100">{f.title}</h4>
+                    <p className="mt-1 text-sm leading-relaxed text-gray-500 dark:text-slate-400">{f.description}</p>
                   </div>
                 </div>
               ))}

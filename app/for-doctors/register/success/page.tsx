@@ -10,7 +10,7 @@ function SuccessContent() {
   const id = searchParams.get("id");
 
   return (
-    <div className="flex min-h-[calc(100vh-80px)] items-center justify-center bg-gray-50 px-4 py-16">
+    <div className="flex min-h-[calc(100vh-80px)] items-center justify-center bg-gray-50 dark:bg-slate-900 px-4 py-16">
       <div className="w-full max-w-lg text-center">
         {/* Icon */}
         <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-green-100">
@@ -35,29 +35,29 @@ function SuccessContent() {
         </div>
 
         {/* Heading */}
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100">
           Application Submitted!
         </h1>
-        <p className="mt-3 text-lg text-gray-600">
+        <p className="mt-3 text-lg text-gray-600 dark:text-slate-300">
           Thank you for applying to join OduDoc as a doctor.
         </p>
 
         {/* Application ID */}
         {id && (
-          <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-            <p className="text-sm text-gray-500">Your Application ID</p>
+          <div className="mt-6 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
+            <p className="text-sm text-gray-500 dark:text-slate-400">Your Application ID</p>
             <p className="mt-1 font-mono text-base font-semibold text-primary-700">
               {id}
             </p>
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
               Save this ID to track your application status.
             </p>
           </div>
         )}
 
         {/* What happens next */}
-        <div className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm text-left">
-          <h2 className="mb-4 text-base font-semibold text-gray-900">
+        <div className="mt-8 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm text-left">
+          <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-slate-100">
             What happens next?
           </h2>
           <ol className="space-y-3">
@@ -83,10 +83,10 @@ function SuccessContent() {
                   {item.step}
                 </span>
                 <div>
-                  <p className="text-sm font-semibold text-gray-800">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-slate-200">
                     {item.title}
                   </p>
-                  <p className="text-sm text-gray-500">{item.desc}</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">{item.desc}</p>
                 </div>
               </li>
             ))}
@@ -105,7 +105,7 @@ function SuccessContent() {
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link
             href="/"
-            className="rounded-lg border border-gray-300 px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-lg border border-gray-300 dark:border-slate-700 px-6 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
           >
             Go to Homepage
           </Link>

@@ -18,7 +18,7 @@ export default function WikiPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       {/* Hero */}
       <section className="bg-gradient-to-br from-primary-700 to-primary-900 py-14 text-white">
         <div className="mx-auto max-w-4xl px-4 text-center">
@@ -41,11 +41,11 @@ export default function WikiPage() {
       </section>
 
       {/* Category filters — sticky */}
-      <section className="sticky top-16 z-20 border-b border-gray-200 bg-white/95 backdrop-blur">
+      <section className="sticky top-16 z-20 border-b border-gray-200 dark:border-slate-800 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 py-3">
           <button
             onClick={() => setActiveCategory("all")}
-            className={`shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${activeCategory === "all" ? "bg-primary-600 text-white shadow-sm" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+            className={`shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${activeCategory === "all" ? "bg-primary-600 text-white shadow-sm" : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-200"}`}
           >
             All Topics
           </button>
@@ -53,7 +53,7 @@ export default function WikiPage() {
             <button
               key={c.name}
               onClick={() => setActiveCategory(c.name)}
-              className={`shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${activeCategory === c.name ? "bg-primary-600 text-white shadow-sm" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+              className={`shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${activeCategory === c.name ? "bg-primary-600 text-white shadow-sm" : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-200"}`}
             >
               <span className="mr-1">{c.icon}</span>
               {c.name}
@@ -66,10 +66,10 @@ export default function WikiPage() {
       <section className="py-8">
         <div className="mx-auto max-w-5xl px-4">
           <div className="mb-5 flex items-center justify-between">
-            <p className="text-sm text-gray-600">
-              <span className="font-semibold text-gray-900">{filtered.length}</span> article{filtered.length === 1 ? "" : "s"}
+            <p className="text-sm text-gray-600 dark:text-slate-300">
+              <span className="font-semibold text-gray-900 dark:text-slate-100">{filtered.length}</span> article{filtered.length === 1 ? "" : "s"}
               {activeCategory !== "all" && (
-                <span className="ml-1 text-gray-500">in {activeCategory}</span>
+                <span className="ml-1 text-gray-500 dark:text-slate-400">in {activeCategory}</span>
               )}
             </p>
             {activeCategory !== "all" && (
@@ -83,10 +83,10 @@ export default function WikiPage() {
           </div>
 
           {filtered.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-200 bg-white p-16 text-center">
+            <div className="rounded-xl border border-dashed border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-16 text-center">
               <div className="mb-3 text-4xl">🔍</div>
-              <p className="font-medium text-gray-700">No articles match your search</p>
-              <p className="mt-1 text-sm text-gray-500">Try different keywords or clear filters.</p>
+              <p className="font-medium text-gray-700 dark:text-slate-300">No articles match your search</p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Try different keywords or clear filters.</p>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -94,19 +94,19 @@ export default function WikiPage() {
                 <Link
                   key={a.title}
                   href={`/wiki/${slugify(a.title)}`}
-                  className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-lg"
+                  className="group flex flex-col rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 transition-all hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-lg"
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${a.color}`}>
                       <span>{a.icon}</span>
                       {a.category}
                     </span>
-                    <span className="text-[11px] text-gray-400">{a.readTime}</span>
+                    <span className="text-[11px] text-gray-400 dark:text-slate-500">{a.readTime}</span>
                   </div>
-                  <h3 className="mb-1.5 text-base font-bold leading-snug text-gray-900 group-hover:text-primary-700">
+                  <h3 className="mb-1.5 text-base font-bold leading-snug text-gray-900 dark:text-slate-100 group-hover:text-primary-700">
                     {a.title}
                   </h3>
-                  <p className="mb-4 flex-1 text-sm leading-relaxed text-gray-600 line-clamp-3">
+                  <p className="mb-4 flex-1 text-sm leading-relaxed text-gray-600 dark:text-slate-300 line-clamp-3">
                     {a.summary}
                   </p>
                   <div className="flex items-center justify-between border-t border-gray-100 pt-3 text-xs font-medium text-primary-600">
@@ -121,10 +121,10 @@ export default function WikiPage() {
       </section>
 
       {/* Disclaimer */}
-      <section className="border-t border-gray-200 bg-white py-10">
+      <section className="border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-10">
         <div className="mx-auto max-w-3xl px-4 text-center">
-          <p className="text-xs leading-relaxed text-gray-500">
-            <strong className="text-gray-700">Medical Disclaimer:</strong> The information provided here is for educational
+          <p className="text-xs leading-relaxed text-gray-500 dark:text-slate-400">
+            <strong className="text-gray-700 dark:text-slate-300">Medical Disclaimer:</strong> The information provided here is for educational
             purposes only and is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the
             advice of your physician or qualified health provider.
           </p>

@@ -74,7 +74,7 @@ export default function DoctorReviewsPage() {
         <div className="mb-6 flex items-center gap-3">
           <Link
             href="/dashboard/doctor"
-            className="rounded-lg p-2 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
+            className="rounded-lg p-2 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -95,7 +95,7 @@ export default function DoctorReviewsPage() {
         )}
 
         {loading ? (
-          <div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center text-sm text-gray-400 dark:text-slate-500">
+          <div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center text-sm text-gray-400 dark:text-slate-500 dark:text-slate-400">
             Loading reviews…
           </div>
         ) : summary && summary.count > 0 ? (
@@ -108,7 +108,7 @@ export default function DoctorReviewsPage() {
                   <span className="text-5xl font-bold text-gray-900 dark:text-slate-100">
                     {summary.average.toFixed(1)}
                   </span>
-                  <span className="text-sm text-gray-400 dark:text-slate-500">/ 5.0</span>
+                  <span className="text-sm text-gray-400 dark:text-slate-500 dark:text-slate-400">/ 5.0</span>
                 </div>
                 <Stars value={summary.average} size="lg" />
                 <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">
@@ -171,7 +171,7 @@ export default function DoctorReviewsPage() {
                 <option value="highest">Highest rating</option>
                 <option value="lowest">Lowest rating</option>
               </select>
-              <span className="text-xs text-gray-400 dark:text-slate-500">
+              <span className="text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">
                 Showing {filtered.length} of {reviews.length}
               </span>
             </div>
@@ -198,14 +198,14 @@ export default function DoctorReviewsPage() {
                         <div>
                           <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">{r.name}</p>
                           {r.location && (
-                            <p className="text-xs text-gray-400 dark:text-slate-500">{r.location}</p>
+                            <p className="text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">{r.location}</p>
                           )}
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
                       <Stars value={r.rating} />
-                      <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
+                      <p className="mt-1 text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">
                         {new Date(r.createdAt).toLocaleDateString(undefined, {
                           year: "numeric",
                           month: "short",
@@ -220,7 +220,7 @@ export default function DoctorReviewsPage() {
                 </div>
               ))}
               {filtered.length === 0 && (
-                <div className="rounded-2xl border border-dashed border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-10 text-center text-sm text-gray-400 dark:text-slate-500">
+                <div className="rounded-2xl border border-dashed border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-10 text-center text-sm text-gray-400 dark:text-slate-500 dark:text-slate-400">
                   No reviews match this filter.
                 </div>
               )}

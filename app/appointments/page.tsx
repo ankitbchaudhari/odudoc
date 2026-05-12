@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function AppointmentsPage() {
   return (
-    <div className="bg-gray-50">
+    <div className="bg-gray-50 dark:bg-slate-900">
       <Breadcrumb items={[{ label: "Appointments", href: "/appointments" }]} />
 
       {/* Hero */}
@@ -27,7 +27,7 @@ export default function AppointmentsPage() {
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
             {/* Form */}
             <div className="lg:col-span-2">
-              <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+              <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8">
                 <AppointmentForm />
               </div>
             </div>
@@ -35,8 +35,8 @@ export default function AppointmentsPage() {
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Working Hours */}
-              <div className="rounded-2xl bg-white p-6 shadow-sm">
-                <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-900">
+              <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+                <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-slate-100">
                   <svg className="h-5 w-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -49,8 +49,8 @@ export default function AppointmentsPage() {
                     { day: "Sunday", time: "24 Hours" },
                   ].map((item) => (
                     <div key={item.day} className="flex justify-between">
-                      <span className="text-gray-600">{item.day}</span>
-                      <span className="font-medium text-gray-900">{item.time}</span>
+                      <span className="text-gray-600 dark:text-slate-300">{item.day}</span>
+                      <span className="font-medium text-gray-900 dark:text-slate-100">{item.time}</span>
                     </div>
                   ))}
                   <p className="mt-3 rounded-lg bg-green-50 px-3 py-2 text-center text-xs font-semibold text-green-700">
@@ -72,14 +72,14 @@ export default function AppointmentsPage() {
               </div>
 
               {/* Insurance */}
-              <div className="rounded-2xl bg-white p-6 shadow-sm">
-                <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-900">
+              <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+                <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-slate-100">
                   <svg className="h-5 w-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                   Insurance Accepted
                 </h3>
-                <div className="space-y-2 text-sm text-gray-600">
+                <div className="space-y-2 text-sm text-gray-600 dark:text-slate-300">
                   <p>We accept most major insurance plans including:</p>
                   <ul className="ml-4 list-disc space-y-1">
                     <li>Aetna</li>
@@ -88,7 +88,7 @@ export default function AppointmentsPage() {
                     <li>UnitedHealthcare</li>
                     <li>Medicare / Medicaid</li>
                   </ul>
-                  <p className="mt-3 text-xs text-gray-400">
+                  <p className="mt-3 text-xs text-gray-400 dark:text-slate-500">
                     Contact us to verify your coverage before your visit.
                   </p>
                 </div>

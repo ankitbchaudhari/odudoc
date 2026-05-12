@@ -26,14 +26,14 @@ export default function DoctorPlanComparison({
           <div
             key={plan.id}
             onClick={onSelect ? () => onSelect(plan.id) : undefined}
-            className={`relative rounded-2xl border-2 bg-white p-8 shadow-sm transition-all ${
+            className={`relative rounded-2xl border-2 bg-white dark:bg-slate-900 p-8 shadow-sm transition-all ${
               onSelect ? "cursor-pointer hover:shadow-lg" : ""
             } ${
               selected
                 ? "border-primary-600 ring-4 ring-primary-100"
                 : isPremium
                   ? "border-primary-200"
-                  : "border-gray-200"
+                  : "border-gray-200 dark:border-slate-800"
             }`}
           >
             {isPremium && (
@@ -41,39 +41,39 @@ export default function DoctorPlanComparison({
                 MOST POPULAR
               </span>
             )}
-            <h3 className="text-2xl font-bold text-gray-900">{plan.name}</h3>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{plan.name}</h3>
             <div className="mt-4 flex items-baseline gap-1">
-              <span className="text-5xl font-bold text-gray-900">
+              <span className="text-5xl font-bold text-gray-900 dark:text-slate-100">
                 ${plan.price}
               </span>
-              <span className="text-gray-500">/month</span>
+              <span className="text-gray-500 dark:text-slate-400">/month</span>
             </div>
-            <p className="mt-3 text-sm text-gray-600">
+            <p className="mt-3 text-sm text-gray-600 dark:text-slate-300">
               {isPremium
                 ? "For doctors ready to scale their practice"
                 : "Perfect for getting started"}
             </p>
 
-            <div className="mt-6 rounded-lg bg-gray-50 p-4">
-              <div className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <div className="mt-6 rounded-lg bg-gray-50 dark:bg-slate-900 p-4">
+              <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                 Consultations
               </div>
-              <div className="mt-1 text-lg font-bold text-gray-900">
+              <div className="mt-1 text-lg font-bold text-gray-900 dark:text-slate-100">
                 {plan.consultationsLimit === null
                   ? "Unlimited"
                   : `Up to ${plan.consultationsLimit}/month`}
               </div>
-              <div className="mt-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <div className="mt-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                 Fee Range
               </div>
-              <div className="mt-1 text-lg font-bold text-gray-900">
+              <div className="mt-1 text-lg font-bold text-gray-900 dark:text-slate-100">
                 ${plan.feeRangeMin} - ${plan.feeRangeMax}
               </div>
             </div>
 
             <ul className="mt-6 space-y-3">
               {plan.features.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
+                <li key={f} className="flex items-start gap-2 text-sm text-gray-700 dark:text-slate-300">
                   <svg
                     className={`mt-0.5 h-5 w-5 flex-shrink-0 ${isPremium ? "text-primary-600" : "text-green-500"}`}
                     fill="none"

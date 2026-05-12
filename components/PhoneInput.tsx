@@ -300,13 +300,13 @@ export default function PhoneInput({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
-        className="flex shrink-0 items-center gap-1 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500/30 disabled:opacity-60"
+        className="flex shrink-0 items-center gap-1 rounded-l-lg border border-r-0 border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/30 disabled:opacity-60"
         aria-haspopup="listbox"
         aria-expanded={open}
       >
         <span className="text-base leading-none">{flagEmoji(country.iso)}</span>
         <span className="font-medium">{country.dial}</span>
-        <svg className="h-3 w-3 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+        <svg className="h-3 w-3 text-gray-500 dark:text-slate-400" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" />
         </svg>
       </button>
@@ -319,23 +319,23 @@ export default function PhoneInput({
         value={national}
         onChange={(e) => emit(country, e.target.value.replace(/[^\d\s-]/g, ""))}
         placeholder={placeholder}
-        className="block w-full min-w-0 rounded-r-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 disabled:opacity-60"
+        className="block w-full min-w-0 rounded-r-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 disabled:opacity-60"
       />
 
       {open && (
-        <div className="absolute left-0 top-full z-30 mt-1 max-h-72 w-72 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+        <div className="absolute left-0 top-full z-30 mt-1 max-h-72 w-72 overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg">
           <div className="p-2">
             <input
               autoFocus
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search country or +code"
-              className="w-full rounded-md border border-gray-200 px-2 py-1.5 text-sm outline-none focus:border-primary-500"
+              className="w-full rounded-md border border-gray-200 dark:border-slate-800 px-2 py-1.5 text-sm outline-none focus:border-primary-500"
             />
           </div>
           <ul role="listbox" className="max-h-56 overflow-y-auto pb-1">
             {filtered.length === 0 && (
-              <li className="px-3 py-3 text-center text-xs text-gray-400">No countries match.</li>
+              <li className="px-3 py-3 text-center text-xs text-gray-400 dark:text-slate-500">No countries match.</li>
             )}
             {filtered.map((c) => (
               <li key={c.iso}>
@@ -346,13 +346,13 @@ export default function PhoneInput({
                     setOpen(false);
                     setSearch("");
                   }}
-                  className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50 ${
+                  className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50 dark:bg-slate-900 ${
                     c.iso === country.iso ? "bg-primary-50/60" : ""
                   }`}
                 >
                   <span className="text-base leading-none">{flagEmoji(c.iso)}</span>
-                  <span className="flex-1 truncate text-gray-800">{c.name}</span>
-                  <span className="text-xs text-gray-500">{c.dial}</span>
+                  <span className="flex-1 truncate text-gray-800 dark:text-slate-200">{c.name}</span>
+                  <span className="text-xs text-gray-500 dark:text-slate-400">{c.dial}</span>
                 </button>
               </li>
             ))}

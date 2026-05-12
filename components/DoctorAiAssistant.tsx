@@ -111,16 +111,16 @@ export default function DoctorAiAssistant({ doctorId }: { doctorId: string }) {
           </svg>
         </span>
         <div>
-          <h2 className="text-lg font-bold text-gray-900">AI Assistant</h2>
-          <p className="text-xs text-gray-500">Check fit & prepare for your visit</p>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">AI Assistant</h2>
+          <p className="text-xs text-gray-500 dark:text-slate-400">Check fit & prepare for your visit</p>
         </div>
       </div>
 
-      <div className="mb-3 flex gap-1 rounded-lg bg-gray-100 p-1 text-xs font-medium">
+      <div className="mb-3 flex gap-1 rounded-lg bg-gray-100 dark:bg-slate-800 p-1 text-xs font-medium">
         <button
           onClick={() => switchMode("fit")}
           className={`flex-1 rounded-md px-3 py-1.5 transition ${
-            mode === "fit" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+            mode === "fit" ? "bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 shadow-sm" : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300"
           }`}
         >
           Right doctor?
@@ -128,7 +128,7 @@ export default function DoctorAiAssistant({ doctorId }: { doctorId: string }) {
         <button
           onClick={() => switchMode("prep")}
           className={`flex-1 rounded-md px-3 py-1.5 transition ${
-            mode === "prep" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+            mode === "prep" ? "bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 shadow-sm" : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300"
           }`}
         >
           Visit prep
@@ -141,9 +141,9 @@ export default function DoctorAiAssistant({ doctorId }: { doctorId: string }) {
         placeholder={placeholder}
         maxLength={1200}
         rows={3}
-        className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+        className="w-full resize-none rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
       />
-      <div className="mt-1 flex items-center justify-between text-xs text-gray-400">
+      <div className="mt-1 flex items-center justify-between text-xs text-gray-400 dark:text-slate-500">
         <span>{concern.length}/1200</span>
         <span>Private — not stored</span>
       </div>
@@ -181,10 +181,10 @@ export default function DoctorAiAssistant({ doctorId }: { doctorId: string }) {
 
           {result.alternativeSpecialties && result.alternativeSpecialties.length > 0 && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">You might also consider</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">You might also consider</p>
               <div className="mt-1 flex flex-wrap gap-1.5">
                 {result.alternativeSpecialties.map((s) => (
-                  <span key={s} className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-700">
+                  <span key={s} className="rounded-full bg-gray-100 dark:bg-slate-800 px-2.5 py-1 text-xs text-gray-700 dark:text-slate-300">
                     {s}
                   </span>
                 ))}
@@ -194,8 +194,8 @@ export default function DoctorAiAssistant({ doctorId }: { doctorId: string }) {
 
           {result.suggestedQuestions && result.suggestedQuestions.length > 0 && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Ask the doctor</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-gray-700">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">Ask the doctor</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-gray-700 dark:text-slate-300">
                 {result.suggestedQuestions.map((q, i) => (
                   <li key={i}>{q}</li>
                 ))}
@@ -209,8 +209,8 @@ export default function DoctorAiAssistant({ doctorId }: { doctorId: string }) {
         <div className="mt-4 space-y-3 text-sm">
           {result.questions && result.questions.length > 0 && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Questions to ask</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-gray-700">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">Questions to ask</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-gray-700 dark:text-slate-300">
                 {result.questions.map((q, i) => <li key={i}>{q}</li>)}
               </ul>
             </div>
@@ -218,8 +218,8 @@ export default function DoctorAiAssistant({ doctorId }: { doctorId: string }) {
 
           {result.recordsToBring && result.recordsToBring.length > 0 && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Bring with you</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-gray-700">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">Bring with you</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-gray-700 dark:text-slate-300">
                 {result.recordsToBring.map((q, i) => <li key={i}>{q}</li>)}
               </ul>
             </div>
@@ -227,8 +227,8 @@ export default function DoctorAiAssistant({ doctorId }: { doctorId: string }) {
 
           {result.trackBeforeVisit && result.trackBeforeVisit.length > 0 && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Track before your visit</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-gray-700">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">Track before your visit</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-gray-700 dark:text-slate-300">
                 {result.trackBeforeVisit.map((q, i) => <li key={i}>{q}</li>)}
               </ul>
             </div>
@@ -246,7 +246,7 @@ export default function DoctorAiAssistant({ doctorId }: { doctorId: string }) {
       )}
 
       {result?.disclaimer && (
-        <p className="mt-3 text-[11px] leading-snug text-gray-400">{result.disclaimer}</p>
+        <p className="mt-3 text-[11px] leading-snug text-gray-400 dark:text-slate-500">{result.disclaimer}</p>
       )}
     </div>
   );

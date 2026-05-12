@@ -123,8 +123,8 @@ export default function CustomersPage() {
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <div className="text-center">
           <span className="inline-block rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-indigo-700">Customers</span>
-          <h1 className="mt-3 text-4xl font-extrabold text-slate-900 sm:text-5xl">Hospitals running on OduDoc.</h1>
-          <p className="mx-auto mt-3 max-w-2xl text-slate-600">
+          <h1 className="mt-3 text-4xl font-extrabold text-slate-900 dark:text-slate-100 sm:text-5xl">Hospitals running on OduDoc.</h1>
+          <p className="mx-auto mt-3 max-w-2xl text-slate-600 dark:text-slate-300">
             From 30-bed clinics to 320-bed multi-specialty hospitals. {CUSTOMERS.length} customers · {totalBeds.toLocaleString("en-IN")}+ beds · {tiers.size} customer tiers across India.
           </p>
         </div>
@@ -132,12 +132,12 @@ export default function CustomersPage() {
         {/* Logo wall */}
         <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {CUSTOMERS.map((c) => (
-            <div key={c.name} className="flex h-24 items-center justify-center rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+            <div key={c.name} className="flex h-24 items-center justify-center rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
               {/* Server-rendered, so no onError fallback. We render the
                   initials chip directly — works without external assets. */}
               <div className="flex flex-col items-center text-center">
                 <span className="rounded-lg bg-gradient-to-br from-indigo-100 to-sky-100 px-3 py-1.5 text-base font-extrabold text-indigo-700 ring-1 ring-indigo-200">{initialsOf(c.name)}</span>
-                <p className="mt-1 text-[10px] font-semibold text-slate-500">{c.name}</p>
+                <p className="mt-1 text-[10px] font-semibold text-slate-500 dark:text-slate-400">{c.name}</p>
               </div>
             </div>
           ))}
@@ -146,27 +146,27 @@ export default function CustomersPage() {
         {/* Customer cards with metrics + quotes */}
         <div className="mt-16 grid gap-6 lg:grid-cols-2">
           {CUSTOMERS.map((c) => (
-            <article key={c.name} className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <article key={c.name} className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-lg font-bold text-slate-900">{c.name}</p>
-                  <p className="text-xs text-slate-500">{c.city}{c.beds ? ` · ${c.beds} beds` : ""} · live since {new Date(c.goLive + "-01").toLocaleDateString("en-IN", { month: "short", year: "numeric" })}</p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-slate-100">{c.name}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{c.city}{c.beds ? ` · ${c.beds} beds` : ""} · live since {new Date(c.goLive + "-01").toLocaleDateString("en-IN", { month: "short", year: "numeric" })}</p>
                 </div>
                 <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${TIER_TONE[c.tier]}`}>{TIER_LABEL[c.tier]}</span>
               </div>
 
               <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                 {c.metrics.map((m) => (
-                  <div key={m.label} className="rounded-lg bg-slate-50 p-2">
+                  <div key={m.label} className="rounded-lg bg-slate-50 dark:bg-slate-900 p-2">
                     <p className="text-xl font-extrabold text-indigo-700">{m.value}</p>
-                    <p className="text-[10px] uppercase tracking-wider text-slate-500">{m.label}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">{m.label}</p>
                   </div>
                 ))}
               </div>
 
               {c.quote && (
                 <blockquote className="mt-4 rounded-lg border-l-4 border-indigo-300 bg-indigo-50/50 p-3">
-                  <p className="text-sm italic text-slate-800">&ldquo;{c.quote.text}&rdquo;</p>
+                  <p className="text-sm italic text-slate-800 dark:text-slate-200">&ldquo;{c.quote.text}&rdquo;</p>
                   <p className="mt-1 text-xs font-semibold text-indigo-700">— {c.quote.attribution}</p>
                 </blockquote>
               )}
@@ -187,7 +187,7 @@ export default function CustomersPage() {
             Onboard your hospital in 2-3 weeks. Migration support, white-glove training, ABDM enabled out of the box.
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <Link href="/pricing" className="rounded-lg bg-white px-5 py-2.5 text-sm font-bold text-indigo-700">See pricing</Link>
+            <Link href="/pricing" className="rounded-lg bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-bold text-indigo-700">See pricing</Link>
             <Link href="/contact" className="rounded-lg border border-white/30 bg-white/10 px-5 py-2.5 text-sm font-bold text-white hover:bg-white/20">Book a demo</Link>
           </div>
         </div>

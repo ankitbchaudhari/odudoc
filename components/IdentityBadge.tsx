@@ -11,8 +11,8 @@ interface IdentityBadgeProps {
 
 const STYLES: Record<IdentityBadgeProps["status"], { bg: string; text: string; label: string; icon: string }> = {
   unverified: {
-    bg: "bg-gray-100",
-    text: "text-gray-600",
+    bg: "bg-gray-100 dark:bg-slate-800",
+    text: "text-gray-600 dark:text-slate-300",
     label: "Unverified",
     icon: "○",
   },

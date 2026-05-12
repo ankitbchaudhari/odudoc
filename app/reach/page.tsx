@@ -26,7 +26,7 @@ const benefits = [
 
 export default function ReachPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Hero */}
       <section className="bg-gradient-to-br from-emerald-700 to-teal-800 py-20 text-white">
         <div className="mx-auto max-w-5xl px-4 text-center">
@@ -35,7 +35,7 @@ export default function ReachPage() {
           <p className="mt-4 text-lg text-emerald-100">
             Grow your practice online. Get more patients through your digital presence.
           </p>
-          <Link href="/for-doctors/register" className="mt-8 inline-block rounded-xl bg-white px-8 py-3 text-sm font-semibold text-emerald-700 shadow-lg hover:bg-gray-50">
+          <Link href="/for-doctors/register" className="mt-8 inline-block rounded-xl bg-white dark:bg-slate-900 px-8 py-3 text-sm font-semibold text-emerald-700 shadow-lg hover:bg-gray-50 dark:bg-slate-900">
             Get Started Free
           </Link>
         </div>
@@ -44,7 +44,7 @@ export default function ReachPage() {
       {/* Benefits */}
       <section className="py-16">
         <div className="mx-auto max-w-6xl px-4">
-          <h2 className="mb-10 text-center text-2xl font-bold text-gray-900">Grow Your Practice with OduDoc Reach</h2>
+          <h2 className="mb-10 text-center text-2xl font-bold text-gray-900 dark:text-slate-100">Grow Your Practice with OduDoc Reach</h2>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {benefits.map((b) => (
               <div key={b.title} className="rounded-2xl border border-gray-100 p-6 transition-shadow hover:shadow-md">
@@ -53,8 +53,8 @@ export default function ReachPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={b.icon} />
                   </svg>
                 </div>
-                <h3 className="mb-2 font-bold text-gray-900">{b.title}</h3>
-                <p className="text-sm leading-relaxed text-gray-600">{b.desc}</p>
+                <h3 className="mb-2 font-bold text-gray-900 dark:text-slate-100">{b.title}</h3>
+                <p className="text-sm leading-relaxed text-gray-600 dark:text-slate-300">{b.desc}</p>
               </div>
             ))}
           </div>
@@ -72,7 +72,7 @@ export default function ReachPage() {
           ].map((s) => (
             <div key={s.label} className="text-center">
               <p className="text-3xl font-bold text-emerald-700">{s.value}</p>
-              <p className="text-sm text-gray-600">{s.label}</p>
+              <p className="text-sm text-gray-600 dark:text-slate-300">{s.label}</p>
             </div>
           ))}
         </div>
@@ -81,8 +81,8 @@ export default function ReachPage() {
       {/* CTA */}
       <section className="py-16">
         <div className="mx-auto max-w-3xl px-4 text-center">
-          <h2 className="mb-4 text-2xl font-bold text-gray-900">Ready to Reach More Patients?</h2>
-          <p className="mb-6 text-gray-600">Join thousands of doctors growing their practice with OduDoc Reach. Free to start.</p>
+          <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-slate-100">Ready to Reach More Patients?</h2>
+          <p className="mb-6 text-gray-600 dark:text-slate-300">Join thousands of doctors growing their practice with OduDoc Reach. Free to start.</p>
           <Link href="/for-doctors/register" className="btn-primary">Create Your Profile</Link>
         </div>
       </section>

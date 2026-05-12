@@ -165,7 +165,7 @@ const faqs = [
 
 export default function ForClinicsPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-slate-900">
       <ServiceLd
         name="Hospital & Clinic Management Software"
         description="Cloud-based hospital and clinic management software — appointments, EHR, billing, pharmacy, lab, and WhatsApp reminders."
@@ -197,13 +197,13 @@ export default function ForClinicsPage() {
           <span className="mb-5 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary-100 to-teal-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-primary-700">
             <span>🏥</span> For Clinics &amp; Hospitals
           </span>
-          <h1 className="text-4xl font-extrabold leading-tight text-gray-900 md:text-5xl lg:text-6xl">
+          <h1 className="text-4xl font-extrabold leading-tight text-gray-900 dark:text-slate-100 md:text-5xl lg:text-6xl">
             Run Your Clinic{" "}
             <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-emerald-500 bg-clip-text text-transparent">Smarter.</span>
             <br />Grow It{" "}
             <span className="bg-gradient-to-r from-fuchsia-600 via-pink-500 to-rose-500 bg-clip-text text-transparent">Faster.</span>
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-gray-600 md:text-xl">
+          <p className="mt-5 text-lg leading-relaxed text-gray-600 dark:text-slate-300 md:text-xl">
             All-in-one clinic management — appointments, digital records, billing,
             inventory, staff, telemedicine, and more. Built for modern healthcare.
           </p>
@@ -216,28 +216,28 @@ export default function ForClinicsPage() {
             </Link>
             <Link
               href="/for-doctors/register"
-              className="rounded-xl border-2 border-gray-300 bg-white/70 px-8 py-3.5 text-sm font-bold text-gray-800 backdrop-blur-sm transition-colors hover:border-primary-400 hover:bg-white"
+              className="rounded-xl border-2 border-gray-300 dark:border-slate-700 bg-white/70 px-8 py-3.5 text-sm font-bold text-gray-800 dark:text-slate-200 backdrop-blur-sm transition-colors hover:border-primary-400 hover:bg-white dark:bg-slate-900"
             >
               Start Free Trial
             </Link>
             <Link
               href="/contact"
-              className="rounded-xl border-2 border-gray-300 bg-white/70 px-8 py-3.5 text-sm font-bold text-gray-800 backdrop-blur-sm transition-colors hover:border-primary-400 hover:bg-white"
+              className="rounded-xl border-2 border-gray-300 dark:border-slate-700 bg-white/70 px-8 py-3.5 text-sm font-bold text-gray-800 dark:text-slate-200 backdrop-blur-sm transition-colors hover:border-primary-400 hover:bg-white dark:bg-slate-900"
             >
               Request a Demo
             </Link>
           </div>
-          <p className="mt-4 text-xs text-gray-500">No credit card required · 30-day free trial · Cancel anytime</p>
+          <p className="mt-4 text-xs text-gray-500 dark:text-slate-400">No credit card required · 30-day free trial · Cancel anytime</p>
         </div>
       </section>
 
       {/* ── Stats Bar ── */}
-      <section className="border-y border-gray-100 bg-white py-12">
+      <section className="border-y border-gray-100 bg-white dark:bg-slate-900 py-12">
         <div className="mx-auto grid max-w-5xl grid-cols-2 gap-8 px-4 md:grid-cols-4">
           {stats.map((s) => (
             <div key={s.label} className="text-center">
               <p className={`bg-gradient-to-r ${s.gradient} bg-clip-text text-4xl font-extrabold text-transparent`}>{s.value}</p>
-              <p className="mt-1 text-sm font-medium text-gray-500">{s.label}</p>
+              <p className="mt-1 text-sm font-medium text-gray-500 dark:text-slate-400">{s.label}</p>
             </div>
           ))}
         </div>
@@ -251,25 +251,25 @@ export default function ForClinicsPage() {
             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-100 to-primary-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-indigo-700">
               <span>✨</span> Everything in One Place
             </span>
-            <h2 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 md:text-4xl">
               Everything Your{" "}
               <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-emerald-500 bg-clip-text text-transparent">Clinic Needs</span>
             </h2>
-            <p className="mt-3 text-gray-500">One platform to manage your entire practice — from day one to scale.</p>
+            <p className="mt-3 text-gray-500 dark:text-slate-400">One platform to manage your entire practice — from day one to scale.</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
               <div
                 key={f.title}
-                className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+                className="group rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
               >
                 <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${f.gradient} text-white shadow-lg ring-4 ring-white`}>
                   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={f.icon} />
                   </svg>
                 </div>
-                <h3 className="mb-2 font-bold text-gray-900">{f.title}</h3>
-                <p className="text-sm leading-relaxed text-gray-600">{f.desc}</p>
+                <h3 className="mb-2 font-bold text-gray-900 dark:text-slate-100">{f.title}</h3>
+                <p className="text-sm leading-relaxed text-gray-600 dark:text-slate-300">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -284,23 +284,23 @@ export default function ForClinicsPage() {
             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-100 to-rose-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-rose-700">
               <span>🚀</span> Quick Start
             </span>
-            <h2 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 md:text-4xl">
               Get Started in{" "}
               <span className="bg-gradient-to-r from-rose-600 via-amber-500 to-orange-500 bg-clip-text text-transparent">4 Simple Steps</span>
             </h2>
-            <p className="mt-3 text-gray-500">From sign-up to a fully running clinic in under an hour.</p>
+            <p className="mt-3 text-gray-500 dark:text-slate-400">From sign-up to a fully running clinic in under an hour.</p>
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             {steps.map((step) => (
-              <div key={step.num} className="relative rounded-3xl border border-gray-100 bg-white p-6 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl">
+              <div key={step.num} className="relative rounded-3xl border border-gray-100 bg-white dark:bg-slate-900 p-6 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl">
                 <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${step.gradient} text-white shadow-lg ring-4 ring-white`}>
                   <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={step.icon} />
                   </svg>
                 </div>
                 <span className={`mb-2 block bg-gradient-to-r ${step.gradient} bg-clip-text text-xs font-bold uppercase tracking-widest text-transparent`}>{step.num}</span>
-                <h3 className="mb-2 font-bold text-gray-900">{step.title}</h3>
-                <p className="text-sm leading-relaxed text-gray-600">{step.desc}</p>
+                <h3 className="mb-2 font-bold text-gray-900 dark:text-slate-100">{step.title}</h3>
+                <p className="text-sm leading-relaxed text-gray-600 dark:text-slate-300">{step.desc}</p>
               </div>
             ))}
           </div>
@@ -308,21 +308,21 @@ export default function ForClinicsPage() {
       </section>
 
       {/* ── Testimonials ── */}
-      <section className="bg-white py-20">
+      <section className="bg-white dark:bg-slate-900 py-20">
         <div className="mx-auto max-w-6xl px-4">
           <div className="mb-14 text-center">
             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-purple-700">
               <span>💜</span> Loved by Doctors
             </span>
-            <h2 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 md:text-4xl">
               Loved by Clinics{" "}
               <span className="bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500 bg-clip-text text-transparent">Worldwide</span>
             </h2>
-            <p className="mt-3 text-gray-500">Join 2,500+ healthcare providers already using OduDoc.</p>
+            <p className="mt-3 text-gray-500 dark:text-slate-400">Join 2,500+ healthcare providers already using OduDoc.</p>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {testimonials.map((t) => (
-              <div key={t.name} className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl">
+              <div key={t.name} className="rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl">
                 <div className="mb-4 flex gap-1">
                   {Array.from({ length: t.rating }).map((_, i) => (
                     <svg key={i} className="h-4 w-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
@@ -330,14 +330,14 @@ export default function ForClinicsPage() {
                     </svg>
                   ))}
                 </div>
-                <p className="mb-5 text-sm leading-relaxed text-gray-700">&ldquo;{t.text}&rdquo;</p>
+                <p className="mb-5 text-sm leading-relaxed text-gray-700 dark:text-slate-300">&ldquo;{t.text}&rdquo;</p>
                 <div className="flex items-center gap-3">
                   <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${t.gradient} text-sm font-bold text-white shadow-lg ring-4 ring-white`}>
                     {t.initials}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-gray-900">{t.name}</p>
-                    <p className="text-xs text-gray-500">{t.role}</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-slate-100">{t.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">{t.role}</p>
                   </div>
                 </div>
               </div>
@@ -355,12 +355,12 @@ export default function ForClinicsPage() {
             <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-100 to-teal-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700">
               <span>🎁</span> 30-Day Free Trial · No Credit Card
             </span>
-            <h2 className="mt-4 text-3xl font-extrabold text-gray-900 md:text-4xl">
+            <h2 className="mt-4 text-3xl font-extrabold text-gray-900 dark:text-slate-100 md:text-4xl">
               One Simple Plan.{" "}
               <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-emerald-500 bg-clip-text text-transparent">Everything Included.</span>
             </h2>
-            <p className="mt-3 text-gray-500">
-              Try free for 30 days. Then flat <span className="font-semibold text-gray-900">$100/month</span> — no tiers, no surprises.
+            <p className="mt-3 text-gray-500 dark:text-slate-400">
+              Try free for 30 days. Then flat <span className="font-semibold text-gray-900 dark:text-slate-100">$100/month</span> — no tiers, no surprises.
             </p>
           </div>
 
@@ -373,7 +373,7 @@ export default function ForClinicsPage() {
             </div>
 
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-600 via-teal-600 to-emerald-600 p-[2px] shadow-2xl">
-              <div className="overflow-hidden rounded-[calc(1.5rem-2px)] bg-white">
+              <div className="overflow-hidden rounded-[calc(1.5rem-2px)] bg-white dark:bg-slate-900">
                 <div className="relative overflow-hidden bg-gradient-to-r from-primary-600 via-teal-600 to-emerald-600 px-8 py-10 text-center text-white">
                   <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
                   <div className="pointer-events-none absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
@@ -393,7 +393,7 @@ export default function ForClinicsPage() {
                     <div className="mt-4 flex items-baseline gap-1">
                       <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-5xl font-extrabold text-transparent">FREE</span>
                     </div>
-                    <p className="mt-3 text-sm text-gray-600">
+                    <p className="mt-3 text-sm text-gray-600 dark:text-slate-300">
                       Full access to every feature. No credit card required. Cancel anytime during trial with zero charge.
                     </p>
                   </div>
@@ -405,21 +405,21 @@ export default function ForClinicsPage() {
                     </div>
                     <div className="mt-4 flex items-baseline gap-1">
                       <span className="bg-gradient-to-r from-primary-600 via-teal-600 to-emerald-600 bg-clip-text text-5xl font-extrabold text-transparent">$100</span>
-                      <span className="text-sm text-gray-500">/month</span>
+                      <span className="text-sm text-gray-500 dark:text-slate-400">/month</span>
                     </div>
-                    <p className="mt-3 text-sm text-gray-600">
+                    <p className="mt-3 text-sm text-gray-600 dark:text-slate-300">
                       Flat monthly fee for the entire clinic. Unlimited doctors, patients, and appointments.
                     </p>
                   </div>
                 </div>
 
                 <div className="border-t border-gray-100 bg-gradient-to-br from-slate-50 to-primary-50/40 p-8">
-                  <h4 className="mb-5 text-sm font-bold uppercase tracking-wider text-gray-700">
+                  <h4 className="mb-5 text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-slate-300">
                     Everything Included
                   </h4>
                   <ul className="grid gap-3 sm:grid-cols-2">
                     {planFeatures.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
+                      <li key={f} className="flex items-start gap-2 text-sm text-gray-700 dark:text-slate-300">
                         <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-sm">
                           <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -439,12 +439,12 @@ export default function ForClinicsPage() {
                     </Link>
                     <Link
                       href="/contact"
-                      className="flex-1 rounded-xl border-2 border-gray-200 bg-white py-3.5 text-center text-sm font-bold text-gray-700 transition-colors hover:border-primary-400"
+                      className="flex-1 rounded-xl border-2 border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-3.5 text-center text-sm font-bold text-gray-700 dark:text-slate-300 transition-colors hover:border-primary-400"
                     >
                       Talk to Sales
                     </Link>
                   </div>
-                  <p className="mt-4 text-center text-xs text-gray-500">
+                  <p className="mt-4 text-center text-xs text-gray-500 dark:text-slate-400">
                     Secure payments via IndusPays · Cancel anytime · No setup fees
                   </p>
                 </div>
@@ -455,13 +455,13 @@ export default function ForClinicsPage() {
       </section>
 
       {/* ── FAQ ── */}
-      <section className="bg-white py-20">
+      <section className="bg-white dark:bg-slate-900 py-20">
         <div className="mx-auto max-w-3xl px-4">
           <div className="mb-14 text-center">
             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-100 to-indigo-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-indigo-700">
               <span>❓</span> FAQ
             </span>
-            <h2 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 md:text-4xl">
               Frequently Asked{" "}
               <span className="bg-gradient-to-r from-sky-600 via-indigo-500 to-purple-500 bg-clip-text text-transparent">Questions</span>
             </h2>
@@ -470,9 +470,9 @@ export default function ForClinicsPage() {
             {faqs.map((faq) => (
               <details
                 key={faq.q}
-                className="group rounded-2xl border border-gray-100 bg-white px-6 py-4 shadow-sm transition-all open:shadow-lg hover:shadow-md"
+                className="group rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 px-6 py-4 shadow-sm transition-all open:shadow-lg hover:shadow-md"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-gray-900">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-gray-900 dark:text-slate-100">
                   {faq.q}
                   <svg
                     className="h-5 w-5 flex-shrink-0 text-primary-500 transition-transform group-open:rotate-180"
@@ -481,7 +481,7 @@ export default function ForClinicsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </summary>
-                <p className="mt-3 text-sm leading-relaxed text-gray-600">{faq.a}</p>
+                <p className="mt-3 text-sm leading-relaxed text-gray-600 dark:text-slate-300">{faq.a}</p>
               </details>
             ))}
           </div>
@@ -514,7 +514,7 @@ export default function ForClinicsPage() {
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
               href="/for-doctors/register"
-              className="rounded-xl bg-white px-8 py-3.5 text-sm font-bold text-primary-700 shadow-lg transition-all hover:scale-105"
+              className="rounded-xl bg-white dark:bg-slate-900 px-8 py-3.5 text-sm font-bold text-primary-700 shadow-lg transition-all hover:scale-105"
             >
               Start Free Trial →
             </Link>

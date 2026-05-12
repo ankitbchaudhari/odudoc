@@ -119,12 +119,12 @@ export default function AbhaCard() {
             <p className="text-[11px] font-bold uppercase tracking-wider text-orange-700">
               ABDM · National Digital Health Mission
             </p>
-            <p className="mt-0.5 text-sm font-bold text-slate-900">
+            <p className="mt-0.5 text-sm font-bold text-slate-900 dark:text-slate-100">
               {linked
                 ? "ABHA Health ID linked"
                 : "Connect your ABHA Health ID"}
             </p>
-            <p className="mt-0.5 text-xs text-slate-700">
+            <p className="mt-0.5 text-xs text-slate-700 dark:text-slate-300">
               {linked ? (
                 <>
                   Your records on OduDoc are tagged with{" "}
@@ -176,7 +176,7 @@ export default function AbhaCard() {
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               placeholder="14-digit ABHA number"
-              className="min-w-[200px] flex-1 rounded-xl border border-orange-200 bg-white px-3 py-2 font-mono text-sm tracking-widest outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/15"
+              className="min-w-[200px] flex-1 rounded-xl border border-orange-200 bg-white dark:bg-slate-900 px-3 py-2 font-mono text-sm tracking-widest outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/15"
             />
             <button
               onClick={submit}

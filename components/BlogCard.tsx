@@ -17,7 +17,7 @@ export default function BlogCard({ post }: { post: BlogPost }) {
   const icon = categoryIcons[post.category] || categoryIcons["Medical Tips"];
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+    <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
       {/* Thumbnail */}
       <Link href={`/blog/${post.slug}`} className="block">
         <div className={`relative h-48 overflow-hidden bg-gradient-to-br ${gradient}`}>
@@ -59,11 +59,11 @@ export default function BlogCard({ post }: { post: BlogPost }) {
       {/* Content */}
       <div className="flex flex-1 flex-col p-5">
         <Link href={`/blog/${post.slug}`}>
-          <h3 className="mb-2 line-clamp-2 text-base font-bold text-gray-900 transition-colors group-hover:text-primary-600">
+          <h3 className="mb-2 line-clamp-2 text-base font-bold text-gray-900 dark:text-slate-100 transition-colors group-hover:text-primary-600">
             {post.title}
           </h3>
         </Link>
-        <p className="mb-4 line-clamp-2 flex-1 text-sm leading-relaxed text-gray-500">
+        <p className="mb-4 line-clamp-2 flex-1 text-sm leading-relaxed text-gray-500 dark:text-slate-400">
           {post.excerpt}
         </p>
 
@@ -74,8 +74,8 @@ export default function BlogCard({ post }: { post: BlogPost }) {
               {post.authorInitials}
             </div>
             <div>
-              <p className="text-xs font-semibold text-gray-700">{post.author}</p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs font-semibold text-gray-700 dark:text-slate-300">{post.author}</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500">
                 <RelativeTime date={post.createdAt || post.date} fallback={post.date} />
               </p>
             </div>

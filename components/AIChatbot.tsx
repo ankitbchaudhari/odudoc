@@ -386,7 +386,7 @@ export default function AIChatbot() {
   return (
     <>
       <div
-        className={`fixed bottom-24 right-6 z-50 w-[400px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl bg-white shadow-2xl transition-all duration-300 ${
+        className={`fixed bottom-24 right-6 z-50 w-[400px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-2xl transition-all duration-300 ${
           isOpen ? "translate-y-0 scale-100 opacity-100" : "pointer-events-none translate-y-4 scale-95 opacity-0"
         }`}
         style={{ height: "560px" }}
@@ -412,7 +412,7 @@ export default function AIChatbot() {
           {messages.map((msg) => (
             <div key={msg.id} className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}>
               <div className={`max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                msg.sender === "user" ? "bg-primary-600 text-white" : "bg-gray-100 text-gray-800"
+                msg.sender === "user" ? "bg-primary-600 text-white" : "bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-200"
               }`}>
                 {msg.text}
               </div>
@@ -432,20 +432,20 @@ export default function AIChatbot() {
                 <div className="mt-2 flex flex-wrap gap-2">
                   {msg.quickReplies.map((q, i) => (
                     <button key={i} onClick={() => sendText(q)}
-                      className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-medium text-primary-700 hover:bg-primary-50">
+                      className="rounded-full border border-primary-200 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-medium text-primary-700 hover:bg-primary-50">
                       {q}
                     </button>
                   ))}
                 </div>
               )}
 
-              <span className="mt-1 text-[10px] text-gray-400">{formatTime(msg.timestamp)}</span>
+              <span className="mt-1 text-[10px] text-gray-400 dark:text-slate-500">{formatTime(msg.timestamp)}</span>
             </div>
           ))}
 
           {isTyping && (
             <div className="flex items-start">
-              <div className="flex items-center gap-1 rounded-2xl bg-gray-100 px-4 py-3">
+              <div className="flex items-center gap-1 rounded-2xl bg-gray-100 dark:bg-slate-800 px-4 py-3">
                 <span className="inline-block h-2 w-2 animate-bounce rounded-full bg-gray-400 [animation-delay:0ms]" />
                 <span className="inline-block h-2 w-2 animate-bounce rounded-full bg-gray-400 [animation-delay:150ms]" />
                 <span className="inline-block h-2 w-2 animate-bounce rounded-full bg-gray-400 [animation-delay:300ms]" />
@@ -457,15 +457,15 @@ export default function AIChatbot() {
 
         {/* Expandable menu panel */}
         {showMenu && (
-          <div className="absolute bottom-[108px] left-0 right-0 border-t border-gray-200 bg-white px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.04)]">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-gray-500">Quick navigation</p>
+          <div className="absolute bottom-[108px] left-0 right-0 border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.04)]">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">Quick navigation</p>
             <div className="grid grid-cols-2 gap-1.5">
               {MENU_SHORTCUTS.map((s) => (
                 <Link
                   key={s.href}
                   href={s.href}
                   onClick={() => { setShowMenu(false); closeChat(); }}
-                  className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-medium text-gray-700 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+                  className="rounded-lg border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
                 >
                   {s.label}
                 </Link>
@@ -475,11 +475,11 @@ export default function AIChatbot() {
         )}
 
         {/* Action toolbar */}
-        <div className="absolute bottom-[56px] left-0 right-0 flex items-center gap-1 border-t border-gray-200 bg-gray-50 px-2 py-1.5">
+        <div className="absolute bottom-[56px] left-0 right-0 flex items-center gap-1 border-t border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 px-2 py-1.5">
           <button
             onClick={() => setShowMenu((s) => !s)}
             className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
-              showMenu ? "bg-primary-600 text-white" : "text-gray-600 hover:bg-white"
+              showMenu ? "bg-primary-600 text-white" : "text-gray-600 dark:text-slate-300 hover:bg-white dark:bg-slate-900"
             }`}
             aria-label="Main menu"
           >
@@ -490,7 +490,7 @@ export default function AIChatbot() {
           </button>
           <button
             onClick={goToMainMenu}
-            className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-gray-600 hover:bg-white"
+            className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-gray-600 dark:text-slate-300 hover:bg-white dark:bg-slate-900"
             aria-label="Go to main menu"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -501,7 +501,7 @@ export default function AIChatbot() {
           <button
             onClick={goBack}
             disabled={messages.length <= 1}
-            className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-gray-600 hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-gray-600 dark:text-slate-300 hover:bg-white dark:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Go back"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -511,7 +511,7 @@ export default function AIChatbot() {
           </button>
           <button
             onClick={clearChat}
-            className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-gray-600 hover:bg-white"
+            className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-gray-600 dark:text-slate-300 hover:bg-white dark:bg-slate-900"
             aria-label="Clear chat"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -531,11 +531,11 @@ export default function AIChatbot() {
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 flex items-center gap-2 border-t border-gray-200 bg-white px-4 py-3">
+        <div className="absolute bottom-0 left-0 right-0 flex items-center gap-2 border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3">
           <input ref={inputRef} type="text" value={input}
             onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
             placeholder="Ask anything about your health…"
-            className="flex-1 rounded-full border border-gray-300 bg-gray-50 px-4 py-2 text-sm outline-none transition-colors focus:border-primary-500 focus:ring-1 focus:ring-primary-500" />
+            className="flex-1 rounded-full border border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 px-4 py-2 text-sm outline-none transition-colors focus:border-primary-500 focus:ring-1 focus:ring-primary-500" />
           <button onClick={() => sendText(input)} disabled={!input.trim()}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-600 text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Send message">

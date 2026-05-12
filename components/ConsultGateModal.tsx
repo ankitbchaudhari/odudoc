@@ -217,20 +217,20 @@ export default function ConsultGateModal({ open, onClose, doctor, onVerified }: 
       onClick={() => !busy && onClose()}
     >
       <div
-        className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="w-full max-w-md overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Start video consultation</h2>
-            <p className="text-sm text-gray-500">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Start video consultation</h2>
+            <p className="text-sm text-gray-500 dark:text-slate-400">
               with {doctor.name} · {doctor.specialty}
             </p>
           </div>
           <button
             onClick={onClose}
             disabled={busy}
-            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-50"
+            className="rounded-lg p-1 text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300 disabled:opacity-50"
             aria-label="Close"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -241,44 +241,44 @@ export default function ConsultGateModal({ open, onClose, doctor, onVerified }: 
 
         {step === "details" && (
           <div className="space-y-4 px-6 py-5">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-slate-300">
               We&apos;ll send a one-time code to your phone and WhatsApp to keep your consultation secure.
             </p>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700">First name</label>
+                <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-slate-300">First name</label>
                 <input
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   placeholder="Priya"
                   autoComplete="given-name"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700">Last name</label>
+                <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-slate-300">Last name</label>
                 <input
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   placeholder="Sharma"
                   autoComplete="family-name"
                 />
               </div>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-700">
+              <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-slate-300">
                 Phone number (with country code)
               </label>
               <input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 placeholder="+1 555 000 1234"
                 inputMode="tel"
                 autoComplete="tel"
               />
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
                 Include your country code (e.g. +1, +44, +91). Code arrives via SMS and WhatsApp.
               </p>
             </div>
@@ -294,7 +294,7 @@ export default function ConsultGateModal({ open, onClose, doctor, onVerified }: 
             >
               {busy ? "Sending code…" : "Send verification code"}
             </button>
-            <p className="text-center text-xs text-gray-400">
+            <p className="text-center text-xs text-gray-400 dark:text-slate-500">
               Consultation fee ${doctor.fee} is charged only after the call starts.
             </p>
           </div>
@@ -302,7 +302,7 @@ export default function ConsultGateModal({ open, onClose, doctor, onVerified }: 
 
         {step === "otp" && (
           <div className="space-y-4 px-6 py-5">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-slate-300">
               We sent a 6-digit code to <span className="font-semibold">{phoneHint}</span> via{" "}
               <span className="font-semibold">
                 {channel === "whatsapp" ? "WhatsApp" : channel === "call" ? "voice call" : "SMS"}
@@ -310,7 +310,7 @@ export default function ConsultGateModal({ open, onClose, doctor, onVerified }: 
               .
             </p>
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-700">Verification code</label>
+              <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-slate-300">Verification code</label>
               <input
                 ref={codeInput}
                 value={code}
@@ -318,7 +318,7 @@ export default function ConsultGateModal({ open, onClose, doctor, onVerified }: 
                 onKeyDown={(e) => {
                   if (e.key === "Enter") verifyAndStart();
                 }}
-                className="w-full rounded-lg border border-gray-300 px-3 py-3 text-center text-xl font-semibold tracking-[0.5em] focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-3 text-center text-xl font-semibold tracking-[0.5em] focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 placeholder="••••••"
@@ -336,7 +336,7 @@ export default function ConsultGateModal({ open, onClose, doctor, onVerified }: 
             >
               {busy ? "Verifying…" : "Verify & start video consult"}
             </button>
-            <div className="flex items-center justify-between text-xs text-gray-500">
+            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-slate-400">
               <button
                 onClick={() => {
                   setStep("details");
@@ -350,7 +350,7 @@ export default function ConsultGateModal({ open, onClose, doctor, onVerified }: 
               <button
                 onClick={sendCode}
                 disabled={busy || resendIn > 0}
-                className="text-primary-600 hover:underline disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline"
+                className="text-primary-600 hover:underline disabled:cursor-not-allowed disabled:text-gray-400 dark:text-slate-500 disabled:no-underline"
               >
                 {resendIn > 0 ? `Resend in ${resendIn}s` : "Resend code"}
               </button>
@@ -365,9 +365,9 @@ export default function ConsultGateModal({ open, onClose, doctor, onVerified }: 
 
         {step === "starting" && (
           <div className="px-6 py-10 text-center">
-            <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-primary-600" />
-            <p className="text-sm font-medium text-gray-700">Starting your video consultation…</p>
-            <p className="mt-1 text-xs text-gray-400">Connecting you with {doctor.name}.</p>
+            <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-gray-200 dark:border-slate-800 border-t-primary-600" />
+            <p className="text-sm font-medium text-gray-700 dark:text-slate-300">Starting your video consultation…</p>
+            <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">Connecting you with {doctor.name}.</p>
           </div>
         )}
       </div>

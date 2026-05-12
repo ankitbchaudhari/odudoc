@@ -21,7 +21,7 @@ export default async function PrescriptionViewPage({
     PRESCRIPTION_TEMPLATES[0];
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 print:bg-white print:py-0">
+    <div className="min-h-screen bg-gray-100 dark:bg-slate-800 py-8 print:bg-white dark:bg-slate-900 print:py-0">
       <style>{`
         @media print {
           body { background: white !important; }
@@ -30,10 +30,10 @@ export default async function PrescriptionViewPage({
       `}</style>
       <div className="mx-auto max-w-4xl px-4 print:max-w-none print:px-0">
         <PrintBar prescriptionId={rx.id} />
-        <div id="rx-printable" className="overflow-hidden rounded-xl bg-white shadow-lg">
+        <div id="rx-printable" className="overflow-hidden rounded-xl bg-white dark:bg-slate-900 shadow-lg">
           <PrescriptionRenderer template={template} data={rx.data} />
         </div>
-        <p className="mt-4 text-center text-xs text-gray-500">
+        <p className="mt-4 text-center text-xs text-gray-500 dark:text-slate-400">
           Prescription ID: {rx.id} · Issued on {new Date(rx.createdAt).toLocaleString()}
         </p>
       </div>

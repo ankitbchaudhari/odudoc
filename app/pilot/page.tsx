@@ -66,7 +66,7 @@ export default function PilotPage() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 font-bold text-white">
               O
             </div>
-            <span className="text-base font-bold text-slate-900">OduDoc</span>
+            <span className="text-base font-bold text-slate-900 dark:text-slate-100">OduDoc</span>
           </Link>
           <a
             href="mailto:founder@odudoc.com"
@@ -86,14 +86,14 @@ export default function PilotPage() {
             <span className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-violet-700">
               ✨ Pilot programme · 90 days free
             </span>
-            <h1 className="mt-4 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl md:text-6xl">
+            <h1 className="mt-4 text-4xl font-extrabold leading-tight text-slate-900 dark:text-slate-100 sm:text-5xl md:text-6xl">
               The AI EMR that does your{" "}
               <span className="bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-600 bg-clip-text text-transparent">
                 paperwork for you
               </span>
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-600">
-              Ambient scribe writes your SOAP note from the consultation audio. AI checks every prescription. ICD-10 codes auto-suggested. <strong className="text-slate-900">Free for 90 days, founder-direct support, you message me and I pick up.</strong>
+            <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-600 dark:text-slate-300">
+              Ambient scribe writes your SOAP note from the consultation audio. AI checks every prescription. ICD-10 codes auto-suggested. <strong className="text-slate-900 dark:text-slate-100">Free for 90 days, founder-direct support, you message me and I pick up.</strong>
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <a
@@ -114,7 +114,7 @@ export default function PilotPage() {
                 💬 WhatsApp instead
               </a>
             </div>
-            <p className="mt-3 text-xs text-slate-500">
+            <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
               Reply with your specialty, clinic size, and city. I&rsquo;ll send a 15-minute call slot the same day.
             </p>
           </div>
@@ -122,23 +122,23 @@ export default function PilotPage() {
       </section>
 
       {/* Features */}
-      <section className="bg-white py-16">
+      <section className="bg-white dark:bg-slate-900 py-16">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center text-3xl font-bold text-slate-900">
+          <h2 className="text-center text-3xl font-bold text-slate-900 dark:text-slate-100">
             What&rsquo;s in the pilot
           </h2>
-          <p className="mt-2 text-center text-sm text-slate-500">
+          <p className="mt-2 text-center text-sm text-slate-500 dark:text-slate-400">
             Everything below is live in production today. No vapourware.
           </p>
           <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className="rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg"
               >
                 <div className="text-3xl">{f.icon}</div>
-                <h3 className="mt-3 text-base font-bold text-slate-900">{f.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{f.body}</p>
+                <h3 className="mt-3 text-base font-bold text-slate-900 dark:text-slate-100">{f.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{f.body}</p>
               </div>
             ))}
           </div>
@@ -175,26 +175,26 @@ export default function PilotPage() {
       </section>
 
       {/* What I'll ask in return */}
-      <section className="bg-white py-16">
+      <section className="bg-white dark:bg-slate-900 py-16">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 sm:text-3xl">
             What I&rsquo;ll ask in return
           </h2>
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-5">
               <div className="text-2xl">🗣️</div>
-              <h3 className="mt-2 text-base font-bold text-slate-900">Honest feedback</h3>
-              <p className="mt-1 text-sm text-slate-600">Tell me what&rsquo;s broken, what reads weird, what you wish worked differently.</p>
+              <h3 className="mt-2 text-base font-bold text-slate-900 dark:text-slate-100">Honest feedback</h3>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Tell me what&rsquo;s broken, what reads weird, what you wish worked differently.</p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-5">
               <div className="text-2xl">📹</div>
-              <h3 className="mt-2 text-base font-bold text-slate-900">30-sec testimonial</h3>
-              <p className="mt-1 text-sm text-slate-600">At week 4, if it&rsquo;s working, a short video on what time it&rsquo;s saved you. Optional.</p>
+              <h3 className="mt-2 text-base font-bold text-slate-900 dark:text-slate-100">30-sec testimonial</h3>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">At week 4, if it&rsquo;s working, a short video on what time it&rsquo;s saved you. Optional.</p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-5">
               <div className="text-2xl">🤝</div>
-              <h3 className="mt-2 text-base font-bold text-slate-900">Word-of-mouth</h3>
-              <p className="mt-1 text-sm text-slate-600">If you like it, tell one colleague. That&rsquo;s how this grows.</p>
+              <h3 className="mt-2 text-base font-bold text-slate-900 dark:text-slate-100">Word-of-mouth</h3>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">If you like it, tell one colleague. That&rsquo;s how this grows.</p>
             </div>
           </div>
         </div>
@@ -203,10 +203,10 @@ export default function PilotPage() {
       {/* Final CTA */}
       <section className="bg-gradient-to-br from-violet-50 to-indigo-50 py-16">
         <div className="mx-auto max-w-2xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 sm:text-3xl">
             Ready to try it?
           </h2>
-          <p className="mt-3 text-slate-600">
+          <p className="mt-3 text-slate-600 dark:text-slate-300">
             Reply with your specialty, clinic size, and city. I&rsquo;ll send a 15-minute call slot today.
           </p>
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -226,7 +226,7 @@ export default function PilotPage() {
         </div>
       </section>
 
-      <footer className="border-t border-slate-100 bg-white py-6 text-center text-xs text-slate-400">
+      <footer className="border-t border-slate-100 bg-white dark:bg-slate-900 py-6 text-center text-xs text-slate-400">
         OduDoc · founder@odudoc.com · Pilot enquiries only on this page.{" "}
         <Link href="/" className="text-violet-600 hover:underline">
           Main site

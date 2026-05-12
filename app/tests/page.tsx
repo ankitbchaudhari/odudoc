@@ -50,11 +50,11 @@ export default function TestsPage() {
             Book lab tests with home sample collection. Accurate results from NABL-accredited labs.
           </p>
           <div className="mx-auto mt-8 max-w-xl">
-            <div className="flex overflow-hidden rounded-xl bg-white shadow-lg">
+            <div className="flex overflow-hidden rounded-xl bg-white dark:bg-slate-900 shadow-lg">
               <input
                 type="text"
                 placeholder="Search tests and packages..."
-                className="flex-1 px-4 py-3.5 text-sm text-gray-700 outline-none"
+                className="flex-1 px-4 py-3.5 text-sm text-gray-700 dark:text-slate-300 outline-none"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -76,8 +76,8 @@ export default function TestsPage() {
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-50 text-3xl">
                   {s.icon}
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">{s.title}</h3>
-                <p className="mt-1 text-sm text-gray-500">{s.desc}</p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">{s.title}</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{s.desc}</p>
               </div>
             ))}
           </div>
@@ -85,7 +85,7 @@ export default function TestsPage() {
       </section>
 
       {/* Test Packages */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-gray-50 dark:bg-slate-900 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="section-title text-center">
             {search ? `Results for "${search}"` : "Popular Test Packages"}
@@ -101,16 +101,16 @@ export default function TestsPage() {
                       Popular
                     </span>
                   )}
-                  <h3 className="text-lg font-bold text-gray-900">{test.name}</h3>
-                  <p className="mt-2 flex-1 text-sm text-gray-500">{test.description}</p>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">{test.name}</h3>
+                  <p className="mt-2 flex-1 text-sm text-gray-500 dark:text-slate-400">{test.description}</p>
                   <div className="mt-4 flex items-center gap-4 border-t border-gray-100 pt-4">
-                    <span className="text-xs text-gray-400">{test.parameters} parameters</span>
-                    <span className="text-xs text-gray-400">{test.turnaround}</span>
+                    <span className="text-xs text-gray-400 dark:text-slate-500">{test.parameters} parameters</span>
+                    <span className="text-xs text-gray-400 dark:text-slate-500">{test.turnaround}</span>
                   </div>
                   <div className="mt-3 flex items-center justify-between">
                     <div>
-                      <span className="text-xl font-bold text-gray-900">${test.price}</span>
-                      <span className="ml-2 text-sm text-gray-400 line-through">
+                      <span className="text-xl font-bold text-gray-900 dark:text-slate-100">${test.price}</span>
+                      <span className="ml-2 text-sm text-gray-400 dark:text-slate-500 line-through">
                         ${test.originalPrice}
                       </span>
                       <span className="ml-2 text-xs font-semibold text-green-600">
@@ -125,10 +125,10 @@ export default function TestsPage() {
               ))}
             </div>
           ) : (
-            <div className="mt-10 rounded-xl bg-white py-16 text-center shadow">
+            <div className="mt-10 rounded-xl bg-white dark:bg-slate-900 py-16 text-center shadow">
               <p className="text-4xl">🔬</p>
-              <p className="mt-4 text-lg font-semibold text-gray-900">No tests found</p>
-              <p className="mt-1 text-sm text-gray-500">Try a different search term</p>
+              <p className="mt-4 text-lg font-semibold text-gray-900 dark:text-slate-100">No tests found</p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Try a different search term</p>
             </div>
           )}
         </div>
@@ -143,8 +143,8 @@ export default function TestsPage() {
             {safetyMeasures.map((s) => (
               <div key={s.title} className="card text-center">
                 <span className="mb-3 block text-4xl">{s.icon}</span>
-                <h3 className="font-semibold text-gray-900">{s.title}</h3>
-                <p className="mt-1 text-xs text-gray-500">{s.desc}</p>
+                <h3 className="font-semibold text-gray-900 dark:text-slate-100">{s.title}</h3>
+                <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{s.desc}</p>
               </div>
             ))}
           </div>

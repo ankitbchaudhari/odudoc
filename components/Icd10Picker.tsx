@@ -31,7 +31,7 @@ const CHAPTER_COLORS: Record<string, string> = {
   Psychiatric: "bg-pink-100 text-pink-800",
   Musculoskeletal: "bg-orange-100 text-orange-800",
   Skin: "bg-lime-100 text-lime-800",
-  Symptoms: "bg-slate-100 text-slate-700",
+  Symptoms: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
 };
 
 export default function Icd10Picker({ query, lines, onPick, limit = 8 }: Props) {
@@ -72,17 +72,17 @@ export default function Icd10Picker({ query, lines, onPick, limit = 8 }: Props) 
 
   return (
     <div className="space-y-1">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Suggested ICD-10 codes</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Suggested ICD-10 codes</p>
       <ul className="space-y-1">
         {suggestions.map((s) => (
           <li key={s.code}>
             <button
               onClick={() => onPick?.(s)}
-              className="flex w-full items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-sm transition hover:border-indigo-400 hover:bg-indigo-50"
+              className="flex w-full items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-left text-sm transition hover:border-indigo-400 hover:bg-indigo-50"
             >
               <span className="rounded bg-indigo-100 px-2 py-0.5 font-mono text-xs font-bold text-indigo-700">{s.code}</span>
-              <span className="flex-1 text-slate-800">{s.title}</span>
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${CHAPTER_COLORS[s.chapter] || "bg-slate-100"}`}>{s.chapter}</span>
+              <span className="flex-1 text-slate-800 dark:text-slate-200">{s.title}</span>
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${CHAPTER_COLORS[s.chapter] || "bg-slate-100 dark:bg-slate-800"}`}>{s.chapter}</span>
             </button>
           </li>
         ))}

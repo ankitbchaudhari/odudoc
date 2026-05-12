@@ -471,13 +471,13 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={handleClose}>
       <div
-        className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+        className="relative w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close */}
         <button
           onClick={handleClose}
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:bg-slate-800 hover:text-gray-600 dark:text-slate-300"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
@@ -491,7 +491,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                   className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
                     i <= stepIndex
                       ? "bg-primary-600 text-white"
-                      : "bg-gray-200 text-gray-500"
+                      : "bg-gray-200 text-gray-500 dark:text-slate-400"
                   }`}
                 >
                   {i + 1}
@@ -510,9 +510,9 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
 
         {step === "slot" && (
           <>
-            <h2 className="text-lg font-bold text-gray-900">Book Appointment</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Book Appointment</h2>
             <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-slate-400">
                 {doctor.name} &middot; {displaySymbol}{displayFee}
               </p>
               <CurrencySwitcher />
@@ -536,21 +536,21 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
             })()}
 
             <div className="mt-5">
-              <label className="mb-1 block text-sm font-medium text-gray-700">Select a date</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Select a date</label>
               <select
                 value={selectedDate}
                 onChange={(e) => { setSelectedDate(e.target.value); setSelectedSlot(null); }}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               >
                 {dateOptions.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-gray-400">You can book up to 15 days in advance.</p>
+              <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">You can book up to 15 days in advance.</p>
             </div>
 
             <div className="mt-5">
-              <p className="mb-3 text-sm font-medium text-gray-700">Select a time slot</p>
+              <p className="mb-3 text-sm font-medium text-gray-700 dark:text-slate-300">Select a time slot</p>
               {availableSlots.length === 0 ? (
                 <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-xs text-amber-800">
                   No more slots available {isToday ? "today" : "on this date"}. Please pick another date.
@@ -564,7 +564,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                       className={`rounded-lg border px-3 py-2 text-xs font-medium transition-all ${
                         selectedSlot === slot
                           ? "border-primary-500 bg-primary-50 text-primary-700"
-                          : "border-gray-200 text-gray-600 hover:border-primary-300"
+                          : "border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-300 hover:border-primary-300"
                       }`}
                     >
                       {slot}
@@ -573,7 +573,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                 </div>
               )}
               {isToday && availableSlots.length < doctor.timeSlots.length && availableSlots.length > 0 && (
-                <p className="mt-2 text-xs text-gray-400">Past slots for today are hidden.</p>
+                <p className="mt-2 text-xs text-gray-400 dark:text-slate-500">Past slots for today are hidden.</p>
               )}
             </div>
 
@@ -589,8 +589,8 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
 
         {step === "form" && (
           <form onSubmit={handlePatientSubmit}>
-            <h2 className="text-lg font-bold text-gray-900">Patient Details</h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Patient Details</h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
               {doctor.name} &middot; {dateOptions.find((d) => d.value === selectedDate)?.label} &middot; {selectedSlot}
             </p>
             {paymentsOff && (
@@ -601,32 +601,32 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
             <div className="mt-5 space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">First Name *</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">First Name *</label>
                   <input
                     required
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     autoComplete="given-name"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                     placeholder="e.g. Priya"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Last Name *</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Last Name *</label>
                   <input
                     required
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     autoComplete="family-name"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                     placeholder="e.g. Sharma"
                   />
                 </div>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Phone Number *</label>
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Phone Number *</label>
                 <input
                   required
                   type="tel"
@@ -634,12 +634,12 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                   onChange={(e) => setPhone(e.target.value)}
                   pattern="^[\d\s\-\+\(\)]{7,}$"
                   title="Please enter a valid phone number (at least 7 digits)"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                   placeholder="e.g. +1 555 123 4567"
                   inputMode="tel"
                   autoComplete="tel"
                 />
-                <p className="mt-1 text-xs text-gray-400">We&apos;ll text you a 6-digit code to confirm it&apos;s you.</p>
+                <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">We&apos;ll text you a 6-digit code to confirm it&apos;s you.</p>
               </div>
             </div>
 
@@ -670,7 +670,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
             <button
               type="button"
               onClick={() => { setStep("slot"); setPaymentError(null); }}
-              className="mt-2 w-full text-center text-sm text-gray-500 hover:text-gray-700"
+              className="mt-2 w-full text-center text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300"
             >
               Back
             </button>
@@ -679,8 +679,8 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
 
         {step === "otp" && (
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Verify your phone</h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Verify your phone</h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
               We sent a 6-digit code to <span className="font-semibold">{phoneHint}</span> via{" "}
               <span className="font-semibold">
                 {otpChannel === "whatsapp" ? "WhatsApp" : otpChannel === "call" ? "voice call" : "SMS"}
@@ -688,13 +688,13 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
               .
             </p>
             <div className="mt-5">
-              <label className="mb-1 block text-sm font-medium text-gray-700">Verification code</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Verification code</label>
               <input
                 autoFocus
                 value={otpCode}
                 onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 onKeyDown={(e) => { if (e.key === "Enter") handleOtpVerify(); }}
-                className="w-full rounded-lg border border-gray-300 px-3 py-3 text-center text-xl font-semibold tracking-[0.5em] outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-3 text-center text-xl font-semibold tracking-[0.5em] outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 placeholder="••••••"
@@ -720,7 +720,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                 : `Verify & continue to payment · ${displaySymbol}${displayFee}`}
             </button>
 
-            <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+            <div className="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-slate-400">
               <button
                 type="button"
                 onClick={() => { setStep("form"); setPaymentError(null); }}
@@ -733,7 +733,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                 type="button"
                 onClick={handleResendOtp}
                 disabled={paymentLoading || resendIn > 0}
-                className="text-primary-600 hover:underline disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline"
+                className="text-primary-600 hover:underline disabled:cursor-not-allowed disabled:text-gray-400 dark:text-slate-500 disabled:no-underline"
               >
                 {resendIn > 0 ? `Resend in ${resendIn}s` : "Resend code"}
               </button>
@@ -743,8 +743,8 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
 
         {step === "payment" && (clientSecret || (provider === "cashfree" && bookingId)) && (
           <>
-            <h2 className="text-lg font-bold text-gray-900">Payment</h2>
-            <p className="mt-1 mb-5 text-sm text-gray-500">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Payment</h2>
+            <p className="mt-1 mb-5 text-sm text-gray-500 dark:text-slate-400">
               Complete your payment to confirm booking
             </p>
 
@@ -753,18 +753,18 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                 Cashfree-eligible booking. Hidden on countries where
                 Cashfree won't accept the customer's instrument. */}
             {cashfreeAvailable && (
-              <div className="mb-4 inline-flex rounded-full bg-slate-100 p-1 text-xs font-semibold">
+              <div className="mb-4 inline-flex rounded-full bg-slate-100 dark:bg-slate-800 p-1 text-xs font-semibold">
                 <button
                   type="button"
                   onClick={() => setProvider("cashfree")}
-                  className={`rounded-full px-3 py-1.5 transition ${provider === "cashfree" ? "bg-white text-[#6933FF] shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                  className={`rounded-full px-3 py-1.5 transition ${provider === "cashfree" ? "bg-white dark:bg-slate-900 text-[#6933FF] shadow-sm" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-slate-100"}`}
                 >
                   🇮🇳 UPI / Cards (Cashfree)
                 </button>
                 <button
                   type="button"
                   onClick={() => setProvider("stripe")}
-                  className={`rounded-full px-3 py-1.5 transition ${provider === "stripe" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                  className={`rounded-full px-3 py-1.5 transition ${provider === "stripe" ? "bg-white dark:bg-slate-900 text-indigo-600 shadow-sm" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-slate-100"}`}
                 >
                   💳 International (Stripe)
                 </button>
@@ -800,7 +800,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                 onError={handlePaymentError}
               />
             ) : (
-              <p className="text-sm text-slate-500">Initialising payment…</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Initialising payment…</p>
             )}
 
             {paymentError && (
@@ -812,7 +812,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
             <button
               type="button"
               onClick={() => { setStep("form"); setPaymentError(null); }}
-              className="mt-3 w-full text-center text-sm text-gray-500 hover:text-gray-700"
+              className="mt-3 w-full text-center text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300"
             >
               Back
             </button>
@@ -832,8 +832,8 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-lg font-bold text-gray-900">Booking Confirmed!</h2>
-            <p className="mt-2 text-sm text-gray-500">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Booking Confirmed!</h2>
+            <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
               Your appointment with {doctor.name} is confirmed for {selectedSlot}.
             </p>
             {bookingId && (
@@ -854,7 +854,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
               </>
             ) : (
               <>
-                <p className="mt-1 text-sm text-gray-400">A confirmation will be sent to your phone.</p>
+                <p className="mt-1 text-sm text-gray-400 dark:text-slate-500">A confirmation will be sent to your phone.</p>
                 <div className="mt-6 flex flex-col gap-2">
                   <button onClick={handleClose} className="btn-primary">Done</button>
                   <a

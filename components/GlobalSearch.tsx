@@ -50,7 +50,7 @@ function getIcon(type: string) {
       );
     default:
       return (
-        <svg className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="h-5 w-5 text-gray-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
         </svg>
       );
@@ -203,12 +203,12 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
   return (
     <div className="fixed inset-0 z-[60] flex items-start justify-center bg-black/50 pt-[10vh]" onClick={onClose}>
       <div
-        className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl"
+        className="w-full max-w-2xl rounded-2xl bg-white dark:bg-slate-900 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input */}
-        <div className="flex items-center gap-3 border-b border-gray-200 px-5 py-4">
-          <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="flex items-center gap-3 border-b border-gray-200 dark:border-slate-800 px-5 py-4">
+          <svg className="h-5 w-5 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -218,9 +218,9 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="flex-1 text-base outline-none placeholder:text-gray-400"
+            className="flex-1 text-base outline-none placeholder:text-gray-400 dark:text-slate-500"
           />
-          <kbd className="hidden rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-500 sm:inline-block">
+          <kbd className="hidden rounded-md bg-gray-100 dark:bg-slate-800 px-2 py-1 text-xs text-gray-500 dark:text-slate-400 sm:inline-block">
             ESC
           </kbd>
         </div>
@@ -232,17 +232,17 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
               <svg className="h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              <p className="mt-3 text-sm text-gray-500">No results found for &quot;{query}&quot;</p>
+              <p className="mt-3 text-sm text-gray-500 dark:text-slate-400">No results found for &quot;{query}&quot;</p>
             </div>
           )}
           {!query && (
-            <div className="py-8 text-center text-sm text-gray-400">
+            <div className="py-8 text-center text-sm text-gray-400 dark:text-slate-500">
               Start typing to search...
             </div>
           )}
           {Object.entries(grouped).map(([category, items]) => (
             <div key={category} className="mb-2">
-              <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+              <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
                 {category}
               </p>
               {items.map((item) => {
@@ -255,13 +255,13 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
                     data-index={idx}
                     onClick={onClose}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${
-                      idx === activeIndex ? "bg-primary-50 text-primary-700" : "text-gray-700 hover:bg-gray-50"
+                      idx === activeIndex ? "bg-primary-50 text-primary-700" : "text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
                     }`}
                   >
                     {getIcon(item.icon)}
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{item.title}</p>
-                      <p className="truncate text-xs text-gray-400">{item.subtitle}</p>
+                      <p className="truncate text-xs text-gray-400 dark:text-slate-500">{item.subtitle}</p>
                     </div>
                     <svg className="h-4 w-4 shrink-0 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -276,10 +276,10 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
         {/* Footer */}
         {results.length > 0 && (
           <div className="border-t border-gray-100 px-5 py-3">
-            <p className="text-xs text-gray-400">
-              <kbd className="rounded bg-gray-100 px-1.5 py-0.5">↑↓</kbd> Navigate{" "}
-              <kbd className="ml-2 rounded bg-gray-100 px-1.5 py-0.5">Enter</kbd> Open{" "}
-              <kbd className="ml-2 rounded bg-gray-100 px-1.5 py-0.5">Esc</kbd> Close
+            <p className="text-xs text-gray-400 dark:text-slate-500">
+              <kbd className="rounded bg-gray-100 dark:bg-slate-800 px-1.5 py-0.5">↑↓</kbd> Navigate{" "}
+              <kbd className="ml-2 rounded bg-gray-100 dark:bg-slate-800 px-1.5 py-0.5">Enter</kbd> Open{" "}
+              <kbd className="ml-2 rounded bg-gray-100 dark:bg-slate-800 px-1.5 py-0.5">Esc</kbd> Close
             </p>
           </div>
         )}

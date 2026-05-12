@@ -78,15 +78,15 @@ export default async function GlossaryTermPage(
           <p className="text-sm font-semibold uppercase tracking-wider text-primary-600">
             Medical glossary
           </p>
-          <h1 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">
+          <h1 className="mt-2 text-3xl font-extrabold text-gray-900 dark:text-slate-100 md:text-4xl">
             {t.term}
           </h1>
-          <p className="mt-3 text-lg text-gray-600">{t.short}</p>
+          <p className="mt-3 text-lg text-gray-600 dark:text-slate-300">{t.short}</p>
         </header>
 
         <section className="mt-8">
-          <h2 className="text-xl font-bold text-gray-900">Definition</h2>
-          <p className="mt-3 text-base leading-relaxed text-gray-700">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">Definition</h2>
+          <p className="mt-3 text-base leading-relaxed text-gray-700 dark:text-slate-300">
             {t.definition}
           </p>
         </section>
@@ -104,7 +104,7 @@ export default async function GlossaryTermPage(
 
         {t.seeAlso && t.seeAlso.length > 0 && (
           <section className="mt-8">
-            <h2 className="text-base font-semibold uppercase tracking-wider text-gray-600">
+            <h2 className="text-base font-semibold uppercase tracking-wider text-gray-600 dark:text-slate-300">
               See also
             </h2>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -112,7 +112,7 @@ export default async function GlossaryTermPage(
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:border-primary-400 hover:text-primary-700"
+                  className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-1.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:border-primary-400 hover:text-primary-700"
                 >
                   {link.label}
                 </Link>
@@ -121,11 +121,11 @@ export default async function GlossaryTermPage(
           </section>
         )}
 
-        <section className="mt-10 rounded-2xl border border-gray-200 bg-white p-6">
-          <h2 className="text-lg font-bold text-gray-900">
+        <section className="mt-10 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">
             Need this explained by a doctor?
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-gray-600 dark:text-slate-300">
             Book a short video consultation and ask anything — reports, results,
             medication concerns.
           </p>
@@ -138,7 +138,7 @@ export default async function GlossaryTermPage(
         </section>
 
         <section className="mt-12">
-          <h2 className="text-base font-semibold uppercase tracking-wider text-gray-600">
+          <h2 className="text-base font-semibold uppercase tracking-wider text-gray-600 dark:text-slate-300">
             More glossary terms
           </h2>
           <ul className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 md:grid-cols-2">
@@ -146,14 +146,14 @@ export default async function GlossaryTermPage(
               <li key={s.slug}>
                 <Link
                   href={`/glossary/${s.slug}`}
-                  className="block border-b border-gray-100 py-2 text-sm font-medium text-gray-800 hover:text-primary-700"
+                  className="block border-b border-gray-100 py-2 text-sm font-medium text-gray-800 dark:text-slate-200 hover:text-primary-700"
                 >
                   {s.term}
                 </Link>
               </li>
             ))}
           </ul>
-          <p className="mt-6 text-xs text-gray-500">
+          <p className="mt-6 text-xs text-gray-500 dark:text-slate-400">
             Glossary entries are general reference, not medical advice for any
             specific person.
           </p>

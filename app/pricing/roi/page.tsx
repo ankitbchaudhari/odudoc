@@ -60,8 +60,8 @@ function Slider({ label, v, setV, min, max, step }: { label: string; v: number; 
   return (
     <div>
       <div className="flex items-center justify-between">
-        <label className="text-sm font-semibold text-slate-700">{label}</label>
-        <span className="rounded-md bg-white px-2 py-0.5 font-mono text-xs font-bold text-slate-900 shadow-sm ring-1 ring-slate-200">{v.toLocaleString("en-IN")}</span>
+        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">{label}</label>
+        <span className="rounded-md bg-white dark:bg-slate-900 px-2 py-0.5 font-mono text-xs font-bold text-slate-900 dark:text-slate-100 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">{v.toLocaleString("en-IN")}</span>
       </div>
       <input type="range" min={min} max={max} step={step || 1} value={v} onChange={(e) => setV(Number(e.target.value))} className="mt-1 w-full accent-emerald-600" />
     </div>
@@ -77,15 +77,15 @@ export default function RoiPage() {
       <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
         <div className="text-center">
           <span className="inline-block rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-700">ROI calculator</span>
-          <h1 className="mt-3 text-4xl font-extrabold text-slate-900 sm:text-5xl">What does OduDoc save your hospital?</h1>
-          <p className="mx-auto mt-3 max-w-2xl text-slate-600">
+          <h1 className="mt-3 text-4xl font-extrabold text-slate-900 dark:text-slate-100 sm:text-5xl">What does OduDoc save your hospital?</h1>
+          <p className="mx-auto mt-3 max-w-2xl text-slate-600 dark:text-slate-300">
             Tweak the sliders. Numbers are conservative midpoints from published Indian healthtech studies.
           </p>
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_1fr]">
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <p className="mb-4 text-sm font-bold text-slate-900">Your hospital</p>
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <p className="mb-4 text-sm font-bold text-slate-900 dark:text-slate-100">Your hospital</p>
             <div className="space-y-4">
               <Slider label="Beds" v={roi.beds} setV={(n) => setRoi({ ...roi, beds: n })} min={5} max={500} />
               <Slider label="OPD consults / day" v={roi.opdPerDay} setV={(n) => setRoi({ ...roi, opdPerDay: n })} min={20} max={1500} />
@@ -102,24 +102,24 @@ export default function RoiPage() {
 
             <ul className="mt-5 space-y-2 text-xs">
               {result.items.map((it) => (
-                <li key={it.label} className="flex items-start justify-between gap-3 rounded-md bg-white px-3 py-2">
+                <li key={it.label} className="flex items-start justify-between gap-3 rounded-md bg-white dark:bg-slate-900 px-3 py-2">
                   <div>
-                    <p className="font-semibold text-slate-800">{it.label}</p>
-                    <p className="text-[10px] text-slate-500">{it.detail}</p>
+                    <p className="font-semibold text-slate-800 dark:text-slate-200">{it.label}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">{it.detail}</p>
                   </div>
                   <p className="font-mono font-bold text-emerald-700">₹{Math.round(it.v).toLocaleString("en-IN")}</p>
                 </li>
               ))}
             </ul>
 
-            <p className="mt-4 rounded-lg bg-white p-3 text-[11px] text-slate-600">
+            <p className="mt-4 rounded-lg bg-white dark:bg-slate-900 p-3 text-[11px] text-slate-600 dark:text-slate-300">
               Conservative model. Excludes lives saved by NEWS2 alerts, regulatory fines avoided by DPDP consent vault, and the network effect of patients staying in-system across hospitals.
             </p>
           </div>
         </div>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <Link href="/pricing" className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800">See plans</Link>
+          <Link href="/pricing" className="rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200">See plans</Link>
           <Link href="/contact" className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white">Book a demo →</Link>
         </div>
       </div>

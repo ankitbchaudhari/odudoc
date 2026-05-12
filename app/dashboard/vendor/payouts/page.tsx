@@ -75,9 +75,9 @@ export default function VendorPayoutsPage() {
 
         <div className="mt-3 overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-sm">
           {loading ? (
-            <div className="p-12 text-center text-sm text-gray-400 dark:text-slate-500">Loading…</div>
+            <div className="p-12 text-center text-sm text-gray-400 dark:text-slate-500 dark:text-slate-400">Loading…</div>
           ) : payouts.length === 0 ? (
-            <div className="p-12 text-center text-sm text-gray-400 dark:text-slate-500">No payout entries yet. Entries are created when orders are paid.</div>
+            <div className="p-12 text-center text-sm text-gray-400 dark:text-slate-500 dark:text-slate-400">No payout entries yet. Entries are created when orders are paid.</div>
           ) : (
             <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">
@@ -98,7 +98,7 @@ export default function VendorPayoutsPage() {
                     <td className="py-3 text-right text-gray-700 dark:text-slate-300">${p.grossAmount.toFixed(2)}</td>
                     <td className="py-3 text-right text-gray-500 dark:text-slate-400">
                       -${p.commissionAmount.toFixed(2)}
-                      <span className="ml-1 text-xs text-gray-400 dark:text-slate-500">({p.commissionPercent}%)</span>
+                      <span className="ml-1 text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">({p.commissionPercent}%)</span>
                     </td>
                     <td className="py-3 text-right font-semibold text-gray-900 dark:text-slate-100">${p.netAmount.toFixed(2)}</td>
                     <td className="py-3">
@@ -106,7 +106,7 @@ export default function VendorPayoutsPage() {
                         p.status === "paid" ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"
                       }`}>{p.status}</span>
                     </td>
-                    <td className="py-3 pr-4 text-xs text-gray-400 dark:text-slate-500">
+                    <td className="py-3 pr-4 text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">
                       {new Date(p.createdAt).toLocaleDateString()}
                       {p.paidAt && <span className="block text-[10px]">paid {new Date(p.paidAt).toLocaleDateString()}</span>}
                     </td>

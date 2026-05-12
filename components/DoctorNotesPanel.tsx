@@ -172,7 +172,7 @@ function ChipRow({ items, onPick }: { items: string[]; onPick: (v: string) => vo
           key={item}
           type="button"
           onClick={() => onPick(item)}
-          className="rounded-full border border-gray-200 bg-white px-2.5 py-0.5 text-[11px] font-medium text-gray-700 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+          className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 py-0.5 text-[11px] font-medium text-gray-700 dark:text-slate-300 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
         >
           + {item}
         </button>
@@ -477,18 +477,18 @@ export default function DoctorNotesPanel({
   }
 
   return (
-    <aside className="fixed right-0 top-0 z-40 flex h-screen w-full max-w-md flex-col border-l border-gray-200 bg-white shadow-2xl">
+    <aside className="fixed right-0 top-0 z-40 flex h-screen w-full max-w-md flex-col border-l border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 px-4 py-3">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400">
             Patient
           </p>
-          <p className="text-sm font-semibold text-gray-900">{patientName || "Patient"}</p>
+          <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">{patientName || "Patient"}</p>
         </div>
         <button
           onClick={() => setOpen(false)}
-          className="rounded-md p-1.5 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
+          className="rounded-md p-1.5 text-gray-500 dark:text-slate-400 hover:bg-gray-200 hover:text-gray-700 dark:text-slate-300"
           aria-label="Hide panel"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -500,7 +500,7 @@ export default function DoctorNotesPanel({
       {/* Scrollable body */}
       <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
         <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
             Symptoms
           </label>
           <textarea
@@ -508,7 +508,7 @@ export default function DoctorNotesPanel({
             onChange={(e) => setSymptoms(e.target.value)}
             rows={3}
             placeholder="e.g. Sore throat for 3 days, mild fever, dry cough"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
           />
           <ChipRow
             items={QUICK_SYMPTOMS}
@@ -517,7 +517,7 @@ export default function DoctorNotesPanel({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
             Diagnosis
           </label>
           <textarea
@@ -525,7 +525,7 @@ export default function DoctorNotesPanel({
             onChange={(e) => setDiagnosis(e.target.value)}
             rows={2}
             placeholder="e.g. Acute viral pharyngitis"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
           />
           <ChipRow
             items={QUICK_DIAGNOSES}
@@ -552,7 +552,7 @@ export default function DoctorNotesPanel({
                 value={rxLanguage}
                 onChange={(e) => setRxLanguage(e.target.value)}
                 title="Patient's preferred language for the prescription text. Drug names always stay in English."
-                className="rounded-md border border-indigo-200 bg-white px-2 py-1 text-[11px] text-indigo-900 focus:border-indigo-400 focus:outline-none"
+                className="rounded-md border border-indigo-200 bg-white dark:bg-slate-900 px-2 py-1 text-[11px] text-indigo-900 focus:border-indigo-400 focus:outline-none"
               >
                 <option value="">English (default)</option>
                 <optgroup label="Indian languages">
@@ -588,7 +588,7 @@ export default function DoctorNotesPanel({
                   onClick={translateRx}
                   disabled={translating || aiBusy}
                   title={`Translate the already-filled fields into ${rxLanguage} (drug names stay in English)`}
-                  className="rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 disabled:opacity-60"
+                  className="rounded-lg border border-indigo-300 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 disabled:opacity-60"
                 >
                   {translating ? "Translating…" : `↻ Translate`}
                 </button>
@@ -606,7 +606,7 @@ export default function DoctorNotesPanel({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
             Treatment
           </label>
           <textarea
@@ -614,12 +614,12 @@ export default function DoctorNotesPanel({
             onChange={(e) => setTreatment(e.target.value)}
             rows={2}
             placeholder="Non-pharmacologic plan, lifestyle advice, care instructions"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
             Investigations
           </label>
           <textarea
@@ -627,7 +627,7 @@ export default function DoctorNotesPanel({
             onChange={(e) => setInvestigations(e.target.value)}
             rows={2}
             placeholder="e.g. CBC, CRP, Throat swab"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
           />
           <ChipRow
             items={QUICK_INVESTIGATIONS}
@@ -637,7 +637,7 @@ export default function DoctorNotesPanel({
 
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <label className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
               Medicines
             </label>
             <button
@@ -657,13 +657,13 @@ export default function DoctorNotesPanel({
           />
           <div className="space-y-3">
             {medicines.map((m, i) => (
-              <div key={i} className="rounded-lg border border-gray-200 p-3">
+              <div key={i} className="rounded-lg border border-gray-200 dark:border-slate-800 p-3">
                 <div className="flex items-start gap-2">
                   <input
                     value={m.name}
                     onChange={(e) => updateMed(i, { name: e.target.value })}
                     placeholder="Medicine name"
-                    className="flex-1 rounded border border-gray-300 px-2 py-1.5 text-sm focus:border-primary-500 focus:outline-none"
+                    className="flex-1 rounded border border-gray-300 dark:border-slate-700 px-2 py-1.5 text-sm focus:border-primary-500 focus:outline-none"
                   />
                   {medicines.length > 1 && (
                     <button
@@ -683,19 +683,19 @@ export default function DoctorNotesPanel({
                     value={m.dose}
                     onChange={(e) => updateMed(i, { dose: e.target.value })}
                     placeholder="Dose"
-                    className="rounded border border-gray-300 px-2 py-1.5 text-xs focus:border-primary-500 focus:outline-none"
+                    className="rounded border border-gray-300 dark:border-slate-700 px-2 py-1.5 text-xs focus:border-primary-500 focus:outline-none"
                   />
                   <input
                     value={m.frequency}
                     onChange={(e) => updateMed(i, { frequency: e.target.value })}
                     placeholder="Frequency"
-                    className="rounded border border-gray-300 px-2 py-1.5 text-xs focus:border-primary-500 focus:outline-none"
+                    className="rounded border border-gray-300 dark:border-slate-700 px-2 py-1.5 text-xs focus:border-primary-500 focus:outline-none"
                   />
                   <input
                     value={m.duration}
                     onChange={(e) => updateMed(i, { duration: e.target.value })}
                     placeholder="Duration"
-                    className="rounded border border-gray-300 px-2 py-1.5 text-xs focus:border-primary-500 focus:outline-none"
+                    className="rounded border border-gray-300 dark:border-slate-700 px-2 py-1.5 text-xs focus:border-primary-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -704,7 +704,7 @@ export default function DoctorNotesPanel({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
             Doctor&apos;s Notes
           </label>
           <textarea
@@ -712,13 +712,13 @@ export default function DoctorNotesPanel({
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             placeholder="Any follow-up advice, lifestyle recommendations, etc."
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
           />
         </div>
       </div>
 
       {/* Footer */}
-      <div className="border-t border-gray-200 bg-gray-50 px-4 py-3">
+      <div className="border-t border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 px-4 py-3">
         {sendErr && (
           <div className="mb-2 rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700">
             {sendErr}
@@ -740,7 +740,7 @@ export default function DoctorNotesPanel({
             {sending ? "Sending…" : "End & Send Prescription"}
           </button>
         )}
-        <p className="mt-2 text-center text-xs text-gray-400">
+        <p className="mt-2 text-center text-xs text-gray-400 dark:text-slate-500">
           Patient receives this immediately after the call ends.
         </p>
       </div>

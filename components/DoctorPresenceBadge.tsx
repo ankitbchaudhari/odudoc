@@ -21,7 +21,7 @@ export default function DoctorPresenceBadge({
   if (!presence) {
     // SSR-safe placeholder so the chip doesn't pop in awkwardly
     return (
-      <span className={`inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2 ${size === "md" ? "py-1 text-xs" : "py-0.5 text-[11px]"} font-medium text-gray-500`}>
+      <span className={`inline-flex items-center gap-1.5 rounded-full bg-gray-100 dark:bg-slate-800 px-2 ${size === "md" ? "py-1 text-xs" : "py-0.5 text-[11px]"} font-medium text-gray-500 dark:text-slate-400`}>
         <span className="inline-block h-2 w-2 rounded-full bg-gray-300" />
         Checking…
       </span>
@@ -39,7 +39,7 @@ export default function DoctorPresenceBadge({
     ? "bg-amber-50 text-amber-700"
     : online
     ? "bg-green-50 text-green-700"
-    : "bg-gray-100 text-gray-500";
+    : "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400";
 
   const dotColor = inCall ? "bg-amber-500" : online ? "bg-green-500" : "bg-gray-400";
   const textSize = size === "md" ? "text-xs py-1" : "text-[11px] py-0.5";
@@ -73,7 +73,7 @@ export function PresenceDot({ doctorId }: { doctorId: string }) {
   if (!presence || !presence.online) return null;
 
   return (
-    <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-white">
+    <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-white dark:bg-slate-900">
       <span className="relative inline-flex h-3 w-3">
         {!presence.inCall && (
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />

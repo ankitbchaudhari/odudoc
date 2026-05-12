@@ -41,8 +41,8 @@ export default function UnsubscribePage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-6 py-16">
-      <h1 className="text-2xl font-bold text-gray-900">Unsubscribe from OduDoc emails</h1>
-      <p className="mt-2 text-sm text-gray-600">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Unsubscribe from OduDoc emails</h1>
+      <p className="mt-2 text-sm text-gray-600 dark:text-slate-300">
         We&rsquo;ll stop sending blog updates and product announcements to your inbox. Account-related
         emails (verification, appointment confirmations, password resets) will still go through.
       </p>
@@ -53,7 +53,7 @@ export default function UnsubscribePage() {
         </div>
       ) : (
         <form onSubmit={submit} className="mt-6 space-y-3">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
             Email address
             <input
               type="email"
@@ -61,7 +61,7 @@ export default function UnsubscribePage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+              className="mt-1 w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
             />
           </label>
           <button
@@ -76,8 +76,8 @@ export default function UnsubscribePage() {
         </form>
       )}
 
-      <p className="mt-8 text-center text-xs text-gray-400">
-        <a href="/" className="hover:text-gray-600">&larr; Back to OduDoc</a>
+      <p className="mt-8 text-center text-xs text-gray-400 dark:text-slate-500">
+        <a href="/" className="hover:text-gray-600 dark:text-slate-300">&larr; Back to OduDoc</a>
       </p>
     </main>
   );

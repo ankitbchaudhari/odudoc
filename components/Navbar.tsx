@@ -96,7 +96,7 @@ export default function Navbar() {
   }, [session?.user?.email]);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/85 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/70 dark:border-slate-800/70 dark:bg-slate-950/85 dark:supports-[backdrop-filter]:bg-slate-950/70">
+    <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800/70 bg-white/85 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/70 dark:border-slate-800/70 dark:bg-slate-950/85 dark:supports-[backdrop-filter]:bg-slate-950/70">
       {/* Hairline gradient under the nav for a subtle "floating" feel */}
       <div className="pointer-events-none absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-primary-300/60 to-transparent" />
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-3 sm:px-6 lg:px-8">
@@ -107,7 +107,7 @@ export default function Navbar() {
             modern shadcn/Vercel-style top-nav, with one emphasised CTA
             to drive pharmacy onboarding. */}
         <div className="hidden flex-1 items-center justify-center md:flex">
-          <div className="flex items-center gap-0.5 rounded-full border border-slate-200/70 bg-slate-50/70 p-1 shadow-inner shadow-slate-200/40">
+          <div className="flex items-center gap-0.5 rounded-full border border-slate-200 dark:border-slate-800/70 bg-slate-50/70 p-1 shadow-inner shadow-slate-200/40">
             {links.map((l) => (
               <Link
                 key={l.href}
@@ -115,7 +115,7 @@ export default function Navbar() {
                 className={
                   l.emphasized
                     ? "group relative inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary-600 via-primary-500 to-emerald-500 px-3.5 py-1.5 text-[13px] font-semibold text-white shadow-sm shadow-primary-500/30 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary-500/40"
-                    : "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:bg-white hover:text-primary-700 hover:shadow-sm"
+                    : "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium text-slate-600 dark:text-slate-300 transition-colors hover:bg-white dark:bg-slate-900 hover:text-primary-700 hover:shadow-sm"
                 }
               >
                 <span aria-hidden className="text-[15px] leading-none">{l.emoji}</span>
@@ -130,7 +130,7 @@ export default function Navbar() {
           {/* Search Icon */}
           <button
             onClick={() => setSearchOpen(true)}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-primary-600"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 dark:text-slate-400 transition-colors hover:bg-slate-100 dark:bg-slate-800 hover:text-primary-600"
             aria-label="Search (Ctrl+K)"
             title="Search (Ctrl+K)"
           >
@@ -143,7 +143,7 @@ export default function Navbar() {
           {/* Cart Icon */}
           <Link
             href="/cart"
-            className="relative flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-primary-600"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full text-slate-500 dark:text-slate-400 transition-colors hover:bg-slate-100 dark:bg-slate-800 hover:text-primary-600"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
@@ -156,14 +156,14 @@ export default function Navbar() {
           </Link>
           <ThemeToggle />
           {status === "loading" ? (
-            <div className="h-9 w-24 animate-pulse rounded-lg bg-gray-100" />
+            <div className="h-9 w-24 animate-pulse rounded-lg bg-gray-100 dark:bg-slate-800" />
           ) : session ? (
             <>
             <NotificationBell />
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-gray-50"
+                className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-gray-50 dark:bg-slate-900"
               >
                 {avatar ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -177,11 +177,11 @@ export default function Navbar() {
                     {userInitial}
                   </div>
                 )}
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-gray-700 dark:text-slate-300">
                   {session.user.name?.split(" ")[0]}
                 </span>
                 <svg
-                  className={`h-4 w-4 text-gray-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
+                  className={`h-4 w-4 text-gray-400 dark:text-slate-500 transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -192,29 +192,29 @@ export default function Navbar() {
 
               {/* Dropdown */}
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-xl bg-white py-2 shadow-lg ring-1 ring-gray-100">
+                <div className="absolute right-0 mt-2 w-56 rounded-xl bg-white dark:bg-slate-900 py-2 shadow-lg ring-1 ring-gray-100">
                   <div className="border-b border-gray-100 px-4 py-3">
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
                       {session.user.name}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-slate-400">
                       {session.user.email}
                     </p>
                   </div>
                   <Link
                     href="/dashboard"
                     onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:bg-slate-900"
                   >
-                    <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                    <svg className="h-4 w-4 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
                     Dashboard
                   </Link>
                   <Link
                     href="/profile"
                     onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:bg-slate-900"
                   >
-                    <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                    <svg className="h-4 w-4 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                     Profile
                   </Link>
                   <div className="my-1 border-t border-gray-100" />
@@ -251,7 +251,7 @@ export default function Navbar() {
         <div className="flex items-center gap-1 md:hidden">
           <Link
             href="/cart"
-            className="relative flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100"
+            className="relative flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:bg-slate-800"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
@@ -264,7 +264,7 @@ export default function Navbar() {
           </Link>
         </div>
         <button
-          className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 md:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:bg-slate-800 md:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle menu"
         >
@@ -278,7 +278,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="border-t border-gray-100 bg-white px-4 pb-4 md:hidden">
+        <div className="border-t border-gray-100 bg-white dark:bg-slate-900 px-4 pb-4 md:hidden">
           {links.map((l) => (
             <Link
               key={l.href}
@@ -287,7 +287,7 @@ export default function Navbar() {
               className={
                 l.emphasized
                   ? "mt-1 flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary-600 via-primary-500 to-emerald-500 px-3 py-3 text-sm font-semibold text-white shadow-sm shadow-primary-500/30"
-                  : "flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600"
+                  : "flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900 hover:text-primary-600"
               }
             >
               <span aria-hidden className="text-base leading-none">{l.emoji}</span>
@@ -311,10 +311,10 @@ export default function Navbar() {
                     </div>
                   )}
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
                       {session.user.name}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-slate-400">
                       {session.user.email}
                     </p>
                   </div>
@@ -322,14 +322,14 @@ export default function Navbar() {
                 <Link
                   href="/dashboard"
                   onClick={() => setMobileOpen(false)}
-                  className="block rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="block rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
                 >
                   Dashboard
                 </Link>
                 <Link
                   href="/profile"
                   onClick={() => setMobileOpen(false)}
-                  className="block rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="block rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
                 >
                   Profile
                 </Link>

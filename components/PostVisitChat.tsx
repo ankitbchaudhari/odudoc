@@ -93,7 +93,7 @@ export default function PostVisitChat({ consultationId, className = "" }: Props)
   }
 
   return (
-    <div className={`overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm ${className}`}>
+    <div className={`overflow-hidden rounded-2xl border border-violet-200 bg-white dark:bg-slate-900 shadow-sm ${className}`}>
       <div className="flex items-center gap-3 border-b border-violet-100 bg-gradient-to-r from-violet-50 to-indigo-50 px-5 py-4">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 text-white">
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -101,8 +101,8 @@ export default function PostVisitChat({ consultationId, className = "" }: Props)
           </svg>
         </div>
         <div>
-          <h3 className="text-sm font-bold text-slate-900">Ask a follow-up</h3>
-          <p className="text-[11px] text-slate-500">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Ask a follow-up</h3>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
             AI assistant grounded in your consultation. Not a substitute for medical advice.
           </p>
         </div>
@@ -113,7 +113,7 @@ export default function PostVisitChat({ consultationId, className = "" }: Props)
           {turns.map((t, i) => {
             if (t.role === "system") {
               return (
-                <p key={i} className="rounded-lg border border-violet-100 bg-white px-3 py-2 text-xs text-slate-500">
+                <p key={i} className="rounded-lg border border-violet-100 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
                   {t.text}
                 </p>
               );
@@ -125,7 +125,7 @@ export default function PostVisitChat({ consultationId, className = "" }: Props)
                   className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm shadow-sm ${
                     isUser
                       ? "bg-violet-600 text-white"
-                      : "bg-white text-slate-800 border border-slate-100"
+                      : "bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border border-slate-100"
                   }`}
                 >
                   {t.emergency && !isUser && (
@@ -145,7 +145,7 @@ export default function PostVisitChat({ consultationId, className = "" }: Props)
           })}
           {busy && (
             <div className="flex justify-start">
-              <div className="max-w-[85%] rounded-2xl border border-slate-100 bg-white px-3.5 py-2.5 text-sm text-slate-400 shadow-sm">
+              <div className="max-w-[85%] rounded-2xl border border-slate-100 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-400 shadow-sm">
                 <span className="inline-flex gap-1">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-violet-400" />
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-violet-400 [animation-delay:120ms]" />
@@ -158,7 +158,7 @@ export default function PostVisitChat({ consultationId, className = "" }: Props)
       </div>
 
       {turns.length <= 1 && (
-        <div className="flex flex-wrap gap-2 border-t border-violet-100 bg-white px-4 py-3">
+        <div className="flex flex-wrap gap-2 border-t border-violet-100 bg-white dark:bg-slate-900 px-4 py-3">
           {SUGGESTED.map((s) => (
             <button
               key={s}
@@ -177,13 +177,13 @@ export default function PostVisitChat({ consultationId, className = "" }: Props)
           e.preventDefault();
           send(draft);
         }}
-        className="flex items-center gap-2 border-t border-violet-100 bg-white px-3 py-3"
+        className="flex items-center gap-2 border-t border-violet-100 bg-white dark:bg-slate-900 px-3 py-3"
       >
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder="Type your follow-up question…"
-          className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+          className="flex-1 rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-2 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
           disabled={busy}
         />
         <button

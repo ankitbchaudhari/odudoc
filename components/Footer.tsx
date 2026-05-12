@@ -179,7 +179,7 @@ export default function Footer() {
             <h4 className="mt-1 text-xl font-bold text-white">
               Talk to a doctor in minutes
             </h4>
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="mt-1 text-sm text-gray-400 dark:text-slate-500">
               Verified specialists. Secure video. Prescriptions delivered.
             </p>
             <Link
@@ -197,7 +197,7 @@ export default function Footer() {
             <h4 className="mt-1 text-xl font-bold text-white">
               Grow your practice on OduDoc
             </h4>
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="mt-1 text-sm text-gray-400 dark:text-slate-500">
               Free profile. Smart scheduling. Stripe payouts worldwide.
             </p>
             <Link
@@ -227,7 +227,7 @@ export default function Footer() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="group inline-flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-white"
+                      className="group inline-flex items-center gap-2 text-sm text-gray-400 dark:text-slate-500 transition-colors hover:text-white"
                     >
                       <span className="h-px w-0 bg-cyan-400 transition-all group-hover:w-3" />
                       {link.label}
@@ -254,17 +254,17 @@ export default function Footer() {
                   target={url === "#" ? undefined : "_blank"}
                   rel={url === "#" ? undefined : "noopener noreferrer"}
                   aria-label={name}
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-gray-400 transition hover:-translate-y-0.5 hover:text-white ${brand}`}
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-gray-400 dark:text-slate-500 transition hover:-translate-y-0.5 hover:text-white ${brand}`}
                 >
                   <Icon className="h-4 w-4" />
                 </a>
               ))}
             </div>
 
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-slate-400">
               &copy; {new Date().getFullYear()} OduDoc.{" "}
-              <span className="text-gray-400">{t("footer.rights")}</span>
-              <span className="mx-2 text-gray-700">·</span>
+              <span className="text-gray-400 dark:text-slate-500">{t("footer.rights")}</span>
+              <span className="mx-2 text-gray-700 dark:text-slate-300">·</span>
               <span className="inline-flex items-center gap-1.5">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/70" />

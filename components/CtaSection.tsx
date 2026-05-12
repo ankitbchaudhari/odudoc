@@ -26,13 +26,13 @@ export default function CtaSection() {
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link
                 href="/doctors"
-                className="inline-flex items-center rounded-xl bg-white px-8 py-3.5 text-sm font-semibold text-primary-600 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                className="inline-flex items-center rounded-xl bg-white dark:bg-slate-900 px-8 py-3.5 text-sm font-semibold text-primary-600 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
               >
                 Book Appointment
               </Link>
               <Link
                 href="/consult"
-                className="inline-flex items-center rounded-xl border-2 border-white px-8 py-3.5 text-sm font-semibold text-white transition-all duration-300 hover:bg-white hover:text-primary-600"
+                className="inline-flex items-center rounded-xl border-2 border-white px-8 py-3.5 text-sm font-semibold text-white transition-all duration-300 hover:bg-white dark:bg-slate-900 hover:text-primary-600"
               >
                 Consult Online
               </Link>

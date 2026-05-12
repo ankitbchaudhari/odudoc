@@ -168,14 +168,14 @@ export default function DoctorsPage() {
     <div className="space-y-6">
       {/* Gender */}
       <div>
-        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Gender</h4>
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">Gender</h4>
         <div className="space-y-1.5">
           {[
             { v: "", label: "Any" },
             { v: "Male", label: "Male" },
             { v: "Female", label: "Female" },
           ].map((opt) => (
-            <label key={opt.v} className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+            <label key={opt.v} className="flex cursor-pointer items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
               <input
                 type="radio"
                 name="gender"
@@ -191,7 +191,7 @@ export default function DoctorsPage() {
 
       {/* Experience */}
       <div>
-        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Experience</h4>
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">Experience</h4>
         <div className="space-y-1.5">
           {[
             { v: 0, label: "Any" },
@@ -200,7 +200,7 @@ export default function DoctorsPage() {
             { v: 15, label: "15+ years" },
             { v: 20, label: "20+ years" },
           ].map((opt) => (
-            <label key={opt.v} className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+            <label key={opt.v} className="flex cursor-pointer items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
               <input
                 type="radio"
                 name="exp"
@@ -216,7 +216,7 @@ export default function DoctorsPage() {
 
       {/* Consultation Fee */}
       <div>
-        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Fees</h4>
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">Fees</h4>
         <div className="space-y-1.5">
           {[
             { v: 0, label: "Any" },
@@ -224,7 +224,7 @@ export default function DoctorsPage() {
             { v: 100, label: "Under $100" },
             { v: 200, label: "Under $200" },
           ].map((opt) => (
-            <label key={opt.v} className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+            <label key={opt.v} className="flex cursor-pointer items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
               <input
                 type="radio"
                 name="fee"
@@ -240,7 +240,7 @@ export default function DoctorsPage() {
 
       {/* Rating */}
       <div>
-        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Rating</h4>
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">Rating</h4>
         <div className="space-y-1.5">
           {[
             { v: 0, label: "Any" },
@@ -248,7 +248,7 @@ export default function DoctorsPage() {
             { v: 4.5, label: "4.5+" },
             { v: 4.8, label: "4.8+" },
           ].map((opt) => (
-            <label key={opt.v} className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+            <label key={opt.v} className="flex cursor-pointer items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
               <input
                 type="radio"
                 name="rating"
@@ -264,8 +264,8 @@ export default function DoctorsPage() {
 
       {/* Availability */}
       <div>
-        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Availability</h4>
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">Availability</h4>
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
           <input
             type="checkbox"
             checked={onlineOnly}
@@ -280,7 +280,7 @@ export default function DoctorsPage() {
       {activeFilterCount > 0 && (
         <button
           onClick={clearFilters}
-          className="w-full rounded-lg border border-gray-200 bg-white py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+          className="w-full rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2 text-sm font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900"
         >
           Clear all filters
         </button>
@@ -289,13 +289,13 @@ export default function DoctorsPage() {
   );
 
   return (
-    <div className="bg-gray-50 py-8">
+    <div className="bg-gray-50 dark:bg-slate-900 py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Find Doctors</h1>
-            <p className="mt-1 text-gray-500">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100">Find Doctors</h1>
+            <p className="mt-1 text-gray-500 dark:text-slate-400">
               Book appointments with verified, experienced doctors
             </p>
           </div>
@@ -311,10 +311,10 @@ export default function DoctorsPage() {
         </div>
 
         {/* Search bar + specialty + sort */}
-        <div className="mb-6 grid grid-cols-1 gap-3 rounded-xl bg-white p-4 shadow-sm sm:grid-cols-12">
+        <div className="mb-6 grid grid-cols-1 gap-3 rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm sm:grid-cols-12">
           <div className="sm:col-span-6">
             <div className="relative">
-              <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
@@ -322,14 +322,14 @@ export default function DoctorsPage() {
                 placeholder="Search doctors, specialties, clinics"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-primary-500"
+                className="w-full rounded-lg border border-gray-200 dark:border-slate-800 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-primary-500"
               />
             </div>
           </div>
           <select
             value={specialty}
             onChange={(e) => setSpecialty(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-600 outline-none focus:border-primary-500 sm:col-span-3"
+            className="rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2.5 text-sm text-gray-600 dark:text-slate-300 outline-none focus:border-primary-500 sm:col-span-3"
           >
             <option value="">All Specialties</option>
             {uniqueSpecialties.map((s) => (
@@ -339,7 +339,7 @@ export default function DoctorsPage() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-600 outline-none focus:border-primary-500 sm:col-span-3"
+            className="rounded-lg border border-gray-200 dark:border-slate-800 px-3 py-2.5 text-sm text-gray-600 dark:text-slate-300 outline-none focus:border-primary-500 sm:col-span-3"
           >
             <option value="online">🟢 Online First</option>
             <option value="rating">Relevance (Rating)</option>
@@ -351,12 +351,12 @@ export default function DoctorsPage() {
 
         {/* Mobile filter toggle */}
         <div className="mb-4 flex items-center justify-between lg:hidden">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-slate-400">
             {filtered.length} doctor{filtered.length !== 1 ? "s" : ""} found
           </p>
           <button
             onClick={() => setMobileFiltersOpen((v) => !v)}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm"
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 shadow-sm"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -373,9 +373,9 @@ export default function DoctorsPage() {
         <div className="flex flex-col gap-6 lg:flex-row">
           {/* Sidebar (desktop) */}
           <aside className="hidden w-64 flex-shrink-0 lg:block">
-            <div className="sticky top-6 rounded-xl bg-white p-5 shadow-sm">
+            <div className="sticky top-6 rounded-xl bg-white dark:bg-slate-900 p-5 shadow-sm">
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-base font-semibold text-gray-900">Filters</h3>
+                <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">Filters</h3>
                 {activeFilterCount > 0 && (
                   <button
                     onClick={clearFilters}
@@ -396,12 +396,12 @@ export default function DoctorsPage() {
                 className="flex-1 bg-black/40"
                 onClick={() => setMobileFiltersOpen(false)}
               />
-              <div className="h-full w-80 max-w-[90vw] overflow-y-auto bg-white p-6 shadow-xl">
+              <div className="h-full w-80 max-w-[90vw] overflow-y-auto bg-white dark:bg-slate-900 p-6 shadow-xl">
                 <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-base font-semibold text-gray-900">Filters</h3>
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">Filters</h3>
                   <button
                     onClick={() => setMobileFiltersOpen(false)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:text-slate-300"
                     aria-label="Close filters"
                   >
                     ✕
@@ -414,14 +414,14 @@ export default function DoctorsPage() {
 
           {/* Results */}
           <div className="min-w-0 flex-1">
-            <p className="mb-3 hidden text-sm text-gray-600 lg:block">
+            <p className="mb-3 hidden text-sm text-gray-600 dark:text-slate-300 lg:block">
               {doctorsLoaded ? (
                 <>
-                  <span className="font-semibold text-gray-900">{filtered.length}</span>{" "}
+                  <span className="font-semibold text-gray-900 dark:text-slate-100">{filtered.length}</span>{" "}
                   doctor{filtered.length !== 1 ? "s" : ""} found
                 </>
               ) : (
-                <span className="text-gray-400">Loading doctors…</span>
+                <span className="text-gray-400 dark:text-slate-500">Loading doctors…</span>
               )}
             </p>
 
@@ -433,14 +433,14 @@ export default function DoctorsPage() {
                 Array.from({ length: 4 }).map((_, i) => (
                   <div
                     key={i}
-                    className="animate-pulse rounded-xl bg-white p-5 shadow-sm"
+                    className="animate-pulse rounded-xl bg-white dark:bg-slate-900 p-5 shadow-sm"
                   >
                     <div className="flex gap-4">
                       <div className="h-16 w-16 rounded-full bg-gray-200" />
                       <div className="flex-1 space-y-2">
                         <div className="h-4 w-2/3 rounded bg-gray-200" />
-                        <div className="h-3 w-1/3 rounded bg-gray-100" />
-                        <div className="h-3 w-1/2 rounded bg-gray-100" />
+                        <div className="h-3 w-1/3 rounded bg-gray-100 dark:bg-slate-800" />
+                        <div className="h-3 w-1/2 rounded bg-gray-100 dark:bg-slate-800" />
                       </div>
                     </div>
                   </div>
@@ -448,12 +448,12 @@ export default function DoctorsPage() {
               ) : filtered.length > 0 ? (
                 filtered.map((d) => <DoctorListRow key={d.id} doctor={d} />)
               ) : (
-                <div className="rounded-xl bg-white py-16 text-center shadow-sm">
+                <div className="rounded-xl bg-white dark:bg-slate-900 py-16 text-center shadow-sm">
                   <p className="text-4xl">🔍</p>
-                  <p className="mt-4 text-lg font-semibold text-gray-900">
+                  <p className="mt-4 text-lg font-semibold text-gray-900 dark:text-slate-100">
                     {doctors.length === 0 ? "No doctors yet" : "No doctors match your filters"}
                   </p>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
                     {doctors.length === 0
                       ? "We're onboarding clinicians right now — check back soon."
                       : "Try clearing one of the filters to widen your search."}
@@ -472,7 +472,7 @@ export default function DoctorsPage() {
 
             {/* Specialty Browse */}
             <div className="mt-14">
-              <h2 className="mb-6 text-xl font-bold text-gray-900">Browse by Specialty</h2>
+              <h2 className="mb-6 text-xl font-bold text-gray-900 dark:text-slate-100">Browse by Specialty</h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                 {liveSpecialties.map((s) => (
                   <button
@@ -481,7 +481,7 @@ export default function DoctorsPage() {
                     className="card flex flex-col items-center py-4 text-center"
                   >
                     <span className="text-2xl">{s.emoji}</span>
-                    <span className="mt-2 text-xs font-medium text-gray-700">{s.name}</span>
+                    <span className="mt-2 text-xs font-medium text-gray-700 dark:text-slate-300">{s.name}</span>
                   </button>
                 ))}
               </div>

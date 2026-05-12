@@ -17,8 +17,8 @@ export default function ServiceCard({ icon, title, description, href, color }: S
         >
           {icon}
         </div>
-        <h3 className="mb-1 font-semibold text-gray-900">{title}</h3>
-        <p className="text-sm text-gray-500">{description}</p>
+        <h3 className="mb-1 font-semibold text-gray-900 dark:text-slate-100">{title}</h3>
+        <p className="text-sm text-gray-500 dark:text-slate-400">{description}</p>
       </div>
     </Link>
   );

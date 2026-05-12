@@ -99,7 +99,7 @@ export default function NotificationBell({ className = "" }: { className?: strin
     <div ref={ref} className={`relative ${className}`}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50"
+        className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:bg-slate-900"
         aria-label="Notifications"
       >
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -113,14 +113,14 @@ export default function NotificationBell({ className = "" }: { className?: strin
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-[360px] max-w-[92vw] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
+        <div className="absolute right-0 z-50 mt-2 w-[360px] max-w-[92vw] overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-2xl ring-1 ring-slate-200 dark:ring-slate-800">
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
-            <p className="text-sm font-bold text-slate-900">Notifications</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Notifications</p>
             <div className="flex items-center gap-3">
               {unread > 0 && (
                 <button onClick={markAllRead} className="text-[11px] font-semibold text-indigo-600">Mark all read</button>
               )}
-              <Link href="/dashboard/notifications" onClick={() => setOpen(false)} className="text-[11px] font-semibold text-slate-500 hover:text-slate-700">
+              <Link href="/dashboard/notifications" onClick={() => setOpen(false)} className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300">
                 Open inbox
               </Link>
             </div>
@@ -134,12 +134,12 @@ export default function NotificationBell({ className = "" }: { className?: strin
                   <Link
                     href={n.link || "#"}
                     onClick={() => { setOpen(false); markRead(n.id); }}
-                    className={`flex items-start gap-3 px-4 py-3 ${SEVERITY_TONE[n.severity] || ""} hover:bg-slate-50`}
+                    className={`flex items-start gap-3 px-4 py-3 ${SEVERITY_TONE[n.severity] || ""} hover:bg-slate-50 dark:bg-slate-900`}
                   >
                     <span className="text-xl">{KIND_EMOJI[n.kind] || "🔔"}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-900">{n.title}</p>
-                      <p className="mt-0.5 text-xs text-slate-600 line-clamp-2">{n.body}</p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{n.title}</p>
+                      <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300 line-clamp-2">{n.body}</p>
                       <p className="mt-1 text-[10px] text-slate-400">{timeAgo(n.createdAt)}{!n.readAt && " · new"}</p>
                     </div>
                   </Link>

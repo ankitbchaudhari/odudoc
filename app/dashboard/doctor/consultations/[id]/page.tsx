@@ -133,7 +133,7 @@ export default function DoctorConsultationDetail() {
           <div className="text-right">
             <span className="rounded-full bg-primary-100 px-3 py-1 text-xs font-semibold text-primary-700">{c.status.replace(/_/g, " ")}</span>
             <p className="mt-2 text-sm font-bold text-gray-900 dark:text-slate-100">${c.fee} {c.currency}</p>
-            <p className="text-xs text-gray-400 dark:text-slate-500">{c.paymentStatus}</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">{c.paymentStatus}</p>
           </div>
         </div>
 
@@ -469,7 +469,7 @@ function Field({ label, value, wide }: { label: string; value: string; wide?: bo
   return (
     <div className={wide ? "sm:col-span-2" : ""}>
       <dt className="text-xs font-medium text-gray-500 dark:text-slate-400">{label}</dt>
-      <dd className="mt-0.5 text-sm text-gray-900 dark:text-slate-100">{value || <span className="text-gray-400 dark:text-slate-500">—</span>}</dd>
+      <dd className="mt-0.5 text-sm text-gray-900 dark:text-slate-100">{value || <span className="text-gray-400 dark:text-slate-500 dark:text-slate-400">—</span>}</dd>
     </div>
   );
 }

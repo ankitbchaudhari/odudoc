@@ -132,7 +132,7 @@ export default async function ConditionPage(
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/consult"
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-primary-700 shadow-lg hover:scale-105 transition-transform"
+              className="inline-flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-primary-700 shadow-lg hover:scale-105 transition-transform"
             >
               Book a consultation
             </Link>
@@ -152,8 +152,8 @@ export default async function ConditionPage(
       <section className="py-14">
         <div className="mx-auto grid max-w-5xl gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Causes &amp; risk factors</h2>
-            <ul className="mt-4 space-y-2 text-gray-700">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Causes &amp; risk factors</h2>
+            <ul className="mt-4 space-y-2 text-gray-700 dark:text-slate-300">
               {c.causes.map((x) => (
                 <li key={x} className="flex items-start gap-2">
                   <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-primary-500" />
@@ -163,8 +163,8 @@ export default async function ConditionPage(
             </ul>
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Symptoms</h2>
-            <ul className="mt-4 space-y-2 text-gray-700">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Symptoms</h2>
+            <ul className="mt-4 space-y-2 text-gray-700 dark:text-slate-300">
               {c.symptoms.map((x) => (
                 <li key={x} className="flex items-start gap-2">
                   <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-teal-500" />
@@ -177,11 +177,11 @@ export default async function ConditionPage(
       </section>
 
       {/* Diagnosis + treatment */}
-      <section className="bg-gray-50 py-14">
+      <section className="bg-gray-50 dark:bg-slate-900 py-14">
         <div className="mx-auto grid max-w-5xl gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">How it's diagnosed</h2>
-            <ul className="mt-4 space-y-2 text-gray-700">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">How it's diagnosed</h2>
+            <ul className="mt-4 space-y-2 text-gray-700 dark:text-slate-300">
               {c.diagnosis.map((x) => (
                 <li key={x} className="flex items-start gap-2">
                   <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-indigo-500" />
@@ -191,8 +191,8 @@ export default async function ConditionPage(
             </ul>
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Evidence-based treatment</h2>
-            <ul className="mt-4 space-y-2 text-gray-700">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Evidence-based treatment</h2>
+            <ul className="mt-4 space-y-2 text-gray-700 dark:text-slate-300">
               {c.treatments.map((x) => (
                 <li key={x} className="flex items-start gap-2">
                   <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -208,8 +208,8 @@ export default async function ConditionPage(
       {c.prevention && c.prevention.length > 0 && (
         <section className="py-14">
           <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-gray-900">Prevention</h2>
-            <ul className="mt-4 space-y-2 text-gray-700">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Prevention</h2>
+            <ul className="mt-4 space-y-2 text-gray-700 dark:text-slate-300">
               {c.prevention.map((x) => (
                 <li key={x} className="flex items-start gap-2">
                   <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-primary-500" />
@@ -227,10 +227,10 @@ export default async function ConditionPage(
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col items-start justify-between gap-3 md:flex-row md:items-end">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
                   Doctors who treat {c.name.replace(/\s*\(.*?\)\s*$/, "")}
                 </h2>
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm text-gray-600 dark:text-slate-300">
                   Verified specialists available for video consultations today.
                 </p>
               </div>
@@ -252,20 +252,20 @@ export default async function ConditionPage(
 
       {/* Related specialties */}
       {relatedSpecialties.length > 0 && (
-        <section className="bg-gray-50 py-14">
+        <section className="bg-gray-50 dark:bg-slate-900 py-14">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-gray-900">Who treats this?</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Who treats this?</h2>
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {relatedSpecialties.map((sp) => (
                 <Link
                   key={sp.slug}
                   href={`/specialty/${sp.slug}`}
-                  className="group rounded-2xl border border-gray-200 bg-white p-6 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:shadow-lg"
+                  className="group rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:shadow-lg"
                 >
-                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary-700">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 group-hover:text-primary-700">
                     {sp.displayName}
                   </h3>
-                  <p className="mt-2 text-sm text-gray-600 leading-relaxed">{sp.tagline}</p>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-slate-300 leading-relaxed">{sp.tagline}</p>
                 </Link>
               ))}
             </div>
@@ -277,13 +277,13 @@ export default async function ConditionPage(
       {relatedSymptoms.length > 0 && (
         <section className="py-14">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-gray-900">Related symptoms</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Related symptoms</h2>
             <div className="mt-6 flex flex-wrap gap-2">
               {relatedSymptoms.map((sy) => (
                 <Link
                   key={sy.slug}
                   href={`/symptoms/${sy.slug}`}
-                  className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:border-primary-400 hover:text-primary-700"
+                  className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-1.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:border-primary-400 hover:text-primary-700"
                 >
                   {sy.name}
                 </Link>
@@ -296,19 +296,19 @@ export default async function ConditionPage(
       <RelatedReading posts={relatedPosts} heading={`${c.name.replace(/\s*\(.*?\)\s*$/, "")} — related reading`} />
 
       {/* FAQ */}
-      <section className="bg-gray-50 py-14">
+      <section className="bg-gray-50 dark:bg-slate-900 py-14">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">{c.name} — FAQ</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{c.name} — FAQ</h2>
           <div className="mt-6 space-y-4">
             {c.faqs.map((f) => (
               <details
                 key={f.q}
-                className="group rounded-xl border border-gray-200 bg-white p-5 open:bg-primary-50/30"
+                className="group rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 open:bg-primary-50/30"
               >
-                <summary className="cursor-pointer list-none text-base font-semibold text-gray-900">
+                <summary className="cursor-pointer list-none text-base font-semibold text-gray-900 dark:text-slate-100">
                   {f.q}
                 </summary>
-                <p className="mt-3 text-sm text-gray-600 leading-relaxed">{f.a}</p>
+                <p className="mt-3 text-sm text-gray-600 dark:text-slate-300 leading-relaxed">{f.a}</p>
               </details>
             ))}
           </div>
@@ -318,19 +318,19 @@ export default async function ConditionPage(
       {/* Other conditions */}
       <section className="py-14">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">Other conditions</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Other conditions</h2>
           <div className="mt-6 flex flex-wrap gap-2">
             {CONDITIONS.filter((x) => x.slug !== c.slug).map((x) => (
               <Link
                 key={x.slug}
                 href={`/conditions/${x.slug}`}
-                className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:border-primary-400 hover:text-primary-700"
+                className="rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-1.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:border-primary-400 hover:text-primary-700"
               >
                 {x.name}
               </Link>
             ))}
           </div>
-          <p className="mt-8 text-xs text-gray-500 leading-relaxed">
+          <p className="mt-8 text-xs text-gray-500 dark:text-slate-400 leading-relaxed">
             This page is general information, not medical advice for any
             specific person. For diagnosis and treatment, book a consultation.
           </p>

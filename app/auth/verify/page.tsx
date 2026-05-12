@@ -209,7 +209,7 @@ function VerifyForm() {
           <button
             onClick={resend}
             disabled={resendCooldown > 0}
-            className="font-medium text-primary-600 disabled:cursor-not-allowed disabled:text-gray-400 dark:text-slate-500"
+            className="font-medium text-primary-600 disabled:cursor-not-allowed disabled:text-gray-400 dark:text-slate-500 dark:text-slate-400"
           >
             {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend codes"}
           </button>
@@ -219,7 +219,7 @@ function VerifyForm() {
         </div>
       </div>
 
-      <p className="mt-6 text-center text-xs text-gray-400 dark:text-slate-500">
+      <p className="mt-6 text-center text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">
         Codes expire in 10 minutes. If you didn&apos;t request this, ignore and your account remains safe.
       </p>
     </div>

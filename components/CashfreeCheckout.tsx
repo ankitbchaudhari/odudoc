@@ -224,7 +224,7 @@ export default function CashfreeCheckout({
         <span className="relative">🇮🇳</span>
         <span className="relative">{label}</span>
       </button>
-      <p className="text-center text-[11px] text-slate-500">
+      <p className="text-center text-[11px] text-slate-500 dark:text-slate-400">
         Powered by{" "}
         <span className="font-semibold text-[#6933FF]">Cashfree Payments</span>
         {" "}· Secure · 256-bit TLS · India&apos;s most trusted UPI gateway

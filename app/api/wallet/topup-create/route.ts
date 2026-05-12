@@ -69,6 +69,18 @@ export async function POST(req: NextRequest) {
   // credit the wallet directly so the demo still works.
   const gatewayConfigured = gateway === "cashfree" ? isCashfreeConfigured() : isStripeConfigured();
   if (!gatewayConfigured) {
+    // Diagnostic — echo back which env vars the runtime can see so
+    // operators can tell "env vars set in Vercel but not in Lambda"
+    // apart from "env vars genuinely missing". Booleans only — never
+    // echo the values themselves.
+    const diag = {
+      pickedGateway: gateway,
+      userCountry: user.country || "(unset → defaults to IN)",
+      cashfreeAppIdPresent: !!process.env.CASHFREE_APP_ID,
+      cashfreeSecretPresent: !!process.env.CASHFREE_SECRET_KEY,
+      cashfreeEnv: process.env.CASHFREE_ENV || "(unset)",
+      stripeSecretPresent: !!process.env.STRIPE_SECRET_KEY,
+    };
     const r = applyTopUp({
       userId, amountRupees: amount,
       note: `sandbox top-up (${gateway} not configured)`,
@@ -81,6 +93,7 @@ export async function POST(req: NextRequest) {
       wallet: r.wallet,
       topup: r.topup,
       bonus: r.bonus,
+      diag,
     });
   }
 

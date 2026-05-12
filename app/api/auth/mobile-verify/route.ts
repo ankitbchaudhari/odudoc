@@ -15,6 +15,7 @@ import { verifyMobileOtp } from "@/lib/mobile-otp-store";
 import { signMobileToken } from "@/lib/mobile-auth";
 import { addSubscriber } from "@/lib/subscribers-store";
 import { sendWelcomeEmail } from "@/lib/email";
+import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 import { parseJson, z, emailSchema } from "@/lib/validate";
 import { log } from "@/lib/log";
@@ -63,6 +64,20 @@ export async function POST(request: NextRequest) {
     const isFirstVerification = !user.emailVerified;
     markEmailVerified(user.email);
     touchLastLogin(user.email);
+
+    // Drain the verification flag + last-login update to Postgres
+    // before issuing the JWT. Without this strict drain, the Lambda
+    // could freeze on response-flush and the verified flag would be
+    // lost — user would have to re-verify on next login.
+    try {
+      await awaitAllFlushesStrict();
+    } catch (err) {
+      log.error("mobile-verify.persist_failed", err, { email: user.email });
+      return NextResponse.json(
+        { error: "server_busy", message: "Verification temporarily unavailable. Please retry." },
+        { status: 503 }
+      );
+    }
 
     // Auto-subscribe to newsletter on first mobile signup. addSubscriber
     // dedupes by email so a re-verify is a no-op. Best-effort — never

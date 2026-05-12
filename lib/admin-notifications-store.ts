@@ -24,7 +24,8 @@ export type AdminNotificationType =
   | "subscription_cancelled"
   | "module_request"
   | "license_expiry"
-  | "doctor_referral";
+  | "doctor_referral"
+  | "integrity_alert";
 
 export interface AdminNotification {
   id: string;

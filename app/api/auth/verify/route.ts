@@ -3,6 +3,7 @@ import { consumeVerificationToken } from "@/lib/email-verification-store";
 import { markEmailVerified } from "@/lib/users-store";
 import { addSubscriber } from "@/lib/subscribers-store";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
+import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -34,6 +35,17 @@ export async function GET(req: NextRequest) {
   if (!user) {
     // Token was valid but user somehow missing (e.g. in-memory store reset
     // between signup and verify click). Treat as invalid.
+    return NextResponse.redirect(`${origin}/auth/verify-email?status=invalid`);
+  }
+
+  // Drain the verified-flag flush before redirecting. Without this,
+  // the Lambda may freeze on response-flush and the verification
+  // bit never lands in Postgres — user would then have to verify
+  // again the next time they log in.
+  try {
+    await awaitAllFlushesStrict();
+  } catch (err) {
+    log.error("auth.verify.persist_failed", err, { email: result.email });
     return NextResponse.redirect(`${origin}/auth/verify-email?status=invalid`);
   }
 

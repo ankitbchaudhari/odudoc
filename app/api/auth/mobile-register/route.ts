@@ -18,7 +18,7 @@ import { sendEmail } from "@/lib/email";
 import { notify } from "@/lib/notifications/notify";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 import { parseJson, z, nonEmptyString, emailSchema, phoneSchema } from "@/lib/validate";
-import { awaitAllFlushes } from "@/lib/persistent-array";
+import { awaitAllFlushes, awaitAllFlushesStrict, PersistenceError } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -92,7 +92,31 @@ export async function POST(request: NextRequest) {
     // OTP.
     if (!existing) {
       createUser({ name, email, phone, password, role: "patient" });
-      await awaitAllFlushes();
+      // Strict drain — refuses to ack the signup unless Postgres
+      // confirms the write. Avoids the "Email verified → No account
+      // found" data-loss path on transient DB blips.
+      try {
+        await awaitAllFlushesStrict();
+      } catch (err) {
+        log.error("mobile-register.persist_failed", err, { email });
+        return NextResponse.json(
+          {
+            error: "server_busy",
+            message: "Signup is temporarily unavailable. Please try again in a few moments.",
+            ...(err instanceof PersistenceError ? { detail: err.errors.map((e) => e.key) } : {}),
+          },
+          { status: 503 }
+        );
+      }
+      // Read-back verification.
+      await reloadUsers();
+      if (!findUserByEmail(email)) {
+        log.error("mobile-register.readback_missing", undefined, { email });
+        return NextResponse.json(
+          { error: "server_busy", message: "Signup is temporarily unavailable. Please try again." },
+          { status: 503 }
+        );
+      }
     }
 
     const otp = await issueMobileOtp(email);

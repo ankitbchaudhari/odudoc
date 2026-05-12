@@ -5,7 +5,7 @@ import { createVerificationToken } from "@/lib/email-verification-store";
 import { addAdminNotification } from "@/lib/admin-notifications-store";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 import { parseJson, z, nonEmptyString, emailSchema, phoneSchema } from "@/lib/validate";
-import { awaitAllFlushes } from "@/lib/persistent-array";
+import { awaitAllFlushesStrict, PersistenceError } from "@/lib/persistent-array";
 
 import { log } from "@/lib/log";
 const RegisterSchema = z.object({
@@ -92,11 +92,38 @@ export async function POST(request: NextRequest) {
     }
 
     // Drain all pending Postgres writes BEFORE we send the verification
-    // email or return. If the Lambda freezes on response-flush, the
-    // createUser() write-back gets cancelled and the account is lost —
+    // email or return. Strict variant throws if any save failed — we
+    // return 503 instead of pretending the account exists. Previously
+    // used the non-strict variant, which allowed phantom accounts:
     // user clicks the verify link, gets "Email verified", then login
-    // says "No account found". Draining here makes the write durable.
-    await awaitAllFlushes();
+    // says "No account found".
+    try {
+      await awaitAllFlushesStrict();
+    } catch (err) {
+      log.error("register.persist_failed", err, { email: user.email });
+      return NextResponse.json(
+        {
+          error:
+            "Signup is temporarily unavailable. Please try again in a few moments.",
+          ...(err instanceof PersistenceError ? { detail: err.errors.map((e) => e.key) } : {}),
+        },
+        { status: 503 }
+      );
+    }
+
+    // Read-back verification: confirm the user actually exists in
+    // Postgres before we send the verification email. Without this,
+    // a write that succeeded in-memory but failed at Postgres would
+    // still trigger an email + return success.
+    const { reloadUsers, findUserByEmail: refetch } = await import("@/lib/users-store");
+    await reloadUsers();
+    if (!refetch(user.email)) {
+      log.error("register.readback_missing", undefined, { email: user.email });
+      return NextResponse.json(
+        { error: "Signup is temporarily unavailable. Please try again in a few moments." },
+        { status: 503 }
+      );
+    }
 
     // Notify admin of new signup.
     try {

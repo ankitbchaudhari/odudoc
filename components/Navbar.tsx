@@ -99,9 +99,13 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800/70 bg-white/85 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/70 dark:border-slate-800/70 dark:bg-slate-950/85 dark:supports-[backdrop-filter]:bg-slate-950/70">
       {/* Hairline gradient under the nav for a subtle "floating" feel */}
       <div className="pointer-events-none absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-primary-300/60 to-transparent" />
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-3 sm:px-6 lg:px-8">
-        {/* Logo */}
-        <Logo size="sm" />
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-4 py-3 sm:px-6 lg:px-8">
+        {/* Logo — flex-shrink-0 so it can't be squished off-screen on
+            narrow viewports + min-w-0 on flex siblings would let them
+            shrink instead. */}
+        <div className="flex-shrink-0">
+          <Logo size="sm" />
+        </div>
 
         {/* Desktop Nav — pill-grouped links so the bar reads like a
             modern shadcn/Vercel-style top-nav, with one emphasised CTA

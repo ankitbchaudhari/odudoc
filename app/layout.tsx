@@ -156,7 +156,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             briefly render light mode before flipping to dark. */}
         <script dangerouslySetInnerHTML={{ __html: NO_FLASH_SCRIPT }} />
       </head>
-      <body className={`${inter.className} flex min-h-screen flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 dark:bg-slate-950 dark:text-slate-100 transition-colors`} suppressHydrationWarning>
+      <body className={`${inter.className} flex min-h-screen flex-col overflow-x-hidden bg-white text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100`} suppressHydrationWarning>
         <ThemeProvider>
         <AuthProvider>
           <CartProvider>

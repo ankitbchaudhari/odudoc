@@ -7,6 +7,8 @@ import {
   type WithdrawalStatus,
 } from "@/lib/withdrawals-store";
 import { sendWithdrawalStatusEmail } from "@/lib/email";
+import { notify } from "@/lib/notifications/notify";
+import { findUserByEmail } from "@/lib/users-store";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -65,6 +67,26 @@ export async function PATCH(
     }).catch((err) =>
       log.error("[withdrawals] status email failed:", err)
     );
+    // Also SMS the doctor — withdrawals are money decisions; doctors
+    // routinely check phones faster than email.
+    const doctor = findUserByEmail(updated.doctorEmail);
+    if (doctor?.phone) {
+      const verb =
+        status === "approved"
+          ? "approved"
+          : status === "rejected"
+            ? "rejected"
+            : "paid out";
+      const smsBody = `OduDoc: your withdrawal of ${updated.amount} has been ${verb}.${
+        updated.adminNote ? " Note: " + updated.adminNote : ""
+      }`;
+      notify({
+        channel: "sms",
+        to: doctor.phone,
+        body: smsBody,
+        category: "billing",
+      }).catch((err) => log.error("[withdrawals] status sms failed:", err));
+    }
   }
 
   return NextResponse.json({ withdrawal: updated });

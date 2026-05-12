@@ -15,6 +15,7 @@ import {
 } from "@/lib/users-store";
 import { issueMobileOtp } from "@/lib/mobile-otp-store";
 import { sendEmail } from "@/lib/email";
+import { notify } from "@/lib/notifications/notify";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 import { parseJson, z, nonEmptyString, emailSchema, phoneSchema } from "@/lib/validate";
 import { awaitAllFlushes } from "@/lib/persistent-array";
@@ -103,18 +104,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    try {
-      const r = await sendEmail({
+    // Fan out the code to both email and SMS. Mobile users on flaky
+    // networks may not see one of them; sending both is cheap insurance.
+    // OTP is a safety-critical category, so we ignore Do-Not-Disturb /
+    // category opt-outs (enforced inside notifyUser when wired).
+    const smsBody = `${otp.code} is your OduDoc verification code. It expires in 10 minutes.`;
+    await Promise.allSettled([
+      sendEmail({
         from: "no-reply",
         to: email,
         subject: "Your OduDoc verification code",
         html: otpEmailHtml(name, otp.code),
-      });
-      if (!r.ok) log.error("mobile-register email failed", undefined, { error: r.error });
-    } catch (err) {
-      log.error("mobile-register email threw", err);
-      // Don't fail the whole call — user can request a resend.
-    }
+      })
+        .then((r) => {
+          if (!r.ok) log.error("mobile-register email failed", undefined, { error: r.error });
+        })
+        .catch((err) => log.error("mobile-register email threw", err)),
+      notify({ channel: "sms", to: phone, body: smsBody, category: "otp" })
+        .then((r) => {
+          if (!r.ok && !r.skipped) log.warn("mobile-register sms failed", { error: r.error });
+        })
+        .catch((err) => log.error("mobile-register sms threw", err)),
+    ]);
 
     return NextResponse.json({
       ok: true,

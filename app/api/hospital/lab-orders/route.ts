@@ -12,6 +12,8 @@ import {
 } from "@/lib/hospital/lab-orders-store";
 import { getPatientById } from "@/lib/patients-store";
 import { getEncounterById } from "@/lib/encounters-store";
+import { notify } from "@/lib/notifications/notify";
+import { log } from "@/lib/log";
 
 import { parseJson, z } from "@/lib/validate";
 export const runtime = "nodejs";
@@ -91,8 +93,44 @@ export async function PATCH(req: NextRequest) {
 
     // Special case: a results payload updates individual items.
     if (Array.isArray(body.results)) {
+      const before = (await import("@/lib/hospital/lab-orders-store")).listLabOrders({
+        organizationId: orgId,
+      }).find((o) => o.id === String(body.id));
+      const wasCompleted = before?.status === "completed" || before?.status === "reported";
       const updated = setLabResults(String(body.id), orgId, body.results);
       if (!updated) return NextResponse.json({ error: "not_found" }, { status: 404 });
+
+      // If this update transitioned the order to "completed", ping the
+      // patient on their preferred channels. Spec §6.3 — sample status
+      // green ("Normal result — report ready") fires here.
+      if (!wasCompleted && updated.status === "completed") {
+        const patient = getPatientById(updated.patientId, orgId);
+        if (patient) {
+          const labName = "OduDoc Lab";
+          const link = `https://www.odudoc.com/dashboard/labs`;
+          const smsBody = `OduDoc: your lab results from ${labName} are ready. View at ${link}`;
+          const emailHtml = `<p>Hello ${patient.firstName || "Patient"},</p><p>Your lab results from <strong>${labName}</strong> are ready.</p><p><a href="${link}">View results</a> or open the OduDoc app.</p>`;
+          if (patient.phone) {
+            notify({
+              channel: "sms",
+              to: patient.phone,
+              body: smsBody,
+              category: "result",
+            }).catch((err) => log.error("lab-result sms failed", err));
+          }
+          if (patient.email) {
+            notify({
+              channel: "email",
+              to: patient.email,
+              subject: "Your lab results are ready — OduDoc",
+              body: smsBody,
+              html: emailHtml,
+              emailFrom: "notifications",
+              category: "result",
+            }).catch((err) => log.error("lab-result email failed", err));
+          }
+        }
+      }
       return NextResponse.json({ order: updated });
     }
 

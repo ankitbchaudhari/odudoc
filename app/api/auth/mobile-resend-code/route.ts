@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { findUserByEmail, reloadUsers } from "@/lib/users-store";
 import { issueMobileOtp } from "@/lib/mobile-otp-store";
 import { sendEmail } from "@/lib/email";
+import { notify } from "@/lib/notifications/notify";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 import { parseJson, z, emailSchema } from "@/lib/validate";
 import { log } from "@/lib/log";
@@ -69,16 +70,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    try {
-      await sendEmail({
+    // Fan out to email + SMS so users on flaky networks see at least one.
+    const smsBody = `${otp.code} is your OduDoc verification code. It expires in 10 minutes.`;
+    await Promise.allSettled([
+      sendEmail({
         from: "no-reply",
         to: email,
         subject: "Your OduDoc verification code",
         html: otpEmailHtml(user.name, otp.code),
-      });
-    } catch (err) {
-      log.error("mobile-resend email threw", err);
-    }
+      }).catch((err) => log.error("mobile-resend email threw", err)),
+      user.phone
+        ? notify({ channel: "sms", to: user.phone, body: smsBody, category: "otp" }).catch(
+            (err) => log.error("mobile-resend sms threw", err)
+          )
+        : Promise.resolve(),
+    ]);
 
     return NextResponse.json({ ok: true });
   } catch (err) {

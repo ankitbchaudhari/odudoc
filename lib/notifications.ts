@@ -1,7 +1,12 @@
-// Notification system for OduDoc appointment bookings
-// Currently logs notifications — in production, integrate with SendGrid (email) and Twilio (SMS)
+// Notification system for OduDoc appointment bookings.
+//
+// Historically this module was a no-op stub that logged to memory. Now it
+// routes through lib/notifications/notify so appointment confirms /
+// cancellations / reminders actually reach users via Twilio + Resend.
+// In-memory log is preserved for admin-panel visibility.
 
 import { log } from "./log";
+import { notify } from "./notifications/notify";
 export interface NotificationPayload {
   to: string; // email or phone
   type: 'email' | 'sms';
@@ -34,17 +39,40 @@ export function getNotificationLogs(): NotificationLogEntry[] {
 }
 
 export async function sendNotification(payload: NotificationPayload): Promise<boolean> {
-  // Log for now — in production, integrate with SendGrid/Twilio
-  log.info("notifications.dispatch", {
-    type: payload.type,
-    to: payload.to,
-    subject: payload.subject,
-    message: payload.message,
-  });
-
-  // Store in memory for admin panel visibility
-  addNotificationLog(payload);
-  return true;
+  // Route through the unified dispatcher so email goes via Resend and
+  // SMS goes via Twilio. WhatsApp is selected by callers that want it
+  // explicitly; this legacy entry only handles email + sms because that
+  // matches the existing call sites' payload shape.
+  let status: "sent" | "failed" = "sent";
+  try {
+    const result = await notify({
+      channel: payload.type === "email" ? "email" : "sms",
+      to: payload.to,
+      subject: payload.subject,
+      body: payload.message,
+      category: "appointment",
+    });
+    if (!result.ok && !result.skipped) {
+      status = "failed";
+      log.warn("notifications.dispatch_failed", {
+        type: payload.type,
+        to: payload.to,
+        error: result.error,
+      });
+    } else {
+      log.info("notifications.dispatch_sent", {
+        type: payload.type,
+        to: payload.to,
+        providerId: result.providerId,
+        skipped: result.skipped,
+      });
+    }
+  } catch (err) {
+    status = "failed";
+    log.error("notifications.dispatch_threw", err);
+  }
+  addNotificationLog(payload, status);
+  return status === "sent";
 }
 
 export function notifyAppointmentBooked(details: {

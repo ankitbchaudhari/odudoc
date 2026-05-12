@@ -24,11 +24,25 @@ export const dynamic = "force-dynamic";
 
 /** Pick the gateway based on the patient's country. India → Cashfree
  *  (UPI/RuPay first-class). Everywhere else → Stripe (global cards +
- *  Apple Pay / Google Pay). Returns the gateway *id* — the route
- *  branches on configuration availability after. */
+ *  Apple Pay / Google Pay).
+ *
+ *  Fallback: if the "natural" gateway isn't configured but the OTHER
+ *  one is, use the configured one. Avoids dropping to sandbox just
+ *  because the user's country routes to a gateway that hasn't been
+ *  set up yet (common during initial rollout when only one of the
+ *  two has been wired). The sandbox path remains as the last resort
+ *  when NEITHER gateway is configured. */
 function pickGateway(country: string | null | undefined): "cashfree" | "stripe" {
   const c = (country || "IN").toUpperCase();
-  return c === "IN" ? "cashfree" : "stripe";
+  const natural = c === "IN" ? "cashfree" : "stripe";
+  if (natural === "cashfree" && isCashfreeConfigured()) return "cashfree";
+  if (natural === "stripe" && isStripeConfigured()) return "stripe";
+  // Natural gateway not configured — try the other.
+  if (isCashfreeConfigured()) return "cashfree";
+  if (isStripeConfigured()) return "stripe";
+  // Neither is configured — return natural; the caller's
+  // `!gatewayConfigured` branch will route to the sandbox path.
+  return natural;
 }
 
 export async function POST(req: NextRequest) {

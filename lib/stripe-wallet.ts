@@ -47,7 +47,14 @@ export function isStripeConfigured(): boolean {
 export async function createStripeWalletCheckout(
   input: StripeWalletTopupInput,
 ): Promise<StripeWalletTopupResult> {
-  const currency = currencyForCountry(input.country);
+  // The OduDoc wallet is denominated in INR — every consult, lab,
+  // and pharmacy charge debits rupees. If we charged Stripe in USD
+  // here we'd hand the patient a 4% FX conversion plus a mismatch
+  // between what they type (₹100) and what their card is billed
+  // ($100 → ₹9,952). Force INR regardless of patient country; if
+  // Stripe's INR support is unavailable for the connected account,
+  // the user should use Cashfree.
+  const currency: CurrencyInfo = { code: "INR", symbol: "₹", locale: "en-IN" };
   // Stripe currency codes are lowercase ISO 4217.
   const stripeCurrency = currency.code.toLowerCase();
   // Stripe wants minor units (cents/paise). For zero-decimal

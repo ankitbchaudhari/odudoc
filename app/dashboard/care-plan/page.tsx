@@ -230,7 +230,41 @@ function CreatePlanForm({ conditions, onCreated }: { conditions: ConditionOpt[];
   const [goals, setGoals] = useState("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiUsed, setAiUsed] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const generateWithAI = async () => {
+    setError(null);
+    setAiBusy(true);
+    try {
+      const conditionLabel = conditions.find((c) => c.value === condition)?.label || condition;
+      const res = await fetch("/api/care-plan/ai-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          condition,
+          conditionLabel,
+          diagnosedOn: diagnosedOn || undefined,
+          context: notes.trim() || undefined,
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(body.error || `AI generation failed (${res.status})`);
+        return;
+      }
+      const plan = body.plan as { title?: string; goals?: string[]; notes?: string };
+      if (plan.title) setTitle(plan.title);
+      if (Array.isArray(plan.goals) && plan.goals.length > 0) setGoals(plan.goals.join("\n"));
+      if (plan.notes) setNotes(plan.notes);
+      setAiUsed(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "AI generation failed");
+    } finally {
+      setAiBusy(false);
+    }
+  };
 
   const submit = async () => {
     setError(null); setBusy(true);
@@ -256,7 +290,32 @@ function CreatePlanForm({ conditions, onCreated }: { conditions: ConditionOpt[];
 
   return (
     <div className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
-      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">New care plan</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm font-bold text-slate-900 dark:text-slate-100">New care plan</p>
+        <button
+          onClick={generateWithAI}
+          disabled={aiBusy}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600 hover:from-violet-700 hover:via-fuchsia-700 hover:to-pink-700 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-fuchsia-500/30 transition disabled:opacity-60 disabled:cursor-not-allowed"
+          title="Auto-fill title, lifestyle goals, and notes from the selected condition"
+        >
+          {aiBusy ? (
+            <>
+              <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.3" strokeWidth="3" />
+                <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+              </svg>
+              Generating…
+            </>
+          ) : (
+            <>✨ {aiUsed ? "Regenerate with AI" : "Generate with AI"}</>
+          )}
+        </button>
+      </div>
+      {aiUsed && !aiBusy && (
+        <p className="mt-2 rounded-lg bg-violet-50 dark:bg-violet-950/30 px-3 py-2 text-xs text-violet-700 dark:text-violet-300 ring-1 ring-violet-200 dark:ring-violet-900/40">
+          ✨ AI-generated draft — review and edit anything below before saving. This is decision-support, not medical advice.
+        </p>
+      )}
       {error && <p className="mt-2 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">

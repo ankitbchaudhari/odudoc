@@ -108,13 +108,13 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Nav — pill-grouped links so the bar reads like a
-            modern shadcn/Vercel-style top-nav, with one emphasised CTA
-            to drive pharmacy onboarding. min-w-0 lets the pill shrink
-            when the total nav width exceeds the container, so the
-            right-side block (Login / Sign Up / theme toggle / cart)
-            never gets pushed off-screen by an over-wide pill. */}
-        <div className="hidden min-w-0 flex-1 items-center justify-center md:flex">
-          <div className="flex max-w-full items-center gap-0.5 overflow-x-auto rounded-full border border-slate-200 dark:border-slate-800/70 bg-slate-50/70 dark:bg-slate-800/40 p-1 shadow-inner shadow-slate-200/40 dark:shadow-slate-900/40 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            modern shadcn/Vercel-style top-nav.
+            Only shown on xl: (1280px+) screens. Below that the right
+            block (logo+cart+theme+login) takes priority and the nav
+            links live in the mobile hamburger menu instead. Avoids
+            the "pill eats the right side" failure mode on tablets. */}
+        <div className="hidden flex-1 items-center justify-center xl:flex">
+          <div className="flex items-center gap-0.5 rounded-full border border-slate-200 dark:border-slate-800/70 bg-slate-50/70 dark:bg-slate-800/40 p-1 shadow-inner shadow-slate-200/40 dark:shadow-slate-900/40">
             {links.map((l) => (
               <Link
                 key={l.href}
@@ -276,7 +276,7 @@ export default function Navbar() {
           </Link>
         </div>
         <button
-          className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 md:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 xl:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle menu"
         >
@@ -290,7 +290,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="border-t border-gray-100 bg-white dark:bg-slate-900 px-4 pb-4 md:hidden">
+        <div className="border-t border-gray-100 bg-white dark:bg-slate-900 px-4 pb-4 xl:hidden">
           {links.map((l) => (
             <Link
               key={l.href}

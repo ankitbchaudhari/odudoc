@@ -4,6 +4,48 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+// Cashfree v3 SDK loader — uses the same CDN as components/
+// CashfreeCheckout.tsx. The global window.Cashfree type is declared
+// there; we just consume it here.
+const CASHFREE_SDK_URL = "https://sdk.cashfree.com/js/v3/cashfree.js";
+
+let sdkLoadPromise: Promise<void> | null = null;
+function loadCashfreeSdk(): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  if (window.Cashfree) return Promise.resolve();
+  if (sdkLoadPromise) return sdkLoadPromise;
+  sdkLoadPromise = new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>('script[data-cf-sdk="1"]');
+    if (existing) {
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error("Failed to load Cashfree SDK")), { once: true });
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = CASHFREE_SDK_URL;
+    s.async = true;
+    s.dataset.cfSdk = "1";
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("Failed to load Cashfree SDK"));
+    document.head.appendChild(s);
+  });
+  return sdkLoadPromise;
+}
+
+/** Launch Cashfree's hosted checkout overlay. Production mode is
+ *  hardcoded because the topup route only creates PROD sessions when
+ *  CASHFREE_ENV=PROD on the server. Cashfree's webhook credits the
+ *  wallet on payment.success — the user lands back on the wallet
+ *  page via the returnUrl. */
+async function launchCashfreeCheckout(paymentSessionId: string): Promise<void> {
+  await loadCashfreeSdk();
+  if (!window.Cashfree) {
+    throw new Error("Cashfree SDK did not initialise");
+  }
+  const cashfree = window.Cashfree({ mode: "production" });
+  await cashfree.checkout({ paymentSessionId, redirectTarget: "_self" });
+}
+
 interface Wallet {
   userId: string; balanceRupees: number; bonusBalanceRupees: number;
   lifetimeToppedUp: number; lifetimeSpent: number;
@@ -64,10 +106,20 @@ export default function WalletPage() {
       });
       if (r.ok) {
         const d = await r.json();
-        if (d.mode === "live" && d.paymentLink) {
-          // Hand off to Cashfree's hosted checkout. The webhook
-          // credits the wallet on payment.success.
-          window.location.href = d.paymentLink;
+        if (d.mode === "live") {
+          // Stripe / legacy Cashfree returns a paymentLink → simple
+          // redirect. Cashfree v3 returns a paymentSessionId → we
+          // load their JS SDK at runtime and call .checkout().
+          if (d.paymentLink) {
+            window.location.href = d.paymentLink;
+            return;
+          }
+          if (d.gateway === "cashfree" && d.paymentSessionId) {
+            await launchCashfreeCheckout(d.paymentSessionId);
+            return;
+          }
+          setToast({ kind: "err", text: "Payment session created but no checkout target. Contact support." });
+          console.error("[wallet topup] live response missing paymentLink/paymentSessionId", d);
           return;
         }
         // sandbox path — wallet credited inline

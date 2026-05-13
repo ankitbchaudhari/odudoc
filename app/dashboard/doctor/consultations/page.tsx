@@ -70,7 +70,10 @@ export default function DoctorConsultationsPage() {
   }, []);
 
   const pool = list.filter((c) => !c.doctorId);
-  const owned = list.filter((c) => c.doctorId);
+  // Hide unpaid bookings from the doctor's worklist — the patient
+  // hasn't completed payment yet, so there's nothing for the doctor
+  // to act on. They re-appear automatically once the payment lands.
+  const owned = list.filter((c) => c.doctorId && c.status !== "pending_payment");
 
   const filtered = (filter === "all" ? owned : owned.filter((c) => c.status === filter)).filter((c) =>
     !search.trim()

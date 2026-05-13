@@ -85,7 +85,9 @@ export async function POST(req: NextRequest) {
   try {
     payload = (await req.json()) as MetaWebhookPayload;
   } catch (err) {
-    log.warn("whatsapp_webhook.bad_json", err);
+    log.warn("whatsapp_webhook.bad_json", {
+      error: err instanceof Error ? err.message : String(err),
+    });
     // Return 200 anyway — Meta retries on non-200, and we'd just keep
     // getting the same malformed body. Logged for inspection.
     return NextResponse.json({ ok: true });
@@ -146,7 +148,9 @@ export async function POST(req: NextRequest) {
                 // store normalises either way.
                 recordOptOut(msg.from);
               } catch (err) {
-                log.warn("whatsapp_webhook.opt_out_persist_failed", err);
+                log.warn("whatsapp_webhook.opt_out_persist_failed", {
+                  error: err instanceof Error ? err.message : String(err),
+                });
               }
             })(),
           );
@@ -156,7 +160,9 @@ export async function POST(req: NextRequest) {
               try {
                 removeOptOut(msg.from);
               } catch (err) {
-                log.warn("whatsapp_webhook.opt_out_remove_failed", err);
+                log.warn("whatsapp_webhook.opt_out_remove_failed", {
+                  error: err instanceof Error ? err.message : String(err),
+                });
               }
             })(),
           );
@@ -189,7 +195,9 @@ export async function POST(req: NextRequest) {
       new Promise((resolve) => setTimeout(resolve, 4000)),
     ]);
   } catch (err) {
-    log.warn("whatsapp_webhook.work_settled_threw", err);
+    log.warn("whatsapp_webhook.work_settled_threw", {
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 
   return NextResponse.json({ ok: true });

@@ -532,6 +532,25 @@ export async function sendCarePlanReminderViaSentDm(
   });
 }
 
+export async function sendDoctorInviteViaSentDm(
+  to: string,
+  variables: { doctorName: string },
+  idempotencyKey?: string,
+): Promise<SentDmResult> {
+  const template = process.env.SENTDM_TEMPLATE_DOCTOR_INVITE;
+  if (!template) return { ok: false, error: "SENTDM_TEMPLATE_DOCTOR_INVITE not set" };
+  return sentDmSend({
+    to, channel: "whatsapp", template,
+    variables: {
+      "1": variables.doctorName || "there",
+      doctor_name: variables.doctorName || "there",
+      doctorName: variables.doctorName || "there",
+      name: variables.doctorName || "there",
+    },
+    idempotencyKey,
+  });
+}
+
 export async function sendInsurancePreauthViaSentDm(
   to: string,
   variables: { patientName: string; procedure: string; hospital: string; status: string; context: string },

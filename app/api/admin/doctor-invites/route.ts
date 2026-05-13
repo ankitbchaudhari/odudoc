@@ -20,6 +20,8 @@ import {
   cancelInvite,
 } from "@/lib/doctor-invites-store";
 import { sendDoctorInvitationEmail } from "@/lib/email";
+import { sendDoctorInviteViaSentDm } from "@/lib/sent-dm";
+import { markInviteWhatsappSent } from "@/lib/doctor-invites-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
@@ -138,12 +140,41 @@ export async function POST(req: NextRequest) {
         sentBy: adminEmail || "admin",
         note: body.note,
       });
+      // Auto-fire the approved WhatsApp template when configured.
+      // Falls back silently to the wa.me click-to-chat path in the
+      // history row when no template is set up — admin can still
+      // send manually from the row.
+      let waAutoSent = false;
+      let waError: string | undefined;
+      try {
+        const r = await sendDoctorInviteViaSentDm(phoneE164, {
+          doctorName: body.name || "there",
+        });
+        if (r.ok) {
+          waAutoSent = true;
+          try { await markInviteWhatsappSent(invite.id); } catch { /* best-effort */ }
+        } else {
+          waError = r.error;
+          log.warn("admin.doctor_invite.wa_auto_send_failed", { error: r.error || "unknown" });
+        }
+      } catch (err) {
+        waError = err instanceof Error ? err.message : "send threw";
+        log.warn("admin.doctor_invite.wa_auto_send_threw", { error: waError });
+      }
       try { await awaitAllFlushesStrict(); } catch { /* best-effort */ }
       return NextResponse.json({
         ok: true,
         sent: 1,
         failed: 0,
-        results: [{ email: syntheticEmail, phone: phoneE164, ok: true, inviteId: invite.id, channel: "whatsapp" }],
+        results: [{
+          email: syntheticEmail,
+          phone: phoneE164,
+          ok: true,
+          inviteId: invite.id,
+          channel: "whatsapp",
+          waAutoSent,
+          waError,
+        }],
       });
     } catch (err) {
       log.error("admin.doctor_invite.phone_only_failed", err, { phone: phoneE164 });
@@ -195,6 +226,29 @@ export async function POST(req: NextRequest) {
         sentBy: adminEmail || "admin",
         note: body.note,
       });
+      // Dual-channel: when a phone was attached to a single-recipient
+      // send, also fire the WhatsApp template (best-effort, doesn't
+      // block the email-side success).
+      if (phoneForRow) {
+        try {
+          const normalizedPhone = phoneForRow.startsWith("+")
+            ? phoneForRow
+            : `+${phoneForRow.replace(/[^\d]/g, "")}`;
+          const r = await sendDoctorInviteViaSentDm(normalizedPhone, {
+            doctorName: body.name || "there",
+          });
+          if (r.ok) {
+            try { await markInviteWhatsappSent(invite.id); } catch { /* best-effort */ }
+          } else {
+            log.warn("admin.doctor_invite.wa_dual_send_failed", { error: r.error || "unknown", email });
+          }
+        } catch (err) {
+          log.warn("admin.doctor_invite.wa_dual_send_threw", {
+            error: err instanceof Error ? err.message : "send threw",
+            email,
+          });
+        }
+      }
       results.push({ email, ok: true, inviteId: invite.id });
     } catch (err) {
       log.error("admin.doctor_invite.send_failed", err, { email });

@@ -263,7 +263,6 @@ export default async function ForDoctorsPage() {
                   "🇳🇬 Nigeria · 7.5% VAT",
                   "🇰🇪 Kenya · 16% VAT",
                   "🇧🇩 Bangladesh · 15% VAT",
-                  "🇵🇰 Pakistan · 18% VAT",
                   "🇱🇰 Sri Lanka · 18% VAT",
                   "🇮🇩 Indonesia · 11% VAT",
                   "🇵🇭 Philippines · 12% VAT",

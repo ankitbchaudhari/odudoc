@@ -85,8 +85,10 @@ export default function DoctorInvitesPage() {
   }, [load]);
 
   async function sendInvites() {
-    if (!emailsRaw.trim()) {
-      setError("Paste at least one email address.");
+    // Accept either bulk emails OR a single WhatsApp number — but at
+    // least one channel must be provided.
+    if (!emailsRaw.trim() && !phone.trim()) {
+      setError("Provide at least one email OR a WhatsApp number.");
       return;
     }
     setSending(true);
@@ -144,13 +146,13 @@ export default function DoctorInvitesPage() {
           Outreach · Doctor invites
         </p>
         <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">
-          Invite doctors by email
+          Invite doctors by email or WhatsApp
         </h1>
         <p className="mt-1 text-sm text-slate-600">
-          Paste one or many email addresses. Each recipient gets a templated
-          OduDoc invitation linking to <code>/for-doctors</code>. When they
-          sign up, the corresponding row below flips from <b>Sent</b> →{" "}
-          <b>Registered</b> automatically.
+          Paste email addresses (one or many) <b>or</b> drop a single WhatsApp
+          number — both work. Each recipient gets an OduDoc invitation linking
+          to <code>/for-doctors</code>. When they sign up, the row below flips
+          from <b>Sent</b> → <b>Registered</b> automatically.
         </p>
       </div>
 
@@ -176,7 +178,7 @@ export default function DoctorInvitesPage() {
         <div className="p-6">
           <label className="block">
             <span className="mb-1 block text-xs font-semibold text-slate-700">
-              Email addresses *
+              Email addresses {phone.trim() ? "(optional — sending via WhatsApp)" : "*"}
             </span>
             <textarea
               value={emailsRaw}
@@ -187,7 +189,8 @@ export default function DoctorInvitesPage() {
             />
             <span className="mt-1 block text-[11px] text-slate-500">
               One per line, comma-separated, or even pasted from a "Name &lt;email&gt;" list
-              — we&apos;ll parse and dedupe.
+              — we&apos;ll parse and dedupe. <b>Or skip the emails entirely</b> and just
+              put a WhatsApp number below for a WA-only invite.
             </span>
           </label>
 
@@ -211,17 +214,18 @@ export default function DoctorInvitesPage() {
               placeholder="e.g. IN"
             />
             <Field
-              label="WhatsApp phone (single recipient)"
+              label={emailsRaw.trim() ? "WhatsApp phone (single recipient)" : "WhatsApp phone (or paste emails above)"}
               value={phone}
               onChange={setPhone}
-              placeholder="+15551234567 (E.164, with country code)"
+              placeholder="+919876543210 (E.164, with country code)"
             />
           </div>
           <p className="mt-1 text-[11px] text-slate-500">
-            Phone is only attached when you send to a single recipient. Once
-            saved, the history row gets a green &ldquo;Open WhatsApp&rdquo; button that opens
+            <b>WhatsApp-only invite:</b> leave emails empty + just enter the phone — the
+            history row gets a green &ldquo;Open WhatsApp&rdquo; button that opens
             <code className="mx-1 rounded bg-slate-100 px-1 py-0.5">wa.me</code>
-            on your device with a personalised invitation pre-filled — you click Send.
+            on your device with a personalised invitation pre-filled. You tap Send in
+            WhatsApp. <b>Email + WhatsApp:</b> single recipient gets both channels.
           </p>
 
           <Field
@@ -305,7 +309,14 @@ export default function DoctorInvitesPage() {
                   return (
                     <tr key={i.id}>
                       <td className="px-5 py-3 align-top">
-                        <p className="font-mono text-xs text-slate-800">{i.email}</p>
+                        {i.email.endsWith("@invite.odudoc.local") ? (
+                          <p className="font-mono text-xs text-slate-800">
+                            📱 {i.phone || "WhatsApp invite"}
+                            <span className="ml-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">WA only</span>
+                          </p>
+                        ) : (
+                          <p className="font-mono text-xs text-slate-800">{i.email}</p>
+                        )}
                         {i.note && (
                           <p className="mt-0.5 text-[11px] text-slate-500">
                             {i.note}

@@ -100,9 +100,20 @@ export async function POST(req: NextRequest) {
   const candidates = parseEmails(body.emails ?? body.email);
   // Dedupe inside the request — admin may paste a list with repeats.
   const unique = Array.from(new Set(candidates));
-  if (unique.length === 0) {
+
+  // Phone-only invite path: when no emails are provided but a phone
+  // number is, we treat this as a WhatsApp-first invite. The row
+  // still needs a primary key on the email column (schema unchanged
+  // for backward compat), so we synthesise an internal-only email
+  // of the form `wa-<digits>@invite.odudoc.local`. The admin UI
+  // hides synthetic emails and shows the phone instead.
+  const rawPhone = typeof body.phone === "string" ? body.phone.trim() : "";
+  const digits = rawPhone.replace(/[^\d]/g, "");
+  const isPhoneOnly = unique.length === 0 && digits.length >= 7;
+
+  if (unique.length === 0 && !isPhoneOnly) {
     return NextResponse.json(
-      { error: "Paste at least one valid email address." },
+      { error: "Provide at least one email or a WhatsApp number." },
       { status: 400 }
     );
   }
@@ -111,6 +122,36 @@ export async function POST(req: NextRequest) {
       { error: "Too many emails in one batch (max 50). Split it up." },
       { status: 413 }
     );
+  }
+  if (isPhoneOnly) {
+    // Single phone-only invite. Skip email send; persist the row so
+    // the admin gets a "Open WhatsApp" link in the history.
+    const syntheticEmail = `wa-${digits}@invite.odudoc.local`;
+    const phoneE164 = rawPhone.startsWith("+") ? rawPhone : `+${digits}`;
+    try {
+      const invite = await createDoctorInvite({
+        email: syntheticEmail,
+        name: body.name,
+        specialty: body.specialty,
+        country: body.country,
+        phone: phoneE164,
+        sentBy: adminEmail || "admin",
+        note: body.note,
+      });
+      try { await awaitAllFlushesStrict(); } catch { /* best-effort */ }
+      return NextResponse.json({
+        ok: true,
+        sent: 1,
+        failed: 0,
+        results: [{ email: syntheticEmail, phone: phoneE164, ok: true, inviteId: invite.id, channel: "whatsapp" }],
+      });
+    } catch (err) {
+      log.error("admin.doctor_invite.phone_only_failed", err, { phone: phoneE164 });
+      return NextResponse.json(
+        { error: err instanceof Error ? err.message : "Phone invite failed" },
+        { status: 500 },
+      );
+    }
   }
 
   const results: Array<{

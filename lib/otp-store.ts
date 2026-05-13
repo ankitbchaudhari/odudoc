@@ -184,6 +184,13 @@ export async function sendOtpCodes(record: OtpRecord): Promise<void> {
             otp: record.phoneCode,
             name: firstName,
             first_name: firstName,
+            // CamelCase aliases — sent.dm enforces camelCase variable
+            // names, so an OTP template renamed to {{verificationCode}}
+            // / {{userName}} / {{firstName}} resolves the same payload.
+            verificationCode: record.phoneCode,
+            otpCode: record.phoneCode,
+            userName: firstName,
+            firstName: firstName,
           },
         });
         if (r.ok) {

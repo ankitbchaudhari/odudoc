@@ -143,6 +143,13 @@ export async function sendOtpViaSentDm(
       otp: code,
       name: opts?.name || "there",
       first_name: opts?.name || "there",
+      // sent.dm enforces camelCase variable names. Include the
+      // camelCase aliases so templates renamed to {{verificationCode}}
+      // / {{userName}} / {{firstName}} all resolve correctly.
+      verificationCode: code,
+      otpCode: code,
+      userName: opts?.name || "there",
+      firstName: opts?.name || "there",
     },
     idempotencyKey: opts?.idempotencyKey,
   });
@@ -164,14 +171,22 @@ export async function sendAppointmentConfirmViaSentDm(
     // future template using named placeholders works without code
     // changes. Sent.dm ignores unused keys.
     variables: {
+      // Positional (var_1..var_4) for templates that haven't been
+      // renamed yet.
       var_1: variables.patientName,
       var_2: variables.doctorName,
       var_3: variables.date,
       var_4: variables.time,
+      // Snake-case + camelCase aliases. sent.dm requires camelCase
+      // for variable names so the renamed template uses these.
       patient_name: variables.patientName,
       doctor_name: variables.doctorName,
       date: variables.date,
       time: variables.time,
+      patientName: variables.patientName,
+      doctorName: variables.doctorName,
+      appointmentDate: variables.date,
+      appointmentTime: variables.time,
     },
     idempotencyKey,
   });

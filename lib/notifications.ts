@@ -118,14 +118,23 @@ export function notifyAppointmentBooked(details: {
         // sent.dm template uses {{var_1}}..{{var_4}} per the imported
         // appointment_confirm body. Friendly aliases included for
         // forward-compat with templates that use named slots.
+        // Positional fallback (Twilio ContentSid, or sent.dm templates
+        // that still use var_1..var_4).
         var_1: details.patientName,
         var_2: details.doctorName,
         var_3: details.date,
         var_4: details.time,
+        // Snake-case aliases.
         patient_name: details.patientName,
         doctor_name: details.doctorName,
         date: details.date,
         time: details.time,
+        // CamelCase aliases — matches sent.dm's variable naming
+        // convention after we rename var_1..var_4 → patientName etc.
+        patientName: details.patientName,
+        doctorName: details.doctorName,
+        appointmentDate: details.date,
+        appointmentTime: details.time,
       }, { sentDmTemplate })
         .then((r) => {
           if (!r.ok) {

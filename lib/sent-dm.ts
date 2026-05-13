@@ -224,8 +224,149 @@ export async function sendRxDeliveredViaSentDm(
     channel: "whatsapp",
     template,
     variables: {
+      "1": variables.patientName,
+      "2": variables.orderId,
       patient_name: variables.patientName,
       order_id: variables.orderId,
+      patientName: variables.patientName,
+      orderId: variables.orderId,
+    },
+    idempotencyKey,
+  });
+}
+
+// ── New high-priority templates (May 2026 batch) ──────────────────
+
+export async function sendAppointmentReminderViaSentDm(
+  to: string,
+  variables: { patientName: string; doctorName: string; date: string; time: string },
+  idempotencyKey?: string,
+): Promise<SentDmResult> {
+  const template = process.env.SENTDM_TEMPLATE_APPOINTMENT_REMINDER;
+  if (!template) return { ok: false, error: "SENTDM_TEMPLATE_APPOINTMENT_REMINDER not set" };
+  return sentDmSend({
+    to,
+    channel: "whatsapp",
+    template,
+    variables: {
+      "1": variables.patientName,
+      "2": variables.doctorName,
+      "3": variables.date,
+      "4": variables.time,
+      patient_name: variables.patientName,
+      doctor_name: variables.doctorName,
+      date: variables.date,
+      time: variables.time,
+      patientName: variables.patientName,
+      doctorName: variables.doctorName,
+    },
+    idempotencyKey,
+  });
+}
+
+export async function sendAppointmentCancelledViaSentDm(
+  to: string,
+  variables: { patientName: string; doctorName: string; dateTime: string; refundAmount: string | number },
+  idempotencyKey?: string,
+): Promise<SentDmResult> {
+  const template = process.env.SENTDM_TEMPLATE_APPOINTMENT_CANCELLED;
+  if (!template) return { ok: false, error: "SENTDM_TEMPLATE_APPOINTMENT_CANCELLED not set" };
+  return sentDmSend({
+    to,
+    channel: "whatsapp",
+    template,
+    variables: {
+      "1": variables.patientName,
+      "2": variables.doctorName,
+      "3": variables.dateTime,
+      "4": String(variables.refundAmount),
+      patient_name: variables.patientName,
+      doctor_name: variables.doctorName,
+      datetime: variables.dateTime,
+      refund_amount: String(variables.refundAmount),
+      patientName: variables.patientName,
+      doctorName: variables.doctorName,
+      refundAmount: String(variables.refundAmount),
+    },
+    idempotencyKey,
+  });
+}
+
+export async function sendPrescriptionReadyViaSentDm(
+  to: string,
+  variables: { patientName: string; doctorName: string },
+  idempotencyKey?: string,
+): Promise<SentDmResult> {
+  const template = process.env.SENTDM_TEMPLATE_PRESCRIPTION_READY;
+  if (!template) return { ok: false, error: "SENTDM_TEMPLATE_PRESCRIPTION_READY not set" };
+  return sentDmSend({
+    to,
+    channel: "whatsapp",
+    template,
+    variables: {
+      "1": variables.patientName,
+      "2": variables.doctorName,
+      patient_name: variables.patientName,
+      doctor_name: variables.doctorName,
+      patientName: variables.patientName,
+      doctorName: variables.doctorName,
+    },
+    idempotencyKey,
+  });
+}
+
+export async function sendWelcomePatientViaSentDm(
+  to: string,
+  variables: { patientName: string },
+  idempotencyKey?: string,
+): Promise<SentDmResult> {
+  const template = process.env.SENTDM_TEMPLATE_WELCOME_PATIENT;
+  if (!template) return { ok: false, error: "SENTDM_TEMPLATE_WELCOME_PATIENT not set" };
+  return sentDmSend({
+    to,
+    channel: "whatsapp",
+    template,
+    variables: {
+      "1": variables.patientName,
+      patient_name: variables.patientName,
+      patientName: variables.patientName,
+      name: variables.patientName,
+    },
+    idempotencyKey,
+  });
+}
+
+export async function sendDoctorNewAppointmentViaSentDm(
+  to: string,
+  variables: {
+    doctorName: string;
+    patientName: string;
+    date: string;
+    time: string;
+    chiefComplaint: string;
+  },
+  idempotencyKey?: string,
+): Promise<SentDmResult> {
+  const template = process.env.SENTDM_TEMPLATE_DOCTOR_NEW_APPOINTMENT;
+  if (!template) return { ok: false, error: "SENTDM_TEMPLATE_DOCTOR_NEW_APPOINTMENT not set" };
+  return sentDmSend({
+    to,
+    channel: "whatsapp",
+    template,
+    variables: {
+      "1": variables.doctorName,
+      "2": variables.patientName,
+      "3": variables.date,
+      "4": variables.time,
+      "5": variables.chiefComplaint,
+      doctor_name: variables.doctorName,
+      patient_name: variables.patientName,
+      date: variables.date,
+      time: variables.time,
+      chief_complaint: variables.chiefComplaint,
+      doctorName: variables.doctorName,
+      patientName: variables.patientName,
+      chiefComplaint: variables.chiefComplaint,
     },
     idempotencyKey,
   });

@@ -39,6 +39,34 @@ const DOT: Record<Reading["severity"], string> = {
 
 const KIND_ORDER: VitalKind[] = ["bp", "glucose", "heart_rate", "spo2", "temperature", "weight", "respiration"];
 
+const KIND_GRADIENT: Record<VitalKind, string> = {
+  bp: "from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30 ring-rose-200 dark:ring-rose-900",
+  glucose: "from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 ring-amber-200 dark:ring-amber-900",
+  heart_rate: "from-red-50 to-pink-50 dark:from-red-950/30 dark:to-pink-950/30 ring-red-200 dark:ring-red-900",
+  spo2: "from-sky-50 to-cyan-50 dark:from-sky-950/30 dark:to-cyan-950/30 ring-sky-200 dark:ring-sky-900",
+  temperature: "from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 ring-orange-200 dark:ring-orange-900",
+  weight: "from-indigo-50 to-violet-50 dark:from-indigo-950/30 dark:to-violet-950/30 ring-indigo-200 dark:ring-indigo-900",
+  respiration: "from-teal-50 to-emerald-50 dark:from-teal-950/30 dark:to-emerald-950/30 ring-teal-200 dark:ring-teal-900",
+};
+const KIND_NUMERAL: Record<VitalKind, string> = {
+  bp: "text-rose-700 dark:text-rose-300",
+  glucose: "text-amber-700 dark:text-amber-300",
+  heart_rate: "text-red-700 dark:text-red-300",
+  spo2: "text-sky-700 dark:text-sky-300",
+  temperature: "text-orange-700 dark:text-orange-300",
+  weight: "text-indigo-700 dark:text-indigo-300",
+  respiration: "text-teal-700 dark:text-teal-300",
+};
+const KIND_ACTIVE_RING: Record<VitalKind, string> = {
+  bp: "ring-2 ring-rose-400 dark:ring-rose-500",
+  glucose: "ring-2 ring-amber-400 dark:ring-amber-500",
+  heart_rate: "ring-2 ring-red-400 dark:ring-red-500",
+  spo2: "ring-2 ring-sky-400 dark:ring-sky-500",
+  temperature: "ring-2 ring-orange-400 dark:ring-orange-500",
+  weight: "ring-2 ring-indigo-400 dark:ring-indigo-500",
+  respiration: "ring-2 ring-teal-400 dark:ring-teal-500",
+};
+
 function fmtVal(r: { kind: VitalKind; value: number; value2?: number }): string {
   if (r.kind === "bp") return `${r.value}/${r.value2 ?? "?"}`;
   if (r.kind === "weight") return r.value.toFixed(1);
@@ -85,61 +113,66 @@ export default function VitalsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">My vitals</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Self-reported readings. Track trends between consults — your doctor sees the same chart.
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-sky-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
+      <div className="mx-auto max-w-4xl px-4 py-8">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+          <div className="flex items-start gap-4">
+            <div className="flex h-14 w-14 flex-none items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-3xl shadow-lg shadow-indigo-500/30">
+              ❤️
+            </div>
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">My vitals</h1>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                Self-reported readings. Track trends between consults — your doctor sees the same chart.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            className="rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/20 transition"
+          >
+            {showForm ? "Cancel" : "+ Log a reading"}
+          </button>
         </div>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-700"
-        >
-          {showForm ? "Cancel" : "+ Log a reading"}
-        </button>
-      </div>
 
-      {showForm && <LogForm onSaved={() => { setShowForm(false); load(); }} />}
+        {showForm && <LogForm onSaved={() => { setShowForm(false); load(); }} />}
 
-      {/* At-a-glance cards */}
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {KIND_ORDER.map((k) => {
-          const r = latest[k];
-          return (
-            <button
-              key={k}
-              onClick={() => setActiveKind(k)}
-              className={`text-left rounded-2xl border p-4 transition-all ${
-                activeKind === k ? "border-indigo-300 bg-indigo-50 shadow-sm" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{KIND_LABEL[k]}</p>
-                <span className="text-base">{KIND_EMOJI[k]}</span>
-              </div>
-              {r ? (
-                <>
-                  <p className="mt-1.5 text-2xl font-extrabold text-slate-900 dark:text-slate-100">
-                    {fmtVal(r)}
-                    <span className="ml-1 text-xs font-medium text-slate-500 dark:text-slate-400">{KIND_UNIT[k]}</span>
-                  </p>
-                  <div className="mt-1 flex items-center gap-1.5 text-[10px]">
-                    <span className={`h-1.5 w-1.5 rounded-full ${DOT[r.severity]}`} />
-                    <span className="text-slate-500 dark:text-slate-400">{timeAgo(r.takenAt)}</span>
-                  </div>
-                </>
-              ) : (
-                <p className="mt-1.5 text-xs text-slate-400">No reading yet</p>
-              )}
-            </button>
-          );
-        })}
-      </div>
+        {/* At-a-glance cards */}
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {KIND_ORDER.map((k) => {
+            const r = latest[k];
+            const isActive = activeKind === k;
+            return (
+              <button
+                key={k}
+                onClick={() => setActiveKind(k)}
+                className={`text-left rounded-2xl p-4 ring-1 shadow-sm hover:shadow-md transition-all bg-gradient-to-br ${KIND_GRADIENT[k]} ${isActive ? KIND_ACTIVE_RING[k] + " shadow-md" : ""}`}
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">{KIND_LABEL[k]}</p>
+                  <span className="text-2xl">{KIND_EMOJI[k]}</span>
+                </div>
+                {r ? (
+                  <>
+                    <p className={`mt-2 text-2xl font-extrabold tracking-tight ${KIND_NUMERAL[k]}`}>
+                      {fmtVal(r)}
+                      <span className="ml-1 text-xs font-medium text-slate-500 dark:text-slate-400">{KIND_UNIT[k]}</span>
+                    </p>
+                    <div className="mt-1 flex items-center gap-1.5 text-[10px]">
+                      <span className={`h-1.5 w-1.5 rounded-full ${DOT[r.severity]}`} />
+                      <span className="text-slate-500 dark:text-slate-400">{timeAgo(r.takenAt)}</span>
+                    </div>
+                  </>
+                ) : (
+                  <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">No reading yet</p>
+                )}
+              </button>
+            );
+          })}
+        </div>
 
       {/* Trend + table */}
-      <section className="mt-8 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+      <section className="mt-8 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition ring-1 ring-slate-200 dark:ring-slate-800">
         <div className="flex items-center justify-between">
           <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{KIND_LABEL[activeKind]} trend</p>
           <p className="text-xs text-slate-500 dark:text-slate-400">{trend.length} reading{trend.length === 1 ? "" : "s"}</p>
@@ -180,6 +213,7 @@ export default function VitalsPage() {
           )}
         </div>
       </section>
+      </div>
     </div>
   );
 }
@@ -219,7 +253,7 @@ function LogForm({ onSaved }: { onSaved: () => void }) {
   };
 
   return (
-    <div className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+    <div className="mt-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
       <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Log a reading</p>
       {error && <p className="mt-2 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -289,7 +323,7 @@ function LogForm({ onSaved }: { onSaved: () => void }) {
         <button
           onClick={submit}
           disabled={busy}
-          className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm disabled:opacity-50"
+          className="rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/20 transition disabled:opacity-50"
         >
           {busy ? "Saving…" : "Save reading"}
         </button>

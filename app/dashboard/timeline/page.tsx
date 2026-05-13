@@ -111,12 +111,18 @@ export default function TimelinePage() {
   }, [filtered]);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Health timeline</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Everything that has happened across your appointments, prescriptions, labs, and wallet — newest first.
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
+    <div className="mx-auto max-w-3xl px-4 py-8">
+      <div className="mb-8 flex items-start gap-4">
+        <div className="flex h-14 w-14 flex-none items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-3xl shadow-lg shadow-violet-500/30">
+          🩺
+        </div>
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Health timeline</h1>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Everything that has happened across your appointments, prescriptions, labs, and wallet — newest first.
+          </p>
+        </div>
       </div>
 
       {/* Filter chips */}
@@ -129,8 +135,8 @@ export default function TimelinePage() {
             <button
               key={k}
               onClick={() => setFilter(k)}
-              className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-                active ? "bg-indigo-600 text-white shadow-sm" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+                active ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/30" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-violet-50 dark:hover:bg-slate-800"
               }`}
             >
               {k === "all" ? "All" : `${KIND_EMOJI[k]} ${KIND_LABEL[k]}`}
@@ -143,15 +149,17 @@ export default function TimelinePage() {
       </div>
 
       {error && (
-        <p className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{error}</p>
+        <p className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200">{error}</p>
       )}
       {!error && events === null && (
-        <p className="rounded-xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>
+        <p className="rounded-2xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">Loading…</p>
       )}
       {!error && events && events.length === 0 && (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white dark:bg-slate-900 p-10 text-center">
-          <p className="text-3xl">🩺</p>
-          <p className="mt-2 text-base font-bold text-slate-700 dark:text-slate-300">Your timeline starts here</p>
+        <div className="rounded-2xl bg-white dark:bg-slate-900 p-10 text-center ring-1 ring-slate-200 dark:ring-slate-800 shadow-sm">
+          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-violet-100 to-indigo-100 dark:from-violet-950/40 dark:to-indigo-950/40 text-5xl shadow-inner">
+            🩺
+          </div>
+          <p className="mt-4 text-lg font-bold text-slate-800 dark:text-slate-200">Your timeline starts here</p>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Book a consult, top up the wallet, or order a lab test — events show up automatically.</p>
         </div>
       )}
@@ -159,20 +167,20 @@ export default function TimelinePage() {
       {grouped && grouped.length > 0 && (
         <div className="relative">
           {/* Vertical rail */}
-          <div aria-hidden className="absolute left-[15px] top-2 bottom-2 w-px bg-gradient-to-b from-indigo-200 via-slate-200 to-transparent" />
+          <div aria-hidden className="absolute left-[15px] top-2 bottom-2 w-px bg-gradient-to-b from-violet-400 via-indigo-300 to-transparent dark:from-violet-600 dark:via-indigo-700" />
           <div className="space-y-6">
             {grouped.map((g) => (
               <section key={g.label}>
                 <div className="mb-3 flex items-center gap-3">
-                  <span className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white shadow ring-4 ring-white">
+                  <span className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 text-[10px] font-bold text-white shadow-md shadow-violet-500/40 ring-4 ring-white dark:ring-slate-950">
                     {g.items.length}
                   </span>
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{g.label}</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300">{g.label}</p>
                 </div>
                 <ul className="ml-4 space-y-2">
                   {g.items.map((e) => (
                     <li key={e.id} className="relative pl-7">
-                      <span aria-hidden className={`absolute left-0 top-3 h-2.5 w-2.5 rounded-full ring-4 ring-white ${TONE_DOT[e.tone || "neutral"]}`} />
+                      <span aria-hidden className={`absolute left-0 top-3 h-2.5 w-2.5 rounded-full ring-4 ring-white dark:ring-slate-950 ${TONE_DOT[e.tone || "neutral"]}`} />
                       <EventCard event={e} />
                     </li>
                   ))}
@@ -183,12 +191,13 @@ export default function TimelinePage() {
         </div>
       )}
     </div>
+    </div>
   );
 }
 
 function EventCard({ event }: { event: TimelineEvent }) {
   const inner = (
-    <div className="rounded-xl bg-white dark:bg-slate-900 p-3 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800">
+    <div className="rounded-2xl bg-white dark:bg-slate-900 p-3 shadow-sm hover:shadow-md ring-1 ring-slate-200 dark:ring-slate-800 transition-all hover:ring-violet-300 dark:hover:ring-violet-800">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">

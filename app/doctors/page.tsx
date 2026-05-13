@@ -289,18 +289,23 @@ export default function DoctorsPage() {
   );
 
   return (
-    <div className="bg-gray-50 dark:bg-slate-900 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-teal-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100">Find Doctors</h1>
-            <p className="mt-1 text-gray-500 dark:text-slate-400">
-              Book appointments with verified, experienced doctors
-            </p>
+          <div className="flex items-start gap-4">
+            <div className="flex h-14 w-14 flex-none items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-teal-600 text-3xl shadow-lg shadow-sky-500/30">
+              🩺
+            </div>
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-slate-100">Find Doctors</h1>
+              <p className="mt-1 text-gray-600 dark:text-slate-400">
+                Book appointments with verified, experienced doctors
+              </p>
+            </div>
           </div>
           {nowTick > 0 && (
-            <div className="inline-flex items-center gap-2 self-start rounded-full bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-700">
+            <div className="inline-flex items-center gap-2 self-start rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 ring-1 ring-emerald-200 dark:ring-emerald-900 px-3.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 shadow-sm">
               <span className="relative inline-flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
@@ -311,7 +316,7 @@ export default function DoctorsPage() {
         </div>
 
         {/* Search bar + specialty + sort */}
-        <div className="mb-6 grid grid-cols-1 gap-3 rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm sm:grid-cols-12">
+        <div className="mb-6 grid grid-cols-1 gap-3 rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm hover:shadow-md transition ring-1 ring-slate-200 dark:ring-slate-800 sm:grid-cols-12">
           <div className="sm:col-span-6">
             <div className="relative">
               <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -373,7 +378,7 @@ export default function DoctorsPage() {
         <div className="flex flex-col gap-6 lg:flex-row">
           {/* Sidebar (desktop) */}
           <aside className="hidden w-64 flex-shrink-0 lg:block">
-            <div className="sticky top-6 rounded-xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+            <div className="sticky top-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">Filters</h3>
                 {activeFilterCount > 0 && (
@@ -448,9 +453,11 @@ export default function DoctorsPage() {
               ) : filtered.length > 0 ? (
                 filtered.map((d) => <DoctorListRow key={d.id} doctor={d} />)
               ) : (
-                <div className="rounded-xl bg-white dark:bg-slate-900 py-16 text-center shadow-sm">
-                  <p className="text-4xl">🔍</p>
-                  <p className="mt-4 text-lg font-semibold text-gray-900 dark:text-slate-100">
+                <div className="rounded-2xl bg-white dark:bg-slate-900 py-16 px-6 text-center shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+                  <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-sky-100 via-cyan-100 to-teal-100 dark:from-sky-950/40 dark:via-cyan-950/40 dark:to-teal-950/40 text-6xl shadow-inner">
+                    🔍
+                  </div>
+                  <p className="mt-5 text-xl font-bold text-gray-900 dark:text-slate-100">
                     {doctors.length === 0 ? "No doctors yet" : "No doctors match your filters"}
                   </p>
                   <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
@@ -461,7 +468,7 @@ export default function DoctorsPage() {
                   {activeFilterCount > 0 && (
                     <button
                       onClick={clearFilters}
-                      className="mt-4 rounded-lg bg-primary-600 px-5 py-2 text-sm font-medium text-white hover:bg-primary-700"
+                      className="mt-5 rounded-xl bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-sky-500/30 transition"
                     >
                       Clear all filters
                     </button>
@@ -472,16 +479,16 @@ export default function DoctorsPage() {
 
             {/* Specialty Browse */}
             <div className="mt-14">
-              <h2 className="mb-6 text-xl font-bold text-gray-900 dark:text-slate-100">Browse by Specialty</h2>
+              <h2 className="mb-6 text-xl font-extrabold tracking-tight text-gray-900 dark:text-slate-100">Browse by Specialty</h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                 {liveSpecialties.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => setSpecialty(s.name)}
-                    className="card flex flex-col items-center py-4 text-center"
+                    className="rounded-2xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800 shadow-sm hover:shadow-md hover:ring-sky-300 dark:hover:ring-sky-700 transition flex flex-col items-center py-5 text-center"
                   >
-                    <span className="text-2xl">{s.emoji}</span>
-                    <span className="mt-2 text-xs font-medium text-gray-700 dark:text-slate-300">{s.name}</span>
+                    <span className="text-3xl">{s.emoji}</span>
+                    <span className="mt-2 text-xs font-semibold text-gray-700 dark:text-slate-300">{s.name}</span>
                   </button>
                 ))}
               </div>

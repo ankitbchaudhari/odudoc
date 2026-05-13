@@ -186,6 +186,11 @@ export interface CashfreeOrderStatus {
   currency: string;
   /** Convenience boolean for the common "is this order successfully paid?" check. */
   paid: boolean;
+  /** Metadata we attached at order creation — `type`, `userId`, `amount` for
+   *  wallet topups. Lets the verify endpoint route the post-payment side
+   *  effect to the right handler (wallet vs consultation) without
+   *  fetching another store. */
+  tags: Record<string, string>;
 }
 
 /** Read an order's current status. Used after the customer returns to
@@ -212,6 +217,15 @@ export async function getOrderStatus(orderId: string): Promise<CashfreeOrderStat
     throw new Error("Cashfree get order returned non-JSON");
   }
   const status = String(data.order_status ?? "");
+  // Cashfree returns order_tags as a flat string map when we set them
+  // on create. Defensively coerce — any non-string values get
+  // stringified so the consumer doesn't have to.
+  const rawTags = (data.order_tags as Record<string, unknown> | undefined) || {};
+  const tags: Record<string, string> = {};
+  for (const [k, v] of Object.entries(rawTags)) {
+    if (v == null) continue;
+    tags[k] = String(v);
+  }
   return {
     orderId: String(data.order_id ?? orderId),
     cfOrderId: String(data.cf_order_id ?? ""),
@@ -219,6 +233,7 @@ export async function getOrderStatus(orderId: string): Promise<CashfreeOrderStat
     amount: Number(data.order_amount ?? 0),
     currency: String(data.order_currency ?? "INR"),
     paid: status === "PAID",
+    tags,
   };
 }
 

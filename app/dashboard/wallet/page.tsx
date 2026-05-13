@@ -94,6 +94,53 @@ export default function WalletPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  // If we just came back from Cashfree's hosted checkout, the URL
+  // carries ?topup=<orderId>. Hit the verify endpoint to:
+  //   1. Confirm the order is PAID with Cashfree (source of truth)
+  //   2. Credit the wallet if the webhook hasn't yet (idempotent)
+  //   3. Reload the wallet so the new balance shows
+  // This closes the "real money debited but wallet shows nothing"
+  // failure mode when Cashfree's webhook delivery is slow or blocked.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const topupOrder = params.get("topup");
+    if (!topupOrder) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch(`/api/payments/cashfree/verify?orderId=${encodeURIComponent(topupOrder)}`, {
+          cache: "no-store",
+        });
+        const d = await r.json();
+        if (cancelled) return;
+        if (d.paid) {
+          setToast({ kind: "ok", text: `Payment confirmed — ₹${d.amount} credited.` });
+          await load();
+        } else if (d.orderStatus === "ACTIVE") {
+          setToast({ kind: "err", text: "Payment is still being confirmed by Cashfree. Refresh in 30 seconds." });
+        } else {
+          setToast({ kind: "err", text: `Payment status: ${d.orderStatus}. If money was debited, contact support with order ${topupOrder}.` });
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setToast({
+            kind: "err",
+            text: `Couldn't verify payment. If money was debited, contact support with order ${topupOrder}.`,
+          });
+          console.error("[wallet] verify failed", err);
+        }
+      } finally {
+        // Strip the ?topup= query so a refresh doesn't re-verify.
+        const url = new URL(window.location.href);
+        url.searchParams.delete("topup");
+        url.searchParams.delete("topup_cancelled");
+        window.history.replaceState({}, "", url.toString());
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [load]);
+
   const topup = async (gateway?: "cashfree" | "stripe") => {
     setBusy(true);
     try {

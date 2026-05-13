@@ -6,13 +6,18 @@
 // whether the payment landed so we don't tell them "Pending" when
 // it's actually done.
 //
-// Hits Cashfree's GET /orders/{order_id} so we know for certain
-// whether the order is PAID, regardless of what the redirect URL
-// query string claimed.
+// Hits Cashfree's GET /orders/{order_id} to read the authoritative
+// order status + the order_tags we set at creation time. The tags
+// tell us whether this was a consultation payment or a wallet topup
+// so we can credit the right thing if the webhook hasn't fired yet.
+//
+// applyTopUp and markConsultationPaid are both idempotent (keyed on
+// the order id / payment id) so a later webhook firing is safe.
 
 import { NextRequest, NextResponse } from "next/server";
 import { getOrderStatus } from "@/lib/cashfree";
 import { markPaid as markConsultationPaid } from "@/lib/consultations-store";
+import { applyTopUp } from "@/lib/wallet/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
@@ -28,15 +33,45 @@ export async function GET(req: NextRequest) {
   try {
     const status = await getOrderStatus(orderId);
 
-    // Belt-and-braces: if the webhook hasn't fired yet and the order
-    // is genuinely paid per Cashfree, mark the consultation paid here
-    // too. markPaid is idempotent so a later webhook replay is safe.
+    let creditedHere = false;
+
     if (status.paid) {
+      const type = status.tags.type;
       try {
-        markConsultationPaid(orderId, "");
+        if (type === "wallet_topup") {
+          // Wallet topup → credit the user's wallet. applyTopUp is
+          // idempotent on providerSid (cfOrderId here) so a later
+          // webhook firing for the same payment is a no-op.
+          const userId = status.tags.userId;
+          const amount = Number(status.tags.amount || status.amount || 0);
+          if (userId && amount > 0) {
+            const r = applyTopUp({
+              userId,
+              amountRupees: Math.floor(amount),
+              providerSid: status.cfOrderId,
+              note: `Cashfree top-up ${orderId} (verified on return)`,
+            });
+            if (r.ok) {
+              creditedHere = true;
+              log.info("cashfree.verify.wallet_credited", { orderId, userId, amount });
+            } else {
+              log.warn("cashfree.verify.wallet_credit_rejected", { orderId, error: r.error });
+            }
+          } else {
+            log.warn("cashfree.verify.wallet_topup_missing_tags", {
+              orderId,
+              hasUserId: Boolean(userId),
+              amount,
+            });
+          }
+        } else if (type === "consultation" || type === undefined) {
+          // Fall back to the consultation path for orders without
+          // explicit type tags — preserves the pre-tag-aware behaviour.
+          markConsultationPaid(orderId, "");
+        }
         await awaitAllFlushesStrict();
       } catch (err) {
-        log.error("cashfree.verify.mark_paid_threw", err, { orderId });
+        log.error("cashfree.verify.handler_threw", err, { orderId, type });
       }
     }
 
@@ -48,6 +83,8 @@ export async function GET(req: NextRequest) {
       paid: status.paid,
       amount: status.amount,
       currency: status.currency,
+      type: status.tags.type,
+      creditedHere,
     });
   } catch (err) {
     log.error("payments.cashfree.verify_failed", err, { orderId });

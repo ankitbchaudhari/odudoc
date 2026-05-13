@@ -193,16 +193,20 @@ export const metadata: Metadata = {
 };
 
 const modules = [
-  { icon: "🧑‍⚕️", title: "Patient Management", desc: "Longitudinal EMR, allergies, vitals, visit timeline." },
-  { icon: "🛏️", title: "IPD / OPD Management", desc: "Bed map, admissions, transfers, discharge summaries." },
+  { icon: "🧑‍⚕️", title: "Patient Management", desc: "Longitudinal EMR, allergies, vitals, visit timeline. Three physically-separated stores for complaint, clinical, and Rx data." },
+  { icon: "🛏️", title: "IPD / OPD Management", desc: "Bed map, admissions, transfers, discharge summaries, ward-by-ward roster." },
+  { icon: "🚑", title: "Ward Reception Coordination", desc: "Live IPD board grouped by department with color-graded patient status. One-tap specialist call, ICU transfer, shift handover, discharge." },
+  { icon: "🚨", title: "Vital Alert Auto-Routing", desc: "Critical readings (BP/SpO₂/HR/RR/glucose/GCS) fan-out to assigned doctor + nurse + ward coordinator across WhatsApp, SMS, email, and in-app push." },
   { icon: "👩‍⚕️", title: "Medical Staff Management", desc: "Shifts, credentials, license expiry, payroll inputs." },
+  { icon: "💼", title: "Payroll & Salary Models", desc: "Five built-in models per staff: monthly fixed, per-patient fee, per-visit charge, hybrid, revenue share. Monthly run against encounter + attendance data." },
   { icon: "📋", title: "Quick Consultations", desc: "OPD queue, token numbers, consult notes in one click." },
   { icon: "🤖", title: "AI Prescription Assistant", desc: "Enter symptoms → ranked differential diagnoses → investigations and treatments." },
   { icon: "🎙️", title: "Voice Prescription", desc: "Dictate the prescription; AI structures patient, diagnosis, meds, and advice for review." },
   { icon: "🧠", title: "AI Symptom Triage", desc: "Patients describe concerns; platform routes them to the right specialty." },
-  { icon: "🧪", title: "Lab Management", desc: "Order → sample → result → signed report PDF." },
-  { icon: "💊", title: "Pharmacy", desc: "Batch & expiry tracking, prescription-linked dispensing." },
-  { icon: "🧾", title: "Billing & Accounting", desc: "Invoices, insurance claims, GST, ledger, P&L." },
+  { icon: "🧪", title: "Lab Management", desc: "Order → sample → result → signed report PDF. Auto-notifies the patient when results land." },
+  { icon: "💊", title: "Pharmacy + Rx Fulfillment", desc: "Batch & expiry tracking, prescription-linked dispensing, SMS pings on out-for-delivery and delivered." },
+  { icon: "💰", title: "Patient Wallet", desc: "Top up once via Cashfree (UPI/RuPay) or Stripe (intl). Pay across consults, pharmacy, lab tests. 5% bonus on every top-up." },
+  { icon: "🧾", title: "Billing & Accounting", desc: "Invoices, insurance claims, GST, ledger, P&L. Watermarked PDFs." },
   { icon: "📦", title: "Inventory Management", desc: "Reorder points, suppliers, PO workflow, stock audits." },
   { icon: "🔪", title: "Surgery / OT", desc: "OT calendar, surgical team, consumables log, pre/post-op." },
   { icon: "🩻", title: "Radiology & DICOM", desc: "Integrated DICOM viewer, report sign-off, PACS hooks." },
@@ -328,18 +332,25 @@ const trustStats = [
 // dedicated band below the module catalogue so corporate buyers see
 // the platform's "plumbing" alongside the per-module list.
 const PLATFORM_CAPABILITIES = [
-  { icon: "🔒", title: "Audit + watermarking", desc: "Every view of a sensitive record (lab, Rx, surgery video, invoice) logged with actor + IP + UA. Print/view UIs overlay patient ID + viewer IP + timestamp." },
+  { icon: "🔒", title: "Audit + watermarking", desc: "Every view of a sensitive record (lab, Rx, surgery video, invoice) logged with actor + IP + UA. Print/view UIs overlay patient ID + viewer IP + timestamp. Corporate roles cannot download — patients only." },
   { icon: "👁", title: "Biometric emergency unlock", desc: "WebAuthn fingerprint + face capture (browser-native, no USB SDK). HMAC hashes only. Consent-gated, audit-logged on every lookup." },
   { icon: "🎥", title: "Live surgery video", desc: "Cloudflare Stream + Mux providers. RTMPS encoder ingest, signed HLS playback, expiring share-links for family / external observers." },
-  { icon: "📞", title: "Voice + WhatsApp + SMS booking", desc: "Twilio, Exotel, Vonage providers. Multi-turn IVR + WhatsApp Business intake walks patients through book / refill / reschedule / human handoff." },
+  { icon: "📞", title: "Voice + WhatsApp + SMS booking", desc: "Twilio production-grade. Multi-turn AI IVR classifies intent (book / refill / reschedule / lab result / human) and sends a deep-linked follow-up SMS on hangup so offline patients never re-dial." },
+  { icon: "📲", title: "Three-channel notifications", desc: "SMS + WhatsApp Business + Email. Vital alerts, OTPs, appointment confirmations, lab-ready pings, payroll receipts — all routed through one dispatcher with per-user channel preferences and category opt-outs." },
+  { icon: "🚨", title: "Critical vital alerts", desc: "Vitals crossing red thresholds (BP, SpO₂, HR, RR, glucose, GCS, pain) auto-fan-out to the assigned doctor, ward nurse, and ward coordinator across WhatsApp + SMS + email + in-app push. Acknowledge or escalate to HOD." },
   { icon: "🤖", title: "Metered AI", desc: "DDx, scribe, OCR, triage, image analysis, voice transcript, Rx safety, summarize. Per-call rupee metering with auto-topup + per-org pricing override." },
   { icon: "🧬", title: "ML self-learning", desc: "Doctor edits to AI output queue as training samples — opt-in, PII-scrubbed, GDPR/DPDP right-to-erasure built in." },
   { icon: "💊", title: "Anti-counterfeit", desc: "Pharma registers drug + batch + regulatory papers; doctor / pharmacist scans → instant verdict. Public verify endpoint at /verify-medicine." },
-  { icon: "💰", title: "19-country tax engine", desc: "India GST split (CGST/SGST/IGST), UK/EU/GCC VAT, US sales tax. Healthcare-services-exempt where the law allows." },
+  { icon: "💰", title: "Patient wallet + dual-gateway", desc: "Top-up once, pay across consults / pharmacy / lab. Cashfree (India UPI / RuPay) and Stripe (international cards / Apple Pay / Google Pay) selectable per transaction. 5% bonus credits on every top-up. Self-service recovery for stuck payments." },
+  { icon: "📊", title: "19-country tax engine", desc: "India GST split (CGST/SGST/IGST), UK/EU/GCC VAT, US sales tax. Healthcare-services-exempt where the law allows." },
   { icon: "🌐", title: "Multi-region health-IDs", desc: "ABHA (India), NHS (UK), NPI (US). Records port across providers via the shared identity layer." },
   { icon: "🏥", title: "Multi-tenant org hierarchy", desc: "Hospital / clinic / lab / pharmacy / pharma / insurer / education partner — same platform, role-scoped views, shared registry." },
+  { icon: "🛏️", title: "Ward coordination", desc: "Real-time IPD board grouped by ward with color-graded patient status (critical / urgent / monitoring / stable / discharged). One-tap specialist call, ICU transfer, shift handover, discharge." },
+  { icon: "💼", title: "Salary & payroll", desc: "Five built-in models per staff: monthly fixed, per-patient fee, per-visit charge, hybrid base + bonus threshold, revenue share. Monthly run pulls real encounter + attendance data; flat TDS % per row." },
   { icon: "🎨", title: "Org branding cascade", desc: "Upload logo + theme + footer once. Cascades onto invoice PDFs, prescription pads, mini-site at /c/<slug>, and the white-label sub-app." },
+  { icon: "🌓", title: "Dark mode + accessibility", desc: "Class-based dark mode honoring OS preference and remembering the user's manual toggle. No-flash on first paint. Keyboard-navigable nav, ARIA-labelled controls, 11-language UI." },
   { icon: "🌍", title: "11-language UI", desc: "English, Hindi, Tamil, Telugu, Marathi, Spanish, Mandarin, French, German, Portuguese, Arabic (RTL), Russian, Swahili, Hausa, Amharic." },
+  { icon: "🛡️", title: "Data-loss defenses", desc: "Strict-flush writes confirm Postgres persistence before responding 200. Hydrate failures no longer overwrite live data with seeds — a transient DB blip costs one 500, not the user table." },
 ];
 
 export default function CorporatePage() {

@@ -110,12 +110,22 @@ export function notifyAppointmentBooked(details: {
     // is set + SENTDM_API_KEY is configured), falling back to Twilio.
     if (waContentSid || sentDmTemplate) {
       sendWhatsAppTemplate(details.patientPhone, waContentSid, {
+        // Twilio positional placeholders (ContentSid path).
         "1": details.patientName,
         "2": details.doctorName,
-        "3": `${details.date} at ${details.time}`,
+        "3": details.date,
+        "4": details.time,
+        // sent.dm template uses {{var_1}}..{{var_4}} per the imported
+        // appointment_confirm body. Friendly aliases included for
+        // forward-compat with templates that use named slots.
+        var_1: details.patientName,
+        var_2: details.doctorName,
+        var_3: details.date,
+        var_4: details.time,
         patient_name: details.patientName,
         doctor_name: details.doctorName,
-        datetime: `${details.date} at ${details.time}`,
+        date: details.date,
+        time: details.time,
       }, { sentDmTemplate })
         .then((r) => {
           if (!r.ok) {

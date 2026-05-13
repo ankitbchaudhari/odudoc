@@ -150,7 +150,7 @@ export async function sendOtpViaSentDm(
 
 export async function sendAppointmentConfirmViaSentDm(
   to: string,
-  variables: { patientName: string; doctorName: string; dateTime: string },
+  variables: { patientName: string; doctorName: string; date: string; time: string },
   idempotencyKey?: string,
 ): Promise<SentDmResult> {
   const template = process.env.SENTDM_TEMPLATE_APPOINTMENT_CONFIRM;
@@ -159,11 +159,19 @@ export async function sendAppointmentConfirmViaSentDm(
     to,
     channel: "whatsapp",
     template,
-    // Sent.dm accepts named params, mirroring the Meta template.
+    // Imported template uses {{var_1}}..{{var_4}} placeholders.
+    // Also pass the friendly aliases (patient_name, etc.) so any
+    // future template using named placeholders works without code
+    // changes. Sent.dm ignores unused keys.
     variables: {
+      var_1: variables.patientName,
+      var_2: variables.doctorName,
+      var_3: variables.date,
+      var_4: variables.time,
       patient_name: variables.patientName,
       doctor_name: variables.doctorName,
-      datetime: variables.dateTime,
+      date: variables.date,
+      time: variables.time,
     },
     idempotencyKey,
   });

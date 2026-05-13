@@ -53,6 +53,8 @@ function fmtINR(n: number) { return `₹${Math.round(n).toLocaleString("en-IN")}
 
 export default function InsurancePage() {
   const [registry, setRegistry] = useState<TpaEntry[]>([]);
+  const [country, setCountry] = useState<string | null>(null);
+  const [currency, setCurrency] = useState<{ code: string; symbol: string; locale: string } | null>(null);
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [procedures, setProcedures] = useState<ProcedureTariff[]>([]);
   const [rooms, setRooms] = useState<RoomCap[]>([]);
@@ -80,6 +82,8 @@ export default function InsurancePage() {
       const d = await r1.json();
       setPolicies(d.policies || []);
       setRegistry(d.registry || []);
+      setCountry(d.country || null);
+      setCurrency(d.currency || null);
     }
     if (r2.ok) {
       const d = await r2.json();
@@ -324,6 +328,11 @@ export default function InsurancePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowAdd(false)}>
           <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Add insurance policy</h3>
+            {country && (
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Showing carriers for <span className="font-semibold text-slate-700 dark:text-slate-200">{country}</span>. Pick the closest match — you can also type a member id from any plan.
+              </p>
+            )}
             <div className="mt-3 space-y-3">
               <F label="Insurer / TPA">
                 <select value={form.tpaId} onChange={(e) => setForm({ ...form, tpaId: e.target.value })} className="form-input">
@@ -333,9 +342,9 @@ export default function InsurancePage() {
               </F>
               <F label="Member ID"><input className="form-input font-mono" value={form.memberId} onChange={(e) => setForm({ ...form, memberId: e.target.value })} placeholder="As printed on the card" /></F>
               <F label="Plan name (optional)"><input className="form-input" value={form.planName} onChange={(e) => setForm({ ...form, planName: e.target.value })} /></F>
-              <F label="Sum insured (₹)"><input className="form-input" type="number" value={form.sumInsuredRupees} onChange={(e) => setForm({ ...form, sumInsuredRupees: e.target.value })} placeholder="500000" /></F>
+              <F label={`Sum insured (${currency?.symbol || "₹"})`}><input className="form-input" type="number" value={form.sumInsuredRupees} onChange={(e) => setForm({ ...form, sumInsuredRupees: e.target.value })} placeholder={currency?.code === "INR" ? "500000" : "50000"} /></F>
               <F label="Valid until"><input type="date" className="form-input" value={form.validUntil} onChange={(e) => setForm({ ...form, validUntil: e.target.value })} /></F>
-              <F label="Group / corporate holder (optional)"><input className="form-input" value={form.groupHolder} onChange={(e) => setForm({ ...form, groupHolder: e.target.value })} placeholder="e.g. Infosys group floater" /></F>
+              <F label="Group / corporate holder (optional)"><input className="form-input" value={form.groupHolder} onChange={(e) => setForm({ ...form, groupHolder: e.target.value })} placeholder={country === "IN" ? "e.g. Infosys group floater" : country === "US" ? "e.g. Employer group plan" : "e.g. Employer / group floater"} /></F>
             </div>
             <div className="mt-5 flex justify-end gap-2">
               <button onClick={() => setShowAdd(false)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Cancel</button>

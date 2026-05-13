@@ -33,40 +33,128 @@ export interface TpaRegistryEntry {
   /** insurer = direct payer; tpa = third-party admin handling many insurers. */
   kind: "tpa" | "insurer";
   preauthSlaHours: number;      // typical turnaround
+  /** ISO 3166-1 alpha-2 country code this insurer/TPA operates in.
+   *  Drives the patient-side dropdown — show me carriers in my
+   *  country first. Multi-country carriers (Cigna, Allianz, AXA)
+   *  appear in each country list with the local entity name. */
+  country: string;
   website?: string;
   notes?: string;
 }
 
 export const TPA_REGISTRY: TpaRegistryEntry[] = [
+  // ── India ─────────────────────────────────────────────────────
   // Public insurers
-  { id: "nia",        name: "New India Assurance",  shortCode: "NIA", kind: "insurer", preauthSlaHours: 24 },
-  { id: "uiic",       name: "United India Insurance", shortCode: "UIIC", kind: "insurer", preauthSlaHours: 24 },
-  { id: "oicl",       name: "Oriental Insurance",    shortCode: "OICL", kind: "insurer", preauthSlaHours: 24 },
-  { id: "niacl",      name: "National Insurance",    shortCode: "NIC", kind: "insurer", preauthSlaHours: 24 },
+  { id: "nia",        name: "New India Assurance",  shortCode: "NIA", kind: "insurer", preauthSlaHours: 24, country: "IN" },
+  { id: "uiic",       name: "United India Insurance", shortCode: "UIIC", kind: "insurer", preauthSlaHours: 24, country: "IN" },
+  { id: "oicl",       name: "Oriental Insurance",    shortCode: "OICL", kind: "insurer", preauthSlaHours: 24, country: "IN" },
+  { id: "niacl",      name: "National Insurance",    shortCode: "NIC", kind: "insurer", preauthSlaHours: 24, country: "IN" },
   // Private insurers (also operate own claims functions)
-  { id: "star",       name: "Star Health",            shortCode: "STAR", kind: "insurer", preauthSlaHours: 6 },
-  { id: "hdfcergo",   name: "HDFC ERGO",              shortCode: "HE",  kind: "insurer", preauthSlaHours: 6 },
-  { id: "bajaj",      name: "Bajaj Allianz",          shortCode: "BAJ", kind: "insurer", preauthSlaHours: 8 },
-  { id: "icici-lomb", name: "ICICI Lombard",          shortCode: "ICL", kind: "insurer", preauthSlaHours: 8 },
-  { id: "tata-aig",   name: "TATA AIG",               shortCode: "TAIG", kind: "insurer", preauthSlaHours: 8 },
-  { id: "reliance",   name: "Reliance General",       shortCode: "RGI", kind: "insurer", preauthSlaHours: 12 },
-  { id: "manipal",    name: "ManipalCigna",           shortCode: "MC",  kind: "insurer", preauthSlaHours: 6 },
-  { id: "niva",       name: "Niva Bupa",              shortCode: "NB",  kind: "insurer", preauthSlaHours: 6 },
-  { id: "aditya",     name: "Aditya Birla Health",    shortCode: "ABH", kind: "insurer", preauthSlaHours: 6 },
-  { id: "care",       name: "Care Health",            shortCode: "CH",  kind: "insurer", preauthSlaHours: 8 },
+  { id: "star",       name: "Star Health",            shortCode: "STAR", kind: "insurer", preauthSlaHours: 6, country: "IN" },
+  { id: "hdfcergo",   name: "HDFC ERGO",              shortCode: "HE",  kind: "insurer", preauthSlaHours: 6, country: "IN" },
+  { id: "bajaj",      name: "Bajaj Allianz",          shortCode: "BAJ", kind: "insurer", preauthSlaHours: 8, country: "IN" },
+  { id: "icici-lomb", name: "ICICI Lombard",          shortCode: "ICL", kind: "insurer", preauthSlaHours: 8, country: "IN" },
+  { id: "tata-aig",   name: "TATA AIG",               shortCode: "TAIG", kind: "insurer", preauthSlaHours: 8, country: "IN" },
+  { id: "reliance",   name: "Reliance General",       shortCode: "RGI", kind: "insurer", preauthSlaHours: 12, country: "IN" },
+  { id: "manipal",    name: "ManipalCigna",           shortCode: "MC",  kind: "insurer", preauthSlaHours: 6, country: "IN" },
+  { id: "niva",       name: "Niva Bupa",              shortCode: "NB",  kind: "insurer", preauthSlaHours: 6, country: "IN" },
+  { id: "aditya",     name: "Aditya Birla Health",    shortCode: "ABH", kind: "insurer", preauthSlaHours: 6, country: "IN" },
+  { id: "care",       name: "Care Health",            shortCode: "CH",  kind: "insurer", preauthSlaHours: 8, country: "IN" },
   // TPAs (handle multiple insurers' books)
-  { id: "mediassist", name: "MediAssist TPA",         shortCode: "MA",  kind: "tpa", preauthSlaHours: 8 },
-  { id: "paramount",  name: "Paramount TPA",          shortCode: "PT",  kind: "tpa", preauthSlaHours: 12 },
-  { id: "vidal",      name: "Vidal Health TPA",       shortCode: "VH",  kind: "tpa", preauthSlaHours: 12 },
-  { id: "fhpl",       name: "Family Health Plan TPA", shortCode: "FHPL", kind: "tpa", preauthSlaHours: 12 },
-  { id: "heritage",   name: "Heritage Health TPA",    shortCode: "HH",  kind: "tpa", preauthSlaHours: 12 },
-  { id: "medivisor",  name: "Medivisor TPA",          shortCode: "MV",  kind: "tpa", preauthSlaHours: 12 },
-  { id: "raksha",     name: "Raksha TPA",             shortCode: "RT",  kind: "tpa", preauthSlaHours: 12 },
-  { id: "good-health",name: "Good Health TPA",        shortCode: "GH",  kind: "tpa", preauthSlaHours: 12 },
+  { id: "mediassist", name: "MediAssist TPA",         shortCode: "MA",  kind: "tpa", preauthSlaHours: 8, country: "IN" },
+  { id: "paramount",  name: "Paramount TPA",          shortCode: "PT",  kind: "tpa", preauthSlaHours: 12, country: "IN" },
+  { id: "vidal",      name: "Vidal Health TPA",       shortCode: "VH",  kind: "tpa", preauthSlaHours: 12, country: "IN" },
+  { id: "fhpl",       name: "Family Health Plan TPA", shortCode: "FHPL", kind: "tpa", preauthSlaHours: 12, country: "IN" },
+  { id: "heritage",   name: "Heritage Health TPA",    shortCode: "HH",  kind: "tpa", preauthSlaHours: 12, country: "IN" },
+  { id: "medivisor",  name: "Medivisor TPA",          shortCode: "MV",  kind: "tpa", preauthSlaHours: 12, country: "IN" },
+  { id: "raksha",     name: "Raksha TPA",             shortCode: "RT",  kind: "tpa", preauthSlaHours: 12, country: "IN" },
+  { id: "good-health",name: "Good Health TPA",        shortCode: "GH",  kind: "tpa", preauthSlaHours: 12, country: "IN" },
   // Govt schemes
-  { id: "abpmjay",    name: "Ayushman Bharat (PM-JAY)", shortCode: "AB", kind: "insurer", preauthSlaHours: 24, notes: "Govt scheme; empanelment via NHA portal." },
-  { id: "cghs",       name: "CGHS (Central Govt Health Scheme)", shortCode: "CGHS", kind: "insurer", preauthSlaHours: 48 },
+  { id: "abpmjay",    name: "Ayushman Bharat (PM-JAY)", shortCode: "AB", kind: "insurer", preauthSlaHours: 24, country: "IN", notes: "Govt scheme; empanelment via NHA portal." },
+  { id: "cghs",       name: "CGHS (Central Govt Health Scheme)", shortCode: "CGHS", kind: "insurer", preauthSlaHours: 48, country: "IN" },
+
+  // ── United States ─────────────────────────────────────────────
+  // Top private commercial payers + Medicare/Medicaid programs.
+  { id: "us-uhc",          name: "UnitedHealthcare",        shortCode: "UHC", kind: "insurer", preauthSlaHours: 24, country: "US" },
+  { id: "us-anthem",       name: "Anthem Blue Cross Blue Shield", shortCode: "ABCBS", kind: "insurer", preauthSlaHours: 24, country: "US" },
+  { id: "us-aetna",        name: "Aetna (CVS Health)",      shortCode: "AET", kind: "insurer", preauthSlaHours: 24, country: "US" },
+  { id: "us-cigna",        name: "Cigna",                   shortCode: "CIG", kind: "insurer", preauthSlaHours: 24, country: "US" },
+  { id: "us-humana",       name: "Humana",                  shortCode: "HUM", kind: "insurer", preauthSlaHours: 24, country: "US" },
+  { id: "us-kaiser",       name: "Kaiser Permanente",       shortCode: "KP",  kind: "insurer", preauthSlaHours: 24, country: "US" },
+  { id: "us-bcbs",         name: "Blue Cross Blue Shield Association", shortCode: "BCBS", kind: "insurer", preauthSlaHours: 24, country: "US" },
+  { id: "us-molina",       name: "Molina Healthcare",       shortCode: "MOL", kind: "insurer", preauthSlaHours: 24, country: "US" },
+  { id: "us-centene",      name: "Centene",                 shortCode: "CEN", kind: "insurer", preauthSlaHours: 24, country: "US" },
+  { id: "us-medicare",     name: "Medicare",                shortCode: "MCR", kind: "insurer", preauthSlaHours: 48, country: "US", notes: "Federal program for 65+ and qualifying disabilities." },
+  { id: "us-medicaid",     name: "Medicaid",                shortCode: "MCD", kind: "insurer", preauthSlaHours: 48, country: "US", notes: "State-administered program for low-income individuals." },
+  { id: "us-tricare",      name: "TRICARE",                 shortCode: "TRI", kind: "insurer", preauthSlaHours: 48, country: "US", notes: "Military health benefits." },
+
+  // ── United Kingdom ────────────────────────────────────────────
+  { id: "uk-bupa",         name: "Bupa UK",                 shortCode: "BUPA", kind: "insurer", preauthSlaHours: 24, country: "GB" },
+  { id: "uk-axa",          name: "AXA Health",              shortCode: "AXA",  kind: "insurer", preauthSlaHours: 24, country: "GB" },
+  { id: "uk-vitality",     name: "Vitality Health",         shortCode: "VIT",  kind: "insurer", preauthSlaHours: 24, country: "GB" },
+  { id: "uk-aviva",        name: "Aviva Health",            shortCode: "AVI",  kind: "insurer", preauthSlaHours: 24, country: "GB" },
+  { id: "uk-wpa",          name: "WPA Healthcare",          shortCode: "WPA",  kind: "insurer", preauthSlaHours: 24, country: "GB" },
+  { id: "uk-nhs",          name: "NHS (National Health Service)", shortCode: "NHS", kind: "insurer", preauthSlaHours: 48, country: "GB", notes: "Public — free at point of use for residents." },
+
+  // ── Canada ────────────────────────────────────────────────────
+  { id: "ca-sunlife",      name: "Sun Life Financial",      shortCode: "SUN", kind: "insurer", preauthSlaHours: 24, country: "CA" },
+  { id: "ca-manulife",     name: "Manulife",                shortCode: "MAN", kind: "insurer", preauthSlaHours: 24, country: "CA" },
+  { id: "ca-canadalife",   name: "Canada Life",             shortCode: "CL",  kind: "insurer", preauthSlaHours: 24, country: "CA" },
+  { id: "ca-bluecross",    name: "Blue Cross Canada",       shortCode: "BCC", kind: "insurer", preauthSlaHours: 24, country: "CA" },
+  { id: "ca-greenshield",  name: "Green Shield Canada",     shortCode: "GSC", kind: "insurer", preauthSlaHours: 24, country: "CA" },
+  { id: "ca-ohip",         name: "OHIP (Ontario)",          shortCode: "OHIP", kind: "insurer", preauthSlaHours: 48, country: "CA", notes: "Provincial public coverage." },
+
+  // ── Australia ─────────────────────────────────────────────────
+  { id: "au-medibank",     name: "Medibank Private",        shortCode: "MED", kind: "insurer", preauthSlaHours: 24, country: "AU" },
+  { id: "au-bupa",         name: "Bupa Australia",          shortCode: "BUPA", kind: "insurer", preauthSlaHours: 24, country: "AU" },
+  { id: "au-nib",          name: "nib Health",              shortCode: "NIB", kind: "insurer", preauthSlaHours: 24, country: "AU" },
+  { id: "au-hcf",          name: "HCF",                     shortCode: "HCF", kind: "insurer", preauthSlaHours: 24, country: "AU" },
+  { id: "au-ahm",          name: "ahm Health Insurance",    shortCode: "AHM", kind: "insurer", preauthSlaHours: 24, country: "AU" },
+  { id: "au-medicare",     name: "Medicare Australia",      shortCode: "MCA", kind: "insurer", preauthSlaHours: 48, country: "AU", notes: "Federal universal coverage." },
+
+  // ── UAE ───────────────────────────────────────────────────────
+  { id: "ae-daman",        name: "Daman National Health",   shortCode: "DAMAN", kind: "insurer", preauthSlaHours: 24, country: "AE" },
+  { id: "ae-adnic",        name: "Abu Dhabi National Insurance (ADNIC)", shortCode: "ADNIC", kind: "insurer", preauthSlaHours: 24, country: "AE" },
+  { id: "ae-orient",       name: "Orient Insurance",        shortCode: "OI",   kind: "insurer", preauthSlaHours: 24, country: "AE" },
+  { id: "ae-axa-gulf",     name: "AXA Gulf",                shortCode: "AXAG", kind: "insurer", preauthSlaHours: 24, country: "AE" },
+  { id: "ae-oman",         name: "Oman Insurance",          shortCode: "OMAN", kind: "insurer", preauthSlaHours: 24, country: "AE" },
+  { id: "ae-thiqa",        name: "Thiqa (Abu Dhabi)",       shortCode: "THIQ", kind: "insurer", preauthSlaHours: 48, country: "AE", notes: "Government-funded coverage for UAE nationals in Abu Dhabi." },
+
+  // ── Singapore ─────────────────────────────────────────────────
+  { id: "sg-medishield",   name: "MediShield Life",         shortCode: "MSL", kind: "insurer", preauthSlaHours: 48, country: "SG", notes: "National basic health insurance." },
+  { id: "sg-great-eastern",name: "Great Eastern Life",      shortCode: "GE",  kind: "insurer", preauthSlaHours: 24, country: "SG" },
+  { id: "sg-aia",          name: "AIA Singapore",           shortCode: "AIA", kind: "insurer", preauthSlaHours: 24, country: "SG" },
+  { id: "sg-prudential",   name: "Prudential Singapore",    shortCode: "PRU", kind: "insurer", preauthSlaHours: 24, country: "SG" },
+  { id: "sg-ntuc",         name: "NTUC Income",             shortCode: "NTUC", kind: "insurer", preauthSlaHours: 24, country: "SG" },
+
+  // ── Germany ───────────────────────────────────────────────────
+  { id: "de-tk",           name: "Techniker Krankenkasse",  shortCode: "TK",  kind: "insurer", preauthSlaHours: 48, country: "DE" },
+  { id: "de-aok",          name: "AOK",                     shortCode: "AOK", kind: "insurer", preauthSlaHours: 48, country: "DE" },
+  { id: "de-barmer",       name: "Barmer GEK",              shortCode: "BAR", kind: "insurer", preauthSlaHours: 48, country: "DE" },
+  { id: "de-allianz",      name: "Allianz Health",          shortCode: "AL",  kind: "insurer", preauthSlaHours: 24, country: "DE" },
+
+  // ── Saudi Arabia ──────────────────────────────────────────────
+  { id: "sa-bupa",         name: "Bupa Arabia",             shortCode: "BUPA", kind: "insurer", preauthSlaHours: 24, country: "SA" },
+  { id: "sa-tawuniya",     name: "Tawuniya",                shortCode: "TAW",  kind: "insurer", preauthSlaHours: 24, country: "SA" },
+  { id: "sa-medgulf",      name: "MedGulf",                 shortCode: "MG",   kind: "insurer", preauthSlaHours: 24, country: "SA" },
+
+  // ── New Zealand ───────────────────────────────────────────────
+  { id: "nz-southerncross",name: "Southern Cross Health",   shortCode: "SCH", kind: "insurer", preauthSlaHours: 24, country: "NZ" },
+  { id: "nz-nib",          name: "nib New Zealand",         shortCode: "NIB", kind: "insurer", preauthSlaHours: 24, country: "NZ" },
+  { id: "nz-acc",          name: "ACC (Accident Compensation Corp)", shortCode: "ACC", kind: "insurer", preauthSlaHours: 48, country: "NZ", notes: "National no-fault accident coverage." },
 ];
+
+/** Returns insurers/TPAs operating in the given country, falling
+ *  back to ALL entries when no rows match (so a patient from an
+ *  unsupported country still sees something useful — they can pick
+ *  the closest international carrier or use the manual override on
+ *  the policy form). */
+export function listInsurersByCountry(country: string | null | undefined): TpaRegistryEntry[] {
+  if (!country) return TPA_REGISTRY;
+  const c = country.toUpperCase();
+  const filtered = TPA_REGISTRY.filter((t) => t.country.toUpperCase() === c);
+  return filtered.length > 0 ? filtered : TPA_REGISTRY;
+}
 
 export function getTpa(id: string): TpaRegistryEntry | null {
   return TPA_REGISTRY.find((t) => t.id === id) || null;

@@ -10,8 +10,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import {
   addReading, deleteReading, listReadings, latestPerKind,
-  classify, VitalKind,
+  classify, VitalKind, VitalReading,
 } from "@/lib/vitals/store";
+import { wearableVitalsFor, isWearableVitalId } from "@/lib/vitals/wearable-merge";
 import { maybeAlertOnReading } from "@/lib/vitals/alerts";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
@@ -27,10 +28,37 @@ export async function GET(req: NextRequest) {
 
   const url = new URL(req.url);
   const kind = url.searchParams.get("kind") as VitalKind | null;
-  const list = listReadings(userId, { kind: kind && VALID_KINDS.includes(kind) ? kind : undefined, limit: 200 });
+  const wantKind = kind && VALID_KINDS.includes(kind) ? kind : undefined;
+
+  // Manual self-reported readings.
+  const manual = listReadings(userId, { kind: wantKind, limit: 200 });
+
+  // Wearable-sourced readings projected into the VitalReading shape.
+  // The /dashboard/vitals page treats both sources as one timeline so
+  // the patient sees a single chart whether they log a BP cuff
+  // reading manually or have an Apple Watch syncing it overnight.
+  const wearable = wearableVitalsFor(userId).filter((r) => !wantKind || r.kind === wantKind);
+
+  const merged: VitalReading[] = [...manual, ...wearable].sort(
+    (a, b) => (a.takenAt < b.takenAt ? 1 : -1),
+  );
+
+  // Recompute latest-per-kind across the merged stream so the
+  // dashboard tiles surface the most recent value regardless of
+  // source.
+  const latest = {} as Record<VitalKind, VitalReading | undefined>;
+  for (const r of merged) {
+    const cur = latest[r.kind];
+    if (!cur || new Date(r.takenAt) > new Date(cur.takenAt)) latest[r.kind] = r;
+  }
+
   return NextResponse.json({
-    readings: list.map((r) => ({ ...r, severity: classify(r) })),
-    latest: latestPerKind(userId),
+    readings: merged.slice(0, 400).map((r) => ({
+      ...r,
+      severity: classify(r),
+      source: r.id.startsWith("w-") ? "wearable" : "manual",
+    })),
+    latest,
   });
 }
 
@@ -77,6 +105,12 @@ export async function DELETE(req: NextRequest) {
   const url = new URL(req.url);
   const id = url.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "missing_id" }, { status: 400 });
+  if (isWearableVitalId(id)) {
+    return NextResponse.json(
+      { error: "wearable_readings_are_read_only", hint: "Unlink the device from /dashboard/wearables to remove its data." },
+      { status: 400 },
+    );
+  }
   const ok = deleteReading(id, userId);
   if (!ok) return NextResponse.json({ error: "not_found" }, { status: 404 });
   try { await awaitAllFlushesStrict(); } catch { /* best-effort */ }

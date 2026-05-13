@@ -16,6 +16,10 @@ interface Reading {
   value: number; value2?: number; unit: string;
   context?: string; note?: string; takenAt: string; createdAt: string;
   severity: "ok" | "warn" | "critical";
+  /** "wearable" when synthesised from a linked device, "manual"
+   *  when the patient self-logged. Drives a small provenance badge
+   *  on the row + disables the Remove button for wearable rows. */
+  source?: "wearable" | "manual";
 }
 
 const KIND_LABEL: Record<VitalKind, string> = {
@@ -194,14 +198,19 @@ export default function VitalsPage() {
                       <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${TONE[r.severity]}`}>{r.severity}</span>
                       <p className="text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-100">{fmtVal(r)} <span className="text-xs font-normal text-slate-500 dark:text-slate-400">{r.unit}</span></p>
                       {r.context && <p className="text-[10px] uppercase tracking-wider text-slate-400">{r.context.replace(/_/g, " ")}</p>}
+                      {r.source === "wearable" && (
+                        <span className="rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">⌚ Wearable</span>
+                      )}
                     </div>
                     {r.note && <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">{r.note}</p>}
                     <p className="text-[10px] text-slate-400">{new Date(r.takenAt).toLocaleString()}</p>
                   </div>
                   <button
                     onClick={() => removeReading(r.id)}
-                    aria-label="Delete reading"
-                    className="rounded-lg p-1.5 text-rose-500 hover:bg-rose-50"
+                    aria-label={r.source === "wearable" ? "Wearable reading — unlink the device to remove" : "Delete reading"}
+                    title={r.source === "wearable" ? "Unlink the device on /dashboard/wearables to remove its data." : "Delete reading"}
+                    disabled={r.source === "wearable"}
+                    className="rounded-lg p-1.5 text-rose-500 hover:bg-rose-50 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                   >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />

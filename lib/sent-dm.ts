@@ -21,6 +21,7 @@
 // On failure the caller should fall back to Twilio.
 
 import { log } from "./log";
+import { isPhoneOptedOut } from "./notifications/phone-opt-out-store";
 
 export interface SentDmResult {
   ok: boolean;
@@ -60,6 +61,31 @@ export async function sentDmSend(input: SendMessageInput): Promise<SentDmResult>
   const to = Array.isArray(input.to) ? input.to : [input.to];
   // Sent.dm requires E.164. Add the + if the caller forgot.
   const normalized = to.map((n) => (n.startsWith("+") ? n : `+${n.replace(/^\+/, "")}`));
+
+  // Respect chatbot-side STOP opt-outs. The chatbot writes to the
+  // phone-opt-out store when a patient replies STOP. Outbound to
+  // those numbers is dropped — except OTP / Authentication
+  // templates, which carriers consider transactional regardless of
+  // opt-out (and which the patient explicitly requested by typing
+  // their phone into a login form).
+  const isOtpTemplate =
+    /\b(otp|verify|auth|verification)\b/i.test(input.template);
+  if (!isOtpTemplate) {
+    const filtered = normalized.filter((n) => {
+      if (isPhoneOptedOut(n)) {
+        log.info("sent_dm.skipped_opted_out", { to: n, template: input.template });
+        return false;
+      }
+      return true;
+    });
+    if (filtered.length === 0) {
+      return { ok: true, skipped: true, error: "all_recipients_opted_out" };
+    }
+    // Replace the recipient list in place so the downstream body
+    // build sees the filtered set.
+    normalized.length = 0;
+    normalized.push(...filtered);
+  }
 
   const body: Record<string, unknown> = {
     to: normalized,

@@ -127,7 +127,7 @@ function isUuid(s: string): boolean {
 export async function sendOtpViaSentDm(
   to: string,
   code: string,
-  idempotencyKey?: string,
+  opts?: { name?: string; idempotencyKey?: string },
 ): Promise<SentDmResult> {
   const template = process.env.SENTDM_TEMPLATE_OTP;
   if (!template) return { ok: false, error: "SENTDM_TEMPLATE_OTP not set" };
@@ -135,8 +135,16 @@ export async function sendOtpViaSentDm(
     to,
     channel: "sms",
     template,
-    variables: { code, otp: code },
-    idempotencyKey,
+    // Pass both code aliases (`code`, `otp`) and the patient's first
+    // name so the same call works regardless of which variable names
+    // the approved sent.dm template uses. Sent.dm ignores unused keys.
+    variables: {
+      code,
+      otp: code,
+      name: opts?.name || "there",
+      first_name: opts?.name || "there",
+    },
+    idempotencyKey: opts?.idempotencyKey,
   });
 }
 

@@ -168,11 +168,23 @@ export async function sendOtpCodes(record: OtpRecord): Promise<void> {
     if (process.env.SENTDM_API_KEY && sentDmTemplate) {
       try {
         const { sentDmSend } = await import("./sent-dm");
+        // Pass both `code` aliases AND a friendly recipient name so
+        // the approved template can render "Hi {{name}}, your code…"
+        // without us caring about the exact placeholder names. We
+        // don't carry the user's first name on the OTP record (it's
+        // intentionally minimal pre-verification), so fall back to a
+        // generic salutation.
+        const firstName = "there";
         const r = await sentDmSend({
           to,
           channel: "sms",
           template: sentDmTemplate,
-          variables: { code: record.phoneCode, otp: record.phoneCode },
+          variables: {
+            code: record.phoneCode,
+            otp: record.phoneCode,
+            name: firstName,
+            first_name: firstName,
+          },
         });
         if (r.ok) {
           sent = true;

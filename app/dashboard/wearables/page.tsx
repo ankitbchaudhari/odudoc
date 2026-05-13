@@ -82,6 +82,7 @@ export default function WearablesPage() {
   const [loading, setLoading] = useState(true);
   const [showLink, setShowLink] = useState(false);
   const [linkForm, setLinkForm] = useState<{ provider: WearableProvider; displayName: string }>({ provider: "fitbit", displayName: "" });
+  const [providersConfigured, setProvidersConfigured] = useState<Record<string, boolean>>({});
   const [toast, setToast] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
   const load = useCallback(async () => {
@@ -98,7 +99,28 @@ export default function WearablesPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  // One-shot fetch of which providers have OAuth creds on this
+  // deployment, so the modal can show "Connect via OAuth" vs the
+  // demo manual path. Cached for the lifetime of the page.
+  useEffect(() => {
+    fetch("/api/wearables/providers", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d?.configured) setProvidersConfigured(d.configured); })
+      .catch(() => { /* fall through to manual */ });
+  }, []);
+
   const link = async () => {
+    // If the selected provider has OAuth credentials wired up on
+    // this deployment, redirect to the provider's authorize URL.
+    // The callback handler creates the device record from the
+    // returned tokens — no manual name needed.
+    if (providersConfigured[linkForm.provider]) {
+      window.location.href = `/api/wearables/oauth/${linkForm.provider}/start`;
+      return;
+    }
+    // Demo / manual path — still useful for testing the merged
+    // timeline and for providers like Apple Health that don't have
+    // a browser OAuth (linked via mobile app instead).
     if (!linkForm.displayName.trim()) return;
     const r = await fetch("/api/wearables/devices", {
       method: "POST", headers: { "Content-Type": "application/json" },
@@ -263,22 +285,36 @@ export default function WearablesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4" onClick={() => setShowLink(false)}>
           <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl ring-1 ring-sky-200 dark:ring-sky-900/40" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Link a wearable</h3>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">In production this opens your device&apos;s OAuth flow. For the demo, name a device and we&apos;ll start tracking.</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              {providersConfigured[linkForm.provider]
+                ? `Click Connect to sign in to ${PROVIDER_LABEL[linkForm.provider]} and grant OduDoc read access to your health data. Tokens are stored encrypted; you can unlink any time.`
+                : linkForm.provider === "apple_health"
+                  ? "Apple Health doesn't have a web OAuth — link from the OduDoc iOS app instead. Use the demo path below to try the merged-vitals timeline."
+                  : "This provider isn't connected yet on this deployment. Name a device and we'll create a manual entry — useful for trying the merged vitals timeline."}
+            </p>
             <div className="mt-3 space-y-3">
               <div>
                 <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Provider</label>
                 <select value={linkForm.provider} onChange={(e) => setLinkForm({ ...linkForm, provider: e.target.value as WearableProvider })} className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm">
-                  {Object.entries(PROVIDER_LABEL).map(([k, v]) => <option key={k} value={k}>{PROVIDER_EMOJI[k as WearableProvider]} {v}</option>)}
+                  {Object.entries(PROVIDER_LABEL).map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {PROVIDER_EMOJI[k as WearableProvider]} {v}{providersConfigured[k] ? " · OAuth ready" : ""}
+                    </option>
+                  ))}
                 </select>
               </div>
-              <div>
-                <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Name</label>
-                <input className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm" placeholder='e.g. "My Mi Band 7"' value={linkForm.displayName} onChange={(e) => setLinkForm({ ...linkForm, displayName: e.target.value })} />
-              </div>
+              {!providersConfigured[linkForm.provider] && (
+                <div>
+                  <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Name</label>
+                  <input className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm" placeholder='e.g. "My Mi Band 7"' value={linkForm.displayName} onChange={(e) => setLinkForm({ ...linkForm, displayName: e.target.value })} />
+                </div>
+              )}
             </div>
             <div className="mt-5 flex justify-end gap-2">
               <button onClick={() => setShowLink(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition">Cancel</button>
-              <button onClick={link} className="bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 text-white shadow-lg shadow-sky-500/20 rounded-xl px-5 py-2 text-sm font-bold transition">Link</button>
+              <button onClick={link} className="bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 text-white shadow-lg shadow-sky-500/20 rounded-xl px-5 py-2 text-sm font-bold transition">
+                {providersConfigured[linkForm.provider] ? `Connect ${PROVIDER_LABEL[linkForm.provider]} →` : "Link"}
+              </button>
             </div>
           </div>
         </div>

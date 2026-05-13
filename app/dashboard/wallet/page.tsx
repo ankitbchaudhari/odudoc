@@ -320,19 +320,23 @@ export default function WalletPage() {
   const bonusOnAmount = Math.round((amount * 5) / 100);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
+    <div className="mx-auto max-w-3xl px-4 py-8">
       {toast && (
-        <div className={`mb-4 flex items-start justify-between gap-3 rounded-lg border px-4 py-3 text-sm ${toast.kind === "ok" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-rose-200 bg-rose-50 text-rose-800"}`}>
+        <div className={`mb-4 flex items-start justify-between gap-3 rounded-xl border px-4 py-3 text-sm shadow-sm ${toast.kind === "ok" ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200" : "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-200"}`}>
           <span>{toast.text}</span>
           <button onClick={() => setToast(null)} className="text-xs font-semibold underline">Dismiss</button>
         </div>
       )}
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">OduDoc Wallet</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Top up once, pay across consults / pharmacy / lab tests. Get <strong>5% bonus</strong> on every top-up.
-        </p>
+      <div className="mb-8 flex items-start gap-4">
+        <div className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white p-3 rounded-2xl shadow-lg shadow-indigo-500/30 text-2xl">💳</div>
+        <div>
+          <h1 className="text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-300 dark:to-purple-300 bg-clip-text text-transparent">OduDoc Wallet</h1>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+            Top up once, pay across consults / pharmacy / lab tests. Get <strong>5% bonus</strong> on every top-up.
+          </p>
+        </div>
       </div>
 
       {/* Pending topup recovery — surfaces orders started in the last
@@ -391,48 +395,53 @@ export default function WalletPage() {
       )}
 
       {/* Balance card */}
-      <div className="rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-700 to-fuchsia-700 p-6 text-white shadow-xl">
-        <p className="text-xs font-bold uppercase tracking-wider opacity-80">Available balance</p>
-        <p className="mt-2 text-5xl font-extrabold">{fmtINR(totalSpendable)}</p>
-        <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
-          <div className="rounded-lg bg-white/15 p-3 backdrop-blur">
-            <p className="opacity-80">Primary balance</p>
-            <p className="mt-0.5 text-lg font-bold">{fmtINR(wallet.balanceRupees)}</p>
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-700 to-fuchsia-700 p-6 text-white shadow-2xl shadow-indigo-500/30">
+        <div aria-hidden className="pointer-events-none absolute -top-16 -right-16 h-56 w-56 rounded-full bg-fuchsia-400/30 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-indigo-300/30 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute top-10 right-1/3 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
+        <div className="relative">
+          <p className="text-xs font-bold uppercase tracking-wider opacity-80">Available balance</p>
+          <p className="mt-2 text-5xl font-extrabold drop-shadow-md">{fmtINR(totalSpendable)}</p>
+          <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
+            <div className="rounded-xl bg-white/15 p-3 backdrop-blur ring-1 ring-white/20">
+              <p className="opacity-80">Primary balance</p>
+              <p className="mt-0.5 text-lg font-bold">{fmtINR(wallet.balanceRupees)}</p>
+            </div>
+            <div className="rounded-xl bg-white/15 p-3 backdrop-blur ring-1 ring-white/20">
+              <p className="opacity-80">Bonus credits</p>
+              <p className="mt-0.5 text-lg font-bold">{fmtINR(wallet.bonusBalanceRupees)}</p>
+            </div>
           </div>
-          <div className="rounded-lg bg-white/15 p-3 backdrop-blur">
-            <p className="opacity-80">Bonus credits</p>
-            <p className="mt-0.5 text-lg font-bold">{fmtINR(wallet.bonusBalanceRupees)}</p>
-          </div>
-        </div>
-        <button onClick={() => setShowTopup(true)} className="mt-4 w-full rounded-lg bg-white dark:bg-slate-900 px-4 py-3 text-sm font-bold text-indigo-700 shadow-md">
-          + Add money
-        </button>
-        {totalSpendable > 0 && (
-          <button
-            onClick={resetWallet}
-            disabled={busy}
-            className="mt-2 w-full rounded-lg border border-white/30 bg-white/10 px-4 py-2 text-[12px] font-semibold text-white/90 backdrop-blur transition-colors hover:bg-white/20 disabled:opacity-60"
-            title="Wipe sandbox / test credits that were added without a real payment"
-          >
-            Reset wallet (clear sandbox credits)
+          <button onClick={() => setShowTopup(true)} className="mt-4 w-full rounded-xl bg-white px-4 py-3 text-sm font-bold text-indigo-700 shadow-lg hover:shadow-xl hover:bg-indigo-50 transition">
+            + Add money
           </button>
-        )}
+          {totalSpendable > 0 && (
+            <button
+              onClick={resetWallet}
+              disabled={busy}
+              className="mt-2 w-full rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-[12px] font-semibold text-white/90 backdrop-blur transition-colors hover:bg-white/20 disabled:opacity-60"
+              title="Wipe sandbox / test credits that were added without a real payment"
+            >
+              Reset wallet (clear sandbox credits)
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Lifetime stats */}
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <div className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
-          <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Lifetime added</p>
-          <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-100">{fmtINR(wallet.lifetimeToppedUp)}</p>
+        <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 p-4 ring-1 ring-emerald-100 dark:ring-emerald-900/40 shadow-sm hover:shadow-md transition">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Lifetime added</p>
+          <p className="mt-1 text-2xl font-extrabold text-emerald-700 dark:text-emerald-200 tabular-nums">{fmtINR(wallet.lifetimeToppedUp)}</p>
         </div>
-        <div className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
-          <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Lifetime spent</p>
-          <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-100">{fmtINR(wallet.lifetimeSpent)}</p>
+        <div className="rounded-2xl bg-gradient-to-br from-rose-50 to-orange-50 dark:from-rose-950/30 dark:to-orange-950/30 p-4 ring-1 ring-rose-100 dark:ring-rose-900/40 shadow-sm hover:shadow-md transition">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">Lifetime spent</p>
+          <p className="mt-1 text-2xl font-extrabold text-rose-700 dark:text-rose-200 tabular-nums">{fmtINR(wallet.lifetimeSpent)}</p>
         </div>
       </div>
 
       {/* Transaction history */}
-      <section className="mt-8 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+      <section className="mt-8 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition ring-1 ring-slate-200 dark:ring-slate-800">
         <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Recent activity</p>
         {txs.length === 0 ? (
           <p className="rounded-lg bg-slate-50 dark:bg-slate-900 p-4 text-sm text-slate-500 dark:text-slate-400">No transactions yet. Top up to get started.</p>
@@ -495,7 +504,7 @@ export default function WalletPage() {
               <button
                 onClick={() => topup("cashfree")}
                 disabled={busy || amount < 100 || amount > 50000}
-                className="flex flex-col items-center justify-center rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3 text-sm font-bold text-white shadow-md transition hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50"
+                className="flex flex-col items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 via-sky-600 to-cyan-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/30 transition hover:from-blue-700 hover:via-sky-700 hover:to-cyan-700 hover:shadow-xl disabled:opacity-50 disabled:shadow-none"
               >
                 <span className="text-[11px] font-medium uppercase tracking-wider opacity-80">Pay with</span>
                 <span className="text-base">💳 Cashfree</span>
@@ -504,7 +513,7 @@ export default function WalletPage() {
               <button
                 onClick={() => topup("stripe")}
                 disabled={busy || amount < 100 || amount > 50000}
-                className="flex flex-col items-center justify-center rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-3 text-sm font-bold text-white shadow-md transition hover:from-indigo-700 hover:to-violet-700 disabled:opacity-50"
+                className="flex flex-col items-center justify-center rounded-xl bg-gradient-to-r from-purple-600 via-violet-600 to-fuchsia-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-purple-500/30 transition hover:from-purple-700 hover:via-violet-700 hover:to-fuchsia-700 hover:shadow-xl disabled:opacity-50 disabled:shadow-none"
               >
                 <span className="text-[11px] font-medium uppercase tracking-wider opacity-80">Pay with</span>
                 <span className="text-base">💎 Stripe</span>
@@ -517,6 +526,7 @@ export default function WalletPage() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

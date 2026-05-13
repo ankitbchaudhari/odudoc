@@ -188,31 +188,50 @@ function LabsContent() {
   }, [catalog, filter]);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
+    <div className="mx-auto max-w-5xl px-4 py-8">
       {toast && (
-        <div className={`mb-4 flex items-start justify-between gap-3 rounded-lg border px-4 py-3 text-sm ${toast.kind === "ok" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-rose-200 bg-rose-50 text-rose-800"}`}>
+        <div className={`mb-4 flex items-start justify-between gap-3 rounded-xl border px-4 py-3 text-sm shadow-sm ${toast.kind === "ok" ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200" : "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-200"}`}>
           <span>{toast.text}</span>
           <button onClick={() => setToast(null)} className="text-xs font-semibold underline">Dismiss</button>
         </div>
       )}
 
-      <div className="mb-6 flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Lab Tests</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Pick tests, see nearby NABL-accredited labs, and book home collection or an in-lab visit.
-          </p>
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+        <div className="flex items-start gap-4">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 text-white text-2xl shadow-lg shadow-teal-500/30">🧪</div>
+          <div>
+            <h1 className="text-3xl font-extrabold bg-gradient-to-r from-teal-600 to-cyan-600 dark:from-teal-300 dark:to-cyan-300 bg-clip-text text-transparent">Lab Tests</h1>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              Pick tests, see nearby NABL-accredited labs, and book home collection or an in-lab visit.
+            </p>
+          </div>
         </div>
         {catalog.labs.length === 0 && (
-          <button onClick={seed} className="rounded-lg border border-dashed border-slate-300 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300">Seed demo</button>
+          <button onClick={seed} className="rounded-xl border border-dashed border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-slate-800 transition">Seed demo</button>
         )}
       </div>
 
       {/* Test picker */}
-      <section className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm">
-        <p className="mb-2 text-sm font-bold text-slate-900 dark:text-slate-100">Pick tests ({picked.size})</p>
+      <section className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition ring-1 ring-slate-200 dark:ring-slate-800">
+        <p className="mb-2 text-sm font-bold text-slate-900 dark:text-slate-100">
+          Pick tests
+          {picked.size > 0 && <span className="ml-2 inline-flex items-center rounded-full bg-gradient-to-r from-teal-500 to-cyan-600 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm shadow-teal-500/30">{picked.size} in cart</span>}
+        </p>
+        {picked.size > 0 && (
+          <div className="mb-3 flex flex-wrap gap-1.5">
+            {Array.from(picked).map((code) => {
+              const t = catalog.tests.find((c) => c.testCode === code);
+              return (
+                <button key={code} onClick={() => togglePick(code)} className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-teal-100 to-cyan-100 dark:from-teal-900/40 dark:to-cyan-900/40 px-2.5 py-1 text-[11px] font-semibold text-teal-800 dark:text-teal-200 ring-1 ring-teal-200 dark:ring-teal-800 hover:bg-rose-50">
+                  {t?.testName || code} <span className="text-teal-500">×</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
         <input
-          className="mb-3 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="mb-3 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
           placeholder="Search tests (CBC, HbA1c, lipid…)"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
@@ -224,7 +243,7 @@ function LabsContent() {
               <button
                 key={t.testCode}
                 onClick={() => togglePick(t.testCode)}
-                className={`flex items-start justify-between gap-2 rounded-lg border p-2 text-left text-xs ${on ? "border-indigo-500 bg-indigo-50" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-indigo-300"}`}
+                className={`flex items-start justify-between gap-2 rounded-lg border p-2 text-left text-xs transition ${on ? "border-teal-500 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/40 dark:to-cyan-950/40 dark:border-teal-700 shadow-sm" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-teal-300 hover:shadow-sm"}`}
               >
                 <div>
                   <p className="font-bold text-slate-900 dark:text-slate-100">{t.testName}</p>
@@ -242,13 +261,13 @@ function LabsContent() {
         {filteredCatalog.length > 50 && <p className="mt-2 text-[10px] text-slate-400">Showing first 50 — refine search to see more.</p>}
 
         <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
-          <input className="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="Pincode" value={pincode} onChange={(e) => setPincode(e.target.value)} />
+          <input className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none" placeholder="Pincode" value={pincode} onChange={(e) => setPincode(e.target.value)} />
           <label className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
             <input type="checkbox" checked={includePartial} onChange={(e) => setIncludePartial(e.target.checked)} />
             Show partial matches
           </label>
-          <button onClick={search} disabled={matching || picked.size === 0} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">
-            {matching ? "Searching…" : "Find labs"}
+          <button onClick={search} disabled={matching || picked.size === 0} className="rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 px-5 py-2 text-sm font-bold text-white shadow-lg shadow-teal-500/30 ring-2 ring-teal-400/30 transition disabled:opacity-50 disabled:shadow-none disabled:ring-0">
+            {matching ? "Searching…" : "Find labs →"}
           </button>
         </div>
       </section>
@@ -258,7 +277,7 @@ function LabsContent() {
         <section className="mb-6 space-y-3">
           <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{offers.length} lab{offers.length === 1 ? "" : "s"} matched</p>
           {offers.map((o, i) => (
-            <div key={o.labId} className={`rounded-2xl border-2 p-4 shadow-sm ${i === 0 ? "border-emerald-300 bg-emerald-50/30" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"}`}>
+            <div key={o.labId} className={`rounded-2xl p-4 shadow-sm hover:shadow-md transition ring-1 ${i === 0 ? "ring-2 ring-teal-300 dark:ring-teal-700 bg-gradient-to-br from-teal-50 to-cyan-50/40 dark:from-teal-950/30 dark:to-cyan-950/20" : "ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900"}`}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex-1 min-w-[240px]">
                   <p className="font-bold text-slate-900 dark:text-slate-100">
@@ -279,7 +298,7 @@ function LabsContent() {
                 <div className="text-right">
                   <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">{fmtINR(o.totalRupees)}</p>
                   {o.savingsRupees > 0 && <p className="text-xs text-emerald-700">Save {fmtINR(o.savingsRupees)} vs MRP</p>}
-                  <button onClick={() => setOrderingFrom(o)} className="mt-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white">Book →</button>
+                  <button onClick={() => setOrderingFrom(o)} className="mt-2 rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 px-4 py-2 text-sm font-bold text-white shadow-md shadow-teal-500/30 transition">Book →</button>
                 </div>
               </div>
               <div className="mt-3 grid gap-1.5 sm:grid-cols-2">
@@ -300,14 +319,18 @@ function LabsContent() {
       )}
 
       {/* My orders */}
-      <section className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+      <section className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition ring-1 ring-slate-200 dark:ring-slate-800">
         <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">My lab orders</p>
         {orders.length === 0 ? (
-          <p className="rounded-lg bg-slate-50 dark:bg-slate-900 p-4 text-sm text-slate-500 dark:text-slate-400">No orders yet.</p>
+          <div className="rounded-xl bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-950/30 dark:to-cyan-950/20 p-8 text-center ring-1 ring-teal-200/60 dark:ring-teal-900/40">
+            <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-teal-100 to-cyan-100 dark:from-teal-900/40 dark:to-cyan-900/40 flex items-center justify-center text-3xl">🧪</div>
+            <p className="mt-3 text-sm font-semibold text-slate-700 dark:text-slate-200">No orders yet</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Pick tests above and book your first lab visit.</p>
+          </div>
         ) : (
           <ul className="space-y-3">
             {orders.map((o) => (
-              <li key={o.id} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+              <li key={o.id} className="rounded-xl ring-1 ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm hover:shadow-md transition">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
                     <p className="font-semibold text-slate-900 dark:text-slate-100">{o.labName}</p>
@@ -359,8 +382,8 @@ function LabsContent() {
 
       {/* Order confirm dialog */}
       {orderingFrom && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setOrderingFrom(null)}>
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4" onClick={() => setOrderingFrom(null)}>
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl ring-1 ring-teal-200 dark:ring-teal-900/40" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Confirm booking</h3>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{orderingFrom.labName}</p>
 
@@ -406,6 +429,7 @@ function LabsContent() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

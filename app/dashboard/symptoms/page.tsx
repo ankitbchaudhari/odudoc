@@ -78,15 +78,19 @@ export default function SymptomsPage() {
   }, [entries, filterSymptom]);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Symptom log</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Track recurring symptoms. Your doctor sees the same record at your next visit.
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-fuchsia-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
+    <div className="mx-auto max-w-3xl px-4 py-8">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+        <div className="flex items-start gap-4">
+          <div className="bg-gradient-to-br from-rose-500 to-fuchsia-500 text-white p-3 rounded-2xl shadow-lg shadow-rose-500/30 text-2xl">🩺</div>
+          <div>
+            <h1 className="text-3xl font-extrabold bg-gradient-to-r from-rose-600 to-fuchsia-600 dark:from-rose-300 dark:to-fuchsia-300 bg-clip-text text-transparent">Symptom log</h1>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              Track recurring symptoms. Your doctor sees the same record at your next visit.
+            </p>
+          </div>
         </div>
-        <button onClick={() => setShowForm((v) => !v)} className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-700">
+        <button onClick={() => setShowForm((v) => !v)} className="bg-gradient-to-r from-rose-600 to-fuchsia-600 hover:from-rose-700 hover:to-fuchsia-700 text-white shadow-lg shadow-rose-500/20 rounded-xl px-5 py-2.5 text-sm font-bold transition">
           {showForm ? "Cancel" : "+ Log symptom"}
         </button>
       </div>
@@ -95,12 +99,12 @@ export default function SymptomsPage() {
 
       {/* Summary chips */}
       {summary.length > 0 && (
-        <section className="mt-6 rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+        <section className="mt-6 rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm hover:shadow-md transition ring-1 ring-rose-100 dark:ring-rose-900/40">
           <p className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Last 30 days</p>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setFilterSymptom(null)}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${!filterSymptom ? "bg-indigo-600 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"}`}
+              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${!filterSymptom ? "bg-gradient-to-r from-rose-600 to-fuchsia-600 text-white shadow-md shadow-rose-500/20" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-slate-700"}`}
             >
               All ({entries.length})
             </button>
@@ -108,7 +112,7 @@ export default function SymptomsPage() {
               <button
                 key={s.symptom}
                 onClick={() => setFilterSymptom(s.symptom)}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${filterSymptom === s.symptom ? "bg-indigo-600 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"}`}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${filterSymptom === s.symptom ? "bg-gradient-to-r from-rose-600 to-fuchsia-600 text-white shadow-md shadow-rose-500/20" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-slate-700"}`}
               >
                 <span className={`h-1.5 w-1.5 rounded-full ${s.avgSeverity >= 7 ? "bg-rose-500" : s.avgSeverity >= 4 ? "bg-amber-500" : "bg-emerald-500"}`} />
                 {s.symptom}
@@ -124,17 +128,17 @@ export default function SymptomsPage() {
       {/* Entries */}
       <section className="mt-6">
         {loading ? (
-          <p className="rounded-xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>
+          <p className="rounded-2xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">Loading…</p>
         ) : filtered.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-white dark:bg-slate-900 p-10 text-center">
-            <p className="text-3xl">🩺</p>
-            <p className="mt-2 text-base font-bold text-slate-700 dark:text-slate-300">{filterSymptom ? `No "${filterSymptom}" entries` : "No symptoms logged yet"}</p>
+          <div className="rounded-2xl bg-white dark:bg-slate-900 p-10 text-center shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+            <div className="mx-auto h-20 w-20 rounded-full bg-gradient-to-br from-rose-100 to-fuchsia-100 dark:from-rose-950/40 dark:to-fuchsia-950/40 flex items-center justify-center text-4xl">🩺</div>
+            <p className="mt-4 text-lg font-bold text-slate-800 dark:text-slate-100">{filterSymptom ? `No "${filterSymptom}" entries` : "No symptoms logged yet"}</p>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Log when you feel something off — even mild. Patterns become visible after 4-5 entries.</p>
           </div>
         ) : (
           <ul className="space-y-2">
             {filtered.map((e) => (
-              <li key={e.id} className="rounded-xl bg-white dark:bg-slate-900 p-3 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+              <li key={e.id} className="rounded-2xl bg-white dark:bg-slate-900 p-3 shadow-sm hover:shadow-md transition ring-1 ring-slate-200 dark:ring-slate-800">
                 <div className="flex items-start gap-3">
                   <div className={`flex h-12 w-12 flex-none items-center justify-center rounded-xl text-base font-bold ${severityTone(e.severity)}`}>
                     {e.severity}
@@ -168,6 +172,7 @@ export default function SymptomsPage() {
           </ul>
         )}
       </section>
+    </div>
     </div>
   );
 }
@@ -230,7 +235,7 @@ function LogForm({ onSaved }: { onSaved: () => void }) {
             type="range" min={0} max={10} step={1}
             value={severity}
             onChange={(e) => setSeverity(Number(e.target.value))}
-            className="mt-2 w-full accent-indigo-600"
+            className="mt-2 w-full accent-rose-600"
           />
           <div className="mt-1 flex justify-between text-[10px] text-slate-500 dark:text-slate-400">
             <span>None</span><span>Mild</span><span>Moderate</span><span>Severe</span><span>Worst</span>
@@ -263,7 +268,7 @@ function LogForm({ onSaved }: { onSaved: () => void }) {
         </label>
       </div>
       <div className="mt-4 flex justify-end">
-        <button onClick={submit} disabled={busy} className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm disabled:opacity-50">
+        <button onClick={submit} disabled={busy} className="bg-gradient-to-r from-rose-600 to-fuchsia-600 hover:from-rose-700 hover:to-fuchsia-700 text-white shadow-lg shadow-rose-500/20 rounded-xl px-5 py-2.5 text-sm font-bold transition disabled:opacity-50">
           {busy ? "Saving…" : "Save"}
         </button>
       </div>

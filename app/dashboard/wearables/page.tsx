@@ -45,6 +45,22 @@ const TILE_TONE: Record<KpiTile["status"], string> = {
   critical: "border-rose-300 bg-rose-50 text-rose-900",
   neutral: "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100",
 };
+
+// Per-metric gradient palette for the 30-day stat tiles. Each metric
+// gets its own colour story (HR=rose, SpO2=sky, BP systolic=red, BP
+// diastolic=orange, glucose=amber, steps=emerald, sleep=indigo). Anything
+// else falls back to slate so the page never crashes on a new kind.
+const KPI_GRADIENT: Record<string, { bg: string; ring: string; text: string; num: string }> = {
+  hr_resting:     { bg: "from-rose-100 via-rose-50 to-pink-100 dark:from-rose-950/40 dark:via-rose-950/20 dark:to-pink-950/40",       ring: "ring-rose-200 dark:ring-rose-900/40",       text: "text-rose-700 dark:text-rose-300",       num: "text-rose-700 dark:text-rose-200" },
+  hr_avg:         { bg: "from-rose-100 via-rose-50 to-pink-100 dark:from-rose-950/40 dark:via-rose-950/20 dark:to-pink-950/40",       ring: "ring-rose-200 dark:ring-rose-900/40",       text: "text-rose-700 dark:text-rose-300",       num: "text-rose-700 dark:text-rose-200" },
+  spo2:           { bg: "from-sky-100 via-sky-50 to-cyan-100 dark:from-sky-950/40 dark:via-sky-950/20 dark:to-cyan-950/40",           ring: "ring-sky-200 dark:ring-sky-900/40",         text: "text-sky-700 dark:text-sky-300",         num: "text-sky-700 dark:text-sky-200" },
+  bp_systolic:    { bg: "from-red-100 via-red-50 to-rose-100 dark:from-red-950/40 dark:via-red-950/20 dark:to-rose-950/40",           ring: "ring-red-200 dark:ring-red-900/40",         text: "text-red-700 dark:text-red-300",         num: "text-red-700 dark:text-red-200" },
+  bp_diastolic:   { bg: "from-orange-100 via-orange-50 to-amber-100 dark:from-orange-950/40 dark:via-orange-950/20 dark:to-amber-950/40", ring: "ring-orange-200 dark:ring-orange-900/40", text: "text-orange-700 dark:text-orange-300",   num: "text-orange-700 dark:text-orange-200" },
+  blood_glucose:  { bg: "from-amber-100 via-amber-50 to-yellow-100 dark:from-amber-950/40 dark:via-amber-950/20 dark:to-yellow-950/40", ring: "ring-amber-200 dark:ring-amber-900/40",   text: "text-amber-700 dark:text-amber-300",     num: "text-amber-700 dark:text-amber-200" },
+  steps:          { bg: "from-emerald-100 via-emerald-50 to-teal-100 dark:from-emerald-950/40 dark:via-emerald-950/20 dark:to-teal-950/40", ring: "ring-emerald-200 dark:ring-emerald-900/40", text: "text-emerald-700 dark:text-emerald-300", num: "text-emerald-700 dark:text-emerald-200" },
+  sleep_minutes:  { bg: "from-indigo-100 via-indigo-50 to-violet-100 dark:from-indigo-950/40 dark:via-indigo-950/20 dark:to-violet-950/40", ring: "ring-indigo-200 dark:ring-indigo-900/40", text: "text-indigo-700 dark:text-indigo-300",   num: "text-indigo-700 dark:text-indigo-200" },
+};
+const KPI_GRADIENT_FALLBACK = { bg: "from-slate-100 to-slate-50 dark:from-slate-800/40 dark:to-slate-900/40", ring: "ring-slate-200 dark:ring-slate-800", text: "text-slate-700 dark:text-slate-300", num: "text-slate-900 dark:text-slate-100" };
 const SEV_TONE: Record<AnomalyFlag["severity"], string> = {
   info: "border-sky-200 bg-sky-50 text-sky-900",
   warn: "border-amber-200 bg-amber-50 text-amber-900",
@@ -115,47 +131,54 @@ export default function WearablesPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-cyan-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
+    <div className="mx-auto max-w-5xl px-4 py-8">
       {toast && (
-        <div className={`mb-4 flex items-start justify-between gap-3 rounded-lg border px-4 py-3 text-sm ${toast.kind === "ok" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-rose-200 bg-rose-50 text-rose-800"}`}>
+        <div className={`mb-4 flex items-start justify-between gap-3 rounded-xl border px-4 py-3 text-sm shadow-sm ${toast.kind === "ok" ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200" : "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-200"}`}>
           <span>{toast.text}</span>
           <button onClick={() => setToast(null)} className="text-xs font-semibold underline">Dismiss</button>
         </div>
       )}
 
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Wearable health</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Connect your Fitbit, Apple Watch, Mi Band, or any wearable to share heart rate, BP, sleep, and glucose trends with your doctor at the next visit.
-          </p>
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+        <div className="flex items-start gap-4">
+          <div className="bg-gradient-to-br from-sky-500 to-cyan-500 text-white p-3 rounded-2xl shadow-lg shadow-sky-500/30 text-2xl">⌚</div>
+          <div>
+            <h1 className="text-3xl font-extrabold bg-gradient-to-r from-sky-600 to-cyan-600 dark:from-sky-300 dark:to-cyan-300 bg-clip-text text-transparent">Wearable health</h1>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              Connect your Fitbit, Apple Watch, Mi Band, or any wearable to share heart rate, BP, sleep, and glucose trends with your doctor at the next visit.
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => setShowLink(true)} className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-bold text-white">+ Link device</button>
+          <button onClick={() => setShowLink(true)} className="bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 text-white shadow-lg shadow-sky-500/20 rounded-xl px-5 py-2.5 text-sm font-bold transition">+ Link device</button>
         </div>
       </div>
 
       {/* Demo seed strip */}
       {devices.length === 0 && (
-        <div className="mb-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 dark:bg-slate-900 p-4 text-sm">
+        <div className="mb-6 rounded-2xl border border-dashed border-sky-300 dark:border-sky-800 bg-gradient-to-br from-sky-50 to-cyan-50 dark:from-sky-950/30 dark:to-cyan-950/30 p-4 text-sm">
           <p className="text-slate-700 dark:text-slate-300"><strong>Try a demo persona:</strong></p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <button onClick={() => seed("diabetic_hypertensive")} className="rounded-md bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">🩸 Diabetic + hypertensive (60yo)</button>
-            <button onClick={() => seed("athlete")} className="rounded-md bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">🏃 Athlete (28yo)</button>
-            <button onClick={() => seed("post_op")} className="rounded-md bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">🩺 Post-op recovery</button>
+            <button onClick={() => seed("diabetic_hypertensive")} className="rounded-xl bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 dark:ring-slate-700 hover:ring-sky-400 hover:shadow-sm transition">🩸 Diabetic + hypertensive (60yo)</button>
+            <button onClick={() => seed("athlete")} className="rounded-xl bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 dark:ring-slate-700 hover:ring-sky-400 hover:shadow-sm transition">🏃 Athlete (28yo)</button>
+            <button onClick={() => seed("post_op")} className="rounded-xl bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 dark:ring-slate-700 hover:ring-sky-400 hover:shadow-sm transition">🩺 Post-op recovery</button>
           </div>
         </div>
       )}
 
       {/* ── Devices ─────────────────────────────────── */}
-      <section className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+      <section className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition ring-1 ring-slate-200 dark:ring-slate-800">
         <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Linked devices ({devices.length})</p>
         {devices.length === 0 ? (
-          <p className="rounded-lg bg-slate-50 dark:bg-slate-900 p-4 text-sm text-slate-500 dark:text-slate-400">No devices linked yet. Use the seed buttons above for a demo, or link your own with the button at the top.</p>
+          <div className="rounded-2xl bg-gradient-to-br from-sky-50 to-cyan-50 dark:from-sky-950/30 dark:to-cyan-950/30 p-8 text-center ring-1 ring-sky-100 dark:ring-sky-900/40">
+            <div className="mx-auto h-20 w-20 rounded-full bg-gradient-to-br from-sky-100 to-cyan-100 dark:from-sky-900/40 dark:to-cyan-900/40 flex items-center justify-center text-4xl">⌚</div>
+            <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">No devices linked yet. Use the seed buttons above for a demo, or link your own with the button at the top.</p>
+          </div>
         ) : (
           <ul className="space-y-2">
             {devices.map((d) => (
-              <li key={d.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3">
+              <li key={d.id} className="flex items-center justify-between gap-3 rounded-xl ring-1 ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900 p-3 shadow-sm hover:shadow-md transition">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{PROVIDER_EMOJI[d.provider]}</span>
                   <div>
@@ -166,7 +189,7 @@ export default function WearablesPage() {
                     </p>
                   </div>
                 </div>
-                <button onClick={() => unlink(d.id)} className="rounded-md border border-rose-200 px-2.5 py-1 text-[11px] font-semibold text-rose-600">Unlink</button>
+                <button onClick={() => unlink(d.id)} className="rounded-lg border border-rose-200 dark:border-rose-800 bg-white dark:bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition">Unlink</button>
               </li>
             ))}
           </ul>
@@ -176,26 +199,29 @@ export default function WearablesPage() {
       {/* ── KPIs + charts + anomalies ────────────────────────────── */}
       {insights && insights.kpis.length > 0 && (
         <>
-          <section className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+          <section className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition ring-1 ring-slate-200 dark:ring-slate-800">
             <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Last {insights.windowDays} days</p>
             <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {insights.kpis.map((k) => (
-                <div key={k.kind} className={`rounded-xl border p-3 ${TILE_TONE[k.status]}`}>
-                  <p className="text-[10px] uppercase tracking-wider opacity-70">{k.label}</p>
-                  <p className="mt-1 text-2xl font-extrabold">
-                    {k.value}{k.unit && <span className="ml-1 text-sm font-semibold opacity-60">{k.unit}</span>}
-                  </p>
-                  {k.trendPct !== undefined && (
-                    <p className="text-[10px] opacity-70">
-                      {k.trendPct >= 0 ? "↑" : "↓"} {Math.abs(k.trendPct)}% vs prior {insights.windowDays}d
+              {insights.kpis.map((k) => {
+                const g = KPI_GRADIENT[k.kind] || KPI_GRADIENT_FALLBACK;
+                return (
+                  <div key={k.kind} className={`rounded-2xl bg-gradient-to-br ${g.bg} p-3 ring-1 ${g.ring} shadow-sm hover:shadow-md transition`}>
+                    <p className={`text-[10px] font-bold uppercase tracking-wider ${g.text}`}>{k.label}</p>
+                    <p className={`mt-1 text-2xl font-extrabold tabular-nums ${g.num}`}>
+                      {k.value}{k.unit && <span className={`ml-1 text-sm font-semibold opacity-70`}>{k.unit}</span>}
                     </p>
-                  )}
-                </div>
-              ))}
+                    {k.trendPct !== undefined && (
+                      <p className={`text-[10px] opacity-80 ${g.text}`}>
+                        {k.trendPct >= 0 ? "↑" : "↓"} {Math.abs(k.trendPct)}% vs prior {insights.windowDays}d
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </section>
 
-          <section className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+          <section className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition ring-1 ring-slate-200 dark:ring-slate-800">
             <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">30-day trends</p>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {CHART_KINDS.filter((c) => insights.daily[c.kind] && (insights.daily[c.kind] as DailyBucket[]).length > 0).map((c) => (
@@ -207,7 +233,7 @@ export default function WearablesPage() {
       )}
 
       {insights && insights.anomalies.length > 0 && (
-        <section className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm">
+        <section className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition ring-1 ring-slate-200 dark:ring-slate-800">
           <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Anomalies detected ({insights.anomalies.length})</p>
           <ul className="space-y-2">
             {insights.anomalies.map((a, i) => (
@@ -223,10 +249,10 @@ export default function WearablesPage() {
       )}
 
       {insights && (
-        <section className="mb-6 rounded-2xl border-2 border-indigo-200 bg-indigo-50 p-5 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-wider text-indigo-700">Clinical summary — share with your doctor</p>
-          <p className="mt-2 text-sm text-slate-800 dark:text-slate-200">{insights.clinicalSummary}</p>
-          <button onClick={() => navigator.clipboard?.writeText(insights.clinicalSummary)} className="mt-3 rounded-md border border-indigo-300 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-semibold text-indigo-700">Copy summary</button>
+        <section className="mb-6 rounded-2xl bg-gradient-to-br from-sky-50 via-white to-cyan-50 dark:from-sky-950/30 dark:via-slate-900 dark:to-cyan-950/30 p-5 ring-1 ring-sky-200 dark:ring-sky-900/40 shadow-sm hover:shadow-md transition">
+          <p className="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300">Clinical summary — share with your doctor</p>
+          <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{insights.clinicalSummary}</p>
+          <button onClick={() => navigator.clipboard?.writeText(insights.clinicalSummary)} className="mt-3 bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 text-white shadow-md shadow-sky-500/20 rounded-xl px-4 py-1.5 text-xs font-bold transition">Copy summary</button>
         </section>
       )}
 
@@ -234,29 +260,30 @@ export default function WearablesPage() {
 
       {/* Link device dialog */}
       {showLink && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowLink(false)}>
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4" onClick={() => setShowLink(false)}>
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl ring-1 ring-sky-200 dark:ring-sky-900/40" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Link a wearable</h3>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">In production this opens your device&apos;s OAuth flow. For the demo, name a device and we&apos;ll start tracking.</p>
             <div className="mt-3 space-y-3">
               <div>
                 <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Provider</label>
-                <select value={linkForm.provider} onChange={(e) => setLinkForm({ ...linkForm, provider: e.target.value as WearableProvider })} className="w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm">
+                <select value={linkForm.provider} onChange={(e) => setLinkForm({ ...linkForm, provider: e.target.value as WearableProvider })} className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm">
                   {Object.entries(PROVIDER_LABEL).map(([k, v]) => <option key={k} value={k}>{PROVIDER_EMOJI[k as WearableProvider]} {v}</option>)}
                 </select>
               </div>
               <div>
                 <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Name</label>
-                <input className="w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm" placeholder='e.g. "My Mi Band 7"' value={linkForm.displayName} onChange={(e) => setLinkForm({ ...linkForm, displayName: e.target.value })} />
+                <input className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm" placeholder='e.g. "My Mi Band 7"' value={linkForm.displayName} onChange={(e) => setLinkForm({ ...linkForm, displayName: e.target.value })} />
               </div>
             </div>
             <div className="mt-5 flex justify-end gap-2">
-              <button onClick={() => setShowLink(false)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Cancel</button>
-              <button onClick={link} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white">Link</button>
+              <button onClick={() => setShowLink(false)} className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition">Cancel</button>
+              <button onClick={link} className="bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 text-white shadow-lg shadow-sky-500/20 rounded-xl px-5 py-2 text-sm font-bold transition">Link</button>
             </div>
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }
@@ -275,7 +302,7 @@ function SparkChart({ label, unit, tone, buckets }: { label: string; unit: strin
   const path = values.map((v, i) => `${i === 0 ? "M" : "L"}${(i * step).toFixed(1)},${(h - ((v - min) / range) * h).toFixed(1)}`).join(" ");
   const last = values[values.length - 1];
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3">
+    <div className="rounded-xl ring-1 ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900 p-3 shadow-sm hover:shadow-md transition">
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
         <p className="font-mono text-xs font-bold text-slate-900 dark:text-slate-100">{Math.round(last * 10) / 10}{unit}</p>

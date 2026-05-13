@@ -268,15 +268,17 @@ export default function ReferralsPage() {
               Your referral code
             </p>
             <div className="mt-2 flex items-center gap-3">
-              <code className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-2xl font-bold tracking-widest text-slate-900 dark:text-slate-100">
-                {me.code}
-              </code>
+              <div className="flex-1 rounded-xl bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 p-[2px] shadow-md shadow-indigo-500/20">
+                <code className="block rounded-[10px] bg-white dark:bg-slate-900 px-4 py-3 text-2xl font-bold tracking-widest text-slate-900 dark:text-slate-100">
+                  {me.code}
+                </code>
+              </div>
               <button
                 onClick={() => copyText(me.code, "code")}
-                className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                className={`rounded-xl px-4 py-3 text-sm font-bold transition ${
                   copied === "code"
                     ? "bg-emerald-100 text-emerald-700"
-                    : "bg-slate-900 text-white hover:bg-indigo-600"
+                    : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-md shadow-indigo-500/20"
                 }`}
               >
                 {copied === "code" ? "✓ Copied" : "Copy code"}
@@ -308,7 +310,7 @@ export default function ReferralsPage() {
             </div>
             <button
               onClick={shareNative}
-              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-500/30 hover:shadow-lg"
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 hover:from-emerald-600 hover:via-green-600 hover:to-emerald-700 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 hover:shadow-xl transition"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                 <circle cx="18" cy="5" r="3" />
@@ -477,19 +479,19 @@ function Stat({
   value: string;
   tone: "emerald" | "indigo" | "violet" | "amber";
 }) {
-  const tones: Record<string, { bg: string; text: string; ring: string }> = {
-    emerald: { bg: "from-emerald-50 to-emerald-100/30", text: "text-emerald-700", ring: "ring-emerald-100" },
-    indigo: { bg: "from-indigo-50 to-indigo-100/30", text: "text-indigo-700", ring: "ring-indigo-100" },
-    violet: { bg: "from-violet-50 to-violet-100/30", text: "text-violet-700", ring: "ring-violet-100" },
-    amber: { bg: "from-amber-50 to-amber-100/30", text: "text-amber-700", ring: "ring-amber-100" },
+  const tones: Record<string, { bg: string; text: string; ring: string; num: string }> = {
+    emerald: { bg: "from-emerald-100 via-emerald-50 to-teal-100 dark:from-emerald-950/50 dark:via-emerald-950/30 dark:to-teal-950/40", text: "text-emerald-700 dark:text-emerald-300", ring: "ring-emerald-200 dark:ring-emerald-900/40", num: "text-emerald-700 dark:text-emerald-200" },
+    indigo: { bg: "from-indigo-100 via-indigo-50 to-violet-100 dark:from-indigo-950/50 dark:via-indigo-950/30 dark:to-violet-950/40", text: "text-indigo-700 dark:text-indigo-300", ring: "ring-indigo-200 dark:ring-indigo-900/40", num: "text-indigo-700 dark:text-indigo-200" },
+    violet: { bg: "from-violet-100 via-fuchsia-50 to-fuchsia-100 dark:from-violet-950/50 dark:via-fuchsia-950/30 dark:to-fuchsia-950/40", text: "text-violet-700 dark:text-violet-300", ring: "ring-violet-200 dark:ring-violet-900/40", num: "text-violet-700 dark:text-violet-200" },
+    amber: { bg: "from-amber-100 via-amber-50 to-orange-100 dark:from-amber-950/50 dark:via-amber-950/30 dark:to-orange-950/40", text: "text-amber-700 dark:text-amber-300", ring: "ring-amber-200 dark:ring-amber-900/40", num: "text-amber-700 dark:text-amber-200" },
   };
   const t = tones[tone];
   return (
-    <div className={`rounded-2xl bg-gradient-to-br ${t.bg} p-4 ring-1 ${t.ring} backdrop-blur`}>
-      <p className={`text-[11px] font-semibold uppercase tracking-wide ${t.text}`}>
+    <div className={`rounded-2xl bg-gradient-to-br ${t.bg} p-4 ring-1 ${t.ring} shadow-sm hover:shadow-md transition`}>
+      <p className={`text-[11px] font-bold uppercase tracking-wide ${t.text}`}>
         {label}
       </p>
-      <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900 dark:text-slate-100">{value}</p>
+      <p className={`mt-1 text-2xl font-extrabold tabular-nums ${t.num}`}>{value}</p>
     </div>
   );
 }

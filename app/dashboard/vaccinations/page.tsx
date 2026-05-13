@@ -102,12 +102,18 @@ export default function VaccinationsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Vaccinations</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Track doses against the Indian National Immunization Schedule. Add a subject to see what&apos;s due.
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
+    <div className="mx-auto max-w-4xl px-4 py-8">
+      <div className="mb-8 flex flex-wrap items-start gap-4">
+        <div className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white p-3 rounded-2xl shadow-lg shadow-cyan-500/30 text-2xl">
+          💉
+        </div>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-3xl font-extrabold bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-300 dark:to-blue-300 bg-clip-text text-transparent">Vaccinations</h1>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+            Track doses against the Indian National Immunization Schedule. Add a subject to see what&apos;s due.
+          </p>
+        </div>
       </div>
 
       {/* Subject picker */}
@@ -116,8 +122,8 @@ export default function VaccinationsPage() {
           <button
             key={s.subjectKey}
             onClick={() => setActiveSubject(s)}
-            className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
-              activeSubject?.subjectKey === s.subjectKey ? "bg-indigo-600 text-white shadow-sm" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+            className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition ${
+              activeSubject?.subjectKey === s.subjectKey ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-500/20" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:ring-cyan-300 hover:shadow-md"
             }`}
           >
             {s.subjectName}
@@ -128,7 +134,7 @@ export default function VaccinationsPage() {
         ))}
         <button
           onClick={() => setShowSubjectForm((v) => !v)}
-          className="rounded-xl bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 ring-1 ring-dashed ring-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+          className="rounded-xl bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-cyan-700 dark:text-cyan-300 ring-1 ring-dashed ring-cyan-300 hover:bg-cyan-50 dark:hover:bg-slate-800 transition"
         >
           + Add subject
         </button>
@@ -144,13 +150,13 @@ export default function VaccinationsPage() {
         />
       )}
 
-      {loading && <p className="rounded-xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>}
+      {loading && <p className="rounded-2xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">Loading…</p>}
       {!loading && subjects.length === 0 && !showSubjectForm && (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white dark:bg-slate-900 p-10 text-center">
-          <p className="text-3xl">💉</p>
-          <p className="mt-2 text-base font-bold text-slate-700 dark:text-slate-300">Add a subject to start tracking</p>
+        <div className="rounded-2xl bg-white dark:bg-slate-900 p-10 text-center shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+          <div className="mx-auto h-20 w-20 rounded-full bg-gradient-to-br from-cyan-100 to-blue-100 dark:from-cyan-950/40 dark:to-blue-950/40 flex items-center justify-center text-4xl">💉</div>
+          <p className="mt-4 text-lg font-bold text-slate-800 dark:text-slate-100">Add a subject to start tracking</p>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">You can track yourself plus each family member separately.</p>
-          <button onClick={() => setShowSubjectForm(true)} className="mt-4 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white">+ Add subject</button>
+          <button onClick={() => setShowSubjectForm(true)} className="mt-5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/20 rounded-xl px-5 py-2.5 text-sm font-bold transition">+ Add subject</button>
         </div>
       )}
 
@@ -176,7 +182,7 @@ export default function VaccinationsPage() {
           {/* Rows */}
           <ul className="space-y-2">
             {filtered.map((row) => (
-              <li key={row.id} className={`rounded-xl border p-3 shadow-sm transition-colors ${row.status === "overdue" ? "border-rose-200 bg-rose-50/30" : row.status === "due" ? "border-indigo-200 bg-indigo-50/30" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"}`}>
+              <li key={row.id} className={`rounded-2xl p-4 shadow-sm hover:shadow-md transition ring-1 ${row.status === "overdue" ? "ring-rose-200 bg-gradient-to-r from-rose-50 to-white dark:from-rose-950/30 dark:to-slate-900" : row.status === "due" ? "ring-cyan-200 bg-gradient-to-r from-cyan-50 to-white dark:from-cyan-950/30 dark:to-slate-900" : "ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900"}`}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -194,7 +200,7 @@ export default function VaccinationsPage() {
                     {row.notes && <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">Note: {row.notes}</p>}
                   </div>
                   {row.status !== "received" ? (
-                    <button onClick={() => setMarkingId(row.id)} className="flex-none rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white">Mark received</button>
+                    <button onClick={() => setMarkingId(row.id)} className="flex-none rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 px-3.5 py-1.5 text-xs font-bold text-white shadow-md shadow-cyan-500/20 transition">Mark received</button>
                   ) : (
                     <button onClick={() => setMarkingId(row.id)} className="flex-none rounded-lg bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 ring-1 ring-slate-300">Edit</button>
                   )}
@@ -208,17 +214,18 @@ export default function VaccinationsPage() {
         </>
       )}
     </div>
+    </div>
   );
 }
 
 function Stat({ label, value, tone }: { label: string; value: number; tone: "ok" | "info" | "bad" | "neutral" }) {
   const cls =
-    tone === "ok" ? "ring-emerald-200 bg-emerald-50"
-    : tone === "info" ? "ring-indigo-200 bg-indigo-50"
-    : tone === "bad" ? "ring-rose-200 bg-rose-50"
+    tone === "ok" ? "ring-emerald-200 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/30 dark:to-slate-900 dark:ring-emerald-900"
+    : tone === "info" ? "ring-cyan-200 bg-gradient-to-br from-cyan-50 to-white dark:from-cyan-950/30 dark:to-slate-900 dark:ring-cyan-900"
+    : tone === "bad" ? "ring-rose-200 bg-gradient-to-br from-rose-50 to-white dark:from-rose-950/30 dark:to-slate-900 dark:ring-rose-900"
     : "ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900";
   return (
-    <div className={`rounded-xl p-3 ring-1 ${cls}`}>
+    <div className={`rounded-2xl p-3 ring-1 shadow-sm ${cls}`}>
       <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
       <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-100 tabular-nums">{value}</p>
     </div>
@@ -229,7 +236,7 @@ function Chip({ active, onClick, children, count }: { active: boolean; onClick: 
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${active ? "bg-indigo-600 text-white" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${active ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-500/20" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 hover:ring-cyan-300 hover:shadow-sm"}`}
     >
       {children}
       <span className={`rounded-full px-1.5 text-[10px] font-bold ${active ? "bg-white/20" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}>{count}</span>
@@ -265,7 +272,7 @@ function SubjectForm({ onAdded }: { onAdded: (s: Subject) => void }) {
         </label>
       </div>
       <div className="mt-4 flex justify-end">
-        <button onClick={submit} className="rounded-xl bg-indigo-600 px-5 py-2 text-sm font-bold text-white">Add</button>
+        <button onClick={submit} className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/20 rounded-xl px-5 py-2.5 text-sm font-bold transition">Add</button>
       </div>
     </div>
   );
@@ -288,7 +295,7 @@ function MarkForm({ row, onCancel, onSave }: { row: ScheduleRow; onCancel: () =>
       </div>
       <div className="mt-3 flex justify-end gap-2">
         <button onClick={onCancel} className="rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">Cancel</button>
-        <button onClick={() => onSave(date, notes.trim() || undefined)} className="rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-bold text-white">Save</button>
+        <button onClick={() => onSave(date, notes.trim() || undefined)} className="rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 px-4 py-1.5 text-xs font-bold text-white shadow-md shadow-cyan-500/20 transition">Save</button>
       </div>
     </div>
   );

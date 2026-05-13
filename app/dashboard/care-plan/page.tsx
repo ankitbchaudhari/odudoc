@@ -71,17 +71,21 @@ export default function CarePlanPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Care plans</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Chronic-condition goals — targets, compliance %, lifestyle reminders. Pulls vitals from the last 30 days.
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-emerald-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
+    <div className="mx-auto max-w-4xl px-4 py-8">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+        <div className="flex items-start gap-4">
+          <div className="bg-gradient-to-br from-teal-500 to-emerald-500 text-white p-3 rounded-2xl shadow-lg shadow-teal-500/30 text-2xl">📋</div>
+          <div>
+            <h1 className="text-3xl font-extrabold bg-gradient-to-r from-teal-600 to-emerald-600 dark:from-teal-300 dark:to-emerald-300 bg-clip-text text-transparent">Care plans</h1>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              Chronic-condition goals — targets, compliance %, lifestyle reminders. Pulls vitals from the last 30 days.
+            </p>
+          </div>
         </div>
         <button
           onClick={() => setShowCreate((v) => !v)}
-          className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-700"
+          className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white shadow-lg shadow-teal-500/20 rounded-xl px-5 py-2.5 text-sm font-bold transition"
         >
           {showCreate ? "Cancel" : "+ New plan"}
         </button>
@@ -91,14 +95,14 @@ export default function CarePlanPage() {
         <CreatePlanForm conditions={conditions} onCreated={() => { setShowCreate(false); load(); }} />
       )}
 
-      {loading && <p className="rounded-xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm">Loading…</p>}
+      {loading && <p className="rounded-2xl bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">Loading…</p>}
 
       {!loading && plans.length === 0 && !showCreate && (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white dark:bg-slate-900 p-10 text-center">
-          <p className="text-3xl">📋</p>
-          <p className="mt-2 text-base font-bold text-slate-700 dark:text-slate-300">No active care plans</p>
+        <div className="rounded-2xl bg-white dark:bg-slate-900 p-10 text-center shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+          <div className="mx-auto h-20 w-20 rounded-full bg-gradient-to-br from-teal-100 to-emerald-100 dark:from-teal-950/40 dark:to-emerald-950/40 flex items-center justify-center text-4xl">📋</div>
+          <p className="mt-4 text-lg font-bold text-slate-800 dark:text-slate-100">No active care plans</p>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Add a plan for an ongoing condition (diabetes, hypertension, etc.) to track targets over time.</p>
-          <button onClick={() => setShowCreate(true)} className="mt-4 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white">+ New plan</button>
+          <button onClick={() => setShowCreate(true)} className="mt-5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white shadow-lg shadow-teal-500/20 rounded-xl px-5 py-2.5 text-sm font-bold transition">+ New plan</button>
         </div>
       )}
 
@@ -108,12 +112,13 @@ export default function CarePlanPage() {
         ))}
       </div>
     </div>
+    </div>
   );
 }
 
 function PlanCard({ plan, onDelete, onToggle }: { plan: CarePlan; onDelete: () => void; onToggle: () => void }) {
   return (
-    <article className={`rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ${plan.active ? "ring-slate-200 dark:ring-slate-800" : "ring-slate-100 opacity-70"}`}>
+    <article className={`rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md transition ring-1 ${plan.active ? "ring-teal-200 dark:ring-teal-900/50" : "ring-slate-100 opacity-70"}`}>
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -143,7 +148,7 @@ function PlanCard({ plan, onDelete, onToggle }: { plan: CarePlan; onDelete: () =
           <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Targets — last 30 days</p>
           <ul className="space-y-2">
             {plan.compliance.map((c, i) => (
-              <li key={i} className="rounded-xl bg-slate-50 dark:bg-slate-900 p-3 ring-1 ring-slate-100">
+              <li key={i} className="rounded-xl bg-gradient-to-r from-teal-50/60 to-emerald-50/40 dark:from-teal-950/20 dark:to-emerald-950/10 p-3 ring-1 ring-teal-100 dark:ring-teal-900/30">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <span className="text-base">{KIND_EMOJI[c.target.kind]}</span>
@@ -164,7 +169,7 @@ function PlanCard({ plan, onDelete, onToggle }: { plan: CarePlan; onDelete: () =
                       </span>
                     </div>
                   ) : (
-                    <Link href="/dashboard/vitals" className="flex-none text-xs font-semibold text-indigo-600 hover:underline">
+                    <Link href="/dashboard/vitals" className="flex-none text-xs font-semibold text-teal-600 dark:text-teal-300 hover:underline">
                       Log a reading →
                     </Link>
                   )}
@@ -193,7 +198,7 @@ function PlanCard({ plan, onDelete, onToggle }: { plan: CarePlan; onDelete: () =
           <ul className="space-y-1.5">
             {plan.goals.map((g, i) => (
               <li key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
-                <span className="mt-1.5 h-1.5 w-1.5 flex-none rounded-full bg-indigo-500" />
+                <span className="mt-1.5 h-2 w-2 flex-none rounded-full bg-gradient-to-br from-teal-500 to-emerald-500" />
                 {g}
               </li>
             ))}
@@ -284,7 +289,7 @@ function CreatePlanForm({ conditions, onCreated }: { conditions: ConditionOpt[];
         </label>
       </div>
       <div className="mt-4 flex justify-end">
-        <button onClick={submit} disabled={busy} className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm disabled:opacity-50">
+        <button onClick={submit} disabled={busy} className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white shadow-lg shadow-teal-500/20 rounded-xl px-5 py-2.5 text-sm font-bold transition disabled:opacity-50">
           {busy ? "Creating…" : "Create plan"}
         </button>
       </div>

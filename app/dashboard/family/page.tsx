@@ -149,50 +149,59 @@ export default function FamilyPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-rose-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
+    <div className="mx-auto max-w-5xl px-4 py-8">
       {toast && (
-        <div className={`mb-4 flex items-start justify-between gap-3 rounded-lg border px-4 py-3 text-sm ${toast.kind === "ok" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-rose-200 bg-rose-50 text-rose-800"}`}>
+        <div className={`mb-4 flex items-start justify-between gap-3 rounded-xl border px-4 py-3 text-sm shadow-sm ${toast.kind === "ok" ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200" : "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-200"}`}>
           <span>{toast.text}</span>
           <button onClick={() => setToast(null)} className="text-xs font-semibold underline">Dismiss</button>
         </div>
       )}
 
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Family</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            One account, every member of your family. Add kids, parents, or a spouse — book consults and store records for each, all from your phone.
-          </p>
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-4">
+          <div className="bg-gradient-to-br from-pink-500 to-rose-500 text-white p-3 rounded-2xl shadow-lg shadow-pink-500/30 text-2xl">👨‍👩‍👧‍👦</div>
+          <div>
+            <h1 className="text-3xl font-extrabold bg-gradient-to-r from-pink-600 to-rose-600 dark:from-pink-300 dark:to-rose-300 bg-clip-text text-transparent">Family</h1>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              One account, every member of your family. Add kids, parents, or a spouse — book consults and store records for each, all from your phone.
+            </p>
+          </div>
         </div>
-        <button onClick={() => open()} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-indigo-700">
+        <button onClick={() => open()} className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white shadow-lg shadow-pink-500/20 rounded-xl px-5 py-2.5 text-sm font-bold transition">
           + Add family member
         </button>
       </div>
 
       {/* Self card pinned at top */}
-      <div className={`mb-3 flex items-center justify-between rounded-xl border p-4 shadow-sm ${active?.kind === "self" ? "border-indigo-300 bg-indigo-50/40 ring-2 ring-indigo-200" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"}`}>
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 font-bold text-white">You</div>
-          <div>
-            <p className="font-semibold text-slate-900 dark:text-slate-100">Yourself</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Primary account — bookings & records default here when no one else is selected.</p>
+      <div className={`mb-4 rounded-2xl p-1 shadow-md ${active?.kind === "self" ? "bg-gradient-to-r from-pink-500 via-rose-500 to-fuchsia-500 shadow-pink-500/30" : "bg-gradient-to-r from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-700"}`}>
+        <div className="flex items-center justify-between rounded-[0.95rem] bg-white dark:bg-slate-900 p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-rose-600 font-extrabold text-white shadow-lg shadow-pink-500/30">You</div>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="font-extrabold text-slate-900 dark:text-slate-100">Yourself</p>
+                <span className="rounded-full bg-gradient-to-r from-pink-600 to-rose-600 px-2.5 py-0.5 text-[10px] font-bold uppercase text-white shadow-sm">Primary</span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Primary account — bookings & records default here when no one else is selected.</p>
+            </div>
           </div>
+          {active?.kind === "self" ? (
+            <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/40 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200 dark:ring-emerald-800">✓ Active</span>
+          ) : (
+            <button onClick={() => switchTo(null)} className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-pink-50 dark:hover:bg-slate-800 transition">Switch to self</button>
+          )}
         </div>
-        {active?.kind === "self" ? (
-          <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">✓ Active</span>
-        ) : (
-          <button onClick={() => switchTo(null)} className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">Switch to self</button>
-        )}
       </div>
 
       {loading ? (
         <p className="py-12 text-center text-sm text-slate-400">Loading…</p>
       ) : list.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 dark:bg-slate-900 p-10 text-center">
-          <p className="text-2xl">👨‍👩‍👧‍👦</p>
-          <p className="mt-2 text-sm font-semibold text-slate-700 dark:text-slate-300">No family members added yet</p>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Add your kids, spouse, or parents to manage their healthcare from one account.</p>
-          <button onClick={() => open()} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white">+ Add first member</button>
+        <div className="rounded-2xl bg-white dark:bg-slate-900 p-10 text-center shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+          <div className="mx-auto h-20 w-20 rounded-full bg-gradient-to-br from-pink-100 to-rose-100 dark:from-pink-950/40 dark:to-rose-950/40 flex items-center justify-center text-4xl">👨‍👩‍👧‍👦</div>
+          <p className="mt-4 text-lg font-bold text-slate-800 dark:text-slate-100">No family members added yet</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Add your kids, spouse, or parents to manage their healthcare from one account.</p>
+          <button onClick={() => open()} className="mt-5 inline-flex items-center gap-2 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white shadow-lg shadow-pink-500/20 rounded-xl px-5 py-2.5 text-sm font-bold transition">+ Add first member</button>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -201,9 +210,9 @@ export default function FamilyPage() {
             const age = ageYears(d.dateOfBirth);
             const initials = d.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "?";
             return (
-              <li key={d.id} className={`rounded-xl border p-4 shadow-sm ${isActive ? "border-emerald-300 bg-emerald-50/40 ring-2 ring-emerald-200" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"}`}>
+              <li key={d.id} className={`rounded-2xl p-4 shadow-sm hover:shadow-md transition ring-1 ${isActive ? "ring-emerald-300 dark:ring-emerald-700 bg-gradient-to-r from-emerald-50 to-white dark:from-emerald-950/30 dark:to-slate-900" : "ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900"}`}>
                 <div className="flex items-start gap-4">
-                  <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${REL_GRADIENT[d.relationship]} text-lg font-bold text-white`}>
+                  <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${REL_GRADIENT[d.relationship]} text-lg font-extrabold text-white shadow-lg`}>
                     {initials}
                   </div>
                   <div className="flex-1">
@@ -225,10 +234,10 @@ export default function FamilyPage() {
                   </div>
                   <div className="flex flex-col gap-1.5">
                     {!isActive && (
-                      <button onClick={() => switchTo(d.id)} className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700">Book for {d.name.split(" ")[0]}</button>
+                      <button onClick={() => switchTo(d.id)} className="rounded-lg bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 px-3 py-1.5 text-xs font-bold text-white shadow-md shadow-pink-500/20 transition">Book for {d.name.split(" ")[0]}</button>
                     )}
-                    <button onClick={() => open(d)} className="rounded-md border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">Edit</button>
-                    <button onClick={() => remove(d)} className="rounded-md border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50">Remove</button>
+                    <button onClick={() => open(d)} className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-pink-50 dark:hover:bg-slate-800 transition">Edit</button>
+                    <button onClick={() => remove(d)} className="rounded-lg border border-rose-200 dark:border-rose-800 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-semibold text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition">Remove</button>
                   </div>
                 </div>
               </li>
@@ -239,8 +248,8 @@ export default function FamilyPage() {
 
       {/* Form dialog */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => { setShowForm(false); reset(); }}>
-          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4" onClick={() => { setShowForm(false); reset(); }}>
+          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl ring-1 ring-pink-200 dark:ring-pink-900/40" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{editing ? `Edit ${editing.name}` : "Add a family member"}</h3>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Their healthcare profile will be managed from your account. You can switch back at any time.</p>
             <div className="mt-4 space-y-3">
@@ -267,8 +276,8 @@ export default function FamilyPage() {
               <F label="Notes"><textarea rows={2} className="form-input" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="e.g. anaphylactic reaction to peanuts" /></F>
             </div>
             <div className="mt-5 flex justify-end gap-2">
-              <button onClick={() => { setShowForm(false); reset(); }} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Cancel</button>
-              <button onClick={save} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700">{editing ? "Save changes" : "Add to family"}</button>
+              <button onClick={() => { setShowForm(false); reset(); }} className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition">Cancel</button>
+              <button onClick={save} className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white shadow-lg shadow-pink-500/20 rounded-xl px-5 py-2 text-sm font-bold transition">{editing ? "Save changes" : "Add to family"}</button>
             </div>
           </div>
         </div>
@@ -290,6 +299,7 @@ export default function FamilyPage() {
           box-shadow: 0 0 0 2px rgba(99,102,241,0.2);
         }
       `}</style>
+    </div>
     </div>
   );
 }

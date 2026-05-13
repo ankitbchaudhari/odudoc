@@ -104,19 +104,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ plan });
   } catch (err) {
     log.error("care-plan ai failed", err);
+    const msg = err instanceof Error ? err.message : "AI service unreachable.";
     return NextResponse.json(
-      { error: "AI service unreachable. Try again or fill the form manually." },
+      { error: `AI service unreachable. ${msg}`.slice(0, 400) },
       { status: 502 },
     );
   }
 }
 
+// Gemini model fallback chain — Google rotates retired model
+// aliases, so try the current GA model first and step down to a
+// known-good one before bailing out.
+const GEMINI_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash"];
+
 async function callGemini(key: string, userPrompt: string): Promise<string> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
+  let lastErr: string = "";
+  for (const model of GEMINI_MODELS) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
       system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: [{ role: "user", parts: [{ text: userPrompt }] }],
       generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
@@ -124,13 +132,25 @@ async function callGemini(key: string, userPrompt: string): Promise<string> {
   });
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
-    log.error("gemini api error", { status: res.status, body: errText });
-    throw new Error(`gemini ${res.status}`);
+    log.error("gemini api error", { status: res.status, body: errText, model });
+    // 404 / NOT_FOUND on a model usually means the alias was
+    // retired — fall through to the next candidate. 401/403 means
+    // a bad key, which won't get better by trying another model
+    // so we bail out immediately.
+    if (res.status === 401 || res.status === 403) {
+      throw new Error(`gemini auth failed: check GEMINI_API_KEY`);
+    }
+    lastErr = `gemini ${res.status} on ${model}${errText ? `: ${errText.slice(0, 200)}` : ""}`;
+    continue;
   }
   const payload = (await res.json()) as {
     candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
   };
-  return payload.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  const text = payload.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  if (text) return text;
+  lastErr = `gemini returned empty completion on ${model}`;
+  }
+  throw new Error(lastErr || "gemini all candidate models failed");
 }
 
 async function callOpenAI(key: string, userPrompt: string): Promise<string> {

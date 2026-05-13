@@ -34,10 +34,17 @@ const PROVIDER_EMOJI: Record<WearableProvider, string> = {
   oura: "💍", whoop: "🟣", manual: "✍️",
 };
 const PROVIDER_LABEL: Record<WearableProvider, string> = {
-  fitbit: "Fitbit", apple_health: "Apple Health", google_fit: "Google Fit",
+  fitbit: "Fitbit", apple_health: "Apple Health", google_fit: "Google Health",
   samsung_health: "Samsung Health", garmin: "Garmin", mi_fit: "Mi Fit",
   oura: "Oura", whoop: "Whoop", manual: "Manual upload",
 };
+// Only these two providers are user-selectable today — Google Health
+// covers Android / Wear OS / Mi Band / Samsung via the Health Connect
+// aggregator, and Apple Health covers iPhone / Apple Watch. The
+// existing wearable store still understands every provider id (older
+// linked devices keep working) but the link-device dropdown only
+// surfaces these two.
+const SELECTABLE_PROVIDERS: WearableProvider[] = ["google_fit", "apple_health"];
 
 const TILE_TONE: Record<KpiTile["status"], string> = {
   good: "border-emerald-200 bg-emerald-50 text-emerald-900",
@@ -81,7 +88,7 @@ export default function WearablesPage() {
   const [insights, setInsights] = useState<InsightsBundle | null>(null);
   const [loading, setLoading] = useState(true);
   const [showLink, setShowLink] = useState(false);
-  const [linkForm, setLinkForm] = useState<{ provider: WearableProvider; displayName: string }>({ provider: "fitbit", displayName: "" });
+  const [linkForm, setLinkForm] = useState<{ provider: WearableProvider; displayName: string }>({ provider: "google_fit", displayName: "" });
   const [providersConfigured, setProvidersConfigured] = useState<Record<string, boolean>>({});
   const [toast, setToast] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
@@ -129,7 +136,7 @@ export default function WearablesPage() {
     if (r.ok) {
       setToast({ kind: "ok", text: "Device linked." });
       setShowLink(false);
-      setLinkForm({ provider: "fitbit", displayName: "" });
+      setLinkForm({ provider: "google_fit", displayName: "" });
       await load();
     }
   };
@@ -296,9 +303,9 @@ export default function WearablesPage() {
               <div>
                 <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Provider</label>
                 <select value={linkForm.provider} onChange={(e) => setLinkForm({ ...linkForm, provider: e.target.value as WearableProvider })} className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm">
-                  {Object.entries(PROVIDER_LABEL).map(([k, v]) => (
+                  {SELECTABLE_PROVIDERS.map((k) => (
                     <option key={k} value={k}>
-                      {PROVIDER_EMOJI[k as WearableProvider]} {v}{providersConfigured[k] ? " · OAuth ready" : ""}
+                      {PROVIDER_EMOJI[k]} {PROVIDER_LABEL[k]}{providersConfigured[k] ? " · OAuth ready" : ""}
                     </option>
                   ))}
                 </select>

@@ -186,12 +186,20 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        <h1 className="mb-8 text-2xl font-bold text-gray-900 dark:text-slate-100">My Profile</h1>
+        <div className="mb-8 flex items-center gap-4">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-2xl text-white shadow-lg shadow-violet-500/30">
+            ⚙️
+          </div>
+          <div>
+            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100">My Profile</h1>
+            <p className="mt-1 text-slate-600 dark:text-slate-400">Manage your identity, medical history, and account security.</p>
+          </div>
+        </div>
 
         {saved && (
-          <div className="mb-6 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+          <div className="mb-6 rounded-xl bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/40 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300">
             Profile updated successfully!
           </div>
         )}
@@ -207,7 +215,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Profile Header */}
-        <div className="mb-6 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <div className="mb-6 rounded-2xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800 p-6 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="relative">
               {avatar ? (
@@ -215,17 +223,17 @@ export default function ProfilePage() {
                 <img
                   src={avatar}
                   alt="Profile photo"
-                  className="h-20 w-20 rounded-full object-cover ring-2 ring-primary-100"
+                  className="h-20 w-20 rounded-full object-cover ring-2 ring-violet-200 dark:ring-violet-900/40"
                 />
               ) : (
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-100 text-2xl font-bold text-primary-700">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-2xl font-bold text-white shadow-lg shadow-violet-500/30">
                   {session?.user?.name?.charAt(0)?.toUpperCase() || "U"}
                 </div>
               )}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-primary-600 text-white shadow-md ring-2 ring-white hover:bg-primary-700"
+                className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-md ring-2 ring-white dark:ring-slate-900 hover:from-violet-700 hover:to-fuchsia-700"
                 aria-label="Change photo"
                 title="Change photo"
               >
@@ -242,11 +250,11 @@ export default function ProfilePage() {
               />
             </div>
             <div className="flex-1">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                 {session?.user?.name}
               </h2>
-              <p className="text-sm text-gray-500 dark:text-slate-400">{session?.user?.email}</p>
-              <span className="mt-1 inline-block rounded-full bg-primary-50 px-2.5 py-0.5 text-xs font-medium capitalize text-primary-700">
+              <p className="text-sm text-slate-500 dark:text-slate-400">{session?.user?.email}</p>
+              <span className="mt-1 inline-block rounded-full bg-gradient-to-r from-violet-100 to-fuchsia-100 dark:from-violet-900/40 dark:to-fuchsia-900/40 px-2.5 py-0.5 text-xs font-semibold capitalize text-violet-700 dark:text-violet-300">
                 {session?.user?.role}
               </span>
             </div>
@@ -254,7 +262,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
+                className="rounded-xl border border-dashed border-violet-300 dark:border-violet-800 bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-950/30 dark:to-fuchsia-950/30 px-3 py-1.5 text-xs font-semibold text-violet-700 dark:text-violet-300 hover:from-violet-100 hover:to-fuchsia-100 dark:hover:from-violet-900/40 dark:hover:to-fuchsia-900/40"
               >
                 {avatar ? "Change photo" : "Upload photo"}
               </button>
@@ -262,7 +270,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={handleRemoveAvatar}
-                  className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                  className="rounded-xl border border-rose-200 dark:border-rose-900/40 px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30"
                 >
                   Remove
                 </button>
@@ -270,44 +278,44 @@ export default function ProfilePage() {
             </div>
           </div>
           {avatarError && (
-            <p className="mt-3 text-xs text-red-600">{avatarError}</p>
+            <p className="mt-3 text-xs text-rose-600 dark:text-rose-400">{avatarError}</p>
           )}
-          <p className="mt-3 text-xs text-gray-400 dark:text-slate-500">
+          <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
             JPG, PNG or GIF · max 2 MB
           </p>
         </div>
 
         {/* Personal Information */}
         <form onSubmit={handleSave}>
-          <div className="rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm">
-            <h3 className="mb-5 text-lg font-semibold text-gray-900 dark:text-slate-100">
+          <div className="rounded-2xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800 p-6 shadow-sm">
+            <h3 className="mb-5 text-lg font-bold text-slate-900 dark:text-slate-100">
               Personal Information
             </h3>
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
+                <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">
                   Full name
                 </label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
+                <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">
                   Email address
                 </label>
                 <input
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
+                <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">
                   Phone number
                 </label>
                 <PhoneInput
@@ -316,22 +324,22 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
+                <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">
                   Date of birth
                 </label>
                 <input
                   type="date"
                   value={form.dob}
                   onChange={(e) => setForm({ ...form, dob: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
                 />
               </div>
             </div>
           </div>
 
           {/* Medical History */}
-          <div className="mt-6 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm">
-            <h3 className="mb-5 text-lg font-semibold text-gray-900 dark:text-slate-100">
+          <div className="mt-6 rounded-2xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800 p-6 shadow-sm">
+            <h3 className="mb-5 text-lg font-bold text-slate-900 dark:text-slate-100">
               Medical History
             </h3>
 
@@ -340,15 +348,15 @@ export default function ProfilePage() {
                 {history.map((entry, i) => (
                   <li
                     key={i}
-                    className="flex items-start justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50 dark:bg-slate-900 px-4 py-3"
+                    className="flex items-start justify-between gap-3 rounded-xl ring-1 ring-slate-200 dark:ring-slate-800 bg-gradient-to-br from-violet-50/60 to-fuchsia-50/40 dark:from-violet-950/20 dark:to-fuchsia-950/10 px-4 py-3"
                   >
-                    <p className="flex-1 whitespace-pre-wrap text-sm text-gray-700 dark:text-slate-300">
+                    <p className="flex-1 whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">
                       {entry}
                     </p>
                     <button
                       type="button"
                       onClick={() => removeHistoryEntry(i)}
-                      className="shrink-0 rounded p-1 text-red-500 hover:bg-red-50"
+                      className="shrink-0 rounded p-1 text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30"
                       aria-label="Remove entry"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -372,88 +380,91 @@ export default function ProfilePage() {
                   }
                 }}
                 placeholder="e.g. Diabetes (since 2019), allergic to penicillin, asthma"
-                className="flex-1 rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-2.5 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
               />
               <button
                 type="button"
                 onClick={addHistoryEntry}
                 disabled={!newHistoryEntry.trim()}
-                className="rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-violet-500/20 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Add
               </button>
             </div>
             {history.length === 0 && (
-              <p className="mt-3 text-xs text-gray-400 dark:text-slate-500">
-                No medical history records yet. Add conditions, allergies, or past
-                surgeries so your doctors see them at a glance.
-              </p>
+              <div className="mt-4 rounded-xl bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-950/20 dark:to-fuchsia-950/20 ring-1 ring-violet-100 dark:ring-violet-900/30 p-6 text-center">
+                <div className="mx-auto mb-3 h-20 w-20 rounded-full bg-gradient-to-br from-violet-100 to-fuchsia-100 dark:from-violet-900/30 dark:to-fuchsia-900/30 grid place-items-center text-3xl">🩺</div>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  No medical history records yet. Add conditions, allergies, or past
+                  surgeries so your doctors see them at a glance.
+                </p>
+              </div>
             )}
           </div>
 
           {/* Save Button */}
           <div className="mt-6 flex items-center justify-end gap-4">
             {saved && (
-              <span className="inline-flex items-center gap-1.5 rounded-lg bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700">
+              <span className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 ring-1 ring-emerald-200 dark:ring-emerald-900/40 px-3 py-1.5 text-sm font-semibold text-emerald-700 dark:text-emerald-300">
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
                 Saved
               </span>
             )}
-            <button type="submit" className="btn-primary">
+            <button type="submit" className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-violet-500/20">
               Save Changes
             </button>
           </div>
         </form>
 
         {/* Change Password */}
-        <div className="mt-6 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm">
-          <h3 className="mb-5 text-lg font-semibold text-gray-900 dark:text-slate-100">
+        <div className="mt-6 rounded-2xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800 p-6 shadow-sm">
+          <h3 className="mb-5 text-lg font-bold text-slate-900 dark:text-slate-100">
             Change Password
           </h3>
           <div className="space-y-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
+              <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">
                 Current password
               </label>
               <input
                 type="password"
                 value={passwords.current}
                 onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
-                className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
+                <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">
                   New password
                 </label>
                 <input
                   type="password"
                   value={passwords.newPass}
                   onChange={(e) => setPasswords({ ...passwords, newPass: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">
+                <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">
                   Confirm new password
                 </label>
                 <input
                   type="password"
                   value={passwords.confirm}
                   onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
                 />
               </div>
             </div>
             {pwMsg && (
               <div
-                className={`rounded-lg px-3 py-2 text-sm ${
+                className={`rounded-xl px-3 py-2 text-sm ${
                   pwMsg.kind === "ok"
-                    ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200"
-                    : "bg-rose-50 text-rose-800 ring-1 ring-rose-200"
+                    ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-200 ring-1 ring-emerald-200 dark:ring-emerald-900/40"
+                    : "bg-rose-50 dark:bg-rose-950/30 text-rose-800 dark:text-rose-200 ring-1 ring-rose-200 dark:ring-rose-900/40"
                 }`}
               >
                 {pwMsg.text}
@@ -464,7 +475,7 @@ export default function ProfilePage() {
                 type="button"
                 onClick={handleChangePassword}
                 disabled={pwBusy}
-                className="btn-outline !py-2 !text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-xl border border-violet-300 dark:border-violet-800 bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-950/30 dark:to-fuchsia-950/30 px-5 py-2 text-sm font-bold text-violet-700 dark:text-violet-300 hover:from-violet-100 hover:to-fuchsia-100 dark:hover:from-violet-900/40 dark:hover:to-fuchsia-900/40 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {pwBusy ? "Updating…" : "Update Password"}
               </button>

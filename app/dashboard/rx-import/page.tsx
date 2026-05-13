@@ -156,83 +156,101 @@ export default function RxImportPage() {
   const newDrugs = items.filter((i) => i.drugName).map((i) => ({ name: i.drugName, strength: i.strength }));
 
   return (
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
     <div className="mx-auto max-w-5xl px-4 py-6">
       {toast && (
-        <div className={`mb-4 flex items-start justify-between gap-3 rounded-lg border px-4 py-3 text-sm ${toast.kind === "ok" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-rose-200 bg-rose-50 text-rose-800"}`}>
+        <div className={`mb-4 flex items-start justify-between gap-3 rounded-xl px-4 py-3 text-sm ring-1 ${toast.kind === "ok" ? "ring-emerald-200 dark:ring-emerald-900/40 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-200" : "ring-rose-200 dark:ring-rose-900/40 bg-rose-50 dark:bg-rose-950/30 text-rose-800 dark:text-rose-200"}`}>
           <span>{toast.text}</span>
           <button onClick={() => setToast(null)} className="text-xs font-semibold underline">Dismiss</button>
         </div>
       )}
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Import Paper Prescription</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Photograph or paste an old prescription. We&apos;ll OCR it in your browser, parse the drugs, run a safety check, and save it to your records — ready for refill orders.
-        </p>
+      <div className="mb-6 flex items-center gap-4">
+        <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 text-2xl text-white shadow-lg shadow-orange-500/30">
+          📷
+        </div>
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100">Import Paper Prescription</h1>
+          <p className="mt-1 text-slate-600 dark:text-slate-400">
+            Photograph or paste an old prescription. We&apos;ll OCR it in your browser, parse the drugs, run a safety check, and save it to your records — ready for refill orders.
+          </p>
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* OCR + transcript */}
         <div className="space-y-3">
-          <section className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
-            <p className="mb-2 text-sm font-bold text-slate-900 dark:text-slate-100">1. Add prescription image</p>
+          <section className="rounded-2xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800 p-5 shadow-sm">
+            <div className="mb-3 flex items-center gap-2">
+              <span className="h-7 w-7 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 text-white font-bold grid place-items-center text-sm shadow-md shadow-orange-500/30">1</span>
+              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Add prescription image</p>
+            </div>
             <input
               type="file" accept="image/*" capture="environment"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) onPhotoPick(f); }}
-              className="block w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+              className="block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-orange-500 file:to-amber-500 file:px-3 file:py-1.5 file:text-white file:font-semibold"
             />
             {photoUrl && (
               <div className="mt-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photoUrl} alt="Prescription" className="max-h-60 w-full rounded-lg border border-slate-200 dark:border-slate-800 object-contain" />
-                <button onClick={runOcr} disabled={ocrPhase === "loading" || ocrPhase === "running"} className="mt-2 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-bold text-white disabled:opacity-50">
+                <img src={photoUrl} alt="Prescription" className="max-h-60 w-full rounded-xl ring-1 ring-slate-200 dark:ring-slate-800 object-contain" />
+                <button onClick={runOcr} disabled={ocrPhase === "loading" || ocrPhase === "running"} className="mt-3 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-orange-500/20 disabled:opacity-50">
                   {ocrPhase === "loading" ? "Loading OCR…" : ocrPhase === "running" ? `OCR ${ocrProgress}%` : "Run OCR"}
                 </button>
               </div>
             )}
-            {ocrError && <p className="mt-2 rounded bg-rose-50 px-2 py-1 text-xs text-rose-700">{ocrError}</p>}
+            {ocrError && <p className="mt-2 rounded-lg bg-rose-50 dark:bg-rose-950/30 ring-1 ring-rose-200 dark:ring-rose-900/40 px-2 py-1 text-xs text-rose-700 dark:text-rose-300">{ocrError}</p>}
             <p className="mt-2 text-[10px] text-slate-500 dark:text-slate-400">Tesseract.js runs in your browser — no image leaves your device.</p>
           </section>
 
-          <section className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
-            <p className="mb-2 text-sm font-bold text-slate-900 dark:text-slate-100">2. OCR text (edit if needed)</p>
+          <section className="rounded-2xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800 p-5 shadow-sm">
+            <div className="mb-3 flex items-center gap-2">
+              <span className="h-7 w-7 rounded-lg bg-gradient-to-br from-amber-500 to-yellow-500 text-white font-bold grid place-items-center text-sm shadow-md shadow-amber-500/30">2</span>
+              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">OCR text (edit if needed)</p>
+            </div>
             <textarea
               rows={8} value={rawText} onChange={(e) => setRawText(e.target.value)}
               placeholder="Paste here, or use the photo + Run OCR above. Example:&#10;&#10;Tab. Crocin 500mg 1-0-1 x 5 days&#10;Cap. Amoxicillin 500mg 1-1-1 x 7 days #21&#10;Tab. Pantoprazole 40mg OD before food x 14 days"
-              className="w-full rounded-lg border border-slate-300 bg-white dark:bg-slate-900 p-3 font-mono text-xs leading-5"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 font-mono text-xs leading-5 text-slate-700 dark:text-slate-300 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
             />
           </section>
         </div>
 
         {/* Parsed items */}
         <div className="space-y-3">
-          <section className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
+          <section className="rounded-2xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800 p-5 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">3. Parsed medications ({items.length})</p>
-              <button onClick={addBlankItem} className="text-xs font-semibold text-indigo-600">+ Add manually</button>
+              <div className="flex items-center gap-2">
+                <span className="h-7 w-7 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 text-white font-bold grid place-items-center text-sm shadow-md shadow-emerald-500/30">3</span>
+                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Parsed medications ({items.length})</p>
+              </div>
+              <button onClick={addBlankItem} className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300">+ Add manually</button>
             </div>
             {items.length === 0 ? (
-              <p className="rounded-md bg-slate-50 dark:bg-slate-900 p-3 text-sm text-slate-500 dark:text-slate-400">{rawText ? "No drugs detected yet — keep typing or check formatting." : "Paste or photograph an Rx to get started."}</p>
+              <div className="rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 ring-1 ring-orange-100 dark:ring-orange-900/30 p-6 text-center">
+                <div className="mx-auto mb-3 h-20 w-20 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30 grid place-items-center text-3xl">💊</div>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{rawText ? "No drugs detected yet — keep typing or check formatting." : "Paste or photograph an Rx to get started."}</p>
+              </div>
             ) : (
               <ul className="space-y-2">
                 {items.map((it, i) => (
-                  <li key={i} className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-3 text-xs">
+                  <li key={i} className="rounded-xl ring-1 ring-slate-200 dark:ring-slate-800 bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-900 p-3 text-xs">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{FORM_EMOJI[it.form || "tablet"] || "💊"}</span>
-                        <input value={it.drugName} onChange={(e) => updateItem(i, { drugName: e.target.value })} className="rounded border border-slate-300 px-2 py-0.5 font-bold text-sm capitalize" />
+                        <input value={it.drugName} onChange={(e) => updateItem(i, { drugName: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-0.5 font-bold text-sm capitalize text-slate-900 dark:text-slate-100" />
                       </div>
                       <div className="flex items-center gap-1">
-                        <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${it.confidence < 0.7 ? "bg-amber-200 text-amber-800" : "bg-emerald-200 text-emerald-800"}`}>{Math.round(it.confidence * 100)}%</span>
-                        <button onClick={() => removeItem(i)} className="text-rose-600">✕</button>
+                        <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${it.confidence < 0.7 ? "bg-amber-200 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200" : "bg-emerald-200 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200"}`}>{Math.round(it.confidence * 100)}%</span>
+                        <button onClick={() => removeItem(i)} className="text-rose-600 dark:text-rose-400">✕</button>
                       </div>
                     </div>
                     <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
-                      <label className="flex flex-col"><span className="font-semibold text-slate-500 dark:text-slate-400">Strength</span><input value={it.strength || ""} onChange={(e) => updateItem(i, { strength: e.target.value })} className="rounded border border-slate-300 px-1.5 py-0.5" /></label>
-                      <label className="flex flex-col"><span className="font-semibold text-slate-500 dark:text-slate-400">Frequency</span><input value={it.frequency || ""} onChange={(e) => updateItem(i, { frequency: e.target.value })} className="rounded border border-slate-300 px-1.5 py-0.5" placeholder="OD / BID / TID / HS" /></label>
-                      <label className="flex flex-col"><span className="font-semibold text-slate-500 dark:text-slate-400">Route</span><input value={it.route || ""} onChange={(e) => updateItem(i, { route: e.target.value })} className="rounded border border-slate-300 px-1.5 py-0.5" /></label>
-                      <label className="flex flex-col"><span className="font-semibold text-slate-500 dark:text-slate-400">Duration (days)</span><input type="number" value={it.durationDays ?? ""} onChange={(e) => updateItem(i, { durationDays: Number(e.target.value) || undefined })} className="rounded border border-slate-300 px-1.5 py-0.5" /></label>
-                      <label className="flex flex-col col-span-2"><span className="font-semibold text-slate-500 dark:text-slate-400">Notes</span><input value={it.instructions || ""} onChange={(e) => updateItem(i, { instructions: e.target.value })} className="rounded border border-slate-300 px-1.5 py-0.5" placeholder="before food / after meals" /></label>
+                      <label className="flex flex-col"><span className="font-semibold text-slate-500 dark:text-slate-400">Strength</span><input value={it.strength || ""} onChange={(e) => updateItem(i, { strength: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-1.5 py-0.5 text-slate-700 dark:text-slate-300" /></label>
+                      <label className="flex flex-col"><span className="font-semibold text-slate-500 dark:text-slate-400">Frequency</span><input value={it.frequency || ""} onChange={(e) => updateItem(i, { frequency: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-1.5 py-0.5 text-slate-700 dark:text-slate-300" placeholder="OD / BID / TID / HS" /></label>
+                      <label className="flex flex-col"><span className="font-semibold text-slate-500 dark:text-slate-400">Route</span><input value={it.route || ""} onChange={(e) => updateItem(i, { route: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-1.5 py-0.5 text-slate-700 dark:text-slate-300" /></label>
+                      <label className="flex flex-col"><span className="font-semibold text-slate-500 dark:text-slate-400">Duration (days)</span><input type="number" value={it.durationDays ?? ""} onChange={(e) => updateItem(i, { durationDays: Number(e.target.value) || undefined })} className="rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-1.5 py-0.5 text-slate-700 dark:text-slate-300" /></label>
+                      <label className="flex flex-col col-span-2"><span className="font-semibold text-slate-500 dark:text-slate-400">Notes</span><input value={it.instructions || ""} onChange={(e) => updateItem(i, { instructions: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-1.5 py-0.5 text-slate-700 dark:text-slate-300" placeholder="before food / after meals" /></label>
                     </div>
                     <p className="mt-1 text-[10px] italic text-slate-500 dark:text-slate-400">From: &ldquo;{it.rawLine}&rdquo;</p>
                   </li>
@@ -241,46 +259,49 @@ export default function RxImportPage() {
             )}
 
             {unparsed.length > 0 && (
-              <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs">
-                <p className="font-bold text-amber-900">Lines we couldn&apos;t parse ({unparsed.length})</p>
-                <ul className="mt-1 list-disc pl-4 text-amber-800">
+              <div className="mt-3 rounded-xl ring-1 ring-amber-200 dark:ring-amber-900/40 bg-amber-50 dark:bg-amber-950/30 p-3 text-xs">
+                <p className="font-bold text-amber-900 dark:text-amber-200">Lines we couldn&apos;t parse ({unparsed.length})</p>
+                <ul className="mt-1 list-disc pl-4 text-amber-800 dark:text-amber-300">
                   {unparsed.slice(0, 5).map((u, i) => <li key={i} className="italic">&ldquo;{u}&rdquo;</li>)}
                 </ul>
-                <p className="mt-1 text-[10px] text-amber-700">Edit the OCR text above to fix or add manually.</p>
+                <p className="mt-1 text-[10px] text-amber-700 dark:text-amber-400">Edit the OCR text above to fix or add manually.</p>
               </div>
             )}
           </section>
 
           {/* Drug-safety check */}
           {newDrugs.length > 0 && (
-            <section className="rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
+            <section className="rounded-2xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800 p-5 shadow-sm">
               <p className="mb-2 text-sm font-bold text-slate-900 dark:text-slate-100">4. Safety check</p>
               <RxSafetyPanel newDrugs={newDrugs} hideWhenClean={false} />
             </section>
           )}
 
-          <button onClick={save} disabled={items.length === 0 || !rawText.trim()} className="w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-bold text-white disabled:opacity-50">
+          <button onClick={save} disabled={items.length === 0 || !rawText.trim()} className="w-full rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-orange-500/20 disabled:opacity-50">
             Save to my records
           </button>
         </div>
       </div>
 
-      <section className="mt-8 rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm">
+      <section className="mt-8 rounded-2xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800 p-5 shadow-sm">
         <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Past imports ({imports.length})</p>
         {imports.length === 0 ? (
-          <p className="text-sm text-slate-400">No imports yet.</p>
+          <div className="rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 ring-1 ring-orange-100 dark:ring-orange-900/30 p-6 text-center">
+            <div className="mx-auto mb-3 h-20 w-20 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30 grid place-items-center text-3xl">📋</div>
+            <p className="text-sm text-slate-600 dark:text-slate-400">No imports yet. Snap your first paper Rx above.</p>
+          </div>
         ) : (
           <ul className="space-y-2">
             {imports.map((r) => (
-              <li key={r.id} className="rounded-lg border border-slate-200 dark:border-slate-800 p-3 text-sm">
+              <li key={r.id} className="rounded-xl ring-1 ring-slate-200 dark:ring-slate-800 p-3 text-sm">
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="font-semibold text-slate-900 dark:text-slate-100">{new Date(r.createdAt).toLocaleString()} · {r.items.length} medication{r.items.length === 1 ? "" : "s"}</p>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400">{r.items.map((x) => x.drugName).join(", ")}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${r.status === "saved" ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600 dark:text-slate-300"}`}>{r.status}</span>
-                    {r.status === "saved" && <button onClick={() => discard(r.id)} className="text-[10px] text-rose-600">Discard</button>}
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${r.status === "saved" ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}>{r.status}</span>
+                    {r.status === "saved" && <button onClick={() => discard(r.id)} className="text-[10px] text-rose-600 dark:text-rose-400">Discard</button>}
                   </div>
                 </div>
               </li>
@@ -288,6 +309,7 @@ export default function RxImportPage() {
           </ul>
         )}
       </section>
+    </div>
     </div>
   );
 }

@@ -10,7 +10,6 @@
 // patient summary).
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import IdentityBadge from "./IdentityBadge";
 import {
   docTypesForCountry,
   INTERNATIONAL_DOC_TYPES,
@@ -164,7 +163,7 @@ export default function IdentityVerificationCard() {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+      <div className="rounded-2xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800 shadow-sm p-6">
         <p className="text-sm text-gray-500 dark:text-slate-400">Loading identity…</p>
       </div>
     );
@@ -174,8 +173,25 @@ export default function IdentityVerificationCard() {
   const canSubmit =
     identity.status === "unverified" || identity.status === "rejected";
 
+  const statusPillClass =
+    identity.status === "verified"
+      ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
+      : identity.status === "pending"
+      ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white"
+      : identity.status === "rejected"
+      ? "bg-gradient-to-r from-rose-500 to-red-500 text-white"
+      : "bg-gradient-to-r from-amber-500 to-orange-500 text-white";
+  const statusPillLabel =
+    identity.status === "verified"
+      ? "Verified"
+      : identity.status === "pending"
+      ? "Pending review"
+      : identity.status === "rejected"
+      ? "Needs attention"
+      : "Unverified";
+
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <div className="rounded-2xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800 shadow-sm p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Identity & Medical ID</h2>
@@ -184,21 +200,26 @@ export default function IdentityVerificationCard() {
             prescription, and record on your account.
           </p>
         </div>
-        <IdentityBadge status={identity.status} />
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${statusPillClass}`}
+        >
+          <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-white/90" />
+          {statusPillLabel}
+        </span>
       </div>
 
-      <div className="mt-5 rounded-lg border border-gray-100 bg-gray-50 dark:bg-slate-900 p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
+      <div className="mt-5 rounded-xl bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-950/30 dark:to-fuchsia-950/30 ring-1 ring-violet-200 dark:ring-violet-900/40 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-violet-700 dark:text-violet-300">
           Your Medical ID
         </p>
         <div className="mt-1 flex items-center gap-3">
-          <p className="font-mono text-lg font-semibold tracking-wider text-gray-900 dark:text-slate-100">
+          <p className="font-mono text-2xl tracking-wider bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-600 text-transparent font-extrabold">
             {identity.medicalId || "Not assigned"}
           </p>
           {identity.medicalId && (
             <button
               onClick={copyId}
-              className="rounded-md border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 py-1 text-xs font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
+              className="rounded-lg bg-violet-50 hover:bg-violet-100 dark:bg-violet-900/30 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-300 ring-1 ring-violet-200 dark:ring-violet-800 px-3 py-1.5 text-xs font-semibold"
             >
               {copied ? "Copied!" : "Copy"}
             </button>
@@ -255,13 +276,15 @@ export default function IdentityVerificationCard() {
 
           <div>
             <label className="text-xs font-medium text-gray-700 dark:text-slate-300">File</label>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="application/pdf,image/png,image/jpeg,image/webp"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
-              className="mt-1 block w-full text-sm text-gray-700 dark:text-slate-300 file:mr-3 file:rounded-md file:border-0 file:bg-primary-50 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-primary-700 hover:file:bg-primary-100"
-            />
+            <div className="mt-1 border-2 border-dashed border-violet-300 dark:border-violet-800 rounded-xl bg-violet-50/50 dark:bg-violet-950/20 p-4">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/pdf,image/png,image/jpeg,image/webp"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                className="block w-full text-sm text-gray-700 dark:text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-violet-600 file:to-fuchsia-600 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:from-violet-700 hover:file:to-fuchsia-700"
+              />
+            </div>
           </div>
 
           {error && (
@@ -271,7 +294,11 @@ export default function IdentityVerificationCard() {
           <button
             onClick={upload}
             disabled={uploading || !file}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-50"
+            className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white shadow-lg shadow-violet-500/20 ${
+              uploading || !file
+                ? "bg-gradient-to-r from-violet-400 to-fuchsia-400 cursor-not-allowed opacity-70"
+                : "bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700"
+            }`}
           >
             {uploading ? "Uploading…" : "Submit for verification"}
           </button>

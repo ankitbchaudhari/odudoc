@@ -371,3 +371,157 @@ export async function sendDoctorNewAppointmentViaSentDm(
     idempotencyKey,
   });
 }
+
+// ── Medium-priority templates (May 2026 second batch) ─────────────
+
+export async function sendPaymentFailedViaSentDm(
+  to: string,
+  variables: { patientName: string; amount: string | number; doctorName: string },
+  idempotencyKey?: string,
+): Promise<SentDmResult> {
+  const template = process.env.SENTDM_TEMPLATE_PAYMENT_FAILED;
+  if (!template) return { ok: false, error: "SENTDM_TEMPLATE_PAYMENT_FAILED not set" };
+  return sentDmSend({
+    to, channel: "whatsapp", template,
+    variables: {
+      "1": variables.patientName, "2": String(variables.amount), "3": variables.doctorName,
+      patient_name: variables.patientName, amount: String(variables.amount), doctor_name: variables.doctorName,
+      patientName: variables.patientName, doctorName: variables.doctorName,
+    },
+    idempotencyKey,
+  });
+}
+
+export async function sendWalletTopupViaSentDm(
+  to: string,
+  variables: { patientName: string; amount: string | number; balance: string | number },
+  idempotencyKey?: string,
+): Promise<SentDmResult> {
+  const template = process.env.SENTDM_TEMPLATE_WALLET_TOPUP;
+  if (!template) return { ok: false, error: "SENTDM_TEMPLATE_WALLET_TOPUP not set" };
+  return sentDmSend({
+    to, channel: "whatsapp", template,
+    variables: {
+      "1": variables.patientName, "2": String(variables.amount), "3": String(variables.balance),
+      patient_name: variables.patientName, amount: String(variables.amount), balance: String(variables.balance),
+      patientName: variables.patientName,
+    },
+    idempotencyKey,
+  });
+}
+
+export async function sendWithdrawalProcessedViaSentDm(
+  to: string,
+  variables: { doctorName: string; amount: string | number; accountLast4: string; reference: string },
+  idempotencyKey?: string,
+): Promise<SentDmResult> {
+  const template = process.env.SENTDM_TEMPLATE_WITHDRAWAL_PROCESSED;
+  if (!template) return { ok: false, error: "SENTDM_TEMPLATE_WITHDRAWAL_PROCESSED not set" };
+  return sentDmSend({
+    to, channel: "whatsapp", template,
+    variables: {
+      "1": variables.doctorName, "2": String(variables.amount),
+      "3": variables.accountLast4, "4": variables.reference,
+      doctor_name: variables.doctorName, amount: String(variables.amount),
+      account_last4: variables.accountLast4, reference: variables.reference,
+      doctorName: variables.doctorName,
+    },
+    idempotencyKey,
+  });
+}
+
+export async function sendRefundProcessedViaSentDm(
+  to: string,
+  variables: { patientName: string; amount: string | number; reason: string; reference: string },
+  idempotencyKey?: string,
+): Promise<SentDmResult> {
+  const template = process.env.SENTDM_TEMPLATE_REFUND_PROCESSED;
+  if (!template) return { ok: false, error: "SENTDM_TEMPLATE_REFUND_PROCESSED not set" };
+  return sentDmSend({
+    to, channel: "whatsapp", template,
+    variables: {
+      "1": variables.patientName, "2": String(variables.amount),
+      "3": variables.reason, "4": variables.reference,
+      patient_name: variables.patientName, amount: String(variables.amount),
+      reason: variables.reason, reference: variables.reference,
+      patientName: variables.patientName,
+    },
+    idempotencyKey,
+  });
+}
+
+export async function sendFollowupReminderViaSentDm(
+  to: string,
+  variables: { patientName: string; timeElapsed: string; doctorName: string },
+  idempotencyKey?: string,
+): Promise<SentDmResult> {
+  const template = process.env.SENTDM_TEMPLATE_FOLLOWUP_REMINDER;
+  if (!template) return { ok: false, error: "SENTDM_TEMPLATE_FOLLOWUP_REMINDER not set" };
+  return sentDmSend({
+    to, channel: "whatsapp", template,
+    variables: {
+      "1": variables.patientName, "2": variables.timeElapsed, "3": variables.doctorName,
+      patient_name: variables.patientName, time_elapsed: variables.timeElapsed, doctor_name: variables.doctorName,
+      patientName: variables.patientName, doctorName: variables.doctorName,
+    },
+    idempotencyKey,
+  });
+}
+
+// ── Low-priority templates (less typical but ready when needed) ───
+
+export async function sendVitalAlertViaSentDm(
+  to: string,
+  variables: { patientName: string; vitalType: string; value: string },
+  idempotencyKey?: string,
+): Promise<SentDmResult> {
+  const template = process.env.SENTDM_TEMPLATE_VITAL_ALERT;
+  if (!template) return { ok: false, error: "SENTDM_TEMPLATE_VITAL_ALERT not set" };
+  return sentDmSend({
+    to, channel: "whatsapp", template,
+    variables: {
+      "1": variables.patientName, "2": variables.vitalType, "3": variables.value,
+      patient_name: variables.patientName, vital_type: variables.vitalType, value: variables.value,
+      patientName: variables.patientName, vitalType: variables.vitalType,
+    },
+    idempotencyKey,
+  });
+}
+
+export async function sendCarePlanReminderViaSentDm(
+  to: string,
+  variables: { patientName: string; condition: string; todayAction: string },
+  idempotencyKey?: string,
+): Promise<SentDmResult> {
+  const template = process.env.SENTDM_TEMPLATE_CARE_PLAN_REMINDER;
+  if (!template) return { ok: false, error: "SENTDM_TEMPLATE_CARE_PLAN_REMINDER not set" };
+  return sentDmSend({
+    to, channel: "whatsapp", template,
+    variables: {
+      "1": variables.patientName, "2": variables.condition, "3": variables.todayAction,
+      patient_name: variables.patientName, condition: variables.condition, today_action: variables.todayAction,
+      patientName: variables.patientName, todayAction: variables.todayAction,
+    },
+    idempotencyKey,
+  });
+}
+
+export async function sendInsurancePreauthViaSentDm(
+  to: string,
+  variables: { patientName: string; procedure: string; hospital: string; status: string; context: string },
+  idempotencyKey?: string,
+): Promise<SentDmResult> {
+  const template = process.env.SENTDM_TEMPLATE_INSURANCE_PREAUTH;
+  if (!template) return { ok: false, error: "SENTDM_TEMPLATE_INSURANCE_PREAUTH not set" };
+  return sentDmSend({
+    to, channel: "whatsapp", template,
+    variables: {
+      "1": variables.patientName, "2": variables.procedure,
+      "3": variables.hospital, "4": variables.status, "5": variables.context,
+      patient_name: variables.patientName, procedure: variables.procedure,
+      hospital: variables.hospital, status: variables.status, context: variables.context,
+      patientName: variables.patientName,
+    },
+    idempotencyKey,
+  });
+}

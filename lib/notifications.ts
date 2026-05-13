@@ -105,12 +105,18 @@ export function notifyAppointmentBooked(details: {
     //   "Hello {{1}}, your appointment with {{2}} is confirmed for
     //    {{3}}. Reply CANCEL to cancel. — OduDoc"
     const waContentSid = process.env.TWILIO_WA_TEMPLATE_APPOINTMENT_CONFIRM;
-    if (waContentSid) {
+    const sentDmTemplate = process.env.SENTDM_TEMPLATE_APPOINTMENT_CONFIRM;
+    // sendWhatsAppTemplate tries sent.dm first (when sentDmTemplate
+    // is set + SENTDM_API_KEY is configured), falling back to Twilio.
+    if (waContentSid || sentDmTemplate) {
       sendWhatsAppTemplate(details.patientPhone, waContentSid, {
         "1": details.patientName,
         "2": details.doctorName,
         "3": `${details.date} at ${details.time}`,
-      })
+        patient_name: details.patientName,
+        doctor_name: details.doctorName,
+        datetime: `${details.date} at ${details.time}`,
+      }, { sentDmTemplate })
         .then((r) => {
           if (!r.ok) {
             log.warn("notifications.wa_template_failed", {

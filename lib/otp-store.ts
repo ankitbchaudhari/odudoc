@@ -158,23 +158,50 @@ export async function sendOtpCodes(record: OtpRecord): Promise<void> {
     console.log("============================================\n");
   }
 
-  // --- SMS via Twilio ---------------------------------------------------
-  if (twilioClient && process.env.TWILIO_PHONE_NUMBER && record.phone) {
-    try {
-      const to = toE164(record.phone);
-      await twilioClient.messages.create({
-        from: process.env.TWILIO_PHONE_NUMBER,
-        to,
-        body: `Your OduDoc verification code is ${record.phoneCode}. Valid for 10 minutes. Do not share this code with anyone.`,
-      });
-      log.info("otp.sms.sent", { to });
-    } catch (err: unknown) {
-      // Don't throw — user can still use the email code, and during Twilio
-      // trial unverified numbers will fail here but not block login.
-      log.error("otp.sms.send_failed", err);
+  // --- SMS via sent.dm (primary) → Twilio (fallback) -------------------
+  if (record.phone) {
+    const to = toE164(record.phone);
+    let sent = false;
+    // Try sent.dm first — cheaper, supports templates, no Twilio
+    // trial-account "verified-numbers-only" restriction.
+    const sentDmTemplate = process.env.SENTDM_TEMPLATE_OTP;
+    if (process.env.SENTDM_API_KEY && sentDmTemplate) {
+      try {
+        const { sentDmSend } = await import("./sent-dm");
+        const r = await sentDmSend({
+          to,
+          channel: "sms",
+          template: sentDmTemplate,
+          variables: { code: record.phoneCode, otp: record.phoneCode },
+        });
+        if (r.ok) {
+          sent = true;
+          log.info("otp.sms.sent_via_sent_dm", { to, messageId: r.messageId });
+        } else {
+          log.warn("otp.sent_dm_failed_falling_back", { error: r.error });
+        }
+      } catch (err) {
+        log.error("otp.sent_dm.threw", err);
+      }
     }
+    // Twilio fallback (or primary if sent.dm isn't configured).
+    if (!sent && twilioClient && process.env.TWILIO_PHONE_NUMBER) {
+      try {
+        await twilioClient.messages.create({
+          from: process.env.TWILIO_PHONE_NUMBER,
+          to,
+          body: `Your OduDoc verification code is ${record.phoneCode}. Valid for 10 minutes. Do not share this code with anyone.`,
+        });
+        log.info("otp.sms.sent_via_twilio", { to });
+        sent = true;
+      } catch (err: unknown) {
+        // Don't throw — user can still use the email code.
+        log.error("otp.sms.send_failed", err);
+      }
+    }
+    if (!sent) log.warn("otp.sms.skipped_no_provider", { to });
   } else {
-    log.warn("otp.sms.skipped_unconfigured");
+    log.warn("otp.sms.skipped_no_phone");
   }
 
   // --- Email via Resend -------------------------------------------------

@@ -13,6 +13,8 @@
 //   TWILIO_VOICE_FROM         — optional, defaults to TWILIO_FROM_NUMBER
 
 import { log } from "./log";
+import { sentDmSend, isSentDmConfigured } from "./sent-dm";
+
 const SID = process.env.TWILIO_ACCOUNT_SID?.trim();
 const TOKEN = process.env.TWILIO_AUTH_TOKEN?.trim();
 const SMS_FROM = (process.env.TWILIO_FROM_NUMBER || process.env.TWILIO_PHONE_NUMBER)?.trim();
@@ -53,9 +55,42 @@ async function twilioPost(body: Record<string, string>): Promise<SmsResult> {
   }
 }
 
+/** Send a free-form SMS body. Routes to Twilio because sent.dm is
+ *  strictly template-driven — callers that need a templated path
+ *  should call sentDmSend() / sendOtpViaSentDm() directly from
+ *  lib/sent-dm. Keeping this Twilio-only avoids silent breakage
+ *  for arbitrary one-off texts (withdrawal alerts, vital alerts,
+ *  etc.) that aren't registered as sent.dm templates. */
 export async function sendSms(to: string, body: string): Promise<SmsResult> {
   if (!SMS_FROM) return { ok: true, skipped: true };
   return twilioPost({ To: to, From: SMS_FROM, Body: body });
+}
+
+/** Send a templated SMS — tries sent.dm first (cheaper rates +
+ *  unified billing with WhatsApp), falls back to Twilio with a
+ *  rendered free-form body. `fallbackBody` is the literal text we'd
+ *  send via Twilio if sent.dm is unavailable / the template fails.
+ *
+ *  templateRef: sent.dm template id (UUID) or name.
+ *  variables: substitutions matching the template placeholders. */
+export async function sendTemplatedSms(
+  to: string,
+  templateRef: string | undefined,
+  variables: Record<string, string>,
+  fallbackBody: string,
+): Promise<SmsResult> {
+  if (isSentDmConfigured() && templateRef) {
+    const r = await sentDmSend({
+      to,
+      channel: "sms",
+      template: templateRef,
+      variables,
+    });
+    if (r.ok) return { ok: true, sid: r.messageId };
+    log.warn("sms.sent_dm_failed_falling_back_to_twilio", { error: r.error });
+  }
+  // Fallback: Twilio with the literal body.
+  return sendSms(to, fallbackBody);
 }
 
 export async function sendWhatsApp(to: string, body: string): Promise<SmsResult> {
@@ -81,7 +116,23 @@ export async function sendWhatsAppTemplate(
   to: string,
   contentSid: string | undefined,
   variables: Record<string, string>,
+  options?: { sentDmTemplate?: string },
 ): Promise<SmsResult> {
+  // Try sent.dm first when its API key + a matching template name
+  // are configured. Sent.dm passes Meta's per-template fees through
+  // at cost, but skips Twilio's WhatsApp markup — typically 6-7×
+  // cheaper for the same approved Meta template.
+  if (isSentDmConfigured() && options?.sentDmTemplate) {
+    const r = await sentDmSend({
+      to,
+      channel: "whatsapp",
+      template: options.sentDmTemplate,
+      variables,
+    });
+    if (r.ok) return { ok: true, sid: r.messageId };
+    log.warn("wa.sent_dm_failed_falling_back_to_twilio", { error: r.error });
+  }
+  // Twilio fallback (or primary when sent.dm isn't configured).
   if (!WA_FROM) return { ok: true, skipped: true };
   if (!contentSid) return { ok: true, skipped: true };
   const normalizedTo = to.startsWith("whatsapp:") ? to : `whatsapp:${to}`;

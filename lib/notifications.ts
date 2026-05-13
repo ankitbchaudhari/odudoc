@@ -7,6 +7,7 @@
 
 import { log } from "./log";
 import { notify } from "./notifications/notify";
+import { sendWhatsAppTemplate } from "./sms";
 export interface NotificationPayload {
   to: string; // email or phone
   type: 'email' | 'sms';
@@ -95,6 +96,35 @@ export function notifyAppointmentBooked(details: {
   });
 
   if (details.patientPhone) {
+    // Try the approved WhatsApp template first — it works any time
+    // (no 24h reply-window restriction) and renders as a richer
+    // notification on the patient's phone. ContentSid lives in env
+    // so we can swap templates without code changes.
+    //
+    // Template body (en):
+    //   "Hello {{1}}, your appointment with {{2}} is confirmed for
+    //    {{3}}. Reply CANCEL to cancel. — OduDoc"
+    const waContentSid = process.env.TWILIO_WA_TEMPLATE_APPOINTMENT_CONFIRM;
+    if (waContentSid) {
+      sendWhatsAppTemplate(details.patientPhone, waContentSid, {
+        "1": details.patientName,
+        "2": details.doctorName,
+        "3": `${details.date} at ${details.time}`,
+      })
+        .then((r) => {
+          if (!r.ok) {
+            log.warn("notifications.wa_template_failed", {
+              error: r.error,
+              fallback: "sms",
+            });
+          } else {
+            log.info("notifications.wa_template_sent", { sid: r.sid });
+          }
+        })
+        .catch((e) => log.error("notifications.wa_template_threw", e));
+    }
+    // Always send SMS too — defence-in-depth in case the patient's
+    // WhatsApp isn't installed / the number isn't verified on WA.
     sendNotification({
       to: details.patientPhone,
       type: 'sms',

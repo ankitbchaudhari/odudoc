@@ -64,6 +64,35 @@ export async function sendWhatsApp(to: string, body: string): Promise<SmsResult>
   return twilioPost({ To: normalizedTo, From: WA_FROM, Body: body });
 }
 
+/** Send an approved WhatsApp Business template via Twilio's
+ *  Content API. Unlike sendWhatsApp() (which only works inside a
+ *  24h reply window), template messages reach any verified WA
+ *  number anytime.
+ *
+ *  contentSid: Twilio Content Sid (HX...) for the approved
+ *  template, obtained by syncing the template from Meta to Twilio
+ *  (Twilio Console → Messaging → Content Editor).
+ *  variables: positional substitutions, e.g.
+ *    { "1": "Asha", "2": "Dr. Sharma", "3": "Tomorrow at 4:00 PM" }
+ *  Returns the same SmsResult shape as sendWhatsApp(); a missing
+ *  contentSid skips with ok:true so callers can fall back to the
+ *  freeform path without surfacing errors. */
+export async function sendWhatsAppTemplate(
+  to: string,
+  contentSid: string | undefined,
+  variables: Record<string, string>,
+): Promise<SmsResult> {
+  if (!WA_FROM) return { ok: true, skipped: true };
+  if (!contentSid) return { ok: true, skipped: true };
+  const normalizedTo = to.startsWith("whatsapp:") ? to : `whatsapp:${to}`;
+  return twilioPost({
+    To: normalizedTo,
+    From: WA_FROM,
+    ContentSid: contentSid,
+    ContentVariables: JSON.stringify(variables),
+  });
+}
+
 export async function sendVoice(to: string, twiml: string): Promise<SmsResult> {
   if (!SID || !TOKEN || !VOICE_FROM) {
     log.info("voice.twilio_not_configured", { to });

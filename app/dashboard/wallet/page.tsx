@@ -82,6 +82,13 @@ export default function WalletPage() {
   const [amount, setAmount] = useState<number>(500);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  /** Orders we kicked off via Cashfree/Stripe that may or may not
+   *  have credited. Read from localStorage on mount; cleared per
+   *  order as each is verified. */
+  const [pendingOrders, setPendingOrders] = useState<
+    Array<{ orderId: string; amount: number; gateway: string; startedAt: number }>
+  >([]);
+  const [verifyingOrder, setVerifyingOrder] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const r = await fetch("/api/wallet", { cache: "no-store" });
@@ -93,6 +100,77 @@ export default function WalletPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Read any in-flight topup orders from localStorage on mount. Each
+  // entry was written right before we redirected to Cashfree, so they
+  // represent payments the user initiated. If any haven't been
+  // confirmed (no matching tx in wallet history), we'll offer a
+  // one-click recovery button.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem("odudoc:pending-topups");
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Array<{ orderId: string; amount: number; gateway: string; startedAt: number }>;
+      const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+      setPendingOrders(parsed.filter((p) => p.startedAt > cutoff));
+    } catch { /* ignore parse errors */ }
+  }, []);
+
+  // Clear pending orders that already appear as topup transactions in
+  // the wallet history (matched by providerSid → cfOrderId, OR by
+  // amount + time proximity for older orders).
+  useEffect(() => {
+    if (pendingOrders.length === 0 || txs.length === 0) return;
+    const confirmedSids = new Set(txs.filter((t) => t.kind === "topup" && t.providerSid).map((t) => t.providerSid));
+    const stillPending = pendingOrders.filter((p) => !confirmedSids.has(p.orderId));
+    if (stillPending.length !== pendingOrders.length) {
+      setPendingOrders(stillPending);
+      try {
+        localStorage.setItem("odudoc:pending-topups", JSON.stringify(stillPending));
+      } catch { /* ignore */ }
+    }
+  }, [pendingOrders, txs]);
+
+  const verifyPending = useCallback(async (orderId: string) => {
+    setVerifyingOrder(orderId);
+    try {
+      const r = await fetch(`/api/payments/cashfree/verify?orderId=${encodeURIComponent(orderId)}`, {
+        cache: "no-store",
+      });
+      const d = await r.json();
+      if (d.paid) {
+        setToast({ kind: "ok", text: `Recovered — ₹${d.amount} credited to your wallet.` });
+        // Drop this orderId from pending and persist.
+        const next = pendingOrders.filter((p) => p.orderId !== orderId);
+        setPendingOrders(next);
+        try {
+          localStorage.setItem("odudoc:pending-topups", JSON.stringify(next));
+        } catch { /* ignore */ }
+        await load();
+      } else if (d.orderStatus === "ACTIVE") {
+        setToast({ kind: "err", text: "Payment is still being confirmed. Try again in 30 seconds." });
+      } else {
+        setToast({
+          kind: "err",
+          text: `Cashfree status: ${d.orderStatus || "unknown"}. If money was debited, contact support with order ${orderId}.`,
+        });
+      }
+    } catch (err) {
+      setToast({ kind: "err", text: `Verify failed. Try again or contact support with order ${orderId}.` });
+      console.error("[wallet] verify failed", err);
+    } finally {
+      setVerifyingOrder(null);
+    }
+  }, [load, pendingOrders]);
+
+  const dismissPending = useCallback((orderId: string) => {
+    const next = pendingOrders.filter((p) => p.orderId !== orderId);
+    setPendingOrders(next);
+    try {
+      localStorage.setItem("odudoc:pending-topups", JSON.stringify(next));
+    } catch { /* ignore */ }
+  }, [pendingOrders]);
 
   // If we just came back from Cashfree's hosted checkout, the URL
   // carries ?topup=<orderId>. Hit the verify endpoint to:
@@ -157,6 +235,21 @@ export default function WalletPage() {
           // Stripe / legacy Cashfree returns a paymentLink → simple
           // redirect. Cashfree v3 returns a paymentSessionId → we
           // load their JS SDK at runtime and call .checkout().
+          //
+          // Before redirecting, persist the orderId to localStorage
+          // so the wallet page can offer "Recover stuck payment" if
+          // the webhook fails AND the redirect somehow loses the
+          // ?topup= query string. 24-hour TTL.
+          if (d.orderId) {
+            try {
+              const pending = JSON.parse(localStorage.getItem("odudoc:pending-topups") || "[]");
+              pending.push({ orderId: d.orderId, amount, gateway: d.gateway, startedAt: Date.now() });
+              // Keep only last 10 attempts within the last 24h.
+              const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+              const trimmed = pending.filter((p: { startedAt: number }) => p.startedAt > cutoff).slice(-10);
+              localStorage.setItem("odudoc:pending-topups", JSON.stringify(trimmed));
+            } catch { /* localStorage full / blocked — non-fatal */ }
+          }
           if (d.paymentLink) {
             window.location.href = d.paymentLink;
             return;
@@ -241,6 +334,61 @@ export default function WalletPage() {
           Top up once, pay across consults / pharmacy / lab tests. Get <strong>5% bonus</strong> on every top-up.
         </p>
       </div>
+
+      {/* Pending topup recovery — surfaces orders started in the last
+          24h that haven't yet appeared in the transaction history.
+          Most often these are Cashfree payments where the patient
+          completed checkout but the webhook hasn't fired (or fired
+          but failed signature verification). One click hits /verify
+          which is idempotent and credits the wallet if Cashfree
+          confirms the order is PAID. */}
+      {pendingOrders.length > 0 && (
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-950/30">
+          <div className="flex items-start gap-3">
+            <span className="text-xl" aria-hidden>⚠️</span>
+            <div className="flex-1">
+              <p className="text-sm font-bold text-amber-900 dark:text-amber-200">
+                {pendingOrders.length === 1 ? "1 payment may not have credited" : `${pendingOrders.length} payments may not have credited`}
+              </p>
+              <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">
+                You started these top-ups recently. If you completed the payment, click <strong>Verify</strong> to credit your wallet now. If you cancelled, click <strong>Dismiss</strong>.
+              </p>
+              <ul className="mt-3 space-y-2">
+                {pendingOrders.map((p) => (
+                  <li
+                    key={p.orderId}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white dark:bg-slate-900 p-3 ring-1 ring-amber-200 dark:ring-amber-900/40"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        ₹{p.amount.toLocaleString()} via {p.gateway === "cashfree" ? "Cashfree" : p.gateway === "stripe" ? "Stripe" : p.gateway}
+                      </p>
+                      <p className="mt-0.5 truncate font-mono text-[10.5px] text-slate-500 dark:text-slate-400">
+                        {p.orderId} · {new Date(p.startedAt).toLocaleTimeString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => verifyPending(p.orderId)}
+                        disabled={verifyingOrder === p.orderId}
+                        className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                      >
+                        {verifyingOrder === p.orderId ? "Checking…" : "Verify & credit"}
+                      </button>
+                      <button
+                        onClick={() => dismissPending(p.orderId)}
+                        className="rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300 ring-1 ring-slate-300 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Balance card */}
       <div className="rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-700 to-fuchsia-700 p-6 text-white shadow-xl">

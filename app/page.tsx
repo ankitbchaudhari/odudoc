@@ -98,7 +98,7 @@ export default async function Home() {
 
       <WorkingProcess />
 
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50/50 py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900/50 py-20">
         <div className="pointer-events-none absolute left-1/2 top-0 h-64 w-[70%] -translate-x-1/2 rounded-full bg-gradient-to-r from-primary-200/30 via-teal-200/30 to-emerald-200/30 blur-3xl" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">

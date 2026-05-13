@@ -354,7 +354,7 @@ function CorporateLoginForm() {
 
 export default function CorporateLoginPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-indigo-50 px-4 py-10 sm:px-6">
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 px-4 py-10 sm:px-6">
       <Suspense
         fallback={
           <div className="text-sm text-slate-500 dark:text-slate-400">Loading…</div>

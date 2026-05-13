@@ -527,7 +527,7 @@ function ImportPatientsModal({
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-xl overflow-hidden rounded-3xl bg-white dark:bg-slate-900 shadow-2xl"
       >
-        <div className="bg-gradient-to-br from-emerald-50 via-cyan-50 to-indigo-50 px-6 py-5">
+        <div className="bg-gradient-to-br from-emerald-50 via-cyan-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 px-6 py-5">
           <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">
             Bulk import · CSV
           </p>
@@ -777,7 +777,7 @@ function PaywallModal({
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-lg overflow-hidden rounded-3xl bg-white dark:bg-slate-900 shadow-2xl"
       >
-        <div className="bg-gradient-to-br from-rose-50 via-amber-50 to-orange-50 px-6 py-5">
+        <div className="bg-gradient-to-br from-rose-50 via-amber-50 to-orange-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 px-6 py-5">
           <div className="flex items-start gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-amber-500 text-white shadow-md">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
@@ -802,7 +802,7 @@ function PaywallModal({
         </div>
         <div className="px-6 py-5">
           {atTopTier ? (
-            <div className="rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-fuchsia-50 p-4">
+            <div className="rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-fuchsia-50 dark:from-slate-900 dark:to-slate-900 p-4">
               <div className="flex items-end justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
@@ -1005,7 +1005,7 @@ function NewPatientModal({
         className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-white dark:bg-slate-900 shadow-2xl ring-1 ring-slate-900/5"
       >
         {/* Header with gradient + icon */}
-        <div className="relative overflow-hidden border-b border-slate-100 bg-gradient-to-br from-emerald-50 via-cyan-50 to-indigo-50 px-7 py-5">
+        <div className="relative overflow-hidden border-b border-slate-100 bg-gradient-to-br from-emerald-50 via-cyan-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 px-7 py-5">
           <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-emerald-400/20 to-cyan-400/20 blur-2xl" />
           <div className="relative flex items-start justify-between gap-4">
             <div className="flex items-start gap-3">

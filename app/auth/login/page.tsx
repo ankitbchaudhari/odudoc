@@ -304,7 +304,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50/40 px-4 py-12">
+    <div className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900/40 px-4 py-12">
       {/* decorative blobs */}
       <div className="pointer-events-none absolute -top-24 -left-24 h-80 w-80 rounded-full bg-primary-200/40 blur-3xl" />
       <div className="pointer-events-none absolute bottom-0 right-0 h-96 w-96 rounded-full bg-indigo-200/40 blur-3xl" />

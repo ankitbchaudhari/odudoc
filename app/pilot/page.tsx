@@ -58,7 +58,7 @@ const COMPARISON = [
 
 export default function PilotPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
       {/* Minimal header — logo only, no nav */}
       <header className="border-b border-slate-100 bg-white/60 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
@@ -201,7 +201,7 @@ export default function PilotPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="bg-gradient-to-br from-violet-50 to-indigo-50 py-16">
+      <section className="bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-slate-900 dark:to-slate-900 py-16">
         <div className="mx-auto max-w-2xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 sm:text-3xl">
             Ready to try it?

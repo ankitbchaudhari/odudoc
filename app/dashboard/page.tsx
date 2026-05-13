@@ -368,7 +368,7 @@ export default function DashboardPage() {
                   {historyItems.map((h, i) => (
                     <li
                       key={i}
-                      className="rounded-xl bg-gradient-to-br from-fuchsia-50 to-purple-50 p-3 ring-1 ring-fuchsia-100"
+                      className="rounded-xl bg-gradient-to-br from-fuchsia-50 to-purple-50 dark:from-slate-900 dark:to-slate-900 p-3 ring-1 ring-fuchsia-100"
                     >
                       <p className="line-clamp-2 text-sm font-medium text-gray-900 dark:text-slate-100">{h.complaint}</p>
                       <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">

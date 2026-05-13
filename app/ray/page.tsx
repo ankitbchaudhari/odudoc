@@ -36,9 +36,9 @@ const SAMPLE_SYMPTOMS = [
 ];
 
 const urgencyConfig = {
-  HIGH: { label: "High Urgency", color: "text-rose-700", bg: "bg-gradient-to-r from-rose-50 to-red-50", border: "border-rose-200", dot: "bg-rose-500", advice: "Please seek immediate medical attention or call emergency services." },
-  MEDIUM: { label: "Medium Urgency", color: "text-amber-700", bg: "bg-gradient-to-r from-amber-50 to-orange-50", border: "border-amber-200", dot: "bg-amber-500", advice: "Schedule an appointment within the next few days." },
-  LOW: { label: "Low Urgency", color: "text-emerald-700", bg: "bg-gradient-to-r from-emerald-50 to-teal-50", border: "border-emerald-200", dot: "bg-emerald-500", advice: "A routine appointment within the next 1–2 weeks is recommended." },
+  HIGH: { label: "High Urgency", color: "text-rose-700", bg: "bg-gradient-to-r from-rose-50 to-red-50 dark:from-slate-900 dark:to-slate-900", border: "border-rose-200", dot: "bg-rose-500", advice: "Please seek immediate medical attention or call emergency services." },
+  MEDIUM: { label: "Medium Urgency", color: "text-amber-700", bg: "bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-900 dark:to-slate-900", border: "border-amber-200", dot: "bg-amber-500", advice: "Schedule an appointment within the next few days." },
+  LOW: { label: "Low Urgency", color: "text-emerald-700", bg: "bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-900 dark:to-slate-900", border: "border-emerald-200", dot: "bg-emerald-500", advice: "A routine appointment within the next 1–2 weeks is recommended." },
 };
 
 export default function OduDocAIPage() {
@@ -103,7 +103,7 @@ export default function OduDocAIPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-purple-50 to-fuchsia-50 px-4 pb-20 pt-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-purple-50 to-fuchsia-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 px-4 pb-20 pt-20">
         {/* Decorative blobs */}
         <div className="pointer-events-none absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-indigo-300/40 to-purple-300/40 blur-3xl" />
         <div className="pointer-events-none absolute -right-40 top-20 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-fuchsia-300/40 to-pink-300/40 blur-3xl" />
@@ -155,7 +155,7 @@ export default function OduDocAIPage() {
           </div>
 
           {/* Disclaimer */}
-          <div className="mt-8 inline-flex items-start gap-2 rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 px-4 py-3 text-left text-sm text-amber-800">
+          <div className="mt-8 inline-flex items-start gap-2 rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-900 dark:to-slate-900 px-4 py-3 text-left text-sm text-amber-800">
             <svg className="mt-0.5 h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -167,7 +167,7 @@ export default function OduDocAIPage() {
       </section>
 
       {/* Main Card */}
-      <section id="try-ray" className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-purple-50/40 px-4 py-16">
+      <section id="try-ray" className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900/40 px-4 py-16">
         <div className="pointer-events-none absolute -right-32 top-20 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-purple-200/30 to-fuchsia-200/30 blur-3xl" />
         <div className="relative mx-auto max-w-3xl">
           <div className="rounded-3xl bg-gradient-to-br from-indigo-500 via-purple-500 to-fuchsia-500 p-[2px] shadow-2xl">
@@ -194,7 +194,7 @@ export default function OduDocAIPage() {
                       ? "border-indigo-500 bg-indigo-50"
                       : file
                       ? "border-emerald-400 bg-emerald-50/60"
-                      : "border-gray-300 dark:border-slate-700 bg-gradient-to-br from-slate-50 to-indigo-50/40 hover:border-indigo-400 hover:bg-indigo-50/60"
+                      : "border-gray-300 dark:border-slate-700 bg-gradient-to-br from-slate-50 to-indigo-50 dark:from-slate-900 dark:to-slate-900/40 hover:border-indigo-400 hover:bg-indigo-50/60"
                   }`}
                 >
                   <input
@@ -354,7 +354,7 @@ export default function OduDocAIPage() {
                   <p className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">Possible Conditions Identified</p>
                   <div className="flex flex-wrap gap-2">
                     {result.detectedConditions.map((c) => (
-                      <span key={c} className="rounded-full border border-indigo-200 bg-gradient-to-r from-indigo-50 to-fuchsia-50 px-3 py-1 text-xs font-semibold text-indigo-700">
+                      <span key={c} className="rounded-full border border-indigo-200 bg-gradient-to-r from-indigo-50 to-fuchsia-50 dark:from-slate-900 dark:to-slate-900 px-3 py-1 text-xs font-semibold text-indigo-700">
                         {c}
                       </span>
                     ))}
@@ -363,7 +363,7 @@ export default function OduDocAIPage() {
 
                 {/* Specialties */}
                 <div className="mt-4 flex flex-wrap gap-3">
-                  <div className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 px-3 py-2">
+                  <div className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-900 dark:to-slate-900 px-3 py-2">
                     <svg className="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -372,7 +372,7 @@ export default function OduDocAIPage() {
                     </span>
                   </div>
                   {result.secondarySpecialty && (
-                    <div className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-50 to-indigo-50 px-3 py-2">
+                    <div className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-50 to-indigo-50 dark:from-slate-900 dark:to-slate-900 px-3 py-2">
                       <svg className="h-4 w-4 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -469,7 +469,7 @@ export default function OduDocAIPage() {
 
       {/* How it works */}
       {!result && (
-        <section className="relative overflow-hidden bg-gradient-to-br from-rose-50 via-white to-amber-50 px-4 py-20">
+        <section className="relative overflow-hidden bg-gradient-to-br from-rose-50 via-white to-amber-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 px-4 py-20">
           <div className="pointer-events-none absolute -left-32 top-20 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-fuchsia-200/30 to-pink-200/30 blur-3xl" />
           <div className="pointer-events-none absolute -right-32 bottom-10 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-amber-200/30 to-orange-200/30 blur-3xl" />
           <div className="relative mx-auto max-w-5xl">

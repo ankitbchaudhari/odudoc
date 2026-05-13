@@ -127,7 +127,7 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-teal-50 to-rose-50 py-24">
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-teal-50 to-rose-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-24">
         <div className="pointer-events-none absolute -top-32 -left-24 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-primary-200/40 to-teal-200/40 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -right-24 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-rose-200/40 to-amber-200/40 blur-3xl" />
         <div className="relative mx-auto max-w-3xl px-4 text-center">
@@ -148,7 +148,7 @@ export default function ContactPage() {
       </section>
 
       {/* Contact grid */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50/40 py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900/40 py-20">
         <div className="pointer-events-none absolute -top-24 right-0 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-teal-200/30 to-primary-200/30 blur-3xl" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">

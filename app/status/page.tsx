@@ -70,7 +70,7 @@ export default function StatusPage() {
   }, {});
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
         <div className="text-center">
           <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">OduDoc Status</p>

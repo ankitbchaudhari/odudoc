@@ -79,7 +79,7 @@ export default function GalleryPage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-sky-50 to-purple-50 py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-sky-50 to-purple-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-20">
         <div className="pointer-events-none absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-sky-200/40 to-indigo-200/40 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -right-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-purple-200/40 to-rose-200/40 blur-3xl" />
         <div className="relative mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
@@ -156,14 +156,14 @@ export default function GalleryPage() {
         </div>
 
         {filteredItems.length === 0 && (
-          <div className="rounded-2xl border border-gray-100 bg-gradient-to-br from-slate-50 to-primary-50/40 py-16 text-center shadow-sm">
+          <div className="rounded-2xl border border-gray-100 bg-gradient-to-br from-slate-50 to-primary-50 dark:from-slate-900 dark:to-slate-900/40 py-16 text-center shadow-sm">
             <p className="text-lg font-semibold text-gray-500 dark:text-slate-400">No items found in this category.</p>
           </div>
         )}
       </div>
 
       {/* Bottom accent section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-purple-50 py-16">
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-16">
         <div className="pointer-events-none absolute -top-20 -left-20 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-sky-200/40 to-indigo-200/40 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-20 -right-20 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-rose-200/40 to-amber-200/40 blur-3xl" />
         <div className="relative mx-auto max-w-3xl px-4 text-center">

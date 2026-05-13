@@ -164,7 +164,7 @@ const HORIZONTAL = [
 
 export default function FeaturesPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/40">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900/40">
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         {/* Hero */}
         <header className="mb-16 text-center">

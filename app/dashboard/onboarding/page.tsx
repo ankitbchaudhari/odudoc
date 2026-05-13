@@ -105,7 +105,7 @@ export default function OnboardingWizardPage() {
   const skip = () => { router.push("/dashboard"); };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-emerald-50 px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-emerald-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 px-4 py-10">
       <div className="mx-auto max-w-2xl">
         <div className="mb-6 flex items-center justify-between">
           <p className="text-xs font-bold uppercase tracking-widest text-indigo-700">

@@ -104,7 +104,7 @@ export default function DoctorConsultationsPage() {
   const inProgress = counts.in_progress || 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50/40">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900/40">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Hero with live stats */}
         <div className="mb-6 overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-700 p-6 text-white shadow-xl shadow-violet-500/20">
@@ -146,7 +146,7 @@ export default function DoctorConsultationsPage() {
         {/* Specialty pool — patients who asked for any available doctor
             in this specialty. First doctor to click Accept gets it. */}
         {pool.length > 0 && (
-          <div className="mb-6 overflow-hidden rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-5 shadow-md shadow-emerald-500/10">
+          <div className="mb-6 overflow-hidden rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 p-5 shadow-md shadow-emerald-500/10">
             <div className="mb-3 flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2">
                 <span className="relative flex h-2.5 w-2.5">

@@ -171,7 +171,7 @@ export default function PublicPayPage({
 
         <div className="overflow-hidden rounded-3xl border border-white/60 bg-white/85 shadow-xl shadow-indigo-500/5 backdrop-blur-xl">
           {isPaid && (
-            <div className="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-3 text-sm font-semibold text-emerald-800">
+            <div className="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-900 dark:to-slate-900 px-6 py-3 text-sm font-semibold text-emerald-800">
               ✓ Paid {invoice.paidAt ? `on ${invoice.paidAt.slice(0, 10)}` : ""}
             </div>
           )}

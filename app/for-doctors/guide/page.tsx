@@ -60,7 +60,7 @@ export default function ForDoctorsGuidePage() {
 
         <GuideRenderer audience="public" />
 
-        <div className="mt-12 rounded-2xl border border-primary-200 bg-gradient-to-br from-primary-50 to-sky-50 p-8 text-center">
+        <div className="mt-12 rounded-2xl border border-primary-200 bg-gradient-to-br from-primary-50 to-sky-50 dark:from-slate-900 dark:to-slate-900 p-8 text-center">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
             Ready to start consulting on OduDoc?
           </h2>

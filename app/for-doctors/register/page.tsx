@@ -458,7 +458,7 @@ function DoctorRegisterForm() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50/40 py-12">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900/40 py-12">
       {/* Decorative background blobs */}
       <div className="pointer-events-none absolute -left-24 top-12 h-72 w-72 rounded-full bg-primary-400/20 blur-3xl" />
       <div className="pointer-events-none absolute -right-24 top-48 h-80 w-80 rounded-full bg-indigo-400/20 blur-3xl" />
@@ -793,7 +793,7 @@ function Step1({
                   onClick={() => update("gender", v)}
                   className={`flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-all ${
                     on
-                      ? "border-primary-500 bg-gradient-to-br from-primary-50 to-indigo-50 text-primary-700 shadow-sm"
+                      ? "border-primary-500 bg-gradient-to-br from-primary-50 to-indigo-50 dark:from-slate-900 dark:to-slate-900 text-primary-700 shadow-sm"
                       : "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:border-gray-300 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800"
                   }`}
                 >
@@ -1581,7 +1581,7 @@ function Step5({
               "OduDoc processes patient data on your behalf solely to deliver booked consultations. We apply industry-standard encryption in transit (TLS 1.3) and at rest (AES-256), keep audit logs of every read and write, and notify you within 72 hours of any confirmed security incident.",
           };
           return (
-            <div className="mt-4 rounded-xl border-2 border-primary-200 bg-gradient-to-br from-primary-50 to-teal-50 p-4">
+            <div className="mt-4 rounded-xl border-2 border-primary-200 bg-gradient-to-br from-primary-50 to-teal-50 dark:from-slate-900 dark:to-slate-900 p-4">
               <p className="mb-1 text-xs font-bold uppercase tracking-wider text-primary-700">
                 Required — {titles[meta.framework]}
               </p>

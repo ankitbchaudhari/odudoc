@@ -413,7 +413,7 @@ export default function StaffPage() {
             onClick={(e) => e.stopPropagation()}
             className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white dark:bg-slate-900 shadow-2xl"
           >
-            <div className="bg-gradient-to-br from-indigo-50 via-violet-50 to-fuchsia-50 px-6 py-5">
+            <div className="bg-gradient-to-br from-indigo-50 via-violet-50 to-fuchsia-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 px-6 py-5">
               <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-700">
                 Plan upgrade
               </p>
@@ -442,7 +442,7 @@ export default function StaffPage() {
                   {quota.unlocked ? "Includes free tier" : "Current plan"}
                 </p>
               </div>
-              <div className="rounded-2xl border-2 border-indigo-500 bg-gradient-to-br from-indigo-50 to-fuchsia-50 p-4 ring-2 ring-indigo-100">
+              <div className="rounded-2xl border-2 border-indigo-500 bg-gradient-to-br from-indigo-50 to-fuchsia-50 dark:from-slate-900 dark:to-slate-900 p-4 ring-2 ring-indigo-100">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-700">
                   {quota.unlocked ? "Current plan" : "Recommended"}
                 </p>

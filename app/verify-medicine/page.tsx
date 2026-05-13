@@ -68,7 +68,7 @@ export default function VerifyMedicinePage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
       <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
         <header className="mb-6">
           <p className="text-xs font-bold uppercase tracking-widest text-emerald-700">Anti-counterfeit check</p>

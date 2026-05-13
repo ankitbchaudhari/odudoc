@@ -98,7 +98,7 @@ export default function SellPage() {
 
   if (vendor) {
     return (
-      <div className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-white to-rose-50">
+      <div className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-white to-rose-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
         <div className="pointer-events-none absolute -top-20 -right-20 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-amber-200/40 to-orange-200/40 blur-3xl" />
         <div className="relative mx-auto max-w-xl px-4 py-16">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
@@ -144,7 +144,7 @@ export default function SellPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-20">
         <div className="pointer-events-none absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-amber-200/40 to-orange-200/40 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -right-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-rose-200/40 to-pink-200/40 blur-3xl" />
         <div className="relative mx-auto max-w-4xl px-4 text-center">
@@ -189,7 +189,7 @@ export default function SellPage() {
       </section>
 
       {/* Benefits */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-amber-50/40 py-16">
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-amber-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900/40 py-16">
         <div className="pointer-events-none absolute top-10 -right-20 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-amber-200/30 to-orange-200/30 blur-3xl" />
         <div className="relative mx-auto max-w-6xl px-4">
           <h2 className="mb-3 text-center text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
@@ -221,7 +221,7 @@ export default function SellPage() {
       </section>
 
       {/* Testimonial-like trust section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-white to-rose-50 py-16">
+      <section className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-white to-rose-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-16">
         <div className="pointer-events-none absolute -top-20 -left-20 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-amber-200/40 to-orange-200/40 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-20 -right-20 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-rose-200/40 to-pink-200/40 blur-3xl" />
         <div className="relative mx-auto max-w-3xl px-4 text-center">
@@ -252,7 +252,7 @@ export default function SellPage() {
             // Unauthenticated: show a sign-in nudge in place of the form so
             // the pitch above doesn't dead-end. Carries a callbackUrl so the
             // visitor lands right back on the form after authenticating.
-            <div className="mt-8 rounded-3xl border border-amber-100 bg-gradient-to-br from-amber-50 via-white to-rose-50 p-8 text-center shadow-sm">
+            <div className="mt-8 rounded-3xl border border-amber-100 bg-gradient-to-br from-amber-50 via-white to-rose-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 p-8 text-center shadow-sm">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 text-white shadow-lg ring-4 ring-white">
                 <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M12 11c0-1.104.896-2 2-2s2 .896 2 2-.896 2-2 2-2-.896-2-2zm-6 0c0-1.104.896-2 2-2s2 .896 2 2-.896 2-2 2-2-.896-2-2zm12 0c0-1.104.896-2 2-2s2 .896 2 2-.896 2-2 2-2-.896-2-2z" />

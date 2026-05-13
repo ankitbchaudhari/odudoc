@@ -33,7 +33,7 @@ export default function SpecialtyIndexPage() {
         ]}
       />
 
-      <section className="bg-gradient-to-br from-primary-50 via-white to-teal-50 py-16">
+      <section className="bg-gradient-to-br from-primary-50 via-white to-teal-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-16">
         <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
           <h1 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 md:text-5xl">
             Medical <span className="text-primary-600">Specialties</span>

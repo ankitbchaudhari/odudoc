@@ -136,7 +136,7 @@ export default function RegisterPage() {
     "w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-10 py-3 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 transition-all focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100";
 
   return (
-    <div className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50/40 px-4 py-12">
+    <div className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900/40 px-4 py-12">
       {/* decorative blobs */}
       <div className="pointer-events-none absolute -top-24 -right-24 h-80 w-80 rounded-full bg-primary-200/40 blur-3xl" />
       <div className="pointer-events-none absolute bottom-0 left-0 h-96 w-96 rounded-full bg-indigo-200/40 blur-3xl" />

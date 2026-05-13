@@ -393,7 +393,7 @@ export default function AiPrescriptionPage() {
                 </svg>
               </div>
               <div>
-                <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-50 to-fuchsia-50 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-100">
+                <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-50 to-fuchsia-50 dark:from-slate-900 dark:to-slate-900 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-100">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75" />
                     <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-indigo-500" />
@@ -844,7 +844,7 @@ export default function AiPrescriptionPage() {
               <div className="rounded-[calc(1.5rem-1px)] bg-white/95 p-6 sm:p-8">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-50 to-fuchsia-50 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-100">
+                    <p className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-50 to-fuchsia-50 dark:from-slate-900 dark:to-slate-900 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-100">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
@@ -1038,7 +1038,7 @@ export default function AiPrescriptionPage() {
             </div>
 
             {treatment.redFlags && treatment.redFlags.length > 0 && (
-              <div className="overflow-hidden rounded-3xl border border-rose-200 bg-gradient-to-br from-rose-50 via-white to-rose-50/40 p-6 shadow-sm sm:p-7">
+              <div className="overflow-hidden rounded-3xl border border-rose-200 bg-gradient-to-br from-rose-50 via-white to-rose-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900/40 p-6 shadow-sm sm:p-7">
                 <div className="flex items-start gap-4">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-md shadow-rose-500/30">
                     <svg

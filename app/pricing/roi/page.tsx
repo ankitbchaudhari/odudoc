@@ -73,7 +73,7 @@ export default function RoiPage() {
   const result = useMemo(() => computeRoi(roi), [roi]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-indigo-50">
+    <main className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
       <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
         <div className="text-center">
           <span className="inline-block rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-700">ROI calculator</span>

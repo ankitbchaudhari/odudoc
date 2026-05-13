@@ -322,7 +322,7 @@ export default function ReferralsPage() {
         </div>
 
         {/* Refer a doctor — bigger reward, separate share link */}
-        <div className="mb-6 overflow-hidden rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 p-6 shadow-sm">
+        <div className="mb-6 overflow-hidden rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 p-6 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 text-white shadow-md shadow-emerald-500/30">

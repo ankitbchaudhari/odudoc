@@ -183,7 +183,7 @@ export default function DictionaryPage() {
       {/* Term result */}
       {term && (
         <div className="mt-6 overflow-hidden rounded-2xl border border-violet-200 bg-white dark:bg-slate-900 shadow-sm">
-          <div className="border-b border-violet-100 bg-gradient-to-r from-violet-50 to-indigo-50 px-5 py-4">
+          <div className="border-b border-violet-100 bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-slate-900 dark:to-slate-900 px-5 py-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{term.term}</h2>
@@ -257,7 +257,7 @@ export default function DictionaryPage() {
       {/* Drug result */}
       {drug && (
         <div className="mt-6 overflow-hidden rounded-2xl border border-emerald-200 bg-white dark:bg-slate-900 shadow-sm">
-          <div className="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-teal-50 px-5 py-4">
+          <div className="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-900 dark:to-slate-900 px-5 py-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{drug.generic}</h2>

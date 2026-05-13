@@ -77,7 +77,7 @@ function ResetPasswordInner() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary-50 via-white to-teal-50 p-6">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary-50 via-white to-teal-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 p-6">
       <div className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 p-8 shadow-xl ring-1 ring-gray-100">
         <div className="text-center">
           <span className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary-700">

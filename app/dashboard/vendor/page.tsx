@@ -332,7 +332,7 @@ export default function VendorDashboard() {
         {!vendor.stripePayoutsEnabled && (
           <div
             id="stripe"
-            className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-5 shadow-sm"
+            className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-900 dark:to-slate-900 p-5 shadow-sm"
           >
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow">

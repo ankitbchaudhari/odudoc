@@ -86,7 +86,7 @@ export default function HelpPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-sky-50 to-purple-50 py-24">
+      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-sky-50 to-purple-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-24">
         <div className="pointer-events-none absolute -top-32 -left-24 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-indigo-200/40 to-sky-200/40 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -right-24 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-purple-200/40 to-fuchsia-200/40 blur-3xl" />
         <div className="relative mx-auto max-w-3xl px-4 text-center">
@@ -138,7 +138,7 @@ export default function HelpPage() {
       )}
 
       {/* Categories */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50/40 py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900/40 py-20">
         <div className="pointer-events-none absolute -top-24 right-0 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-sky-200/30 to-indigo-200/30 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 left-0 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-fuchsia-200/30 to-purple-200/30 blur-3xl" />
         <div className="relative mx-auto max-w-4xl px-4">
@@ -207,7 +207,7 @@ export default function HelpPage() {
       </section>
 
       {/* Still need help CTA */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-purple-50 py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-20">
         <div className="pointer-events-none absolute -top-32 -right-24 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-indigo-200/40 to-purple-200/40 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -left-24 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-sky-200/40 to-teal-200/40 blur-3xl" />
         <div className="relative mx-auto max-w-3xl px-4">

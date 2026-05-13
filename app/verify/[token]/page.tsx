@@ -107,7 +107,7 @@ export default function VerifyCertificatePage({
 
         <div className="overflow-hidden rounded-3xl border border-white/60 bg-white/85 shadow-xl backdrop-blur-xl">
           {verified ? (
-            <div className="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-5">
+            <div className="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-900 dark:to-slate-900 px-6 py-5">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
@@ -125,7 +125,7 @@ export default function VerifyCertificatePage({
               </div>
             </div>
           ) : (
-            <div className="border-b border-rose-100 bg-gradient-to-r from-rose-50 to-amber-50 px-6 py-5">
+            <div className="border-b border-rose-100 bg-gradient-to-r from-rose-50 to-amber-50 dark:from-slate-900 dark:to-slate-900 px-6 py-5">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-amber-500 text-white shadow-md">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">

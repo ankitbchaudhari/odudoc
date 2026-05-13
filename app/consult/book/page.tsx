@@ -390,7 +390,7 @@ export default function BookConsultationPage() {
                       : `${specialties.length} specialties available · admin-managed`}
                   </p>
                 </div>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-900 dark:to-slate-900 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
@@ -500,7 +500,7 @@ export default function BookConsultationPage() {
                     don't care which doctor in the specialty they see. */}
                 <button
                   onClick={() => { setPoolMode(true); setSelectedDoctor(""); setStep(3); }}
-                  className="flex w-full items-center gap-4 rounded-xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-4 text-left transition-all hover:border-emerald-400 hover:shadow-md"
+                  className="flex w-full items-center gap-4 rounded-xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-900 dark:to-slate-900 p-4 text-left transition-all hover:border-emerald-400 hover:shadow-md"
                 >
                   <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-xl text-white shadow">
                     ⚡
@@ -574,7 +574,7 @@ export default function BookConsultationPage() {
             </div>
 
             {poolMode ? (
-              <div className="mb-6 flex items-center gap-4 rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-4">
+              <div className="mb-6 flex items-center gap-4 rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-900 dark:to-slate-900 p-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-lg text-white shadow">
                   ⚡
                 </div>

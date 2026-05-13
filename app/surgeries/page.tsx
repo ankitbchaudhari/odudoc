@@ -107,7 +107,7 @@ export default function SurgeriesPage() {
         ]}
       />
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-teal-50 to-rose-50 py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-teal-50 to-rose-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-20">
         <div className="pointer-events-none absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-primary-200/40 to-teal-200/40 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -right-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-rose-200/40 to-purple-200/40 blur-3xl" />
         <div className="relative mx-auto max-w-5xl px-4 text-center">
@@ -165,7 +165,7 @@ export default function SurgeriesPage() {
       </section>
 
       {/* Surgery Categories */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50/40 py-16">
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900/40 py-16">
         <div className="pointer-events-none absolute top-20 -right-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-primary-200/30 to-teal-200/30 blur-3xl" />
         <div className="relative mx-auto max-w-6xl px-4">
           <h2 className="mb-3 text-center text-3xl font-bold text-gray-900 dark:text-slate-100 md:text-4xl">
@@ -218,7 +218,7 @@ export default function SurgeriesPage() {
       </section>
 
       {/* Why Choose */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-purple-50 py-16">
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-16">
         <div className="pointer-events-none absolute -top-20 -left-20 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-teal-200/40 to-emerald-200/40 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-20 -right-20 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-purple-200/40 to-rose-200/40 blur-3xl" />
         <div className="relative mx-auto max-w-5xl px-4">

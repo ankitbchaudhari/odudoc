@@ -191,7 +191,7 @@ export default function DoctorDashboardPage() {
         {awaiting.length > 0 && (
           <Link
             href="/dashboard/doctor/consultations"
-            className="mb-6 flex items-center justify-between rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-rose-50 p-4 shadow-sm transition-transform hover:-translate-y-0.5"
+            className="mb-6 flex items-center justify-between rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-rose-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 p-4 shadow-sm transition-transform hover:-translate-y-0.5"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow">

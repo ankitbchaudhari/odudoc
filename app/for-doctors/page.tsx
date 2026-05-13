@@ -278,7 +278,7 @@ export default async function ForDoctorsPage() {
                 Country missing? <Link href="/contact" className="font-semibold text-indigo-600 hover:underline">Tell us</Link> — adding a new country is one row in the tax-engine config.
               </p>
             </div>
-            <div className="rounded-2xl bg-gradient-to-br from-indigo-50 via-white to-emerald-50 p-6 ring-1 ring-indigo-100">
+            <div className="rounded-2xl bg-gradient-to-br from-indigo-50 via-white to-emerald-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 p-6 ring-1 ring-indigo-100">
               <p className="text-xs font-bold uppercase tracking-widest text-indigo-700">What auto-localizes</p>
               <ul className="mt-3 space-y-3 text-sm">
                 {[
@@ -389,7 +389,7 @@ export default async function ForDoctorsPage() {
       </section>
 
       {/* Free EMR — clinic-in-a-box */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-cyan-50 to-indigo-50 py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-cyan-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-20">
         <div className="pointer-events-none absolute inset-0 -z-0">
           <div className="absolute -top-40 left-1/2 h-[420px] w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-br from-emerald-200/40 via-cyan-200/40 to-indigo-200/40 blur-3xl" />
         </div>

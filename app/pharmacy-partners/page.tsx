@@ -154,9 +154,9 @@ export default function PharmacyPartnersPage() {
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    { l: "E-Rx", v: "23", tone: "bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-700" },
-                    { l: "Orders", v: "47", tone: "bg-gradient-to-br from-sky-50 to-indigo-50 text-sky-700" },
-                    { l: "Walk-ins", v: "112", tone: "bg-gradient-to-br from-amber-50 to-orange-50 text-amber-700" },
+                    { l: "E-Rx", v: "23", tone: "bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-900 dark:to-slate-900 text-emerald-700" },
+                    { l: "Orders", v: "47", tone: "bg-gradient-to-br from-sky-50 to-indigo-50 dark:from-slate-900 dark:to-slate-900 text-sky-700" },
+                    { l: "Walk-ins", v: "112", tone: "bg-gradient-to-br from-amber-50 to-orange-50 dark:from-slate-900 dark:to-slate-900 text-amber-700" },
                   ].map((s) => (
                     <div key={s.l} className={`rounded-xl ${s.tone} p-3 ring-1 ring-slate-200 dark:ring-slate-800/60`}>
                       <p className="text-[10px] font-semibold uppercase tracking-wider opacity-70">{s.l}</p>

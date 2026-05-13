@@ -523,7 +523,7 @@ export default function CorporatePage() {
                 key={m.title}
                 className="flex gap-4 rounded-2xl border border-gray-100 bg-white dark:bg-slate-900 p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
               >
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-teal-50 text-2xl">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-teal-50 dark:from-slate-900 dark:to-slate-900 text-2xl">
                   {m.icon}
                 </div>
                 <div>
@@ -537,7 +537,7 @@ export default function CorporatePage() {
       </section>
 
       {/* Clinical AI showcase */}
-      <section id="clinical-ai" className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-teal-50 py-20">
+      <section id="clinical-ai" className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-teal-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-20">
         <div className="pointer-events-none absolute -right-10 top-20 h-64 w-64 rounded-full bg-indigo-200/40 blur-3xl" />
         <div className="pointer-events-none absolute -left-10 bottom-20 h-64 w-64 rounded-full bg-teal-200/40 blur-3xl" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -690,7 +690,7 @@ export default function CorporatePage() {
           so a corporate buyer sees the full picture: per-module
           flexibility AND the cross-cutting infrastructure they get
           regardless of which modules they pick. */}
-      <section className="bg-gradient-to-br from-indigo-50 via-white to-emerald-50 py-20">
+      <section className="bg-gradient-to-br from-indigo-50 via-white to-emerald-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <span className="inline-block rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-indigo-700">

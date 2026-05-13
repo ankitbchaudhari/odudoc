@@ -1047,7 +1047,7 @@ export default function DoctorPrescriptionsPage() {
             here via AI assistant or voice prescription. Acts as a
             visual confirmation that their work carried over. */}
         {draft && draftSource && (
-          <div className="mb-6 overflow-hidden rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-violet-50 to-fuchsia-50 p-4 shadow-sm">
+          <div className="mb-6 overflow-hidden rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-violet-50 to-fuchsia-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 p-4 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-md">

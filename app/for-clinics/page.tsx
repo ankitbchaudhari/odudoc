@@ -180,7 +180,7 @@ export default function ForClinicsPage() {
       />
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-sky-50 via-primary-50 to-indigo-50 py-24">
+      <section className="relative overflow-hidden bg-gradient-to-br from-sky-50 via-primary-50 to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-24">
         <div className="pointer-events-none absolute -left-32 -top-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-primary-200/40 to-teal-200/40 blur-3xl" />
         <div className="pointer-events-none absolute -right-40 top-20 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-indigo-200/40 to-purple-200/40 blur-3xl" />
         <div className="pointer-events-none absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-gradient-to-br from-teal-200/30 to-emerald-200/30 blur-3xl" />
@@ -244,7 +244,7 @@ export default function ForClinicsPage() {
       </section>
 
       {/* ── Features ── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50/40 py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900/40 py-20">
         <div className="pointer-events-none absolute -right-40 top-20 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-primary-200/30 to-indigo-200/30 blur-3xl" />
         <div className="relative mx-auto max-w-6xl px-4">
           <div className="mb-14 text-center">
@@ -277,7 +277,7 @@ export default function ForClinicsPage() {
       </section>
 
       {/* ── How It Works ── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-rose-50 via-white to-amber-50 py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-rose-50 via-white to-amber-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-20">
         <div className="pointer-events-none absolute -left-32 top-40 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-rose-200/30 to-amber-200/30 blur-3xl" />
         <div className="relative mx-auto max-w-5xl px-4">
           <div className="mb-14 text-center">
@@ -347,7 +347,7 @@ export default function ForClinicsPage() {
       </section>
 
       {/* ── Pricing ── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-purple-50 py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 py-20">
         <div className="pointer-events-none absolute -right-32 top-10 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-primary-200/30 to-teal-200/30 blur-3xl" />
         <div className="pointer-events-none absolute -left-32 bottom-10 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-purple-200/30 to-pink-200/30 blur-3xl" />
         <div className="relative mx-auto max-w-4xl px-4">
@@ -413,7 +413,7 @@ export default function ForClinicsPage() {
                   </div>
                 </div>
 
-                <div className="border-t border-gray-100 bg-gradient-to-br from-slate-50 to-primary-50/40 p-8">
+                <div className="border-t border-gray-100 bg-gradient-to-br from-slate-50 to-primary-50 dark:from-slate-900 dark:to-slate-900/40 p-8">
                   <h4 className="mb-5 text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-slate-300">
                     Everything Included
                   </h4>

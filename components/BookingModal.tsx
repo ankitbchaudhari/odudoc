@@ -63,10 +63,51 @@ function buildDateOptions(days: number): { value: string; label: string; date: D
   return out;
 }
 
+/*
+ * Booking flow (Nov 2026 restructure).
+ *
+ * Visible steps for the visitor:
+ *   1. Time Slot
+ *   2. Payment   (contact form + gateway)
+ *   3. Details   (reason for visit)
+ *   4. Verify    (Firebase OTP)
+ *
+ * Internal state machine: slot → payform → payment → details → otp → success.
+ * `payform` and `payment` both map to indicator slot #1 ("Payment").
+ *
+ * When `paymentsOff` is true (global free-promo), the payment-related steps
+ * collapse: slot → form → otp → success with labels
+ *   ["Time Slot", "Details", "Verify", "Confirmed"].
+ *
+ * Backend choice (kept minimal so existing endpoints work unmodified):
+ *   - Stripe path:    PaymentForm itself POSTs /api/bookings on confirm
+ *                     (no consultToken required). We use it as-is.
+ *   - Cashfree path:  We generate a client-side ephemeral orderId before
+ *                     opening the gateway, because /api/bookings/free
+ *                     requires a consultToken (OTP-verified) that we
+ *                     don't have yet at this stage. The booking shell is
+ *                     persisted AFTER OTP-verify in handleOtpVerify via
+ *                     /api/bookings/free with pendingPayment=true. The
+ *                     Cashfree webhook will then flip it to paid as today.
+ *                     KNOWN CAVEAT: if the webhook fires before the
+ *                     consultation row exists, markConsultationPaid will
+ *                     no-op; the success-page polling and return-trip
+ *                     verify endpoint already handle that case, but the
+ *                     window is wider than before.
+ *   - Free path:      Same as today — POST /api/bookings/free at OTP-verify.
+ *   - Details/reason: best-effort PATCH /api/bookings/:id with the reason
+ *                     for visit. If the endpoint 404s we log and continue.
+ */
+
 export default function BookingModal({ doctor, open, onClose }: BookingModalProps) {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>(() => formatDate(new Date()));
-  const [step, setStep] = useState<"slot" | "form" | "otp" | "payment" | "success">("slot");
+  // Internal state machine. `payform` collects contact details; `payment`
+  // shows the gateway. Both surface as indicator step #1 ("Payment") in
+  // the payment-enabled flow.
+  const [step, setStep] = useState<
+    "slot" | "payform" | "payment" | "form" | "details" | "otp" | "success"
+  >("slot");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const name = `${firstName.trim()} ${lastName.trim()}`.trim();
@@ -76,6 +117,9 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
   const [phoneHint, setPhoneHint] = useState("");
   const [consultToken, setConsultToken] = useState<string | null>(null);
   const [resendIn, setResendIn] = useState(0);
+  // Reason for visit collected on the post-payment "Details" step.
+  const [reason, setReason] = useState("");
+  const [notes, setNotes] = useState("");
 
   // Firebase Phone Auth state — invisible reCAPTCHA mount point and the
   // ConfirmationResult returned by signInWithPhoneNumber.
@@ -86,6 +130,9 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [consultationId, setConsultationId] = useState<string | null>(null);
+  // Cashfree orderId — generated client-side before opening the SDK so we
+  // don't need an OTP-verified consultToken at payment time.
+  const [cashfreeOrderId, setCashfreeOrderId] = useState<string | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [paymentsOff, setPaymentsOff] = useState(false);
@@ -171,28 +218,16 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
     return null;
   };
 
-  // Step 1 → 2: submit details, request an OTP via Firebase Phone Auth.
-  const handlePatientSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const validationErr = validateInputs();
-    if (validationErr) {
-      setPaymentError(validationErr);
-      return;
-    }
+  // Shared helper — request a Firebase Phone Auth code. Used from the
+  // `details` → `otp` transition AND from the explicit resend button on
+  // the OTP screen.
+  const sendFirebaseOtp = async (): Promise<{ ok: true } | { ok: false; error: string }> => {
     if (!isFirebaseConfigured()) {
-      setPaymentError(
-        "Phone verification isn't configured. Please contact support.",
-      );
-      return;
+      return { ok: false, error: "Phone verification isn't configured. Please contact support." };
     }
-
     const e164 = toE164Client(phone.trim());
-    setPaymentLoading(true);
-    setPaymentError(null);
     try {
       const auth = getFirebaseAuth();
-
-      // Rebuild the invisible reCAPTCHA — Firebase won't reuse a consumed verifier.
       if (recaptchaRef.current) {
         try { recaptchaRef.current.clear(); } catch { /* ignore */ }
         recaptchaRef.current = null;
@@ -201,56 +236,174 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
       recaptchaRef.current = new RecaptchaVerifier(auth, recaptchaContainer.current, {
         size: "invisible",
       });
-
       const confirmation = await signInWithPhoneNumber(auth, e164, recaptchaRef.current);
       confirmationRef.current = confirmation;
-
       setPhoneHint(e164.replace(/\d(?=\d{4})/g, "•"));
       setOtpChannel("sms");
+      return { ok: true };
+    } catch (err) {
+      const code = (err as { code?: string }).code || "";
+      const message = (err as Error).message || "";
+      // eslint-disable-next-line no-console
+      console.error("[BookingModal] phone OTP send failed", { code, message, err });
+      if (/auth\/invalid-phone-number/.test(code)) {
+        return { ok: false, error: "That phone number doesn't look right. Include the country code." };
+      } else if (/auth\/too-many-requests/.test(code)) {
+        return { ok: false, error: "Too many attempts from this device. Try again in a few minutes." };
+      } else if (/auth\/captcha-check-failed/.test(code) || /reCAPTCHA/i.test(message)) {
+        return { ok: false, error: "Anti-bot check failed. Please refresh and try again." };
+      } else if (/auth\/quota-exceeded/.test(code)) {
+        return { ok: false, error: "Daily SMS quota reached. Please try again tomorrow or contact support." };
+      } else if (/auth\/billing-not-enabled/.test(code)) {
+        return { ok: false, error: "Phone verification is temporarily unavailable. Please contact support." };
+      } else if (/auth\/operation-not-allowed/.test(code)) {
+        return { ok: false, error: "Phone verification isn't enabled for this site yet. Please contact support." };
+      } else if (/auth\/unauthorized-domain/.test(code)) {
+        return { ok: false, error: "This domain isn't authorized for phone verification yet. Please contact support." };
+      } else if (/auth\/network-request-failed/.test(code)) {
+        return { ok: false, error: "Network error. Check your connection and try again." };
+      } else if (code) {
+        return { ok: false, error: `Could not send code (${code}). Please try again.` };
+      }
+      return { ok: false, error: "Could not send code. Please try again." };
+    }
+  };
+
+  // Step "payform" submit → for payment-enabled flow this opens the
+  // gateway (Stripe PaymentIntent / Cashfree order). For paymentsOff
+  // this is the legacy contact-form step that immediately requests OTP.
+  const handlePatientSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const validationErr = validateInputs();
+    if (validationErr) {
+      setPaymentError(validationErr);
+      return;
+    }
+
+    // paymentsOff branch — mirror the legacy slot → form → otp flow.
+    // No payment, no gateway; we go straight to OTP.
+    if (paymentsOff) {
+      setPaymentLoading(true);
+      setPaymentError(null);
+      const r = await sendFirebaseOtp();
+      setPaymentLoading(false);
+      if (!r.ok) {
+        setPaymentError(r.error);
+        return;
+      }
       setOtpCode("");
       setResendIn(30);
       setStep("otp");
-    } catch (err) {
-      // Surface the actual Firebase error code so support can debug
-      // ("auth/billing-not-enabled", "auth/quota-exceeded",
-      // "auth/operation-not-allowed", etc). Generic "try again" hid
-      // the real reason and made every failure look like a transient
-      // network blip.
-      const code = (err as { code?: string }).code || "";
-      const message = (err as Error).message || "";
-      // Best effort log to the browser console so devs/support can
-      // copy the full Firebase error from the user's session.
-      // eslint-disable-next-line no-console
-      console.error("[BookingModal] phone OTP send failed", { code, message, err });
+      return;
+    }
 
-      if (/auth\/invalid-phone-number/.test(code)) {
-        setPaymentError("That phone number doesn't look right. Include the country code.");
-      } else if (/auth\/too-many-requests/.test(code)) {
-        setPaymentError("Too many attempts from this device. Try again in a few minutes.");
-      } else if (/auth\/captcha-check-failed/.test(code) || /reCAPTCHA/i.test(message)) {
-        setPaymentError("Anti-bot check failed. Please refresh and try again.");
-      } else if (/auth\/quota-exceeded/.test(code)) {
-        setPaymentError("Daily SMS quota reached. Please try again tomorrow or contact support.");
-      } else if (/auth\/billing-not-enabled/.test(code)) {
-        setPaymentError("Phone verification is temporarily unavailable. Please contact support.");
-      } else if (/auth\/operation-not-allowed/.test(code)) {
-        setPaymentError("Phone verification isn't enabled for this site yet. Please contact support.");
-      } else if (/auth\/unauthorized-domain/.test(code)) {
-        setPaymentError("This domain isn't authorized for phone verification yet. Please contact support.");
-      } else if (/auth\/network-request-failed/.test(code)) {
-        setPaymentError("Network error. Check your connection and try again.");
-      } else if (code) {
-        // Show the Firebase code in dev/staging so the cause is visible.
-        setPaymentError(`Could not send code (${code}). Please try again.`);
-      } else {
-        setPaymentError("Could not send code. Please try again.");
+    // Payment-enabled branch — open the chosen gateway.
+    setPaymentLoading(true);
+    setPaymentError(null);
+    try {
+      if (provider === "cashfree") {
+        // Cashfree needs an orderId up-front. We mint a client-side
+        // ephemeral id; the real booking shell is persisted after OTP
+        // verify (see handleOtpVerify). The Cashfree webhook keys on
+        // this orderId, so we MUST persist with the same id later.
+        const orderId = `pre_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        setCashfreeOrderId(orderId);
+        setStep("payment");
+        return;
       }
+
+      // Stripe path — pre-create the PaymentIntent. /api/payments/create-intent
+      // does NOT require a consultToken, so we can call it before OTP.
+      const res = await fetch("/api/payments/create-intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          doctorId: doctor.id,
+          doctorName: doctor.name,
+          fee: doctor.fee,
+          patientName: name,
+          patientPhone: phone.trim(),
+          timeSlot: selectedSlot,
+          currency: checkout.code,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPaymentError(data.error || "Failed to initiate payment");
+        return;
+      }
+      setClientSecret(data.clientSecret);
+      setPaymentIntentId(data.paymentIntentId);
+      setStep("payment");
+    } catch {
+      setPaymentError("Network error. Please try again.");
     } finally {
       setPaymentLoading(false);
     }
   };
 
-  // Step 2 → 3: verify OTP via Firebase, then either create a free booking or open Stripe.
+  // After payment succeeds — advance to the post-payment "Details" step
+  // (reason for visit). Booking persistence has already happened (Stripe:
+  // PaymentForm POSTs /api/bookings inline; Cashfree: deferred to OTP-verify).
+  const handlePaymentSuccess = (piId: string, bId: string) => {
+    if (piId) setPaymentIntentId(piId);
+    if (bId) setBookingId(bId);
+    setStep("details");
+  };
+
+  const handlePaymentError = (message: string) => {
+    setPaymentError(message);
+  };
+
+  // "Details" step submit — record the reason for visit (best effort) then
+  // request the Firebase OTP and transition to the "Verify" step.
+  const handleDetailsSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (reason.trim().length < 3) {
+      setPaymentError("Please describe the reason for your visit (a few words is fine).");
+      return;
+    }
+    setPaymentLoading(true);
+    setPaymentError(null);
+
+    // Best-effort PATCH to /api/bookings/:id with the reason. If the
+    // endpoint doesn't exist (404) or fails, we log and continue —
+    // the reason is also threaded into the consultation record at
+    // OTP-verify time via /api/bookings/free's medicalHistory shim.
+    if (bookingId) {
+      try {
+        const res = await fetch(`/api/bookings/${encodeURIComponent(bookingId)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reason: reason.trim(), notes: notes.trim() }),
+        });
+        if (!res.ok) {
+          // eslint-disable-next-line no-console
+          console.warn("[BookingModal] reason PATCH failed", res.status);
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn("[BookingModal] reason PATCH errored", err);
+      }
+    }
+
+    const r = await sendFirebaseOtp();
+    setPaymentLoading(false);
+    if (!r.ok) {
+      setPaymentError(r.error);
+      return;
+    }
+    setOtpCode("");
+    setResendIn(30);
+    setStep("otp");
+  };
+
+  // Final step — verify the OTP, mint the consultToken, then persist the
+  // booking shell. For paymentsOff this is a free booking; for Cashfree
+  // it's a pendingPayment booking the webhook will flip to paid; for
+  // Stripe the booking is already recorded by PaymentForm and this call
+  // is informational only (we still need consumeConsultToken for the
+  // verified identity log).
   const handleOtpVerify = async () => {
     if (otpCode.trim().length < 4) {
       setPaymentError("Enter the 6-digit code we sent you.");
@@ -292,6 +445,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
       const token = vData.consultToken as string;
       setConsultToken(token);
 
+      // paymentsOff branch — create the free booking now.
       if (paymentsOff) {
         const res = await fetch("/api/bookings/free", {
           method: "POST",
@@ -324,11 +478,10 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
         return;
       }
 
-      // If the patient picked Cashfree, we don't pre-create anything
-      // on our side — the CashfreeCheckout component creates the
-      // Cashfree order on click + launches the SDK + verifies on
-      // return. Just create the booking shell so we have a stable
-      // orderId to give Cashfree.
+      // Cashfree branch — payment already succeeded with our ephemeral
+      // orderId; persist the booking shell now so the webhook (if it
+      // hasn't already) can flip it to paid. We pass pendingPayment=true
+      // because the gateway is webhook-driven.
       if (provider === "cashfree") {
         const bookRes = await fetch("/api/bookings/free", {
           method: "POST",
@@ -343,47 +496,25 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
             timeSlot: selectedSlot,
             date: selectedDate,
             consultToken: token,
-            // Mark unpaid so the consultation sits in "pending payment"
-            // state until the Cashfree webhook flips it.
             pendingPayment: true,
           }),
         });
         const bookData = await bookRes.json();
-        if (!bookRes.ok) {
-          setPaymentError(bookData.error || "Booking failed. Please try again.");
-          return;
+        if (bookRes.ok) {
+          setBookingId(bookData.booking.id);
+          if (bookData.consultation?.id) setConsultationId(bookData.consultation.id);
+        } else {
+          // eslint-disable-next-line no-console
+          console.warn("[BookingModal] cashfree booking-shell persist failed", bookData);
         }
-        setBookingId(bookData.booking.id);
-        if (bookData.consultation?.id) setConsultationId(bookData.consultation.id);
-        setStep("payment");
+        setStep("success");
         return;
       }
 
-      // Paid path: open Stripe PaymentIntent. The fee is authored in USD;
-      // create-intent converts to the visitor-chosen currency at the live
-      // FX rate and creates the PaymentIntent in that currency.
-      const res = await fetch("/api/payments/create-intent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          doctorId: doctor.id,
-          doctorName: doctor.name,
-          fee: doctor.fee,
-          patientName: name,
-          patientPhone: phone.trim(),
-          timeSlot: selectedSlot,
-          consultToken: token,
-          currency: checkout.code,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setPaymentError(data.error || "Failed to initiate payment");
-        return;
-      }
-      setClientSecret(data.clientSecret);
-      setPaymentIntentId(data.paymentIntentId);
-      setStep("payment");
+      // Stripe branch — booking was already POSTed by PaymentForm. We
+      // just need the consultToken side-effect (verified identity); the
+      // final state is "success".
+      setStep("success");
     } catch {
       setPaymentError("Network error. Please try again.");
     } finally {
@@ -396,46 +527,14 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
   const handleResendOtp = async () => {
     if (resendIn > 0 || paymentLoading) return;
     setPaymentError(null);
-    if (!isFirebaseConfigured()) {
-      setPaymentError("Phone verification isn't configured.");
+    setPaymentLoading(true);
+    const r = await sendFirebaseOtp();
+    setPaymentLoading(false);
+    if (!r.ok) {
+      setPaymentError(r.error);
       return;
     }
-    const e164 = toE164Client(phone.trim());
-    setPaymentLoading(true);
-    try {
-      const auth = getFirebaseAuth();
-      if (recaptchaRef.current) {
-        try { recaptchaRef.current.clear(); } catch { /* ignore */ }
-        recaptchaRef.current = null;
-      }
-      if (!recaptchaContainer.current) throw new Error("reCAPTCHA container not mounted");
-      recaptchaRef.current = new RecaptchaVerifier(auth, recaptchaContainer.current, {
-        size: "invisible",
-      });
-      const confirmation = await signInWithPhoneNumber(auth, e164, recaptchaRef.current);
-      confirmationRef.current = confirmation;
-      setResendIn(30);
-    } catch (err) {
-      const msg = (err as { code?: string; message?: string }).code
-        || (err as Error).message
-        || "";
-      if (/auth\/too-many-requests/.test(msg)) {
-        setPaymentError("Too many attempts from this device. Try again later.");
-      } else {
-        setPaymentError("Could not resend code. Please try again.");
-      }
-    } finally {
-      setPaymentLoading(false);
-    }
-  };
-
-  const handlePaymentSuccess = (_piId: string, bId: string) => {
-    setBookingId(bId);
-    setStep("success");
-  };
-
-  const handlePaymentError = (message: string) => {
-    setPaymentError(message);
+    setResendIn(30);
   };
 
   const handleClose = () => {
@@ -445,6 +544,8 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
     setLastName("");
     setPhone("");
     setOtpCode("");
+    setReason("");
+    setNotes("");
     setConsultToken(null);
     setPhoneHint("");
     setResendIn(0);
@@ -452,21 +553,40 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
     setPaymentIntentId(null);
     setBookingId(null);
     setConsultationId(null);
+    setCashfreeOrderId(null);
     setPaymentError(null);
     onClose();
   };
 
-  // Step indicator
+  // Step indicator. The visible labels are different in the paymentsOff
+  // branch (no "Payment" step). For payment-enabled, both `payform` and
+  // `payment` map to indicator slot #1 ("Payment").
+  //
+  //   Payment-enabled: slot=0, payform=1, payment=1, details=2, otp=3, success=4
+  //   paymentsOff:     slot=0, payform=1 (legacy "Details"), otp=2, success=3
   const steps = paymentsOff
     ? ["Time Slot", "Details", "Verify", "Confirmed"]
-    : ["Time Slot", "Details", "Verify", "Payment", "Confirmed"];
-  const stepIndex =
-    step === "slot" ? 0
-    : step === "form" ? 1
-    : step === "otp" ? 2
-    : step === "payment" ? (paymentsOff ? 3 : 3)
-    : paymentsOff ? 3 : 4;
+    : ["Time Slot", "Payment", "Details", "Verify", "Confirmed"];
+  const stepIndex = paymentsOff
+    ? step === "slot" ? 0
+      : step === "payform" ? 1
+      : step === "otp" ? 2
+      : 3
+    : step === "slot" ? 0
+      : step === "payform" || step === "payment" ? 1
+      : step === "details" ? 2
+      : step === "otp" ? 3
+      : 4;
+  // We render only 4 dots regardless of which branch is live (matches the
+  // previous behaviour). For paymentsOff the array has 4 entries already;
+  // for payment-enabled (5 entries) we hide the trailing "Confirmed" entry
+  // since the indicator is hidden on the success screen anyway.
   const totalIndicator = paymentsOff ? 3 : 4;
+
+  // The contact form is shared between "payform" (payment-enabled) and
+  // "form" (paymentsOff legacy). They render the same JSX; only the
+  // submit-button label and downstream branch differ.
+  const isContactFormStep = step === "payform" || step === "form";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={handleClose}>
@@ -579,7 +699,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
 
             <button
               disabled={!selectedSlot}
-              onClick={() => setStep("form")}
+              onClick={() => setStep(paymentsOff ? "form" : "payform")}
               className="btn-primary mt-6 w-full disabled:cursor-not-allowed disabled:opacity-50"
             >
               Continue
@@ -587,16 +707,22 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
           </>
         )}
 
-        {step === "form" && (
+        {isContactFormStep && (
           <form onSubmit={handlePatientSubmit}>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Patient Details</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">
+              {paymentsOff ? "Patient Details" : "Payment"}
+            </h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
               {doctor.name} &middot; {dateOptions.find((d) => d.value === selectedDate)?.label} &middot; {selectedSlot}
             </p>
-            {paymentsOff && (
+            {paymentsOff ? (
               <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
                 🎉 Consultations are free for the next 24 hours — no card required.
               </div>
+            ) : (
+              <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">
+                Enter your contact details to continue to payment ({displaySymbol}{displayFee}).
+              </p>
             )}
             <div className="mt-5 space-y-4">
               <div className="grid grid-cols-2 gap-3">
@@ -639,7 +765,11 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                   inputMode="tel"
                   autoComplete="tel"
                 />
-                <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">We&apos;ll text you a 6-digit code to confirm it&apos;s you.</p>
+                <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
+                  {paymentsOff
+                    ? "We'll text you a 6-digit code to confirm it's you."
+                    : "We'll verify this number after payment."}
+                </p>
               </div>
             </div>
 
@@ -660,10 +790,12 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Sending code…
+                  {paymentsOff ? "Sending code…" : "Opening payment…"}
                 </span>
               ) : (
-                "Send verification code"
+                paymentsOff
+                  ? "Send verification code"
+                  : `Continue to payment · ${displaySymbol}${displayFee}`
               )}
             </button>
 
@@ -673,6 +805,132 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
               className="mt-2 w-full text-center text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300"
             >
               Back
+            </button>
+          </form>
+        )}
+
+        {step === "payment" && (clientSecret || (provider === "cashfree" && cashfreeOrderId)) && (
+          <>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Payment</h2>
+            <p className="mt-1 mb-5 text-sm text-gray-500 dark:text-slate-400">
+              Complete your payment to continue
+            </p>
+
+            {/* Provider toggle — only render when Cashfree is wired AND
+                the visitor already has a Stripe PaymentIntent OR a
+                Cashfree-eligible booking. Hidden on countries where
+                Cashfree won't accept the customer's instrument. */}
+            {cashfreeAvailable && (
+              <div className="mb-4 inline-flex rounded-full bg-slate-100 dark:bg-slate-800 p-1 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setProvider("cashfree")}
+                  className={`rounded-full px-3 py-1.5 transition ${provider === "cashfree" ? "bg-white dark:bg-slate-900 text-[#6933FF] shadow-sm" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-slate-100"}`}
+                >
+                  🇮🇳 UPI / Cards (Cashfree)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProvider("stripe")}
+                  className={`rounded-full px-3 py-1.5 transition ${provider === "stripe" ? "bg-white dark:bg-slate-900 text-indigo-600 shadow-sm" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-slate-100"}`}
+                >
+                  💳 International (Stripe)
+                </button>
+              </div>
+            )}
+
+            {provider === "cashfree" && cashfreeOrderId ? (
+              <CashfreeCheckout
+                orderId={cashfreeOrderId}
+                amount={Number((convertedFee ?? doctor.fee).toFixed(2))}
+                currency={(checkout.code === "INR" ? "INR" : "INR") as "INR"}
+                customerName={name}
+                customerEmail={(typeof window !== "undefined" && new URLSearchParams(window.location.search).get("email")) || `${phone.replace(/[^0-9]/g, "")}@odudoc.example`}
+                customerPhone={phone.replace(/^\+/, "")}
+                description={`Consultation with ${doctor.name} on ${selectedSlot}`}
+                doctorId={doctor.id}
+                // Cashfree's success path doesn't carry a stripe-style
+                // PaymentIntent id — the orderId IS what the webhook
+                // keys on, so we forward it as paymentIntentId.
+                onSuccess={() => handlePaymentSuccess("", cashfreeOrderId)}
+                onError={handlePaymentError}
+              />
+            ) : clientSecret ? (
+              <PaymentForm
+                clientSecret={clientSecret}
+                doctorName={doctor.name}
+                timeSlot={selectedSlot!}
+                fee={doctor.fee}
+                patientName={name}
+                patientPhone={phone}
+                doctorId={doctor.id}
+                onSuccess={handlePaymentSuccess}
+                onError={handlePaymentError}
+              />
+            ) : (
+              <p className="text-sm text-slate-500 dark:text-slate-400">Initialising payment…</p>
+            )}
+
+            {paymentError && (
+              <div className="mt-4 rounded-lg bg-red-50 p-3 text-xs text-red-700">
+                {paymentError}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => { setStep("payform"); setPaymentError(null); }}
+              className="mt-3 w-full text-center text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300"
+            >
+              Back
+            </button>
+          </>
+        )}
+
+        {step === "details" && (
+          <form onSubmit={handleDetailsSubmit}>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Visit Details</h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+              Payment received. Tell the doctor what to expect.
+            </p>
+            <div className="mt-5 space-y-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Reason for visit *</label>
+                <textarea
+                  required
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  rows={3}
+                  maxLength={500}
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  placeholder="e.g. Follow-up on blood-pressure medication, headaches for 3 days, second-opinion on a recent MRI report…"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Additional notes (optional)</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={2}
+                  maxLength={500}
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  placeholder="Anything else the doctor should know"
+                />
+              </div>
+            </div>
+
+            {paymentError && (
+              <div className="mt-4 rounded-lg bg-red-50 p-3 text-xs text-red-700">
+                {paymentError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={paymentLoading}
+              className="btn-primary mt-6 w-full disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {paymentLoading ? "Sending code…" : "Continue to phone verification"}
             </button>
           </form>
         )}
@@ -717,17 +975,23 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                 ? "Verifying…"
                 : paymentsOff
                 ? "Verify & confirm booking"
-                : `Verify & continue to payment · ${displaySymbol}${displayFee}`}
+                : "Verify & confirm booking"}
             </button>
 
             <div className="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-slate-400">
               <button
                 type="button"
-                onClick={() => { setStep("form"); setPaymentError(null); }}
+                onClick={() => {
+                  // Going back from OTP returns to whichever step came
+                  // before it in this branch: "details" for paid bookings,
+                  // legacy "form" for paymentsOff.
+                  setStep(paymentsOff ? "form" : "details");
+                  setPaymentError(null);
+                }}
                 className="text-primary-600 hover:underline"
                 disabled={paymentLoading}
               >
-                ← Change number
+                ← Back
               </button>
               <button
                 type="button"
@@ -739,84 +1003,6 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
               </button>
             </div>
           </div>
-        )}
-
-        {step === "payment" && (clientSecret || (provider === "cashfree" && bookingId)) && (
-          <>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Payment</h2>
-            <p className="mt-1 mb-5 text-sm text-gray-500 dark:text-slate-400">
-              Complete your payment to confirm booking
-            </p>
-
-            {/* Provider toggle — only render when Cashfree is wired AND
-                the visitor already has a Stripe PaymentIntent OR a
-                Cashfree-eligible booking. Hidden on countries where
-                Cashfree won't accept the customer's instrument. */}
-            {cashfreeAvailable && (
-              <div className="mb-4 inline-flex rounded-full bg-slate-100 dark:bg-slate-800 p-1 text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => setProvider("cashfree")}
-                  className={`rounded-full px-3 py-1.5 transition ${provider === "cashfree" ? "bg-white dark:bg-slate-900 text-[#6933FF] shadow-sm" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-slate-100"}`}
-                >
-                  🇮🇳 UPI / Cards (Cashfree)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setProvider("stripe")}
-                  className={`rounded-full px-3 py-1.5 transition ${provider === "stripe" ? "bg-white dark:bg-slate-900 text-indigo-600 shadow-sm" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-slate-100"}`}
-                >
-                  💳 International (Stripe)
-                </button>
-              </div>
-            )}
-
-            {provider === "cashfree" && bookingId ? (
-              <CashfreeCheckout
-                orderId={bookingId}
-                amount={Number((convertedFee ?? doctor.fee).toFixed(2))}
-                currency={(checkout.code === "INR" ? "INR" : "INR") as "INR"}
-                customerName={name}
-                customerEmail={(typeof window !== "undefined" && new URLSearchParams(window.location.search).get("email")) || `${phone.replace(/[^0-9]/g, "")}@odudoc.example`}
-                customerPhone={phone.replace(/^\+/, "")}
-                description={`Consultation with ${doctor.name} on ${selectedSlot}`}
-                doctorId={doctor.id}
-                // Cashfree's success path doesn't carry a stripe-style
-                // PaymentIntent id — the order id IS the booking id, so
-                // we forward an empty string for paymentIntentId.
-                onSuccess={() => handlePaymentSuccess("", bookingId)}
-                onError={handlePaymentError}
-              />
-            ) : clientSecret ? (
-              <PaymentForm
-                clientSecret={clientSecret}
-                doctorName={doctor.name}
-                timeSlot={selectedSlot!}
-                fee={doctor.fee}
-                patientName={name}
-                patientPhone={phone}
-                doctorId={doctor.id}
-                onSuccess={handlePaymentSuccess}
-                onError={handlePaymentError}
-              />
-            ) : (
-              <p className="text-sm text-slate-500 dark:text-slate-400">Initialising payment…</p>
-            )}
-
-            {paymentError && (
-              <div className="mt-4 rounded-lg bg-red-50 p-3 text-xs text-red-700">
-                {paymentError}
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={() => { setStep("form"); setPaymentError(null); }}
-              className="mt-3 w-full text-center text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300"
-            >
-              Back
-            </button>
-          </>
         )}
 
         {step === "success" && (

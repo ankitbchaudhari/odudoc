@@ -29,13 +29,10 @@ export default function Navbar() {
   // doctor's onboarding guide. Each link carries an emoji so the bar
   // skims like an app launcher rather than a wall of text.
   const links: Array<{ href: string; label: string; emoji: string; emphasized?: boolean }> = [
-    { href: "/features", label: "Features", emoji: "✨" },
     { href: "/doctors", label: t("nav.doctors"), emoji: "🩺" },
     { href: "/for-doctors/guide", label: "Doctor's Guide", emoji: "📘" },
     { href: "/corporate", label: "For Hospitals", emoji: "🏥" },
     { href: "/pharmacy-partners", label: "Your Pharmacy on OduDoc", emoji: "💊", emphasized: true },
-    { href: "/jobs", label: "Jobs", emoji: "💼" },
-    { href: "/blog", label: t("nav.blog"), emoji: "📰" },
     { href: "/about", label: t("nav.about"), emoji: "💚" },
   ];
 

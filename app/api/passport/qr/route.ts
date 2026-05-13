@@ -52,7 +52,11 @@ export async function GET() {
     profile: {
       name: displayName,
       medicalId,
-      formattedMedicalId: medicalId.match(/.{1,4}/g)?.join("-") || medicalId,
+      // Canonical Medical ID format is `NNN-NNNNN-NNNNN-NNN` already
+       // — handed back as-is so this surface matches /profile and any
+       // other place that renders the ID. The previous 4-char re-chunk
+       // produced double dashes like `026--9122-5-04-756--518`.
+      formattedMedicalId: medicalId,
       isDependent: active.kind === "dependent",
     },
   });

@@ -85,7 +85,10 @@ export async function POST(req: NextRequest) {
           patient: {
             name: patientName,
             medicalId: verified.medicalId,
-            formattedMedicalId: verified.medicalId.match(/.{1,4}/g)?.join("-") || verified.medicalId,
+            // Canonical Medical ID is already `NNN-NNNNN-NNNNN-NNN`.
+            // Keep formattedMedicalId === medicalId so /profile and
+            // the health-passport surfaces show identical strings.
+            formattedMedicalId: verified.medicalId,
           },
           requestUrl,
         },

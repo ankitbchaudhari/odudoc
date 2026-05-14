@@ -15,6 +15,7 @@ import { verifyMobileOtp } from "@/lib/mobile-otp-store";
 import { signMobileToken } from "@/lib/mobile-auth";
 import { addSubscriber } from "@/lib/subscribers-store";
 import { sendWelcomeEmail } from "@/lib/email";
+import { sendWelcomePatientViaSentDm } from "@/lib/sent-dm";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 import { parseJson, z, emailSchema } from "@/lib/validate";
@@ -94,6 +95,19 @@ export async function POST(request: NextRequest) {
     if (isFirstVerification) {
       sendWelcomeEmail({ to: user.email, name: user.name })
         .catch((err) => log.error("mobile-verify.welcome_email_failed", err, { email: user.email }));
+      // Best-effort WhatsApp welcome — alongside email, never blocks.
+      if (user.phone) {
+        (async () => {
+          try {
+            const r = await sendWelcomePatientViaSentDm(user.phone!, {
+              patientName: user.name || "there",
+            });
+            if (!r.ok) log.warn("mobile-verify.welcome_wa_template_failed", { error: r.error || "unknown" });
+          } catch (err) {
+            log.warn("mobile-verify.welcome_wa_template_threw", { error: err instanceof Error ? err.message : "send threw" });
+          }
+        })();
+      }
     }
 
     const { token, expiresAt } = await signMobileToken({

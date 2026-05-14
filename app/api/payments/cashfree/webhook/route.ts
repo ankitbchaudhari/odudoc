@@ -8,8 +8,9 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignatureDetailed, isWebhookReplay, markWebhookProcessed } from "@/lib/cashfree";
-import { markPaid as markConsultationPaid } from "@/lib/consultations-store";
+import { markPaid as markConsultationPaid, getConsultation } from "@/lib/consultations-store";
 import { applyTopUp } from "@/lib/wallet/store";
+import { sendPaymentFailedViaSentDm } from "@/lib/sent-dm";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
@@ -147,6 +148,29 @@ export async function POST(req: NextRequest) {
     }
   } else {
     log.info("cashfree.webhook.event", { type: evt.type, status, orderId });
+    // Patient-facing payment failure notice (FAILED / USER_DROPPED /
+    // CANCELLED). Best-effort WhatsApp template alongside any other
+    // channel — silently no-ops when we can't resolve the patient.
+    if (status === "FAILED" || status === "USER_DROPPED" || status === "CANCELLED") {
+      const tags = order?.order_tags || {};
+      if (tags.type === "consultation") {
+        const c = getConsultation(orderId);
+        if (c?.patientPhone) {
+          (async () => {
+            try {
+              const r = await sendPaymentFailedViaSentDm(c.patientPhone, {
+                patientName: c.patientName || "there",
+                amount: String(payment?.payment_amount ?? c.fee ?? ""),
+                doctorName: c.doctorName || "Doctor",
+              });
+              if (!r.ok) log.warn("cashfree.webhook.payment_failed_wa_template_failed", { error: r.error || "unknown" });
+            } catch (err) {
+              log.warn("cashfree.webhook.payment_failed_wa_template_threw", { error: err instanceof Error ? err.message : "send threw" });
+            }
+          })();
+        }
+      }
+    }
   }
 
   // Mark event as processed so a Cashfree retry of the same payload

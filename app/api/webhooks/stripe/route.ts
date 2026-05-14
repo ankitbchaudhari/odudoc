@@ -4,6 +4,7 @@ import { stripe } from '@/lib/stripe';
 import { updateBookingStatus } from '@/lib/bookings-store';
 import { upsertSubscription, getSubscriptionByStripeId, getSubscriptionByCustomerId, type PlanTier, type SubStatus } from '@/lib/hospital/subscription-store';
 import { applyTopUp } from '@/lib/wallet/store';
+import { sendPaymentFailedViaSentDm } from '@/lib/sent-dm';
 import { log } from '@/lib/log';
 
 export const runtime = "nodejs";
@@ -49,7 +50,22 @@ export async function POST(request: NextRequest) {
       }
       case 'payment_intent.payment_failed': {
         const pi = event.data.object as Stripe.PaymentIntent;
-        updateBookingStatus(pi.id, 'failed');
+        const updated = updateBookingStatus(pi.id, 'failed');
+        // Best-effort WhatsApp notice to the patient.
+        if (updated?.patientPhone) {
+          (async () => {
+            try {
+              const r = await sendPaymentFailedViaSentDm(updated.patientPhone!, {
+                patientName: updated.patientName || "there",
+                amount: String(updated.fee ?? ""),
+                doctorName: updated.doctorName || "Doctor",
+              });
+              if (!r.ok) log.warn("stripe.webhook.payment_failed_wa_template_failed", { error: r.error || "unknown" });
+            } catch (err) {
+              log.warn("stripe.webhook.payment_failed_wa_template_threw", { error: err instanceof Error ? err.message : "send threw" });
+            }
+          })();
+        }
         break;
       }
       case 'checkout.session.completed': {

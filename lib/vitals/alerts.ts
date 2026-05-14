@@ -12,9 +12,10 @@
 
 import { classify, VitalReading, VITAL_LABEL } from "./store";
 import { findActiveAdmissionForPatient } from "../hospital/admissions-store";
-import { findUserByEmail } from "../users-store";
+import { findUserByEmail, findUserById } from "../users-store";
 import { pushNotification } from "../notifications/store";
 import { notifyWithFallback } from "../notifications/notify";
+import { sendVitalAlertViaSentDm } from "../sent-dm";
 import { log } from "../log";
 
 export function maybeAlertOnReading(reading: VitalReading): { alertedDoctorEmails: string[] } {
@@ -64,6 +65,22 @@ export function maybeAlertOnReading(reading: VitalReading): { alertedDoctorEmail
           if (!r.ok) log.warn("vital_alert.notify_failed", { email, error: r.error, channel: r.channel });
         })
         .catch((e) => log.error("vital_alert.notify_threw", { email, error: String(e) }));
+      // Best-effort approved WhatsApp template alongside the free-form
+      // alert — the template renders the patient context in a structured
+      // way and works outside the 24h session window.
+      (async () => {
+        try {
+          const patient = findUserById(reading.userId);
+          const r = await sendVitalAlertViaSentDm(u.phone!, {
+            patientName: patient?.name || reading.userId || "patient",
+            vitalType: VITAL_LABEL[reading.kind],
+            value,
+          });
+          if (!r.ok) log.warn("vital_alert.wa_template_failed", { error: r.error || "unknown" });
+        } catch (err) {
+          log.warn("vital_alert.wa_template_threw", { error: err instanceof Error ? err.message : "send threw" });
+        }
+      })();
     }
     if (email) {
       notifyWithFallback(["email"], {

@@ -5,6 +5,8 @@ import { listConsultations } from '@/lib/consultations-store';
 import { validateSlot } from '@/lib/slot-utils';
 import { notifyAppointmentBooked } from '@/lib/notifications';
 import { parseJson } from '@/lib/api-validate';
+import { findUserById } from '@/lib/users-store';
+import { sendDoctorNewAppointmentViaSentDm } from '@/lib/sent-dm';
 import { log } from "@/lib/log";
 
 const BookingSchema = z.object({
@@ -94,6 +96,28 @@ export async function POST(request: NextRequest) {
       time: body.timeSlot,
       type: appointmentType,
     });
+
+    // Best-effort WhatsApp alert to the assigned doctor. Looks up
+    // the doctor's phone from users-store when not provided in the
+    // request body; silently skips when no phone is on file.
+    (async () => {
+      try {
+        const doctorPhone =
+          body.doctorPhone ||
+          (body.doctorId ? findUserById(body.doctorId)?.phone : undefined);
+        if (!doctorPhone) return;
+        const r = await sendDoctorNewAppointmentViaSentDm(doctorPhone, {
+          doctorName: body.doctorName || "Doctor",
+          patientName: body.patientName || "there",
+          date: appointmentDate,
+          time: body.timeSlot,
+          chiefComplaint: "",
+        });
+        if (!r.ok) log.warn("bookings.doctor_new_appt_wa_template_failed", { error: r.error || "unknown" });
+      } catch (err) {
+        log.warn("bookings.doctor_new_appt_wa_template_threw", { error: err instanceof Error ? err.message : "send threw" });
+      }
+    })();
 
     return NextResponse.json({ booking }, { status: 201 });
   } catch (error: unknown) {

@@ -9,6 +9,7 @@ import {
 import { sendWithdrawalStatusEmail } from "@/lib/email";
 import { notify } from "@/lib/notifications/notify";
 import { findUserByEmail } from "@/lib/users-store";
+import { sendWithdrawalProcessedViaSentDm } from "@/lib/sent-dm";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -86,6 +87,26 @@ export async function PATCH(
         body: smsBody,
         category: "billing",
       }).catch((err) => log.error("[withdrawals] status sms failed:", err));
+      // Best-effort WhatsApp template when the payout actually goes
+      // out ("paid" — our equivalent of processed). Extract last 4
+      // digits of the account number from the free-text accountDetails.
+      if (status === "paid") {
+        (async () => {
+          try {
+            const digits = (updated.accountDetails || "").replace(/\D/g, "");
+            const last4 = digits.slice(-4) || "----";
+            const r = await sendWithdrawalProcessedViaSentDm(doctor.phone!, {
+              doctorName: updated.doctorName || "Doctor",
+              amount: String(updated.amount),
+              accountLast4: last4,
+              reference: updated.id,
+            });
+            if (!r.ok) log.warn("withdrawals.processed_wa_template_failed", { error: r.error || "unknown" });
+          } catch (err) {
+            log.warn("withdrawals.processed_wa_template_threw", { error: err instanceof Error ? err.message : "send threw" });
+          }
+        })();
+      }
     }
   }
 

@@ -15,6 +15,10 @@ import {
   sendPatientRescheduled,
 } from "@/lib/consultation-emails";
 import { issueRefund } from "@/lib/refunds";
+import {
+  sendAppointmentCancelledViaSentDm,
+  sendRefundProcessedViaSentDm,
+} from "@/lib/sent-dm";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -107,6 +111,36 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       error: r.error,
     });
     sendPatientRejected(updated, body.reason).catch(console.error);
+    // Best-effort WhatsApp cancellation + refund templates alongside email.
+    if (updated.patientPhone) {
+      (async () => {
+        try {
+          const refundAmount = r.succeeded ? r.amount : 0;
+          const cancelRes = await sendAppointmentCancelledViaSentDm(updated.patientPhone!, {
+            patientName: updated.patientName || "there",
+            doctorName: updated.doctorName || "Doctor",
+            dateTime: `${updated.dateLabel} ${updated.timeSlot}`,
+            refundAmount: String(refundAmount),
+          });
+          if (!cancelRes.ok) log.warn("decision.cancelled_wa_template_failed", { error: cancelRes.error || "unknown" });
+        } catch (err) {
+          log.warn("decision.cancelled_wa_template_threw", { error: err instanceof Error ? err.message : "send threw" });
+        }
+        try {
+          if (r.succeeded && r.amount > 0) {
+            const refundRes = await sendRefundProcessedViaSentDm(updated.patientPhone!, {
+              patientName: updated.patientName || "there",
+              amount: String(r.amount),
+              reason: typeof body.reason === "string" ? body.reason : "Consultation cancelled",
+              reference: r.id,
+            });
+            if (!refundRes.ok) log.warn("decision.refund_wa_template_failed", { error: refundRes.error || "unknown" });
+          }
+        } catch (err) {
+          log.warn("decision.refund_wa_template_threw", { error: err instanceof Error ? err.message : "send threw" });
+        }
+      })();
+    }
   } else if (action === "approved") {
     sendPatientApproved(updated).catch(console.error);
   } else if (action === "rescheduled") {

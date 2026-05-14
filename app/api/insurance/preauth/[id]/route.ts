@@ -13,6 +13,10 @@ import {
   cancelPreauth,
 } from "@/lib/insurance/preauth-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
+import { findUserById } from "@/lib/users-store";
+import { getOrganizationById } from "@/lib/organizations-store";
+import { sendInsurancePreauthViaSentDm } from "@/lib/sent-dm";
+import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -68,6 +72,31 @@ export async function PATCH(req: NextRequest, ctxParam: RouteCtx) {
       );
       if (!r) return NextResponse.json({ error: "invalid_state" }, { status: 409 });
       updated = r;
+      // Best-effort WhatsApp notice to the patient on a TPA decision.
+      const patient = findUserById(r.patientUserId);
+      if (patient?.phone) {
+        const orgName = getOrganizationById(r.organizationId)?.name || "the hospital";
+        const ctx =
+          decision === "approved"
+            ? "Cashless approved. Bring your policy card on admission."
+            : decision === "approved_with_query"
+              ? "Approved with queries — we'll contact you shortly with next steps."
+              : "Pre-auth was not approved. We'll contact you shortly with next steps.";
+        (async () => {
+          try {
+            const res = await sendInsurancePreauthViaSentDm(patient.phone!, {
+              patientName: r.patientName || patient.name || "there",
+              procedure: r.procedureName,
+              hospital: orgName,
+              status: decision,
+              context: ctx,
+            });
+            if (!res.ok) log.warn("insurance.preauth_wa_template_failed", { error: res.error || "unknown" });
+          } catch (err) {
+            log.warn("insurance.preauth_wa_template_threw", { error: err instanceof Error ? err.message : "send threw" });
+          }
+        })();
+      }
     } else if (action === "cancel") {
       const r = cancelPreauth(id);
       if (!r) return NextResponse.json({ error: "invalid_state" }, { status: 409 });

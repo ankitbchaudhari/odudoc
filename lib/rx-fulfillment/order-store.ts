@@ -13,6 +13,7 @@
 import { bindPersistentArray } from "../persistent-array";
 import { pushNotification } from "../notifications/store";
 import { notify } from "../notifications/notify";
+import { sendRxDeliveredViaSentDm } from "../sent-dm";
 import { log } from "../log";
 
 export type FulfillmentStatus =
@@ -218,6 +219,18 @@ export function transitionOrder(
         const sms = `OduDoc: your medicines from ${o.pharmacyName} have been delivered. Receipt in app.`;
         notify({ channel: "sms", to: o.patientPhone, body: sms, category: "result" })
           .catch((err) => log.error("rx.delivered_sms_failed", err, { orderId: o.id }));
+        // Best-effort WhatsApp template alongside SMS.
+        (async () => {
+          try {
+            const r = await sendRxDeliveredViaSentDm(o.patientPhone!, {
+              patientName: o.patientName || "there",
+              orderId: o.id,
+            });
+            if (!r.ok) log.warn("rx.delivered_wa_template_failed", { error: r.error || "unknown" });
+          } catch (err) {
+            log.warn("rx.delivered_wa_template_threw", { error: err instanceof Error ? err.message : "send threw" });
+          }
+        })();
       }
     } else if (to === "cancelled" || to === "rejected") {
       pushNotification({

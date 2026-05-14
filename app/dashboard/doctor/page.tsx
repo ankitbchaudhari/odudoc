@@ -160,16 +160,16 @@ export default function DoctorDashboardPage() {
                 {instant.available ? "Available now" : "Go available now"}
               </button>
               <Link
-                href="/dashboard/doctor/prescriptions"
+                href="/dashboard/doctor/consultations"
                 className="rounded-xl bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-primary-700 shadow-md transition-transform hover:-translate-y-0.5 hover:shadow-lg"
               >
-                Write Prescription
+                Consultations
               </Link>
               <Link
-                href="/dashboard/doctor/consultations"
+                href="/dashboard/doctor/emr"
                 className="rounded-xl bg-white/15 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/25"
               >
-                Consultations
+                Clinic EMR
               </Link>
               <Link
                 href="/dashboard/doctor/profile"
@@ -332,14 +332,13 @@ export default function DoctorDashboardPage() {
               <CardHeader
                 title="Recent Prescriptions"
                 accent="bg-gradient-to-r from-orange-500 to-rose-500"
-                right={
-                  <Link href="/dashboard/doctor/prescriptions" className="text-sm font-semibold text-primary-600 hover:text-primary-700">
-                    Write new →
-                  </Link>
-                }
               />
               {prescriptions.length === 0 ? (
-                <EmptyState emoji="💊" label="No prescriptions yet" sub="Prescriptions you write will appear here." />
+                <EmptyState
+                  emoji="💊"
+                  label="No prescriptions yet"
+                  sub="Write prescriptions inside a video consultation or from a Clinic EMR patient record."
+                />
               ) : (
                 <ul className="divide-y divide-gray-100 dark:divide-slate-800">
                   {prescriptions.slice(0, 5).map((p) => (
@@ -388,9 +387,6 @@ export default function DoctorDashboardPage() {
                 {[
                   { label: "Consultations", href: "/dashboard/doctor/consultations", icon: "📋", bg: "from-sky-100 to-blue-100 dark:from-sky-900/40 dark:to-blue-900/40", ring: "ring-sky-200 dark:ring-sky-800/60" },
                   { label: "Clinic EMR", href: "/dashboard/doctor/emr", icon: "🩺", bg: "from-emerald-100 to-cyan-100 dark:from-emerald-900/40 dark:to-cyan-900/40", ring: "ring-emerald-200 dark:ring-emerald-800/60" },
-                  { label: "Prescriptions", href: "/dashboard/doctor/prescriptions", icon: "💊", bg: "from-rose-100 to-orange-100 dark:from-rose-900/40 dark:to-orange-900/40", ring: "ring-rose-200 dark:ring-rose-800/60" },
-                  { label: "AI Prescription", href: "/dashboard/doctor/ai-prescription", icon: "🤖", bg: "from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40", ring: "ring-indigo-200 dark:ring-indigo-800/60" },
-                  { label: "Voice Prescription", href: "/dashboard/doctor/voice-prescription", icon: "🎤", bg: "from-rose-100 to-pink-100 dark:from-rose-900/40 dark:to-pink-900/40", ring: "ring-rose-200 dark:ring-rose-800/60" },
                   { label: "Medical Dictionary", href: "/dashboard/doctor/dictionary", icon: "📖", bg: "from-violet-100 to-indigo-100 dark:from-violet-900/40 dark:to-indigo-900/40", ring: "ring-violet-200 dark:ring-violet-800/60" },
                   { label: "My AI Usage", href: "/dashboard/doctor/ai-usage", icon: "📊", bg: "from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40", ring: "ring-amber-200 dark:ring-amber-800/60" },
                   { label: "Bookings", href: "/dashboard/doctor/appointments", icon: "📅", bg: "from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40", ring: "ring-emerald-200 dark:ring-emerald-800/60" },

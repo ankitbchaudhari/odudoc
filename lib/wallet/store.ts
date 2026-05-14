@@ -197,6 +197,36 @@ export function applyTopUp(input: TopUpInput): TopUpResult {
     link: "/dashboard/wallet",
     reference: `topup:${topup.id}`,
   });
+
+  // Fire WhatsApp template (best-effort, fire-and-forget) so the
+  // patient gets a phone notification confirming the credit without
+  // having to open the app. Dynamically imported to keep this store
+  // file from pulling in the sent.dm + users-store dep graph on
+  // every wallet read. Skips silently if the user has no phone or
+  // SENTDM_TEMPLATE_WALLET_TOPUP isn't set.
+  void (async () => {
+    try {
+      const { findUserById } = await import("../users-store");
+      const u = findUserById(input.userId);
+      if (!u?.phone) return;
+      const { sendWalletTopupViaSentDm } = await import("../sent-dm");
+      const r = await sendWalletTopupViaSentDm(u.phone, {
+        patientName: u.firstName || u.name?.split(" ")[0] || "there",
+        amount: input.amountRupees,
+        balance: w.balanceRupees,
+      });
+      if (!r.ok && !r.skipped) {
+        const { log } = await import("../log");
+        log.warn("wallet.topup_wa_failed", { error: r.error || "unknown" });
+      }
+    } catch (err) {
+      const { log } = await import("../log");
+      log.warn("wallet.topup_wa_threw", {
+        error: err instanceof Error ? err.message : "send threw",
+      });
+    }
+  })();
+
   return { ok: true, topup, bonus, wallet: w };
 }
 

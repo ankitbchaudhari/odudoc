@@ -37,6 +37,13 @@ interface SendResult {
   email: string;
   ok: boolean;
   error?: string;
+  /** Set on WhatsApp-only and dual-channel invites. true ⇒ sent.dm
+   *  template was dispatched automatically. false / undefined ⇒
+   *  admin needs to use the manual wa.me button on the history row. */
+  waAutoSent?: boolean;
+  waError?: string;
+  phone?: string;
+  channel?: "whatsapp" | "email";
 }
 
 const STATUS_TONE: Record<Invite["status"], { bg: string; text: string }> = {
@@ -221,11 +228,15 @@ export default function DoctorInvitesPage() {
             />
           </div>
           <p className="mt-1 text-[11px] text-slate-500">
-            <b>WhatsApp-only invite:</b> leave emails empty + just enter the phone — the
-            history row gets a green &ldquo;Open WhatsApp&rdquo; button that opens
+            <b>One-click WhatsApp invite:</b> leave emails empty + enter just the phone.
+            On Send, the approved <code className="mx-1 rounded bg-slate-100 px-1 py-0.5">odudoc_doctor_invite</code>
+            template fires automatically via sent.dm — the doctor receives a branded
+            WhatsApp message immediately, no follow-up click needed. The row shows a
+            green &ldquo;✓ WA sent&rdquo; badge once delivered. If auto-send is
+            unavailable (template not approved yet, recipient opted out), a manual
             <code className="mx-1 rounded bg-slate-100 px-1 py-0.5">wa.me</code>
-            on your device with a personalised invitation pre-filled. You tap Send in
-            WhatsApp. <b>Email + WhatsApp:</b> single recipient gets both channels.
+            button appears as fallback. <b>Email + WhatsApp:</b> single recipient gets
+            both channels.
           </p>
 
           <Field
@@ -258,18 +269,43 @@ export default function DoctorInvitesPage() {
               <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-600">
                 Send results
               </p>
-              <ul className="space-y-1 text-sm">
-                {results.map((r) => (
-                  <li
-                    key={r.email}
-                    className={r.ok ? "text-emerald-700" : "text-rose-700"}
-                  >
-                    {r.ok ? "✓" : "✕"} {r.email}
-                    {r.error && (
-                      <span className="ml-2 text-xs text-rose-600">— {r.error}</span>
-                    )}
-                  </li>
-                ))}
+              <ul className="space-y-1.5 text-sm">
+                {results.map((r) => {
+                  // Render WhatsApp-only invites with phone instead of
+                  // the synthetic wa-<digits>@invite.odudoc.local stub.
+                  const display =
+                    r.email.endsWith("@invite.odudoc.local") && r.phone
+                      ? `📱 ${r.phone}`
+                      : r.email;
+                  return (
+                    <li
+                      key={r.email}
+                      className={r.ok ? "text-emerald-700" : "text-rose-700"}
+                    >
+                      <span className="font-medium">
+                        {r.ok ? "✓" : "✕"} {display}
+                      </span>
+                      {r.error && (
+                        <span className="ml-2 text-xs text-rose-600">— {r.error}</span>
+                      )}
+                      {/* WhatsApp auto-send outcome — only relevant when
+                          the row had a phone attached. Surfaces the
+                          sent.dm result so the admin knows whether the
+                          doctor actually got the message or needs the
+                          manual wa.me follow-up. */}
+                      {r.ok && r.phone && r.waAutoSent && (
+                        <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
+                          ✓ WhatsApp delivered automatically
+                        </span>
+                      )}
+                      {r.ok && r.phone && r.waAutoSent === false && (
+                        <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+                          ⚠ Auto-send failed{r.waError ? ` — ${r.waError}` : ""}: use the WhatsApp button on the row below
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
@@ -444,11 +480,33 @@ function WhatsappButton({
       </span>
     );
   }
+  // If the auto-send via sent.dm already stamped whatsappSentAt, the
+  // doctor has the message — no point cluttering the row with a
+  // "Send again" button. Show a confirmation chip instead, with a
+  // small "Resend" link tucked alongside in case the admin wants to
+  // re-fire from a personal WhatsApp (different sender, different
+  // tone, etc.). Click count surfaces in the audit log.
   async function handleClick() {
-    // Fire-and-forget the bookkeeping, then open WhatsApp.
     fetch(`/api/admin/doctor-invites/${invite.id}/whatsapp`, { method: "POST" })
       .catch(() => {})
       .finally(() => onClicked());
+  }
+  if (invite.whatsappSentAt) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800" title={`Auto-sent ${new Date(invite.whatsappSentAt).toLocaleString()}`}>
+        ✓ WA sent ·{" "}
+        <a
+          href={link}
+          target="_blank"
+          rel="noreferrer"
+          onClick={handleClick}
+          className="underline hover:no-underline"
+          title="Open wa.me to resend from your personal WhatsApp"
+        >
+          Resend
+        </a>
+      </span>
+    );
   }
   return (
     <a

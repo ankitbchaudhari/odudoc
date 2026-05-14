@@ -117,13 +117,41 @@ export default function WalletPage() {
     } catch { /* ignore parse errors */ }
   }, []);
 
-  // Clear pending orders that already appear as topup transactions in
-  // the wallet history (matched by providerSid → cfOrderId, OR by
-  // amount + time proximity for older orders).
+  // Clear pending orders aggressively. Three independent rules drop
+  // an entry from the banner; any hit clears it.
+  //
+  //  1. ProviderSid match — webhook-fired wallet credit carries the
+  //     same orderId as providerSid. Trivially exact.
+  //  2. Amount + time match — Stripe top-ups store a different
+  //     provider id (pi_*) than the orderId we stashed in
+  //     localStorage. So we also clear when a topup tx with the
+  //     same rupee amount landed within 10 minutes of startedAt.
+  //  3. Stripe entries get cleared regardless after 2 minutes —
+  //     /verify only knows how to read Cashfree orders. The Stripe
+  //     webhook is the authoritative path for those, and it usually
+  //     fires within seconds. Past 2 minutes without a matching
+  //     tx, the entry is stale.
   useEffect(() => {
-    if (pendingOrders.length === 0 || txs.length === 0) return;
-    const confirmedSids = new Set(txs.filter((t) => t.kind === "topup" && t.providerSid).map((t) => t.providerSid));
-    const stillPending = pendingOrders.filter((p) => !confirmedSids.has(p.orderId));
+    if (pendingOrders.length === 0) return;
+    const confirmedSids = new Set(
+      txs.filter((t) => t.kind === "topup" && t.providerSid).map((t) => t.providerSid),
+    );
+    const now = Date.now();
+    const stillPending = pendingOrders.filter((p) => {
+      if (confirmedSids.has(p.orderId)) return false;
+      // Amount + time proximity fallback.
+      const matchByAmount = txs.some((t) => {
+        if (t.kind !== "topup") return false;
+        if (t.amountRupees !== p.amount) return false;
+        const dt = Math.abs(new Date(t.createdAt).getTime() - p.startedAt);
+        return dt <= 10 * 60 * 1000;
+      });
+      if (matchByAmount) return false;
+      // Stripe stale-entry sweep — webhook is the source of truth
+      // and we have no verify endpoint to retry from the client.
+      if (p.gateway === "stripe" && now - p.startedAt > 2 * 60 * 1000) return false;
+      return true;
+    });
     if (stillPending.length !== pendingOrders.length) {
       setPendingOrders(stillPending);
       try {
@@ -131,6 +159,15 @@ export default function WalletPage() {
       } catch { /* ignore */ }
     }
   }, [pendingOrders, txs]);
+
+  // Hide the banner during the first ~3 minutes of every Cashfree
+  // top-up's life — the webhook usually fires within seconds, so
+  // surfacing "may not have credited" immediately is noisy and wrong.
+  // Past 3 minutes without a match, the warning is legitimate.
+  const STUCK_GRACE_MS = 3 * 60 * 1000;
+  const visiblePendingOrders = pendingOrders.filter(
+    (p) => Date.now() - p.startedAt > STUCK_GRACE_MS,
+  );
 
   const verifyPending = useCallback(async (orderId: string) => {
     setVerifyingOrder(orderId);
@@ -346,19 +383,19 @@ export default function WalletPage() {
           but failed signature verification). One click hits /verify
           which is idempotent and credits the wallet if Cashfree
           confirms the order is PAID. */}
-      {pendingOrders.length > 0 && (
+      {visiblePendingOrders.length > 0 && (
         <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-950/30">
           <div className="flex items-start gap-3">
             <span className="text-xl" aria-hidden>⚠️</span>
             <div className="flex-1">
               <p className="text-sm font-bold text-amber-900 dark:text-amber-200">
-                {pendingOrders.length === 1 ? "1 payment may not have credited" : `${pendingOrders.length} payments may not have credited`}
+                {visiblePendingOrders.length === 1 ? "1 payment may not have credited" : `${visiblePendingOrders.length} payments may not have credited`}
               </p>
               <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">
-                You started these top-ups recently. If you completed the payment, click <strong>Verify</strong> to credit your wallet now. If you cancelled, click <strong>Dismiss</strong>.
+                You started these top-ups more than 3 minutes ago and they haven't shown up in your transaction history yet. If you completed the payment, click <strong>Verify</strong>. If you cancelled, click <strong>Dismiss</strong>.
               </p>
               <ul className="mt-3 space-y-2">
-                {pendingOrders.map((p) => (
+                {visiblePendingOrders.map((p) => (
                   <li
                     key={p.orderId}
                     className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white dark:bg-slate-900 p-3 ring-1 ring-amber-200 dark:ring-amber-900/40"

@@ -150,6 +150,11 @@ export interface Organization {
   bedCount?: number;
   accreditation?: string;
   timeZone?: string;
+  // 19-digit Health Facility Registry id issued by NHA — required on
+  // the DHIS submission form so incentives route to the right facility.
+  // Free text; we don't validate beyond storing whatever the operator
+  // pastes in (the format has changed twice and may again).
+  hfrFacilityId?: string;
   // Ops metadata.
   trialEndsAt?: string;
   // Timestamp of when we last emailed the demo admin reminding them that
@@ -481,6 +486,7 @@ export interface OrgInput {
   bedCount?: number;
   accreditation?: string;
   timeZone?: string;
+  hfrFacilityId?: string;
 }
 
 export function createOrganization(input: OrgInput): Organization {
@@ -518,6 +524,7 @@ export function createOrganization(input: OrgInput): Organization {
         : undefined,
     accreditation: input.accreditation?.trim() || undefined,
     timeZone: input.timeZone?.trim() || undefined,
+    hfrFacilityId: input.hfrFacilityId?.trim() || undefined,
     trialEndsAt,
     createdAt: now,
     updatedAt: now,
@@ -566,6 +573,7 @@ export function updateOrganization(
   }
   if (patch.accreditation !== undefined) o.accreditation = patch.accreditation?.trim() || undefined;
   if (patch.timeZone !== undefined) o.timeZone = patch.timeZone?.trim() || undefined;
+  if (patch.hfrFacilityId !== undefined) o.hfrFacilityId = patch.hfrFacilityId?.trim() || undefined;
   if (patch.trialEndsAt !== undefined) o.trialEndsAt = patch.trialEndsAt;
   if (patch.demoReminderSentAt !== undefined) o.demoReminderSentAt = patch.demoReminderSentAt;
   o.updatedAt = new Date().toISOString();

@@ -88,6 +88,7 @@ export async function POST(req: NextRequest) {
         : undefined,
     accreditation: body.accreditation ? String(body.accreditation) : undefined,
     timeZone: body.timeZone ? String(body.timeZone) : undefined,
+    hfrFacilityId: body.hfrFacilityId ? String(body.hfrFacilityId) : undefined,
   });
   recordAudit({
     actorEmail: g.email,
@@ -206,6 +207,7 @@ export async function PATCH(req: NextRequest) {
           : Number(body.bedCount),
     accreditation: body.accreditation,
     timeZone: body.timeZone,
+    hfrFacilityId: body.hfrFacilityId,
   });
   if (!updated) return NextResponse.json({ error: "not_found" }, { status: 404 });
 

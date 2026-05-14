@@ -144,6 +144,7 @@ interface Organization {
   bedCount?: number;
   accreditation?: string;
   timeZone?: string;
+  hfrFacilityId?: string;
   trialEndsAt?: string;
   createdAt: string;
 }
@@ -643,6 +644,7 @@ export default function AdminOrganizations() {
     bedCount: "",
     accreditation: "",
     timeZone: "",
+    hfrFacilityId: "",
   });
 
   const load = useCallback(async () => {
@@ -687,6 +689,7 @@ export default function AdminOrganizations() {
       bedCount: "",
       accreditation: "",
       timeZone: "",
+      hfrFacilityId: "",
     });
     setEditingId(null);
   };
@@ -710,6 +713,7 @@ export default function AdminOrganizations() {
       bedCount: o.bedCount !== undefined ? String(o.bedCount) : "",
       accreditation: o.accreditation || "",
       timeZone: o.timeZone || "",
+      hfrFacilityId: o.hfrFacilityId || "",
     });
     setEditingId(o.id);
     setShowForm(true);
@@ -767,6 +771,7 @@ export default function AdminOrganizations() {
       bedCount: form.bedCount.trim() === "" ? "" : form.bedCount,
       accreditation: form.accreditation,
       timeZone: form.timeZone,
+      hfrFacilityId: form.hfrFacilityId,
     };
     try {
       const r = editingId
@@ -1204,6 +1209,16 @@ export default function AdminOrganizations() {
                     onChange={(e) => setForm({ ...form, accreditation: e.target.value })}
                     className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                     placeholder="NABH, NABL"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-600">HFR Facility ID (ABDM India)</label>
+                  <input
+                    type="text"
+                    value={form.hfrFacilityId}
+                    onChange={(e) => setForm({ ...form, hfrFacilityId: e.target.value })}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    placeholder="19-digit NHA Health Facility Registry ID"
                   />
                 </div>
                 <div>

@@ -7,6 +7,7 @@ import {
   findCountryByIso,
   findCountryByName,
 } from "@/lib/country-dial-codes";
+import { TIME_ZONES } from "@/lib/time-zones";
 
 type OrgPlan = "trial" | "starter" | "clinic" | "hospital" | "enterprise";
 type OrgStatus = "active" | "suspended" | "cancelled";
@@ -1207,13 +1208,18 @@ export default function AdminOrganizations() {
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-medium text-gray-600">Time zone (IANA)</label>
-                  <input
-                    type="text"
+                  <select
                     value={form.timeZone}
                     onChange={(e) => setForm({ ...form, timeZone: e.target.value })}
                     className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                    placeholder="Asia/Kolkata"
-                  />
+                  >
+                    <option value="">Select time zone…</option>
+                    {TIME_ZONES.map((tz) => (
+                      <option key={tz.id} value={tz.id}>
+                        {tz.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>

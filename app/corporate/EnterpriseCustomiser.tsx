@@ -9,6 +9,7 @@
 // page lets prospects scope their own deal in under a minute.
 
 import { useMemo, useState } from "react";
+import { COUNTRY_DIAL_CODES } from "@/lib/country-dial-codes";
 
 export interface ModuleGroup {
   label: string;
@@ -30,6 +31,12 @@ export default function EnterpriseCustomiser({ groups }: Props) {
   const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  // Defaults to India since that's the primary OduDoc market.
+  // Operator can switch to any of the ~190 dial codes via the
+  // dropdown next to the phone input. We track ISO (not dial)
+  // because the same dial code can map to multiple countries
+  // (US + CA = 1) and ISO keeps the intent explicit.
+  const [phoneIso, setPhoneIso] = useState("IN");
   const [beds, setBeds] = useState("");
   const [notes, setNotes] = useState("");
   const [sending, setSending] = useState(false);
@@ -65,7 +72,9 @@ export default function EnterpriseCustomiser({ groups }: Props) {
           organizationName: company,
           contactName,
           contactEmail: email,
-          contactPhone: phone || undefined,
+          contactPhone: phone.trim()
+            ? `+${COUNTRY_DIAL_CODES.find((c) => c.iso === phoneIso)?.dial || ""} ${phone.trim()}`.trim()
+            : undefined,
           bedsRange: beds || undefined,
           interestedModules: pickedNames,
           message: notes
@@ -201,12 +210,30 @@ export default function EnterpriseCustomiser({ groups }: Props) {
         </label>
         <label className="block">
           <span className="text-xs font-semibold uppercase text-gray-500">Phone (optional)</span>
-          <input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-            placeholder="+1 555 123 4567"
-          />
+          {/* Country-code dropdown + national-number input. Sales gets
+              a clean E.164-ish string on the lead row even when the
+              prospect just types their local number. */}
+          <div className="mt-1 flex gap-2">
+            <select
+              value={phoneIso}
+              onChange={(e) => setPhoneIso(e.target.value)}
+              className="w-28 shrink-0 rounded-md border border-gray-300 px-2 py-2 text-sm"
+              aria-label="Country dialling code"
+            >
+              {COUNTRY_DIAL_CODES.map((c) => (
+                <option key={c.iso} value={c.iso}>
+                  {c.flag || ""} {c.iso} +{c.dial}
+                </option>
+              ))}
+            </select>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value.replace(/[^\d\s-]/g, ""))}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              placeholder="555 123 4567"
+            />
+          </div>
         </label>
         <label className="block sm:col-span-2">
           <span className="text-xs font-semibold uppercase text-gray-500">

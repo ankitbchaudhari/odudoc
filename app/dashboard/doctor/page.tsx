@@ -386,25 +386,25 @@ export default function DoctorDashboardPage() {
               <CardHeader title="Quick Actions" accent="bg-gradient-to-r from-primary-500 to-indigo-600" />
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { label: "Consultations", href: "/dashboard/doctor/consultations", icon: "📋", bg: "from-sky-100 to-blue-100" },
-                  { label: "Clinic EMR", href: "/dashboard/doctor/emr", icon: "🩺", bg: "from-emerald-100 to-cyan-100" },
-                  { label: "Prescriptions", href: "/dashboard/doctor/prescriptions", icon: "💊", bg: "from-rose-100 to-orange-100" },
-                  { label: "AI Prescription", href: "/dashboard/doctor/ai-prescription", icon: "🤖", bg: "from-indigo-100 to-purple-100" },
-                  { label: "Voice Prescription", href: "/dashboard/doctor/voice-prescription", icon: "🎤", bg: "from-rose-100 to-pink-100" },
-                  { label: "Medical Dictionary", href: "/dashboard/doctor/dictionary", icon: "📖", bg: "from-violet-100 to-indigo-100" },
-                  { label: "My AI Usage", href: "/dashboard/doctor/ai-usage", icon: "📊", bg: "from-amber-100 to-orange-100" },
-                  { label: "Bookings", href: "/dashboard/doctor/appointments", icon: "📅", bg: "from-emerald-100 to-teal-100" },
-                  { label: "Patient Referrals", href: "/dashboard/doctor/referrals", icon: "↗️", bg: "from-violet-100 to-fuchsia-100" },
-                  { label: "Refer & earn", href: "/dashboard/referrals", icon: "🎁", bg: "from-indigo-100 to-fuchsia-100" },
-                  { label: "My ID card", href: "/dashboard/doctor/id-card", icon: "🪪", bg: "from-cyan-100 to-blue-100" },
+                  { label: "Consultations", href: "/dashboard/doctor/consultations", icon: "📋", bg: "from-sky-100 to-blue-100 dark:from-sky-900/40 dark:to-blue-900/40", ring: "ring-sky-200 dark:ring-sky-800/60" },
+                  { label: "Clinic EMR", href: "/dashboard/doctor/emr", icon: "🩺", bg: "from-emerald-100 to-cyan-100 dark:from-emerald-900/40 dark:to-cyan-900/40", ring: "ring-emerald-200 dark:ring-emerald-800/60" },
+                  { label: "Prescriptions", href: "/dashboard/doctor/prescriptions", icon: "💊", bg: "from-rose-100 to-orange-100 dark:from-rose-900/40 dark:to-orange-900/40", ring: "ring-rose-200 dark:ring-rose-800/60" },
+                  { label: "AI Prescription", href: "/dashboard/doctor/ai-prescription", icon: "🤖", bg: "from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40", ring: "ring-indigo-200 dark:ring-indigo-800/60" },
+                  { label: "Voice Prescription", href: "/dashboard/doctor/voice-prescription", icon: "🎤", bg: "from-rose-100 to-pink-100 dark:from-rose-900/40 dark:to-pink-900/40", ring: "ring-rose-200 dark:ring-rose-800/60" },
+                  { label: "Medical Dictionary", href: "/dashboard/doctor/dictionary", icon: "📖", bg: "from-violet-100 to-indigo-100 dark:from-violet-900/40 dark:to-indigo-900/40", ring: "ring-violet-200 dark:ring-violet-800/60" },
+                  { label: "My AI Usage", href: "/dashboard/doctor/ai-usage", icon: "📊", bg: "from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40", ring: "ring-amber-200 dark:ring-amber-800/60" },
+                  { label: "Bookings", href: "/dashboard/doctor/appointments", icon: "📅", bg: "from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40", ring: "ring-emerald-200 dark:ring-emerald-800/60" },
+                  { label: "Patient Referrals", href: "/dashboard/doctor/referrals", icon: "↗️", bg: "from-violet-100 to-fuchsia-100 dark:from-violet-900/40 dark:to-fuchsia-900/40", ring: "ring-violet-200 dark:ring-violet-800/60" },
+                  { label: "Refer & earn", href: "/dashboard/referrals", icon: "🎁", bg: "from-indigo-100 to-fuchsia-100 dark:from-indigo-900/40 dark:to-fuchsia-900/40", ring: "ring-indigo-200 dark:ring-indigo-800/60" },
+                  { label: "My ID card", href: "/dashboard/doctor/id-card", icon: "🪪", bg: "from-cyan-100 to-blue-100 dark:from-cyan-900/40 dark:to-blue-900/40", ring: "ring-cyan-200 dark:ring-cyan-800/60" },
                 ].map((a) => (
                   <Link
                     key={a.label}
                     href={a.href}
-                    className={`flex flex-col items-center gap-1 rounded-xl bg-gradient-to-br ${a.bg} p-4 text-center transition-transform hover:-translate-y-0.5`}
+                    className={`flex flex-col items-center gap-1 rounded-xl bg-gradient-to-br ${a.bg} ring-1 ${a.ring} p-4 text-center transition-transform hover:-translate-y-0.5`}
                   >
                     <span className="text-2xl">{a.icon}</span>
-                    <span className="text-xs font-semibold text-gray-800 dark:text-slate-200">{a.label}</span>
+                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-50">{a.label}</span>
                   </Link>
                 ))}
               </div>

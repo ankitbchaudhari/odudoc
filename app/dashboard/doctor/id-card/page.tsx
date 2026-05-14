@@ -28,6 +28,9 @@ interface DoctorRecord {
   verified?: boolean;
   licenseCountry?: string;
   licenseNumber?: string;
+  /** OduDoc-issued doctor identifier (DR-NNN-NNNNN-NNNNN-NNN).
+   *  Distinct from any state medical-council license number. */
+  doctorId?: string;
   city?: string;
   country?: string;
   phone?: string;
@@ -719,10 +722,14 @@ function FrontSide({ me }: { me: DoctorRecord }) {
             many optional rows ended up rendering above. */}
         <div className="flex-1" />
 
-        {/* Footer — license + URL */}
+        {/* Footer — OduDoc Doctor ID + License + URL */}
         <div className="flex flex-wrap items-end justify-between gap-3 border-t border-white/15 pt-2.5 text-[10px]">
           <div>
-            <p className="font-bold uppercase tracking-[0.15em] text-white/60">License</p>
+            <p className="font-bold uppercase tracking-[0.15em] text-white/60">OduDoc ID</p>
+            <p className="mt-0.5 font-mono text-[11px] tabular-nums text-white">
+              {me.doctorId || "—"}
+            </p>
+            <p className="mt-1 font-bold uppercase tracking-[0.15em] text-white/60">License</p>
             <p className="mt-0.5 text-white/90">
               {me.licenseNumber
                 ? `${me.licenseCountry || ""} · ${me.licenseNumber}`.trim()

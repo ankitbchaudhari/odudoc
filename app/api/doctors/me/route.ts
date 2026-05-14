@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { findDoctorByEmail, updateDoctor } from "@/lib/doctors-store";
+import { findUserByEmail } from "@/lib/users-store";
 import { displayCurrencyForCountry } from "@/lib/doctor-display-currency";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
@@ -38,7 +39,13 @@ export async function GET() {
   // transactions, payouts, EMR invoices etc. — so a doctor in India
   // sees ₹ everywhere instead of $. Pure derivation, no DB write.
   const displayCurrency = displayCurrencyForCountry(doctor.country);
-  return NextResponse.json({ doctor: safe, displayCurrency });
+  // doctorId lives on users-store (issued at signup, distinct from
+  // the patient medicalId namespace). Join by email so the visiting
+  // card + profile can render the DR-NNN-... identifier without
+  // needing a second fetch from the client.
+  const userRow = findUserByEmail(user.email);
+  const doctorId = userRow?.doctorId || undefined;
+  return NextResponse.json({ doctor: { ...safe, doctorId }, displayCurrency });
 }
 
 // Doctor self-edit. Lets a signed-in doctor update only the

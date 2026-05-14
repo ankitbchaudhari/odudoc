@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { bindPersistentArray } from "./persistent-array";
-import { generateUniqueMedicalId } from "./medical-id";
+import { generateUniqueMedicalId, generateUniqueDoctorId } from "./medical-id";
 
 export interface UserWarning {
   id: string;
@@ -62,6 +62,11 @@ export interface User {
   // them to verify, and certain B2B surfaces (corporate plans, clinic
   // onboarding) may hard-gate later.
   medicalId?: string;
+  /** Doctor ID — set only when role is "doctor". Distinct namespace
+   *  from medicalId so role is unambiguous at a glance. Format:
+   *  `DR-NNN-NNNNN-NNNNN-NNN`. Issued at signup (or backfilled on
+   *  cold boot) by lib/medical-id.ts/generateDoctorId. */
+  doctorId?: string;
   identity?: UserIdentity;
 
   /** ISO 3166-1 alpha-2 country code (e.g. "IN", "US"). Captured at
@@ -281,12 +286,21 @@ const DEMO_ACCOUNTS: {
 // collision check uses the in-memory array which is cheap at our scale.
 (function backfillMedicalIds() {
   let dirty = false;
-  const taken = new Set(users.map((u) => u.medicalId).filter(Boolean) as string[]);
+  const takenMedical = new Set(users.map((u) => u.medicalId).filter(Boolean) as string[]);
+  const takenDoctor = new Set(users.map((u) => u.doctorId).filter(Boolean) as string[]);
   for (const u of users) {
     if (!u.medicalId) {
-      const id = generateUniqueMedicalId((cand) => taken.has(cand));
-      taken.add(id);
+      const id = generateUniqueMedicalId((cand) => takenMedical.has(cand));
+      takenMedical.add(id);
       u.medicalId = id;
+      dirty = true;
+    }
+    // Doctors get a separate DR-prefixed id so the role is obvious
+    // wherever the id appears (visiting card, support tickets, db).
+    if (u.role === "doctor" && !u.doctorId) {
+      const id = generateUniqueDoctorId((cand) => takenDoctor.has(cand));
+      takenDoctor.add(id);
+      u.doctorId = id;
       dirty = true;
     }
     if (!u.identity) {
@@ -421,6 +435,12 @@ export function createUser(
     status: "active",
     warnings: [],
     medicalId: generateUniqueMedicalId((c) => taken.has(c)),
+    // Doctors get a separate DR-prefixed identifier issued at signup
+    // so the visiting card and any role-aware UI can show it without
+    // a backfill round-trip.
+    doctorId: data.role === "doctor"
+      ? generateUniqueDoctorId((c) => users.some((u) => u.doctorId === c))
+      : undefined,
     identity: { status: "unverified" },
     country: normalisedCountry,
     referralCode: generateReferralCode((c) => codes.has(c)),

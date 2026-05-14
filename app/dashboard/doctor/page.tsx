@@ -303,11 +303,19 @@ export default function DoctorDashboardPage() {
                   </Link>
                 }
               />
-              {consultations.length === 0 ? (
-                <EmptyState emoji="🩺" label="No consultations yet" sub="Patients will appear here once they book." />
-              ) : (
+              {(() => {
+                // Hide pending-payment rows from the doctor's recent-
+                // consults preview — same rule as the main worklist
+                // (app/dashboard/doctor/consultations). Unpaid bookings
+                // re-appear automatically once the gateway webhook
+                // flips status to scheduled / approved.
+                const visible = consultations.filter((c) => c.status !== "pending_payment");
+                if (visible.length === 0) {
+                  return <EmptyState emoji="🩺" label="No consultations yet" sub="Patients will appear here once they book." />;
+                }
+                return (
                 <ul className="divide-y divide-gray-100 dark:divide-slate-800">
-                  {consultations.slice(0, 5).map((c) => (
+                  {visible.slice(0, 5).map((c) => (
                     <li key={c.id}>
                       <Link
                         href={`/dashboard/doctor/consultations/${c.id}`}
@@ -324,7 +332,8 @@ export default function DoctorDashboardPage() {
                     </li>
                   ))}
                 </ul>
-              )}
+                );
+              })()}
             </Card>
 
             {/* Recent Prescriptions */}

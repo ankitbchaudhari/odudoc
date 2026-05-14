@@ -187,26 +187,26 @@ export default function DashboardPage() {
         {/* Quick Actions - colourful tiles */}
         <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {[
-            { label: "Find Doctors", href: "/doctors", icon: "👨‍⚕️", bg: "from-sky-100 to-blue-100", ring: "ring-sky-200" },
-            { label: "Health Timeline", href: "/dashboard/timeline", icon: "🗓️", bg: "from-violet-100 to-indigo-100", ring: "ring-violet-200" },
-            { label: "My Vitals", href: "/dashboard/vitals", icon: "❤️", bg: "from-rose-100 to-pink-100", ring: "ring-rose-200" },
-            { label: "Today's Meds", href: "/dashboard/adherence", icon: "💊", bg: "from-emerald-100 to-teal-100", ring: "ring-emerald-200" },
-            { label: "Vaccinations", href: "/dashboard/vaccinations", icon: "💉", bg: "from-cyan-100 to-blue-100", ring: "ring-cyan-200" },
-            { label: "Care Plans", href: "/dashboard/care-plan", icon: "📋", bg: "from-teal-100 to-cyan-100", ring: "ring-teal-200" },
-            { label: "Symptom Log", href: "/dashboard/symptoms", icon: "🩺", bg: "from-rose-100 to-fuchsia-100", ring: "ring-rose-200" },
-            { label: "Notifications", href: "/dashboard/notifications", icon: "🔔", bg: "from-fuchsia-100 to-purple-100", ring: "ring-fuchsia-200" },
-            { label: "Health Passport", href: "/dashboard/health-passport", icon: "🪪", bg: "from-emerald-100 to-teal-100", ring: "ring-emerald-200" },
-            { label: "My Family", href: "/dashboard/family", icon: "👨‍👩‍👧‍👦", bg: "from-pink-100 to-rose-100", ring: "ring-pink-200" },
-            { label: "Refer & earn", href: "/dashboard/referrals", icon: "🎁", bg: "from-indigo-100 to-fuchsia-100", ring: "ring-indigo-200" },
-            { label: "Insurance & Cashless", href: "/dashboard/insurance", icon: "🛡️", bg: "from-amber-100 to-yellow-100", ring: "ring-amber-200" },
-            { label: "Order Medicines", href: "/dashboard/rx-fulfillment", icon: "💊", bg: "from-rose-100 to-pink-100", ring: "ring-rose-200" },
-            { label: "Book Lab Tests", href: "/dashboard/labs", icon: "🧪", bg: "from-teal-100 to-emerald-100", ring: "ring-teal-200" },
-            { label: "Wallet", href: "/dashboard/wallet", icon: "💰", bg: "from-indigo-100 to-purple-100", ring: "ring-indigo-200" },
-            { label: "Wearables", href: "/dashboard/wearables", icon: "⌚", bg: "from-cyan-100 to-sky-100", ring: "ring-cyan-200" },
-            { label: "Import old Rx", href: "/dashboard/rx-import", icon: "📷", bg: "from-orange-100 to-amber-100", ring: "ring-orange-200" },
-            { label: "ABHA / ABDM", href: "/dashboard/abha", icon: "🇮🇳", bg: "from-yellow-100 to-orange-100", ring: "ring-yellow-200" },
-            { label: "My Profile", href: "/profile", icon: "⚙️", bg: "from-violet-100 to-fuchsia-100", ring: "ring-violet-200" },
-            { label: "Get Started", href: "/dashboard/onboarding", icon: "🚀", bg: "from-lime-100 to-green-100", ring: "ring-lime-200" },
+            { label: "Find Doctors", href: "/doctors", icon: "👨‍⚕️", bg: "from-sky-100 to-blue-100 dark:from-sky-900/40 dark:to-blue-900/40", ring: "ring-sky-200 dark:ring-sky-800/60" },
+            { label: "Health Timeline", href: "/dashboard/timeline", icon: "🗓️", bg: "from-violet-100 to-indigo-100 dark:from-violet-900/40 dark:to-indigo-900/40", ring: "ring-violet-200 dark:ring-violet-800/60" },
+            { label: "My Vitals", href: "/dashboard/vitals", icon: "❤️", bg: "from-rose-100 to-pink-100 dark:from-rose-900/40 dark:to-pink-900/40", ring: "ring-rose-200 dark:ring-rose-800/60" },
+            { label: "Today's Meds", href: "/dashboard/adherence", icon: "💊", bg: "from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40", ring: "ring-emerald-200 dark:ring-emerald-800/60" },
+            { label: "Vaccinations", href: "/dashboard/vaccinations", icon: "💉", bg: "from-cyan-100 to-blue-100 dark:from-cyan-900/40 dark:to-blue-900/40", ring: "ring-cyan-200 dark:ring-cyan-800/60" },
+            { label: "Care Plans", href: "/dashboard/care-plan", icon: "📋", bg: "from-teal-100 to-cyan-100 dark:from-teal-900/40 dark:to-cyan-900/40", ring: "ring-teal-200 dark:ring-teal-800/60" },
+            { label: "Symptom Log", href: "/dashboard/symptoms", icon: "🩺", bg: "from-rose-100 to-fuchsia-100 dark:from-rose-900/40 dark:to-fuchsia-900/40", ring: "ring-rose-200 dark:ring-rose-800/60" },
+            { label: "Notifications", href: "/dashboard/notifications", icon: "🔔", bg: "from-fuchsia-100 to-purple-100 dark:from-fuchsia-900/40 dark:to-purple-900/40", ring: "ring-fuchsia-200 dark:ring-fuchsia-800/60" },
+            { label: "Health Passport", href: "/dashboard/health-passport", icon: "🪪", bg: "from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40", ring: "ring-emerald-200 dark:ring-emerald-800/60" },
+            { label: "My Family", href: "/dashboard/family", icon: "👨‍👩‍👧‍👦", bg: "from-pink-100 to-rose-100 dark:from-pink-900/40 dark:to-rose-900/40", ring: "ring-pink-200 dark:ring-pink-800/60" },
+            { label: "Refer & earn", href: "/dashboard/referrals", icon: "🎁", bg: "from-indigo-100 to-fuchsia-100 dark:from-indigo-900/40 dark:to-fuchsia-900/40", ring: "ring-indigo-200 dark:ring-indigo-800/60" },
+            { label: "Insurance & Cashless", href: "/dashboard/insurance", icon: "🛡️", bg: "from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40", ring: "ring-amber-200 dark:ring-amber-800/60" },
+            { label: "Order Medicines", href: "/dashboard/rx-fulfillment", icon: "💊", bg: "from-rose-100 to-pink-100 dark:from-rose-900/40 dark:to-pink-900/40", ring: "ring-rose-200 dark:ring-rose-800/60" },
+            { label: "Book Lab Tests", href: "/dashboard/labs", icon: "🧪", bg: "from-teal-100 to-emerald-100 dark:from-teal-900/40 dark:to-emerald-900/40", ring: "ring-teal-200 dark:ring-teal-800/60" },
+            { label: "Wallet", href: "/dashboard/wallet", icon: "💰", bg: "from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40", ring: "ring-indigo-200 dark:ring-indigo-800/60" },
+            { label: "Wearables", href: "/dashboard/wearables", icon: "⌚", bg: "from-cyan-100 to-sky-100 dark:from-cyan-900/40 dark:to-sky-900/40", ring: "ring-cyan-200 dark:ring-cyan-800/60" },
+            { label: "Import old Rx", href: "/dashboard/rx-import", icon: "📷", bg: "from-orange-100 to-amber-100 dark:from-orange-900/40 dark:to-amber-900/40", ring: "ring-orange-200 dark:ring-orange-800/60" },
+            { label: "ABHA / ABDM", href: "/dashboard/abha", icon: "🇮🇳", bg: "from-yellow-100 to-orange-100 dark:from-yellow-900/40 dark:to-orange-900/40", ring: "ring-yellow-200 dark:ring-yellow-800/60" },
+            { label: "My Profile", href: "/profile", icon: "⚙️", bg: "from-violet-100 to-fuchsia-100 dark:from-violet-900/40 dark:to-fuchsia-900/40", ring: "ring-violet-200 dark:ring-violet-800/60" },
+            { label: "Get Started", href: "/dashboard/onboarding", icon: "🚀", bg: "from-lime-100 to-green-100 dark:from-lime-900/40 dark:to-green-900/40", ring: "ring-lime-200 dark:ring-lime-800/60" },
           ].map((a) => (
             <Link
               key={a.label}
@@ -214,7 +214,7 @@ export default function DashboardPage() {
               className={`flex flex-col items-center gap-2 rounded-2xl bg-gradient-to-br ${a.bg} p-5 shadow-sm ring-1 ${a.ring} transition-transform hover:-translate-y-0.5`}
             >
               <span className="text-3xl">{a.icon}</span>
-              <span className="text-sm font-semibold text-gray-800 dark:text-slate-200">{a.label}</span>
+              <span className="text-sm font-semibold text-slate-800 dark:text-slate-50">{a.label}</span>
             </Link>
           ))}
         </div>

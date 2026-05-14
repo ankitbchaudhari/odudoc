@@ -136,6 +136,20 @@ export interface Organization {
     shareTokens: boolean;        // /share/surgery/[token] public links
     triagePalette: boolean;      // <TriagePill /> on ward + OPD boards
   };
+  // Organization details — all optional, surfaced on the super-admin
+  // editor. None of these are referenced by feature gates; they exist
+  // purely for display + sorting (e.g. bedCount drives hospital-size
+  // filtering on the directory).
+  addressLine1?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  website?: string;
+  taxId?: string;
+  establishedYear?: number;
+  bedCount?: number;
+  accreditation?: string;
+  timeZone?: string;
   // Ops metadata.
   trialEndsAt?: string;
   // Timestamp of when we last emailed the demo admin reminding them that
@@ -456,6 +470,17 @@ export interface OrgInput {
   plan?: OrgPlan;
   trialDays?: number;
   modules?: Partial<Organization["modules"]>;
+  // Optional org-details fields (all surfaced in the super-admin editor).
+  addressLine1?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  website?: string;
+  taxId?: string;
+  establishedYear?: number;
+  bedCount?: number;
+  accreditation?: string;
+  timeZone?: string;
 }
 
 export function createOrganization(input: OrgInput): Organization {
@@ -477,6 +502,22 @@ export function createOrganization(input: OrgInput): Organization {
     // Clamp requested modules to the plan's entitlements — starter plans
     // cannot have aiVoice etc. even if the UI ticks the box.
     modules: clampModulesToPlan(plan, input.modules || {}),
+    addressLine1: input.addressLine1?.trim() || undefined,
+    city: input.city?.trim() || undefined,
+    state: input.state?.trim() || undefined,
+    postalCode: input.postalCode?.trim() || undefined,
+    website: input.website?.trim() || undefined,
+    taxId: input.taxId?.trim() || undefined,
+    establishedYear:
+      typeof input.establishedYear === "number" && Number.isFinite(input.establishedYear)
+        ? input.establishedYear
+        : undefined,
+    bedCount:
+      typeof input.bedCount === "number" && Number.isFinite(input.bedCount)
+        ? input.bedCount
+        : undefined,
+    accreditation: input.accreditation?.trim() || undefined,
+    timeZone: input.timeZone?.trim() || undefined,
     trialEndsAt,
     createdAt: now,
     updatedAt: now,
@@ -503,6 +544,28 @@ export function updateOrganization(
   // or a module bump-that-exceeds-the-plan can't slip through. This runs
   // even when only one of plan/modules was touched.
   o.modules = clampModulesToPlan(o.plan, o.modules);
+  // Optional org-details fields. Empty string → undefined so we don't
+  // persist whitespace placeholders.
+  if (patch.addressLine1 !== undefined) o.addressLine1 = patch.addressLine1?.trim() || undefined;
+  if (patch.city !== undefined) o.city = patch.city?.trim() || undefined;
+  if (patch.state !== undefined) o.state = patch.state?.trim() || undefined;
+  if (patch.postalCode !== undefined) o.postalCode = patch.postalCode?.trim() || undefined;
+  if (patch.website !== undefined) o.website = patch.website?.trim() || undefined;
+  if (patch.taxId !== undefined) o.taxId = patch.taxId?.trim() || undefined;
+  if (patch.establishedYear !== undefined) {
+    o.establishedYear =
+      typeof patch.establishedYear === "number" && Number.isFinite(patch.establishedYear)
+        ? patch.establishedYear
+        : undefined;
+  }
+  if (patch.bedCount !== undefined) {
+    o.bedCount =
+      typeof patch.bedCount === "number" && Number.isFinite(patch.bedCount)
+        ? patch.bedCount
+        : undefined;
+  }
+  if (patch.accreditation !== undefined) o.accreditation = patch.accreditation?.trim() || undefined;
+  if (patch.timeZone !== undefined) o.timeZone = patch.timeZone?.trim() || undefined;
   if (patch.trialEndsAt !== undefined) o.trialEndsAt = patch.trialEndsAt;
   if (patch.demoReminderSentAt !== undefined) o.demoReminderSentAt = patch.demoReminderSentAt;
   o.updatedAt = new Date().toISOString();

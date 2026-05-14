@@ -126,6 +126,18 @@ interface Organization {
   plan: OrgPlan;
   status: OrgStatus;
   modules: OrgModules;
+  // Optional org-details fields — kept in sync with
+  // lib/organizations-store.ts. All purely informational.
+  addressLine1?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  website?: string;
+  taxId?: string;
+  establishedYear?: number;
+  bedCount?: number;
+  accreditation?: string;
+  timeZone?: string;
   trialEndsAt?: string;
   createdAt: string;
 }
@@ -613,6 +625,18 @@ export default function AdminOrganizations() {
     plan: "trial" as OrgPlan,
     status: "active" as OrgStatus,
     modules: { ...DEFAULT_MODULES },
+    // Optional org-details fields — empty string in the form, coerced
+    // to undefined on save.
+    addressLine1: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    website: "",
+    taxId: "",
+    establishedYear: "",
+    bedCount: "",
+    accreditation: "",
+    timeZone: "",
   });
 
   const load = useCallback(async () => {
@@ -620,9 +644,15 @@ export default function AdminOrganizations() {
     try {
       const r = await fetch("/api/organizations", { cache: "no-store" });
       if (r.ok) {
-        const data = await r.json();
+        // Guard the .json() — a non-JSON body (HTML error page from a
+        // dev-server crash, for example) would otherwise reject and
+        // skip our finally{} cleanup is fine but the error would surface
+        // as a console-noise unhandled rejection.
+        const data = await r.json().catch(() => ({} as { organizations?: Organization[] }));
         setOrgs(data.organizations || []);
       }
+    } catch {
+      // Network failure — leave orgs as-is so the UI doesn't blank out.
     } finally {
       setLoading(false);
     }
@@ -641,6 +671,16 @@ export default function AdminOrganizations() {
       plan: "trial",
       status: "active",
       modules: { ...DEFAULT_MODULES },
+      addressLine1: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      website: "",
+      taxId: "",
+      establishedYear: "",
+      bedCount: "",
+      accreditation: "",
+      timeZone: "",
     });
     setEditingId(null);
   };
@@ -654,6 +694,16 @@ export default function AdminOrganizations() {
       plan: o.plan,
       status: o.status,
       modules: { ...o.modules },
+      addressLine1: o.addressLine1 || "",
+      city: o.city || "",
+      state: o.state || "",
+      postalCode: o.postalCode || "",
+      website: o.website || "",
+      taxId: o.taxId || "",
+      establishedYear: o.establishedYear !== undefined ? String(o.establishedYear) : "",
+      bedCount: o.bedCount !== undefined ? String(o.bedCount) : "",
+      accreditation: o.accreditation || "",
+      timeZone: o.timeZone || "",
     });
     setEditingId(o.id);
     setShowForm(true);
@@ -675,18 +725,54 @@ export default function AdminOrganizations() {
       setSaveError("Contact email doesn't look valid.");
       return;
     }
+    // Light URL sanity check — only if a website was provided. Server
+    // doesn't validate, so we surface a friendly hint here.
+    if (form.website.trim()) {
+      try {
+        const u = new URL(form.website.trim());
+        if (u.protocol !== "http:" && u.protocol !== "https:") {
+          setSaveError("Website must start with http:// or https://.");
+          return;
+        }
+      } catch {
+        setSaveError("Website must be a full URL (e.g. https://example.com).");
+        return;
+      }
+    }
     setSaving(true);
+    // Build a normalised payload: empty string → "" (server coerces to
+    // undefined); numeric fields parsed when non-empty. Sending the raw
+    // form would leak "establishedYear: ''" which works but is murky.
+    const payload = {
+      name: form.name,
+      contactEmail: form.contactEmail,
+      contactPhone: form.contactPhone,
+      country: form.country,
+      plan: form.plan,
+      status: form.status,
+      modules: form.modules,
+      addressLine1: form.addressLine1,
+      city: form.city,
+      state: form.state,
+      postalCode: form.postalCode,
+      website: form.website,
+      taxId: form.taxId,
+      establishedYear: form.establishedYear.trim() === "" ? "" : form.establishedYear,
+      bedCount: form.bedCount.trim() === "" ? "" : form.bedCount,
+      accreditation: form.accreditation,
+      timeZone: form.timeZone,
+    };
     try {
       const r = editingId
         ? await fetch("/api/organizations", {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: editingId, ...form }),
+            body: JSON.stringify({ id: editingId, ...payload }),
           })
         : await fetch("/api/organizations", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(form),
+            body: JSON.stringify(payload),
           });
       if (!r.ok) {
         // Translate the server's machine codes into operator copy.
@@ -785,7 +871,25 @@ export default function AdminOrganizations() {
     // No-op if the current plan doesn't entitle this module. The backend
     // would clamp it anyway, but bailing here keeps the UI honest.
     if (!allowedForPlan.has(key)) return;
-    setForm({ ...form, modules: { ...form.modules, [key]: !form.modules[key] } });
+    setForm((prev) => ({ ...prev, modules: { ...prev.modules, [key]: !prev.modules[key] } }));
+  };
+
+  // Batch-set a list of module keys to on/off, respecting the current
+  // plan's allowlist. Used by "Select all" / "Clear" in each section
+  // and the global counterparts.
+  const setSectionModules = (keys: (keyof OrgModules)[], on: boolean) => {
+    setForm((prev) => {
+      const allowed = new Set<keyof OrgModules>(PLAN_MODULES[prev.plan]);
+      const nextModules = { ...prev.modules };
+      for (const k of keys) {
+        if (on) {
+          if (allowed.has(k)) nextModules[k] = true;
+        } else {
+          nextModules[k] = false;
+        }
+      }
+      return { ...prev, modules: nextModules };
+    });
   };
 
   // When the plan changes, force-disable any modules that aren't in the new
@@ -813,11 +917,11 @@ export default function AdminOrganizations() {
         body: JSON.stringify({ orgId: o.id }),
       });
       if (r.ok) {
-        const data = await r.json();
+        const data = await r.json().catch(() => ({} as { staff?: RepairedStaff[] }));
         setRepairResult({ orgName: o.name, staff: data.staff || [] });
       } else {
-        const err = await r.json().catch(() => ({}));
-        alert(`Repair failed: ${err.error || r.statusText}`);
+        const err = await r.json().catch(() => ({} as { error?: string }));
+        alert(`Repair failed: ${(err as { error?: string }).error || r.statusText}`);
       }
     } catch (e) {
       alert(`Repair failed: ${e instanceof Error ? e.message : String(e)}`);
@@ -932,11 +1036,138 @@ export default function AdminOrganizations() {
             </div>
             <div className="sm:col-span-2">
               <label className="mb-2 block text-sm font-medium text-gray-700">
+                Organization Details
+                <span className="ml-2 text-[11px] font-normal text-gray-400">
+                  · all optional
+                </span>
+              </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-600">Address</label>
+                  <input
+                    type="text"
+                    value={form.addressLine1}
+                    onChange={(e) => setForm({ ...form, addressLine1: e.target.value })}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    placeholder="123 Banjara Hills Rd"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-600">City</label>
+                  <input
+                    type="text"
+                    value={form.city}
+                    onChange={(e) => setForm({ ...form, city: e.target.value })}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-600">State / Region</label>
+                  <input
+                    type="text"
+                    value={form.state}
+                    onChange={(e) => setForm({ ...form, state: e.target.value })}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-600">Postal code</label>
+                  <input
+                    type="text"
+                    value={form.postalCode}
+                    onChange={(e) => setForm({ ...form, postalCode: e.target.value })}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-600">Website</label>
+                  <input
+                    type="url"
+                    value={form.website}
+                    onChange={(e) => setForm({ ...form, website: e.target.value })}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    placeholder="https://example.com"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-600">Tax ID (GSTIN / EIN / VAT)</label>
+                  <input
+                    type="text"
+                    value={form.taxId}
+                    onChange={(e) => setForm({ ...form, taxId: e.target.value })}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-600">Established year</label>
+                  <input
+                    type="number"
+                    min={1850}
+                    max={new Date().getFullYear()}
+                    value={form.establishedYear}
+                    onChange={(e) => setForm({ ...form, establishedYear: e.target.value })}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    placeholder="1985"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-600">Bed count</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={5000}
+                    value={form.bedCount}
+                    onChange={(e) => setForm({ ...form, bedCount: e.target.value })}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    placeholder="250"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-600">Accreditation</label>
+                  <input
+                    type="text"
+                    value={form.accreditation}
+                    onChange={(e) => setForm({ ...form, accreditation: e.target.value })}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    placeholder="NABH, NABL"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-600">Time zone (IANA)</label>
+                  <input
+                    type="text"
+                    value={form.timeZone}
+                    onChange={(e) => setForm({ ...form, timeZone: e.target.value })}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    placeholder="Asia/Kolkata"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="mb-2 block text-sm font-medium text-gray-700">
                 Enabled modules
                 <span className="ml-2 text-[11px] font-normal text-gray-400">
                   · greyed modules aren&rsquo;t included in the <span className="capitalize">{form.plan}</span> plan
                 </span>
               </label>
+              <div className="mb-3 flex items-center gap-2 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => setSectionModules(ALL_KEYS, true)}
+                  className="font-semibold text-primary-600 hover:underline"
+                >
+                  Select all sections
+                </button>
+                <span className="text-gray-300">·</span>
+                <button
+                  type="button"
+                  onClick={() => setSectionModules(ALL_KEYS, false)}
+                  className="font-semibold text-gray-500 hover:underline"
+                >
+                  Clear all sections
+                </button>
+              </div>
               {/* Group by section so 30 modules don't pile into one wall.
                   Each section header shows a count of how many are
                   available + enabled in the current plan. */}
@@ -952,6 +1183,23 @@ export default function AdminOrganizations() {
                         {section.title}
                         <span className="ml-2 font-normal text-gray-400">
                           {sectionOn.length} / {sectionAllowed.length} on
+                        </span>
+                        <span className="ml-2 inline-flex items-center gap-1 align-middle text-[11px] font-normal normal-case tracking-normal">
+                          <button
+                            type="button"
+                            onClick={() => setSectionModules(section.keys, true)}
+                            className="font-semibold text-primary-600 hover:underline"
+                          >
+                            Select all
+                          </button>
+                          <span className="text-gray-300">·</span>
+                          <button
+                            type="button"
+                            onClick={() => setSectionModules(section.keys, false)}
+                            className="font-semibold text-gray-500 hover:underline"
+                          >
+                            Clear
+                          </button>
                         </span>
                       </p>
                       <div className="flex flex-wrap gap-2">

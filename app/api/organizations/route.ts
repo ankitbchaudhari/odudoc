@@ -72,6 +72,22 @@ export async function POST(req: NextRequest) {
     plan: body.plan as OrgPlan | undefined,
     trialDays: body.trialDays ? Number(body.trialDays) : undefined,
     modules: body.modules,
+    addressLine1: body.addressLine1 ? String(body.addressLine1) : undefined,
+    city: body.city ? String(body.city) : undefined,
+    state: body.state ? String(body.state) : undefined,
+    postalCode: body.postalCode ? String(body.postalCode) : undefined,
+    website: body.website ? String(body.website) : undefined,
+    taxId: body.taxId ? String(body.taxId) : undefined,
+    establishedYear:
+      body.establishedYear !== undefined && body.establishedYear !== null && body.establishedYear !== ""
+        ? Number(body.establishedYear)
+        : undefined,
+    bedCount:
+      body.bedCount !== undefined && body.bedCount !== null && body.bedCount !== ""
+        ? Number(body.bedCount)
+        : undefined,
+    accreditation: body.accreditation ? String(body.accreditation) : undefined,
+    timeZone: body.timeZone ? String(body.timeZone) : undefined,
   });
   recordAudit({
     actorEmail: g.email,
@@ -164,6 +180,32 @@ export async function PATCH(req: NextRequest) {
     status: body.status as OrgStatus | undefined,
     modules: body.modules,
     trialEndsAt: body.trialEndsAt,
+    // Optional org-details fields. Pass through when the client included
+    // the key (even as empty string — the store coerces "" → undefined).
+    addressLine1: body.addressLine1,
+    city: body.city,
+    state: body.state,
+    postalCode: body.postalCode,
+    website: body.website,
+    taxId: body.taxId,
+    // Numeric fields: undefined = "client didn't send it, leave alone";
+    // "" or null = "clear it"; anything else → Number(). We coerce the
+    // "clear" sentinels to NaN so the store's Number.isFinite check
+    // stores `undefined`.
+    establishedYear:
+      body.establishedYear === undefined
+        ? undefined
+        : body.establishedYear === null || body.establishedYear === ""
+          ? Number.NaN
+          : Number(body.establishedYear),
+    bedCount:
+      body.bedCount === undefined
+        ? undefined
+        : body.bedCount === null || body.bedCount === ""
+          ? Number.NaN
+          : Number(body.bedCount),
+    accreditation: body.accreditation,
+    timeZone: body.timeZone,
   });
   if (!updated) return NextResponse.json({ error: "not_found" }, { status: 404 });
 

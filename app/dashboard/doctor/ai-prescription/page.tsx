@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ChipPicker from "@/components/ChipPicker";
+import { usePrescriptionPrefill } from "@/lib/prescription-prefill";
 import {
   SEX_OPTIONS,
   DURATION_OPTIONS,
@@ -150,6 +151,22 @@ export default function AiPrescriptionPage() {
   const [patient, setPatient] = useState<PatientForm>(EMPTY);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { prefill, sourceLabel } = usePrescriptionPrefill();
+
+  // Merge URL-driven prefill (from EMR patient or consultation page)
+  // into the wizard's PatientForm. Only fills empty slots so a doctor
+  // who already started typing doesn't lose their edits.
+  useEffect(() => {
+    if (!prefill) return;
+    setPatient((prev) => {
+      const next = { ...prev };
+      if (!prev.name && prefill.patientName) next.name = prefill.patientName;
+      if (!prev.age && prefill.patientAge) next.age = prefill.patientAge;
+      if (!prev.sex && prefill.patientGender) next.sex = prefill.patientGender;
+      if (!prev.symptoms && prefill.symptoms) next.symptoms = prefill.symptoms;
+      return next;
+    });
+  }, [prefill]);
 
   const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
   const [generalNotes, setGeneralNotes] = useState<string>("");
@@ -446,6 +463,13 @@ export default function AiPrescriptionPage() {
             >
               ✕
             </button>
+          </div>
+        )}
+
+        {sourceLabel && (
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white/80 px-4 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm">
+            <span>📋</span>
+            <span>{sourceLabel}</span>
           </div>
         )}
 

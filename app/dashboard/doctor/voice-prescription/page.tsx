@@ -8,6 +8,7 @@
 // saving to the normal prescription flow.
 
 import { useEffect, useRef, useState } from "react";
+import { usePrescriptionPrefill } from "@/lib/prescription-prefill";
 import Link from "next/link";
 
 // --- Web Speech API types (not in standard lib.dom) ---
@@ -90,6 +91,26 @@ export default function VoicePrescriptionPage() {
   const [parsed, setParsed] = useState<ParsedPrescription | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState("en-IN");
+  const { prefill, sourceLabel } = usePrescriptionPrefill();
+
+  // When the doctor lands here from an EMR patient or consultation,
+  // seed the parsed form so the patient header is already filled in
+  // before they dictate. Subsequent parse() calls merge AI output on
+  // top, but only for fields the AI populated — patient identity
+  // values from prefill survive.
+  useEffect(() => {
+    if (!prefill) return;
+    setParsed((prev) => {
+      const base = prev || { ...EMPTY_PARSED };
+      const next = { ...base };
+      if (!base.patientName && prefill.patientName) next.patientName = prefill.patientName;
+      if (!base.patientAge && prefill.patientAge) next.patientAge = prefill.patientAge;
+      if (!base.patientGender && prefill.patientGender)
+        next.patientGender = prefill.patientGender;
+      if (!base.symptoms && prefill.symptoms) next.symptoms = prefill.symptoms;
+      return next;
+    });
+  }, [prefill]);
 
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   // When true, auto-restart on `onend` — browsers stop after ~60s of
@@ -223,7 +244,19 @@ export default function VoicePrescriptionPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Parse failed");
-      setParsed({ ...EMPTY_PARSED, ...data.parsed });
+      // Preserve any prefilled patient identity already on screen —
+      // the AI parser only sees the transcript, so it would clobber
+      // fields the doctor inherited from EMR/consultation context.
+      setParsed((prev) => {
+        const merged: ParsedPrescription = { ...EMPTY_PARSED, ...data.parsed };
+        if (prev) {
+          if (!merged.patientName && prev.patientName) merged.patientName = prev.patientName;
+          if (!merged.patientAge && prev.patientAge) merged.patientAge = prev.patientAge;
+          if (!merged.patientGender && prev.patientGender) merged.patientGender = prev.patientGender;
+          if (!merged.symptoms && prev.symptoms) merged.symptoms = prev.symptoms;
+        }
+        return merged;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Parse failed");
     } finally {
@@ -295,6 +328,13 @@ export default function VoicePrescriptionPage() {
             ← Back
           </Link>
         </div>
+
+        {sourceLabel && (
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white/80 px-4 py-1.5 text-xs font-semibold text-rose-700 shadow-sm">
+            <span>📋</span>
+            <span>{sourceLabel}</span>
+          </div>
+        )}
 
         {supported === false && (
           <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">

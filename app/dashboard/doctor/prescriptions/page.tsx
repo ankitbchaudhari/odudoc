@@ -12,6 +12,7 @@ import {
   getTemplateById,
 } from "@/lib/prescription-templates";
 import PrescriptionRenderer from "@/components/PrescriptionRenderer";
+import { usePrescriptionPrefill } from "@/lib/prescription-prefill";
 import {
   COMMON_SYMPTOMS,
   COMMON_DIAGNOSES,
@@ -972,6 +973,27 @@ export default function DoctorPrescriptionsPage() {
   const [writing, setWriting] = useState(false);
   const [draft, setDraft] = useState<Partial<PrescriptionData> | null>(null);
   const [draftSource, setDraftSource] = useState<"ai" | "voice" | null>(null);
+  const { prefill, sourceLabel } = usePrescriptionPrefill();
+
+  // When the doctor lands here via ?patientId= or ?consultationId=
+  // (from EMR or a consultation page), fold the fetched prefill into
+  // the draft so the modal opens with the patient/clinic context
+  // already populated. Only fills empty slots — manual draft / AI /
+  // voice handoff values stay intact.
+  useEffect(() => {
+    if (!prefill) return;
+    setDraft((prev) => {
+      const base = (prev || {}) as Record<string, unknown>;
+      const next: Record<string, unknown> = { ...base };
+      for (const [k, v] of Object.entries(prefill)) {
+        if (!base[k] && v) next[k] = v;
+      }
+      return next as Partial<PrescriptionData>;
+    });
+    // Auto-open the editor when a source param drove the prefill so
+    // the doctor doesn't have to click "Write Prescription" again.
+    if (sourceLabel) setWriting(true);
+  }, [prefill, sourceLabel]);
 
   // On mount, pick up any draft handed off from /ai-prescription or
   // /voice-prescription. Both flows write to sessionStorage and
@@ -1042,6 +1064,15 @@ export default function DoctorPrescriptionsPage() {
             </button>
           </div>
         </div>
+
+        {/* URL-driven prefill chip — shown when the doctor arrived
+            here from an EMR patient page or a consultation page. */}
+        {sourceLabel && (
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white/80 px-4 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm">
+            <span>📋</span>
+            <span>{sourceLabel}</span>
+          </div>
+        )}
 
         {/* Draft handoff banner — only shows when the doctor arrived
             here via AI assistant or voice prescription. Acts as a

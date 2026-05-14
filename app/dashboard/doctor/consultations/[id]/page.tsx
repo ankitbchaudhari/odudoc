@@ -378,6 +378,33 @@ export default function DoctorConsultationDetail() {
               <>
                 <h3 className="mb-4 text-sm font-bold text-gray-900 dark:text-slate-100">Write prescription</h3>
 
+                {/* Quick-link bar — let the doctor jump to one of the
+                    three dedicated Rx flows with patient + symptoms
+                    already pre-filled via ?consultationId=. The
+                    inline form below is still available for fast
+                    "issue & notify" flows; these CTAs are for
+                    doctors who prefer the richer editors. */}
+                <div className="mb-4 flex flex-wrap gap-2 rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50/60 via-violet-50/60 to-fuchsia-50/60 p-3">
+                  <Link
+                    href={`/dashboard/doctor/prescriptions?consultationId=${encodeURIComponent(c.id)}`}
+                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-4 py-1.5 text-xs font-semibold text-white shadow"
+                  >
+                    ✍ Write Prescription
+                  </Link>
+                  <Link
+                    href={`/dashboard/doctor/ai-prescription?consultationId=${encodeURIComponent(c.id)}`}
+                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-4 py-1.5 text-xs font-semibold text-white shadow"
+                  >
+                    ✨ AI Prescription
+                  </Link>
+                  <Link
+                    href={`/dashboard/doctor/voice-prescription?consultationId=${encodeURIComponent(c.id)}`}
+                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 px-4 py-1.5 text-xs font-semibold text-white shadow"
+                  >
+                    🎤 Voice Prescription
+                  </Link>
+                </div>
+
                 <div className="mb-4">
                   <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-300">Template</label>
                   <select value={templateId} onChange={(e) => setTemplateId(e.target.value)}

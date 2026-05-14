@@ -825,6 +825,31 @@ export default function PatientDetailPage({
               </div>
             </div>
           )}
+
+          {/* Prescription quick actions — jump to any of the three Rx
+              flows with the patient's identity already loaded via
+              ?patientId=. Saves the doctor from re-typing the
+              demographics on every prescription. */}
+          <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+            <Link
+              href={`/dashboard/doctor/prescriptions?patientId=${encodeURIComponent(patient.id)}`}
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-500/30 transition hover:-translate-y-0.5"
+            >
+              ✍ Write Prescription
+            </Link>
+            <Link
+              href={`/dashboard/doctor/ai-prescription?patientId=${encodeURIComponent(patient.id)}`}
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-emerald-500/30 transition hover:-translate-y-0.5"
+            >
+              ✨ AI Prescription
+            </Link>
+            <Link
+              href={`/dashboard/doctor/voice-prescription?patientId=${encodeURIComponent(patient.id)}`}
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-rose-500/30 transition hover:-translate-y-0.5"
+            >
+              🎤 Voice Prescription
+            </Link>
+          </div>
         </div>
 
         {/* Quick info grid */}

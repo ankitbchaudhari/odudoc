@@ -16,6 +16,7 @@ import { NextResponse } from "next/server";
 import { loadJsonStrict } from "@/lib/persistent-array";
 import { notify } from "@/lib/notifications/notify";
 import { addAdminNotification } from "@/lib/admin-notifications-store";
+import { expiredPendingPayments } from "@/lib/cashfree-pending-buffer";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -127,6 +128,26 @@ export async function GET(req: Request) {
     } else {
       results.push({ key: c.key, label: c.label, status: "ok", count });
     }
+  }
+
+  // Cashfree pending-payments buffer scan — surface rows older than
+  // 48h that never got claimed by a booking persist. These are likely
+  // paid orders with no consultation row and need manual reconciliation.
+  try {
+    const stuck = expiredPendingPayments(48);
+    if (stuck.length > 0) {
+      for (const row of stuck) {
+        log.warn("cashfree.unreconciled_pending", {
+          orderId: row.orderId,
+          paymentId: row.paymentId,
+          amountRupees: row.amountRupees,
+          paidAt: row.paidAt,
+          ageHours: Math.round((Date.now() - new Date(row.paidAt).getTime()) / 3600000),
+        } as Record<string, unknown>);
+      }
+    }
+  } catch (err) {
+    log.error("integrity_check.cashfree_buffer_scan_failed", err);
   }
 
   const alerts = results.filter((r) => r.status !== "ok");

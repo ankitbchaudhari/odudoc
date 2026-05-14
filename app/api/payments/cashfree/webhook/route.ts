@@ -11,6 +11,7 @@ import { verifyWebhookSignatureDetailed, isWebhookReplay, markWebhookProcessed }
 import { markPaid as markConsultationPaid, getConsultation } from "@/lib/consultations-store";
 import { applyTopUp } from "@/lib/wallet/store";
 import { sendPaymentFailedViaSentDm } from "@/lib/sent-dm";
+import { recordPendingPayment } from "@/lib/cashfree-pending-buffer";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
@@ -92,13 +93,31 @@ export async function POST(req: NextRequest) {
     try {
       if (type === "consultation") {
         const cfPaymentId = String(payment?.cf_payment_id ?? "");
-        markConsultationPaid(orderId, cfPaymentId);
-        log.info("cashfree.webhook.consultation_paid", {
-          orderId,
-          cfPaymentId,
-          amount: payment?.payment_amount,
-          currency: payment?.payment_currency,
-        });
+        const updated = markConsultationPaid(orderId, cfPaymentId);
+        if (!updated) {
+          // Race: the booking row hasn't been persisted yet (the
+          // booking flow mints the orderId before POSTing to
+          // /api/bookings/free). Park the payment so the booking
+          // route can claim it on persist.
+          recordPendingPayment({
+            orderId,
+            paymentId: cfPaymentId,
+            amountRupees: Math.floor(Number(payment?.payment_amount || 0)),
+            tags,
+          });
+          log.warn("cashfree.webhook.consultation_buffered", {
+            orderId,
+            cfPaymentId,
+            amount: payment?.payment_amount,
+          } as Record<string, unknown>);
+        } else {
+          log.info("cashfree.webhook.consultation_paid", {
+            orderId,
+            cfPaymentId,
+            amount: payment?.payment_amount,
+            currency: payment?.payment_currency,
+          });
+        }
       } else if (type === "clinic_subscription") {
         // Subscription accounting lives in lib/clinic-billing-store.ts;
         // mirror what induspays does once that wiring is generalised.
@@ -130,6 +149,17 @@ export async function POST(req: NextRequest) {
         } else {
           log.warn("cashfree.webhook.wallet_topup_missing_tags", { orderId, hasUserId: Boolean(userId), amount });
         }
+      } else if (!type || type !== "wallet_topup") {
+        // Untagged or unknown non-wallet types may still represent a
+        // consultation whose booking row hasn't landed yet. Buffer
+        // them so a later claim can reconcile, rather than dropping.
+        recordPendingPayment({
+          orderId,
+          paymentId: String(payment?.cf_payment_id ?? ""),
+          amountRupees: Math.floor(Number(payment?.payment_amount || 0)),
+          tags,
+        });
+        log.info("cashfree.webhook.untyped_buffered", { orderId, type });
       } else {
         log.info("cashfree.webhook.unknown_type", { orderId, type });
       }

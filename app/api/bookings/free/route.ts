@@ -11,6 +11,7 @@ import { validateSlot } from "@/lib/slot-utils";
 import { paymentsDisabled } from "@/lib/payments-config";
 import { consumeConsultToken } from "@/lib/consult-otp";
 import { sendPatientBookingReceived, sendDoctorNewRequest } from "@/lib/consultation-emails";
+import { claimPendingPayment } from "@/lib/cashfree-pending-buffer";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -179,8 +180,27 @@ export async function POST(req: NextRequest) {
   // pendingPayment is set, payment confirmation happens via the
   // Cashfree webhook (or the verify-on-return path) — we leave the
   // consultation in its initial unpaid state until then.
+  let reconciledFromBuffer = false;
   if (!pendingPayment) {
     markPaid(consultation.id, booking.paymentIntentId);
+  } else {
+    // Webhook-race recovery: the Cashfree webhook may have fired
+    // before this booking row existed. Check the pending-payments
+    // buffer for a matching orderId and, if found, mark paid now.
+    const cashfreeOrderId = String(
+      (body as Record<string, unknown>)?.cashfreeOrderId || "",
+    ).trim();
+    if (cashfreeOrderId) {
+      const claimed = claimPendingPayment(cashfreeOrderId);
+      if (claimed) {
+        markPaid(consultation.id, claimed.paymentId || cashfreeOrderId);
+        reconciledFromBuffer = true;
+        log.info("bookings.free.reconciled_from_buffer", {
+          consultationId: consultation.id,
+          orderId: cashfreeOrderId,
+        } as Record<string, unknown>);
+      }
+    }
   }
 
   // Fire-and-forget notifications.
@@ -189,5 +209,5 @@ export async function POST(req: NextRequest) {
     sendDoctorNewRequest(consultation),
   ]).catch((err) => log.error("bookings.free.emails_failed", err));
 
-  return NextResponse.json({ booking, consultation });
+  return NextResponse.json({ booking, consultation, reconciledFromBuffer });
 }

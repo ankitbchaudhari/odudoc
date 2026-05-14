@@ -211,7 +211,7 @@ export function applyTopUp(input: TopUpInput): TopUpResult {
       if (!u?.phone) return;
       const { sendWalletTopupViaSentDm } = await import("../sent-dm");
       const r = await sendWalletTopupViaSentDm(u.phone, {
-        patientName: u.firstName || u.name?.split(" ")[0] || "there",
+        patientName: u.name?.split(" ")[0] || "there",
         amount: input.amountRupees,
         balance: w.balanceRupees,
       });

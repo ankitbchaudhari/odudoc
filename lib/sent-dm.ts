@@ -22,6 +22,7 @@
 
 import { log } from "./log";
 import { isPhoneOptedOut } from "./notifications/phone-opt-out-store";
+import { logWaSend } from "./notifications/wa-delivery-log";
 
 export interface SentDmResult {
   ok: boolean;
@@ -127,15 +128,48 @@ export async function sentDmSend(input: SendMessageInput): Promise<SentDmResult>
         template: input.template,
         to: normalized[0],
       });
+      try {
+        logWaSend({
+          template: input.template,
+          channel: input.channel || "sent",
+          to: normalized[0] || "",
+          success: false,
+          error: errMsg,
+        });
+      } catch {
+        /* never let the delivery log break the send */
+      }
       return { ok: false, error: errMsg };
     }
     const messageId = payload.data?.recipients?.[0]?.message_id;
     const requestId = payload.meta?.request_id;
     log.info("sent_dm.sent", { messageId, requestId, channel: input.channel || "sent" });
+    try {
+      logWaSend({
+        template: input.template,
+        channel: input.channel || "sent",
+        to: normalized[0] || "",
+        success: true,
+        messageId,
+      });
+    } catch {
+      /* never let the delivery log break the send */
+    }
     return { ok: true, messageId, requestId };
   } catch (err) {
     const msg = err instanceof Error ? err.message : "sent_dm_unreachable";
     log.error("sent_dm.threw", err);
+    try {
+      logWaSend({
+        template: input.template,
+        channel: input.channel || "sent",
+        to: normalized[0] || "",
+        success: false,
+        error: msg,
+      });
+    } catch {
+      /* never let the delivery log break the send */
+    }
     return { ok: false, error: msg };
   }
 }

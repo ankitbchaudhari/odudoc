@@ -16,6 +16,13 @@ import { currencyForCountry } from "@/lib/currency";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
+// Forces per-request rendering. Without this, Next.js tries to
+// statically prerender at build time, hits the getServerSession()
+// headers() read, throws "Dynamic server usage" + logs a noisy
+// admin_dashboard.handler_failed line, then continues. The route
+// always needs a request context to authorise the admin caller, so
+// static caching makes no sense here.
+export const dynamic = "force-dynamic";
 
 function isAdmin(role: string | undefined): boolean {
   return role === "admin";

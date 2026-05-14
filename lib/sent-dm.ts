@@ -575,11 +575,23 @@ export async function sendDoctorInviteViaSentDm(
   if (!template) return { ok: false, error: "SENTDM_TEMPLATE_DOCTOR_INVITE not set" };
   return sentDmSend({
     to, channel: "whatsapp", template,
+    // Sent.dm renames {{1}} differently depending on how the
+    // template was imported — sometimes "var_1", sometimes "body_1",
+    // sometimes a UUID. We can't know which until the admin opens
+    // the template editor on sent.dm and renames it. Cast the
+    // widest possible net so the call works for any of those.
     variables: {
       "1": variables.doctorName || "there",
+      var_1: variables.doctorName || "there",
+      body_1: variables.doctorName || "there",
+      parameter_1: variables.doctorName || "there",
       doctor_name: variables.doctorName || "there",
       doctorName: variables.doctorName || "there",
       name: variables.doctorName || "there",
+      first_name: variables.doctorName || "there",
+      firstName: variables.doctorName || "there",
+      recipient_name: variables.doctorName || "there",
+      recipientName: variables.doctorName || "there",
     },
     idempotencyKey,
   });

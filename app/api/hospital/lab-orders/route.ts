@@ -13,6 +13,7 @@ import {
 import { getPatientById } from "@/lib/patients-store";
 import { getEncounterById } from "@/lib/encounters-store";
 import { notify } from "@/lib/notifications/notify";
+import { sendLabReadyViaSentDm } from "@/lib/sent-dm";
 import { log } from "@/lib/log";
 
 import { parseJson, z } from "@/lib/validate";
@@ -128,6 +129,23 @@ export async function PATCH(req: NextRequest) {
               emailFrom: "notifications",
               category: "result",
             }).catch((err) => log.error("lab-result email failed", err));
+          }
+          // WhatsApp template — fires when odudoc_lab_ready is
+          // approved + SENTDM_TEMPLATE_LAB_READY env var is set.
+          if (patient.phone) {
+            sendLabReadyViaSentDm(patient.phone, {
+              patientName: patient.firstName || "there",
+              testName: labName,
+              viewUrl: link,
+            })
+              .then((r) => {
+                if (!r.ok) log.warn("lab-result.wa_template_failed", { error: r.error || "unknown" });
+              })
+              .catch((err) =>
+                log.warn("lab-result.wa_template_threw", {
+                  error: err instanceof Error ? err.message : "send threw",
+                }),
+              );
           }
         }
       }

@@ -5,6 +5,7 @@ import { getConsultation, attachPrescription } from "@/lib/consultations-store";
 import { addPrescription } from "@/lib/prescriptions-store";
 import type { PrescriptionData } from "@/lib/prescription-templates";
 import { sendPrescriptionToPatient } from "@/lib/consultation-emails";
+import { sendPrescriptionReadyViaSentDm } from "@/lib/sent-dm";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -114,6 +115,24 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     buyUrl,
     viewUrl,
   }).catch(console.error);
+
+  // WhatsApp template — fires when odudoc_prescription_ready is
+  // approved + SENTDM_TEMPLATE_PRESCRIPTION_READY env var is set.
+  const patientPhone = data.patientPhone || c.patientPhone;
+  if (patientPhone) {
+    sendPrescriptionReadyViaSentDm(patientPhone, {
+      patientName: c.patientName || "there",
+      doctorName: c.doctorName || "your doctor",
+    })
+      .then((r) => {
+        if (!r.ok) log.warn("prescription.wa_template_failed", { error: r.error || "unknown" });
+      })
+      .catch((err) =>
+        log.warn("prescription.wa_template_threw", {
+          error: err instanceof Error ? err.message : "send threw",
+        }),
+      );
+  }
 
   return NextResponse.json({ prescription: rx, viewUrl, buyUrl });
 }

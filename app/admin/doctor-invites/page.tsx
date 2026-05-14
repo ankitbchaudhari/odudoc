@@ -294,8 +294,8 @@ export default function DoctorInvitesPage() {
                           doctor actually got the message or needs the
                           manual wa.me follow-up. */}
                       {r.ok && r.phone && r.waAutoSent && (
-                        <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
-                          ✓ WhatsApp delivered automatically
+                        <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800" title="sent.dm accepted the call. Marketing-category delivery depends on Meta business verification + recipient opt-in. Use the wa.me button on the row to send from your personal WhatsApp if the doctor doesn't receive it within a minute.">
+                          📨 WhatsApp dispatched — delivery pending Meta confirmation
                         </span>
                       )}
                       {r.ok && r.phone && r.waAutoSent === false && (
@@ -493,8 +493,8 @@ function WhatsappButton({
   }
   if (invite.whatsappSentAt) {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800" title={`Auto-sent ${new Date(invite.whatsappSentAt).toLocaleString()}`}>
-        ✓ WA sent ·{" "}
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800" title={`Auto-dispatched ${new Date(invite.whatsappSentAt).toLocaleString()}. Marketing delivery depends on Meta business verification + recipient opt-in. Click Resend to forward from your personal WhatsApp if needed.`}>
+        📨 WA dispatched ·{" "}
         <a
           href={link}
           target="_blank"

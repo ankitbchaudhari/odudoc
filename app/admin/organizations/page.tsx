@@ -2,6 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { PageHero } from "@/components/admin/PageShell";
+import {
+  COUNTRY_DIAL_CODES,
+  findCountryByIso,
+  findCountryByName,
+} from "@/lib/country-dial-codes";
 
 type OrgPlan = "trial" | "starter" | "clinic" | "hospital" | "enterprise";
 type OrgStatus = "active" | "suspended" | "cancelled";
@@ -994,21 +999,89 @@ export default function AdminOrganizations() {
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Phone</label>
-              <input
-                type="text"
-                value={form.contactPhone}
-                onChange={(e) => setForm({ ...form, contactPhone: e.target.value })}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-              />
+              {/* Phone splits visually into a country-code dropdown +
+                  a national-number input. On submit we concatenate to
+                  "+<dial><digits>" before posting to the API so the
+                  backend keeps a single canonical E.164-ish string.
+                  The dropdown defaults to the iso matching form.country
+                  (if recognised) so typing a phone for an Indian org
+                  starts at +91 automatically. */}
+              <div className="flex gap-2">
+                <select
+                  value={(() => {
+                    // Pull the iso whose dial matches the current
+                    // contactPhone prefix. Falls back to the country
+                    // selector's value when nothing matches.
+                    const m = form.contactPhone.match(/^\+(\d{1,4})/);
+                    if (m) {
+                      const hit = COUNTRY_DIAL_CODES.find((c) => c.dial === m[1]);
+                      if (hit) return hit.iso;
+                    }
+                    return findCountryByName(form.country)?.iso || "IN";
+                  })()}
+                  onChange={(e) => {
+                    const c = findCountryByIso(e.target.value);
+                    if (!c) return;
+                    // Replace the dial prefix on contactPhone (or
+                    // prepend if none). National number is kept.
+                    const national = form.contactPhone.replace(/^\+\d{1,4}\s?/, "").trim();
+                    setForm({ ...form, contactPhone: `+${c.dial} ${national}`.trim() });
+                  }}
+                  className="w-32 shrink-0 rounded-lg border border-gray-300 px-2 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  title="Country dialling code"
+                >
+                  {COUNTRY_DIAL_CODES.map((c) => (
+                    <option key={c.iso} value={c.iso}>
+                      {c.flag || ""} {c.iso} +{c.dial}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="tel"
+                  value={form.contactPhone.replace(/^\+\d{1,4}\s?/, "")}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/[^\d]/g, "");
+                    // Preserve whatever dial code is currently set
+                    // (or default to the country selector's match).
+                    const existing = form.contactPhone.match(/^\+\d{1,4}/);
+                    const dial = existing
+                      ? existing[0]
+                      : `+${findCountryByName(form.country)?.dial || "91"}`;
+                    setForm({ ...form, contactPhone: `${dial} ${digits}`.trim() });
+                  }}
+                  placeholder="9876543210"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                />
+              </div>
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Country</label>
-              <input
-                type="text"
-                value={form.country}
-                onChange={(e) => setForm({ ...form, country: e.target.value })}
+              <select
+                value={findCountryByName(form.country)?.iso || ""}
+                onChange={(e) => {
+                  const c = findCountryByIso(e.target.value);
+                  // Store the display name in the canonical field so
+                  // existing free-text data stays comparable. When the
+                  // org's phone has no dial prefix yet, also seed it
+                  // from the freshly-picked country so the dropdown
+                  // above auto-aligns.
+                  setForm((prev) => {
+                    const next = { ...prev, country: c?.name || "" };
+                    if (c && !/^\+/.test(prev.contactPhone)) {
+                      next.contactPhone = `+${c.dial} ${prev.contactPhone}`.trim();
+                    }
+                    return next;
+                  });
+                }}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-              />
+              >
+                <option value="">Select country…</option>
+                {COUNTRY_DIAL_CODES.map((c) => (
+                  <option key={c.iso} value={c.iso}>
+                    {c.flag || ""} {c.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Plan</label>

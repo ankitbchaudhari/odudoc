@@ -159,6 +159,22 @@ export async function POST(request: NextRequest) {
       markEmailVerified(user.email);
     }
 
+    // Patient-claim hook — same logic as web verify and mobile-verify.
+    // If this user already has a phone on file (legacy accounts that
+    // later linked Google), surface their pre-account clinic bookings
+    // + EMR entries. Best-effort, never blocks sign-in.
+    if (user.phone) {
+      try {
+        const { claimBookingsForUser } = await import("@/lib/bookings-store");
+        const { claimEmrForUser } = await import("@/lib/clinic-emr-store");
+        const cb = claimBookingsForUser(user.id, user.phone);
+        const ce = claimEmrForUser(user.id, user.phone);
+        if (cb || ce) log.info("mobile-google.patient_claim", { userId: user.id, bookings: cb, emr: ce });
+      } catch (err) {
+        log.error("mobile-google.patient_claim_failed", err, { userId: user.id });
+      }
+    }
+
     touchLastLogin(user.email);
 
     const { token, expiresAt } = await signMobileToken({

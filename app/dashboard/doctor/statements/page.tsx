@@ -189,20 +189,7 @@ export default function StatementsPage() {
         ) : (
           <ul className="divide-y divide-gray-100 dark:divide-slate-800">
             {data?.invoices.map((inv) => (
-              <li key={inv.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
-                <div className="min-w-0">
-                  <p className="font-mono text-xs text-gray-400 dark:text-slate-500">{inv.number}</p>
-                  <p className="font-medium text-gray-900 dark:text-slate-100 truncate">{inv.patientName}</p>
-                  <p className="text-xs text-gray-500 dark:text-slate-400">
-                    {new Date(inv.issuedAt).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" })} ·{" "}
-                    <StatusPill status={inv.status} />
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-gray-900 dark:text-slate-100">{fmt(inv.tax.grandTotalRupees, inv.currency)}</p>
-                  <p className="text-xs text-gray-500 dark:text-slate-400">tax {fmt(inv.tax.totalTaxRupees, inv.currency)}</p>
-                </div>
-              </li>
+              <InvoiceRow key={inv.id} inv={inv} fmt={fmt} />
             ))}
           </ul>
         )}
@@ -232,6 +219,93 @@ function TaxRow({ label, v }: { label: string; v: string }) {
       <dt className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">{label}</dt>
       <dd className="font-mono font-semibold text-gray-900 dark:text-slate-100">{v}</dd>
     </div>
+  );
+}
+
+function InvoiceRow({ inv, fmt }: { inv: InvoiceRow; fmt: (n: number, code: string) => string }) {
+  const [sending, setSending] = useState(false);
+  const [sentToast, setSentToast] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+
+  const send = async (channel: "email" | "sms" | "whatsapp" | "all") => {
+    setSending(true);
+    setSentToast(null);
+    try {
+      // The send route lives under /api/clinic/invoices/:id/send and
+      // requires a clinic-session cookie. From the doctor dashboard
+      // we don't have one, so we hit the API via a same-origin fetch
+      // — the doctor has a clinic session if they recently logged
+      // into reception. If not, we surface the error.
+      const r = await fetch(`/api/clinic/invoices/${inv.id}/send?channel=${channel}`, { method: "POST" });
+      const d = await r.json();
+      if (!r.ok) {
+        setSentToast(d.error === "not_signed_in"
+          ? "Open the reception dashboard for this clinic first, then retry."
+          : (d.error || "Send failed"));
+      } else {
+        setSentToast(`Sent (${channel}). Patient gets the invoice link.`);
+      }
+    } finally {
+      setSending(false);
+      setOpen(false);
+      setTimeout(() => setSentToast(null), 4000);
+    }
+  };
+
+  return (
+    <li className="px-5 py-3 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-mono text-xs text-gray-400 dark:text-slate-500">{inv.number}</p>
+          <p className="font-medium text-gray-900 dark:text-slate-100 truncate">{inv.patientName}</p>
+          <p className="text-xs text-gray-500 dark:text-slate-400">
+            {new Date(inv.issuedAt).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" })} ·{" "}
+            <StatusPill status={inv.status} />
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="text-right">
+            <p className="font-semibold text-gray-900 dark:text-slate-100">{fmt(inv.tax.grandTotalRupees, inv.currency)}</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400">tax {fmt(inv.tax.totalTaxRupees, inv.currency)}</p>
+          </div>
+          <a
+            href={`${baseUrl}/ci/${inv.id}`}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-lg border border-gray-200 dark:border-slate-700 px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
+            title="View public invoice"
+          >
+            👁
+          </a>
+          <div className="relative">
+            <button
+              onClick={() => setOpen((v) => !v)}
+              disabled={sending}
+              className="rounded-lg bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-2.5 py-1.5 text-xs font-bold text-white shadow-sm hover:shadow-md disabled:opacity-50"
+            >
+              📤 {sending ? "Sending…" : "Send"}
+            </button>
+            {open && (
+              <div
+                className="absolute right-0 top-9 z-10 w-48 overflow-hidden rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl"
+                onMouseLeave={() => setOpen(false)}
+              >
+                <button onClick={() => send("all")} className="block w-full px-3 py-2 text-left text-xs hover:bg-gray-50 dark:hover:bg-slate-800">📧 + 📱 + 💬 Send all</button>
+                <button onClick={() => send("whatsapp")} className="block w-full px-3 py-2 text-left text-xs hover:bg-gray-50 dark:hover:bg-slate-800">💬 WhatsApp only</button>
+                <button onClick={() => send("email")} className="block w-full px-3 py-2 text-left text-xs hover:bg-gray-50 dark:hover:bg-slate-800">📧 Email only</button>
+                <button onClick={() => send("sms")} className="block w-full px-3 py-2 text-left text-xs hover:bg-gray-50 dark:hover:bg-slate-800">📱 SMS only</button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      {sentToast && (
+        <p className="mt-2 rounded-md bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 text-xs text-emerald-700 dark:text-emerald-300">
+          {sentToast}
+        </p>
+      )}
+    </li>
   );
 }
 

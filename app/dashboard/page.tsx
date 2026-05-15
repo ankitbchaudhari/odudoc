@@ -196,6 +196,7 @@ export default function DashboardPage() {
             { label: "Symptom Log", href: "/dashboard/symptoms", icon: "🩺", bg: "from-rose-100 to-fuchsia-100 dark:from-rose-900/40 dark:to-fuchsia-900/40", ring: "ring-rose-200 dark:ring-rose-800/60" },
             { label: "Notifications", href: "/dashboard/notifications", icon: "🔔", bg: "from-fuchsia-100 to-purple-100 dark:from-fuchsia-900/40 dark:to-purple-900/40", ring: "ring-fuchsia-200 dark:ring-fuchsia-800/60" },
             { label: "Health Passport", href: "/dashboard/health-passport", icon: "🪪", bg: "from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40", ring: "ring-emerald-200 dark:ring-emerald-800/60" },
+            { label: "Past clinic visits", href: "/dashboard/visits", icon: "🏥", bg: "from-sky-100 to-blue-100 dark:from-sky-900/40 dark:to-blue-900/40", ring: "ring-sky-200 dark:ring-sky-800/60" },
             { label: "My Family", href: "/dashboard/family", icon: "👨‍👩‍👧‍👦", bg: "from-pink-100 to-rose-100 dark:from-pink-900/40 dark:to-rose-900/40", ring: "ring-pink-200 dark:ring-pink-800/60" },
             { label: "Refer & earn", href: "/dashboard/referrals", icon: "🎁", bg: "from-indigo-100 to-fuchsia-100 dark:from-indigo-900/40 dark:to-fuchsia-900/40", ring: "ring-indigo-200 dark:ring-indigo-800/60" },
             { label: "Insurance & Cashless", href: "/dashboard/insurance", icon: "🛡️", bg: "from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40", ring: "ring-amber-200 dark:ring-amber-800/60" },

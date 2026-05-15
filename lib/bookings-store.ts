@@ -1,4 +1,5 @@
 import { bindPersistentArray } from "./persistent-array";
+import { phoneKey } from "./phone-match";
 
 export interface Booking {
   id: string;
@@ -252,12 +253,14 @@ export function markBookingArrived(id: string): Booking | undefined {
  *  bookings (phone match, no patientUserId yet) and stamp the user id.
  *  Returns the count of bookings claimed. */
 export function claimBookingsForUser(userId: string, phone: string): number {
-  const normalize = (p: string) => (p || "").replace(/[^\d]/g, "").replace(/^0+/, "");
-  const target = normalize(phone);
+  // Shared phone-match helper strips common country-code prefixes so
+  // a patient who signed up with "+91 98765 43210" still claims a
+  // reception entry typed as "9876543210".
+  const target = phoneKey(phone);
   if (!target) return 0;
   let n = 0;
   for (const b of bookings) {
-    if (!b.patientUserId && normalize(b.patientPhone) === target) {
+    if (!b.patientUserId && phoneKey(b.patientPhone) === target) {
       b.patientUserId = userId;
       n++;
     }

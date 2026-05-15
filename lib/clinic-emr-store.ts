@@ -6,6 +6,7 @@
 // their phone number under "Past visits at clinics".
 
 import { bindPersistentArray } from "./persistent-array";
+import { phoneKey } from "./phone-match";
 
 export interface ClinicEmrAttachment {
   url: string;
@@ -87,9 +88,9 @@ export function listEmrByClinic(clinicId: string): ClinicEmrEntry[] {
 /** All EMR rows that match this phone (E.164 or any consistent form).
  *  Patient-side: shown on patient dashboard once they claim by phone. */
 export function listEmrByPatientPhone(phone: string): ClinicEmrEntry[] {
-  const normalized = normalizePhone(phone);
+  const normalized = phoneKey(phone);
   return entries
-    .filter((e) => normalizePhone(e.patientPhone) === normalized)
+    .filter((e) => phoneKey(e.patientPhone) === normalized)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
@@ -143,10 +144,11 @@ export function upsertEmrEntry(input: {
  *  unclaimed EMR rows matching their phone and stamp patientUserId.
  *  Returns the count of rows claimed. */
 export function claimEmrForUser(userId: string, phone: string): number {
-  const normalized = normalizePhone(phone);
+  const normalized = phoneKey(phone);
+  if (!normalized) return 0;
   let n = 0;
   for (const e of entries) {
-    if (!e.patientUserId && normalizePhone(e.patientPhone) === normalized) {
+    if (!e.patientUserId && phoneKey(e.patientPhone) === normalized) {
       e.patientUserId = userId;
       e.updatedAt = new Date().toISOString();
       n++;
@@ -154,8 +156,4 @@ export function claimEmrForUser(userId: string, phone: string): number {
   }
   if (n > 0) flush();
   return n;
-}
-
-function normalizePhone(p: string): string {
-  return (p || "").replace(/[^\d]/g, "").replace(/^0+/, "");
 }

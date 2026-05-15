@@ -418,20 +418,22 @@ export default function AdminUsersPage() {
       <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
         <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500" />
         <div className="max-h-[70vh] overflow-auto">
-          <table className="w-full min-w-[1100px] text-left text-sm">
+          {/* No min-width — let the table compress to the available
+              viewport so every column (including Actions) fits without
+              horizontal scrolling. Joined + Last login become hidden
+              below 1024px (lg breakpoint) so the User / Email / Role
+              / Status / Actions essentials stay visible on laptops
+              with the sidebar open. */}
+          <table className="w-full text-left text-sm">
             <thead className="sticky top-0 z-10">
               <tr className="border-b border-gray-100 bg-gradient-to-r from-violet-50/95 via-purple-50/95 to-indigo-50/95 text-xs uppercase text-gray-600 backdrop-blur">
                 <th className="px-4 py-3 font-medium">User</th>
                 <th className="px-4 py-3 font-medium">Email</th>
                 <th className="px-4 py-3 font-medium">Role</th>
                 <th className="px-4 py-3 font-medium">Status</th>
-                <th className="whitespace-nowrap px-4 py-3 font-medium">Joined</th>
-                <th className="whitespace-nowrap px-4 py-3 font-medium">Last login</th>
-                {/* Actions column is sticky-right so it stays visible
-                    even when the table scrolls horizontally. Patient
-                    feedback: at narrower viewports the column kept
-                    falling off the right edge. */}
-                <th className="sticky right-0 z-20 bg-gradient-to-l from-violet-50/95 via-purple-50/95 to-purple-50/0 px-4 py-3 text-right font-medium shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.1)]">Actions</th>
+                <th className="hidden whitespace-nowrap px-4 py-3 font-medium lg:table-cell">Joined</th>
+                <th className="hidden whitespace-nowrap px-4 py-3 font-medium xl:table-cell">Last login</th>
+                <th className="px-4 py-3 text-right font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -481,22 +483,21 @@ export default function AdminUsersPage() {
                       </span>
                     )}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-gray-600">
+                  <td className="hidden whitespace-nowrap px-4 py-3 text-gray-600 lg:table-cell">
                     {fmtDate(u.createdAt)}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-gray-600">
+                  <td className="hidden whitespace-nowrap px-4 py-3 text-gray-600 xl:table-cell">
                     {fmtDate(u.lastLoginAt)}
                   </td>
-                  <td className="sticky right-0 z-10 bg-white whitespace-nowrap px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.08)]">
-                    {/* sticky right-0 keeps the Actions cell anchored
-                        to the right edge during horizontal scroll. bg-white
-                        prevents columns underneath from bleeding through.
-                        Action column was overflowing off-screen with 5
-                        text buttons + 3-line date columns. Switched to
-                        icon-only square buttons with title tooltips —
-                        same actions, ~⅓ the width. Date columns get
-                        whitespace-nowrap above so they don't wrap to 3
-                        lines either. */}
+                  <td className="whitespace-nowrap px-4 py-3">
+                    {/* Actions cell no longer needs sticky positioning
+                        because the table no longer forces horizontal
+                        scroll: we dropped min-w-[1100px] and hide
+                        Joined/Last login below lg/xl. At every viewport
+                        size, all visible columns fit and Actions sits
+                        at the natural right edge. Five icon-only
+                        square buttons (🚫 / ⚠️ / 🛡 / 🔑 / 🗑) keep the
+                        column compact enough for laptops. */}
                     <div className="flex items-center justify-end gap-1">
                       {u.status === "active" ? (
                         <IconBtn

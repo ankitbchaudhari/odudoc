@@ -30,9 +30,17 @@ const handle = bindPersistentArray<VerificationToken>(
   tokens,
   () => []
 );
+// Hydrate at module init. The earlier `await handle` (non-Promise!)
+// was a silent no-op — tokens never loaded from Postgres on cold
+// start and a brand-new Lambda saw an empty array. Combined with
+// the missing reload in consumeVerificationToken below, this meant
+// signup-verify links opened on a different Lambda than the one
+// that issued them returned "invalid". Fix is twofold: actually
+// hydrate here, and reload before each consume.
+await handle.hydrate();
 
 async function ready(): Promise<void> {
-  await handle;
+  /* hydration already awaited at module top */
 }
 
 function cleanupExpired() {
@@ -81,6 +89,10 @@ export async function consumeVerificationToken(
   token: string
 ): Promise<ConsumeResult> {
   await ready();
+  // Cross-Lambda freshness — the verify link is rarely clicked on
+  // the same Lambda that issued the token (signup hop vs email-click
+  // hop). Without this reload the token lookup misses entirely.
+  await handle.reload();
   cleanupExpired();
   const idx = tokens.findIndex((t) => t.token === token);
   if (idx === -1) return { ok: false, reason: "not_found" };
@@ -95,6 +107,7 @@ export async function consumeVerificationToken(
 // Useful for UI hints. Does not consume.
 export async function peekTokenTtl(token: string): Promise<number> {
   await ready();
+  await handle.reload();
   const record = tokens.find((t) => t.token === token);
   if (!record) return 0;
   return Math.max(0, record.expiresAt - Date.now());

@@ -117,8 +117,8 @@
   .dark .form-textarea,
   .dark .form-select,
   .dark .form-multiselect {
-    background-color: rgb(15 23 42);
-    border-color: rgb(51 65 85);
+    background-color: rgb(30 41 59);          /* slate-800 — lighter than slate-900 modals */
+    border-color: rgb(71 85 105);             /* slate-600 — visible border */
     color: rgb(226 232 240);
   }
 }
@@ -136,8 +136,12 @@
 html.dark input:where([type="text"], [type="email"], [type="tel"], [type="number"], [type="password"], [type="search"], [type="url"], [type="date"], :not([type])),
 html.dark textarea,
 html.dark select {
-  background-color: rgb(15 23 42) !important;
-  border-color: rgb(51 65 85) !important;
+  /* slate-800 is lighter than slate-900 (modal/card bg) and lighter
+     than slate-950 (page bg), so inputs always pop against their
+     surface. slate-600 border is bright enough to define edges
+     without being garish. */
+  background-color: rgb(30 41 59) !important;
+  border-color: rgb(71 85 105) !important;
   color: rgb(226 232 240) !important;
 }
 html.dark input::placeholder,

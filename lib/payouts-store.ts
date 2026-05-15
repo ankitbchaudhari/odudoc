@@ -39,8 +39,12 @@ export interface PayoutEntry {
 }
 
 const entries: PayoutEntry[] = [];
-const { hydrate, flush } = bindPersistentArray<PayoutEntry>("payouts", entries, () => []);
+const { hydrate, flush, reload } = bindPersistentArray<PayoutEntry>("payouts", entries, () => []);
 await hydrate();
+
+export async function reloadPayouts(): Promise<void> {
+  await reload();
+}
 
 const now = () => new Date().toISOString();
 const round2 = (n: number) => Math.round(n * 100) / 100;

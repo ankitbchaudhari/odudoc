@@ -5,6 +5,7 @@ import {
   listPayouts,
   markManyPaid,
   summarizeByVendor,
+  reloadPayouts,
   type PayoutStatus,
 } from "@/lib/payouts-store";
 
@@ -23,6 +24,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  await reloadPayouts();
   const view = req.nextUrl.searchParams.get("view");
   if (view === "summary") {
     return NextResponse.json({ summary: summarizeByVendor() });
@@ -46,6 +48,7 @@ export async function POST(req: NextRequest) {
   if (ids.length === 0) {
     return NextResponse.json({ error: "No ids provided" }, { status: 400 });
   }
+  await reloadPayouts();
   const changed = markManyPaid(ids);
   return NextResponse.json({ changed });
 }

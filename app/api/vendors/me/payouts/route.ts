@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getVendorByEmail } from "@/lib/vendors-store";
-import { listPayouts, type PayoutStatus } from "@/lib/payouts-store";
+import { listPayouts, reloadPayouts, type PayoutStatus } from "@/lib/payouts-store";
 
 export const runtime = "nodejs";
 
@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
   }
 
   const status = req.nextUrl.searchParams.get("status") as PayoutStatus | "all" | null;
+  await reloadPayouts();
   const payouts = listPayouts({ vendorId: vendor.id, status: status || undefined });
 
   const pendingNet = payouts

@@ -107,11 +107,21 @@ export async function sentDmSend(input: SendMessageInput): Promise<SentDmResult>
   };
   if (input.idempotencyKey) headers["Idempotency-Key"] = input.idempotencyKey;
 
-  try {
+  // Helper: a single send attempt with a specific template name
+  // variant. Used by the retry loop below to try Original → Pascal
+  // → lowercase variants without giving up on the first 404.
+  const attempt = async (templateName: string) => {
+    const variantBody = {
+      ...body,
+      template: {
+        ...(isUuid(templateName) ? { id: templateName } : { name: templateName }),
+        parameters: input.variables || {},
+      },
+    };
     const res = await fetch("https://api.sent.dm/v3/messages", {
       method: "POST",
       headers,
-      body: JSON.stringify(body),
+      body: JSON.stringify(variantBody),
     });
     const text = await res.text();
     let payload: { success?: boolean; data?: { recipients?: Array<{ message_id?: string }> }; meta?: { request_id?: string }; error?: { message?: string } } = {};
@@ -120,6 +130,52 @@ export async function sentDmSend(input: SendMessageInput): Promise<SentDmResult>
     } catch {
       /* non-JSON response — keep payload empty, surface raw text in error */
     }
+    return { res, payload, text };
+  };
+
+  // Build the variant list. UUID inputs only try the input itself.
+  // Names try the original then Pascal_Case and lowercase forms so
+  // env-var casing inconsistencies don't break a working template.
+  const variants: string[] = [input.template];
+  if (!isUuid(input.template)) {
+    const pascal = input.template
+      .split("_")
+      .map((p) => (p ? p.charAt(0).toUpperCase() + p.slice(1).toLowerCase() : p))
+      .join("_");
+    const lower = input.template.toLowerCase();
+    if (pascal !== input.template) variants.push(pascal);
+    if (lower !== input.template && lower !== pascal) variants.push(lower);
+  }
+
+  try {
+    // Walk variants. Stop on success OR on any error that ISN'T a
+    // "template not found" — variable/recipient errors mean we found
+    // the template, no point retrying with a different casing.
+    let res: Response | undefined;
+    let payload: { success?: boolean; data?: { recipients?: Array<{ message_id?: string }> }; meta?: { request_id?: string }; error?: { message?: string } } = {};
+    let text = "";
+    for (let i = 0; i < variants.length; i++) {
+      const result = await attempt(variants[i]);
+      res = result.res;
+      payload = result.payload;
+      text = result.text;
+      const failed = !res.ok || payload.success === false;
+      const errMsgLower = (payload.error?.message || text).toLowerCase();
+      const looksLikeNotFound = failed && (
+        res.status === 404 ||
+        /template (not found|does not exist|unknown)/i.test(errMsgLower) ||
+        /no template/i.test(errMsgLower)
+      );
+      if (!failed) break; // success
+      if (!looksLikeNotFound) break; // different error → don't waste calls
+      if (i === variants.length - 1) break; // no more variants
+      log.info("sent_dm.casing_retry", {
+        triedVariant: variants[i],
+        nextVariant: variants[i + 1],
+        template: input.template,
+      });
+    }
+    if (!res) throw new Error("sent_dm.no_response");
     if (!res.ok || payload.success === false) {
       const errMsg = payload.error?.message || text.slice(0, 200) || `sent.dm_${res.status}`;
       log.warn("sent_dm.send_failed", {

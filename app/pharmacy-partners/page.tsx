@@ -27,37 +27,37 @@ const BENEFITS: Benefit[] = [
     icon: "💊",
     title: "Direct e-prescriptions",
     body: "Doctors writing on OduDoc can route Rx straight to your counter. Patient walks in, you verify the QR, dispense in seconds.",
-    tone: "from-emerald-50 to-teal-50 ring-emerald-200 text-emerald-700",
+    tone: "from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 ring-emerald-200 dark:ring-emerald-800/60 text-emerald-700",
   },
   {
     icon: "🛵",
     title: "Online medicine orders",
     body: "Get listed in the OduDoc patient app. Accept prepaid + COD orders, manage your own slots, and track delivery riders.",
-    tone: "from-sky-50 to-indigo-50 ring-sky-200 text-sky-700",
+    tone: "from-sky-50 to-indigo-50 dark:from-sky-950/40 dark:to-indigo-950/40 ring-sky-200 dark:ring-sky-800/60 text-sky-700",
   },
   {
     icon: "🛡️",
     title: "Anti-counterfeit registry",
     body: "Patients scan QRs printed on strips and OduDoc validates against the manufacturer registry. Become the trusted pharmacy in your area.",
-    tone: "from-rose-50 to-pink-50 ring-rose-200 text-rose-700",
+    tone: "from-rose-50 to-pink-50 dark:from-rose-950/40 dark:to-pink-950/40 ring-rose-200 dark:ring-rose-800/60 text-rose-700",
   },
   {
     icon: "📦",
     title: "FEFO inventory + batches",
     body: "Built-in batch lots, expiry alerts, low-stock reorder points, and movement audit. Replaces three spreadsheets and a notebook.",
-    tone: "from-amber-50 to-orange-50 ring-amber-200 text-amber-700",
+    tone: "from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 ring-amber-200 dark:ring-amber-800/60 text-amber-700",
   },
   {
     icon: "🧾",
     title: "GST invoices & e-billing",
     body: "Every dispense generates a compliant invoice. Hospital pharmacies can post directly to AR; standalone shops can print or email it.",
-    tone: "from-violet-50 to-fuchsia-50 ring-violet-200 text-violet-700",
+    tone: "from-violet-50 to-fuchsia-50 dark:from-violet-950/40 dark:to-fuchsia-950/40 ring-violet-200 dark:ring-violet-800/60 text-violet-700",
   },
   {
     icon: "🌐",
     title: "Mini-website + WhatsApp",
     body: "Free public profile page (your hours, address, photos), OTP-based login for repeat customers, and WhatsApp order links.",
-    tone: "from-indigo-50 to-blue-50 ring-indigo-200 text-indigo-700",
+    tone: "from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-950/40 ring-indigo-200 dark:ring-indigo-800/60 text-indigo-700",
   },
 ];
 

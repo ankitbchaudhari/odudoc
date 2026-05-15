@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Doctor } from "@/lib/data";
 import PaymentForm from "@/components/PaymentForm";
 import CashfreeCheckout from "@/components/CashfreeCheckout";
+import RazorpayCheckout from "@/components/RazorpayCheckout";
 import CurrencySwitcher, { useCheckoutCurrency } from "@/components/CurrencySwitcher";
 import { convert } from "@/lib/currency-convert";
 import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase-client";
@@ -145,9 +146,13 @@ export default function BookingModal({ doctor, open, onClose, clinicId, clinicNa
   // the Cashfree button (Indian UPI / cards / netbanking) alongside
   // Stripe. Stripe stays the global fallback.
   const [cashfreeAvailable, setCashfreeAvailable] = useState(false);
+  const [razorpayAvailable, setRazorpayAvailable] = useState(false);
+  // Razorpay-specific state: the verified payment id we hold onto so
+  // the OTP-verify hop can persist the same id alongside the booking.
+  const [razorpayPaymentId, setRazorpayPaymentId] = useState<string | null>(null);
   // Mode toggle on the payment step. Defaults to Cashfree when
   // the visitor's checkout currency is INR; otherwise Stripe.
-  const [provider, setProvider] = useState<"stripe" | "cashfree">("stripe");
+  const [provider, setProvider] = useState<"stripe" | "cashfree" | "razorpay">("stripe");
 
   // Visitor-chosen checkout currency. Pricing is authored in USD; the
   // PaymentIntent is created in this currency server-side at the live
@@ -177,11 +182,18 @@ export default function BookingModal({ doctor, open, onClose, clinicId, clinicNa
       .then((d) => {
         setPaymentsOff(!!d.disabled);
         const cfReady = Boolean(d?.gateways?.cashfree);
+        const rzReady = Boolean(d?.gateways?.razorpay);
         setCashfreeAvailable(cfReady);
-        // If the visitor's checkout currency is INR and Cashfree is
-        // wired, default to Cashfree — UPI is much smoother than
-        // an international card on Stripe in India.
-        if (cfReady && checkout.code === "INR") setProvider("cashfree");
+        setRazorpayAvailable(rzReady);
+        // Default-gateway pick for INR visitors: Razorpay > Cashfree >
+        // Stripe. Razorpay wins because it's the merchant Account &
+        // Settings primary; Cashfree is the fallback if Razorpay isn't
+        // configured. Both render UPI/cards/netbanking; Stripe is
+        // international-card only and a worse Indian UX.
+        if (checkout.code === "INR") {
+          if (rzReady) setProvider("razorpay");
+          else if (cfReady) setProvider("cashfree");
+        }
       })
       .catch(() => {});
   }, [open, checkout.code]);
@@ -313,6 +325,15 @@ export default function BookingModal({ doctor, open, onClose, clinicId, clinicNa
         // this orderId, so we MUST persist with the same id later.
         const orderId = `pre_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
         setCashfreeOrderId(orderId);
+        setStep("payment");
+        return;
+      }
+
+      if (provider === "razorpay") {
+        // Razorpay creates its own order id server-side via
+        // /api/payments/razorpay/create-order. The <RazorpayCheckout />
+        // component handles that call on click — we just advance to
+        // the payment step.
         setStep("payment");
         return;
       }
@@ -518,6 +539,42 @@ export default function BookingModal({ doctor, open, onClose, clinicId, clinicNa
         return;
       }
 
+      // Razorpay branch — signature already verified server-side at the
+      // /verify hop. Now persist the booking shell with paymentStatus
+      // already 'paid' so a future webhook (if any) is a no-op.
+      if (provider === "razorpay") {
+        const bookRes = await fetch("/api/bookings/free", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            doctorId: doctor.id,
+            doctorName: doctor.name,
+            fee: doctor.fee,
+            specialty: doctor.specialty,
+            patientName: name,
+            patientPhone: phone.trim(),
+            timeSlot: selectedSlot,
+            date: selectedDate,
+            consultToken: token,
+            // Booking lands as paid — we already have the captured
+            // payment id from Razorpay before this OTP hop ran.
+            pendingPayment: false,
+            razorpayPaymentId: razorpayPaymentId || undefined,
+            ...(clinicId ? { clinicId, paymentMode: "online" as const } : {}),
+          }),
+        });
+        const bookData = await bookRes.json();
+        if (bookRes.ok) {
+          setBookingId(bookData.booking.id);
+          if (bookData.consultation?.id) setConsultationId(bookData.consultation.id);
+        } else {
+          // eslint-disable-next-line no-console
+          console.warn("[BookingModal] razorpay booking-shell persist failed", bookData);
+        }
+        setStep("success");
+        return;
+      }
+
       // Stripe branch — booking was already POSTed by PaymentForm. We
       // just need the consultToken side-effect (verified identity); the
       // final state is "success".
@@ -561,6 +618,7 @@ export default function BookingModal({ doctor, open, onClose, clinicId, clinicNa
     setBookingId(null);
     setConsultationId(null);
     setCashfreeOrderId(null);
+    setRazorpayPaymentId(null);
     setPaymentError(null);
     onClose();
   };
@@ -819,26 +877,37 @@ export default function BookingModal({ doctor, open, onClose, clinicId, clinicNa
           </form>
         )}
 
-        {step === "payment" && (clientSecret || (provider === "cashfree" && cashfreeOrderId)) && (
+        {step === "payment" && (clientSecret || (provider === "cashfree" && cashfreeOrderId) || provider === "razorpay") && (
           <>
             <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Payment</h2>
             <p className="mt-1 mb-5 text-sm text-gray-500 dark:text-slate-400">
               Complete your payment to continue
             </p>
 
-            {/* Provider toggle — only render when Cashfree is wired AND
-                the visitor already has a Stripe PaymentIntent OR a
-                Cashfree-eligible booking. Hidden on countries where
-                Cashfree won't accept the customer's instrument. */}
-            {cashfreeAvailable && (
-              <div className="mb-4 inline-flex rounded-full bg-slate-100 dark:bg-slate-800 p-1 text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => setProvider("cashfree")}
-                  className={`rounded-full px-3 py-1.5 transition ${provider === "cashfree" ? "bg-white dark:bg-slate-900 text-[#6933FF] shadow-sm" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-slate-100"}`}
-                >
-                  🇮🇳 UPI / Cards (Cashfree)
-                </button>
+            {/* Provider toggle. Renders every gateway that's configured
+                so the patient can switch. Razorpay > Cashfree > Stripe
+                is the default order for INR visitors (see useEffect
+                in payments-config). */}
+            {(cashfreeAvailable || razorpayAvailable) && (
+              <div className="mb-4 inline-flex flex-wrap rounded-full bg-slate-100 dark:bg-slate-800 p-1 text-xs font-semibold">
+                {razorpayAvailable && (
+                  <button
+                    type="button"
+                    onClick={() => setProvider("razorpay")}
+                    className={`rounded-full px-3 py-1.5 transition ${provider === "razorpay" ? "bg-white dark:bg-slate-900 text-[#3D5CFF] shadow-sm" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-slate-100"}`}
+                  >
+                    🇮🇳 UPI / Cards (Razorpay)
+                  </button>
+                )}
+                {cashfreeAvailable && (
+                  <button
+                    type="button"
+                    onClick={() => setProvider("cashfree")}
+                    className={`rounded-full px-3 py-1.5 transition ${provider === "cashfree" ? "bg-white dark:bg-slate-900 text-[#6933FF] shadow-sm" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-slate-100"}`}
+                  >
+                    🇮🇳 UPI / Cards (Cashfree)
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setProvider("stripe")}
@@ -849,7 +918,27 @@ export default function BookingModal({ doctor, open, onClose, clinicId, clinicNa
               </div>
             )}
 
-            {provider === "cashfree" && cashfreeOrderId ? (
+            {provider === "razorpay" ? (
+              <RazorpayCheckout
+                amountInr={Number((convertedFee ?? doctor.fee).toFixed(2))}
+                customerName={name}
+                customerEmail={(typeof window !== "undefined" && new URLSearchParams(window.location.search).get("email")) || `${phone.replace(/[^0-9]/g, "")}@odudoc.example`}
+                customerPhone={phone.replace(/^\+/, "")}
+                description={`Consultation with ${doctor.name} on ${selectedSlot}`}
+                notes={{
+                  doctorId: doctor.id,
+                  doctorName: doctor.name,
+                  ...(clinicId ? { clinicId } : {}),
+                }}
+                onSuccess={({ orderId, paymentId }) => {
+                  // Stash the captured payment id so the OTP-verify
+                  // hop persists it on the booking row.
+                  setRazorpayPaymentId(paymentId);
+                  handlePaymentSuccess(paymentId, orderId);
+                }}
+                onError={handlePaymentError}
+              />
+            ) : provider === "cashfree" && cashfreeOrderId ? (
               <CashfreeCheckout
                 orderId={cashfreeOrderId}
                 amount={Number((convertedFee ?? doctor.fee).toFixed(2))}

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { PAYMENTS_DISABLED_UNTIL, paymentsDisabled } from "@/lib/payments-config";
 import { isCashfreeConfigured } from "@/lib/cashfree";
+import { isRazorpayConfigured } from "@/lib/razorpay";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,6 +17,7 @@ export async function GET() {
     gateways: {
       stripe: Boolean(process.env.STRIPE_SECRET_KEY),
       cashfree: isCashfreeConfigured(),
+      razorpay: isRazorpayConfigured(),
     },
   });
 }

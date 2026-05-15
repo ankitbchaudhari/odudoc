@@ -7,6 +7,7 @@ import {
   createLabOrder,
   listOrdersForPatient,
   listOrdersForLab,
+  reloadLabOrders,
   type LabOrderLine,
 } from "@/lib/lab-marketplace/order-store";
 import { findUserById } from "@/lib/users-store";
@@ -19,6 +20,7 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  await reloadLabOrders();
   const url = new URL(req.url);
   if (url.searchParams.get("view") === "lab" && url.searchParams.get("labId")) {
     return NextResponse.json({ orders: listOrdersForLab(String(url.searchParams.get("labId"))) });

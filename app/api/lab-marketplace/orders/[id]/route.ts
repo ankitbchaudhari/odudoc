@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import {
   getOrder,
   transitionLabOrder,
+  reloadLabOrders,
   type LabOrderStatus,
 } from "@/lib/lab-marketplace/order-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
@@ -20,6 +21,7 @@ export async function GET(_req: NextRequest, ctxParam: RouteCtx) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
   const { id } = await ctxParam.params;
+  await reloadLabOrders();
   const o = getOrder(id);
   if (!o) return NextResponse.json({ error: "not_found" }, { status: 404 });
   return NextResponse.json({ order: o });
@@ -32,6 +34,9 @@ export async function PATCH(req: NextRequest, ctxParam: RouteCtx) {
   const body = await req.json();
   const to = body.to as LabOrderStatus;
   if (!ALLOWED.includes(to)) return NextResponse.json({ error: "invalid_target" }, { status: 400 });
+  // Reload so a transition lands on the latest row state — without
+  // this, transitioning a row written by a sibling Lambda no-ops.
+  await reloadLabOrders();
   const o = transitionLabOrder({ id, to, note: body.note, reportUrl: body.reportUrl, results: body.results });
   if (!o) return NextResponse.json({ error: "transition_failed" }, { status: 409 });
   try { await awaitAllFlushesStrict(); } catch {

@@ -63,12 +63,16 @@ export interface LabOrder {
 }
 
 const orders: LabOrder[] = [];
-const { hydrate, flush, tombstone } = bindPersistentArray<LabOrder>(
+const { hydrate, flush, tombstone, reload } = bindPersistentArray<LabOrder>(
   "lab_orders",
   orders,
   () => []
 );
 await hydrate();
+
+export async function reloadLabOrders(): Promise<void> {
+  await reload();
+}
 
 const DEFAULT_FEE_PCT = 7;
 

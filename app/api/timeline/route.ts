@@ -14,7 +14,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { listAppointments, reloadAppointments } from "@/lib/appointments-store";
 import { listPrescriptions, reloadPrescriptions } from "@/lib/prescriptions-store";
-import { listOrdersForPatient } from "@/lib/lab-marketplace/order-store";
+import { listOrdersForPatient, reloadLabOrders } from "@/lib/lab-marketplace/order-store";
 import { listTransactionsForUser } from "@/lib/wallet/store";
 import { listForUser } from "@/lib/notifications/store";
 import { listReadings, classify, VITAL_LABEL } from "@/lib/vitals/store";
@@ -97,6 +97,7 @@ export async function GET() {
   // collapsed row.
   if (userId) {
     try {
+      await reloadLabOrders();
       const orders = listOrdersForPatient(userId);
       for (const o of orders) {
         for (const ev of o.events) {

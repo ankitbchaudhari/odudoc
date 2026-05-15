@@ -51,19 +51,21 @@ await hydrate();
   if (departments.length !== before) flush();
 })();
 
-// Auto-seed the standard specialty list on cold start when the store
-// is empty. Admins can later add / remove / reorder via the
-// /admin/departments panel — anything they touch is preserved across
-// restarts because the rows persist in app_kv.
+// Optional auto-seed — only fires when SEED_DEMO_DEPARTMENTS=1 is set.
 //
-// We only seed when the persisted store has zero rows. If admins
-// have deliberately curated their list, we don't re-add anything.
-// SEED_DEMO_DEPARTMENTS=1 forces a re-seed (useful for fresh sales
-// demos).
+// The earlier "auto-seed when empty" trigger was causing Lambda cold-
+// start timeouts on production: hydrating + 50 postgres writes +
+// flushing all happened synchronously at module load, occasionally
+// breaching the ~10s cold-start budget and surfacing as 502 Bad
+// Gateway via Cloudflare. The patient-facing /doctors grid has a
+// 50-entry fallback in lib/data.ts that renders just fine without
+// the database mirror, so requiring the env var is a safe trade-off.
+//
+// Admin still has full add/remove control via /admin/departments;
+// the seed list below is just a one-shot loader for fresh deploys
+// that opt in.
 (function seedExtraDepartments() {
-  const shouldSeed =
-    process.env.SEED_DEMO_DEPARTMENTS === "1" || departments.length === 0;
-  if (!shouldSeed) return;
+  if (process.env.SEED_DEMO_DEPARTMENTS !== "1") return;
   // Comprehensive specialty list — mirrors lib/data.ts#specialties so
   // the admin panel ships with the same options the patient-facing
   // fallback shows. SVG icons here use generic outlines; the patient

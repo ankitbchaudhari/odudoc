@@ -18,8 +18,12 @@ export interface Room {
 }
 
 const rooms: Room[] = [];
-const { hydrate, flush } = bindPersistentArray<Room>("rooms", rooms, () => []);
+const { hydrate, flush, reload } = bindPersistentArray<Room>("rooms", rooms, () => []);
 await hydrate();
+
+export async function reloadRooms(): Promise<void> {
+  await reload();
+}
 
 export function createRoom(room: Room): Room {
   const idx = rooms.findIndex((r) => r.id === room.id);

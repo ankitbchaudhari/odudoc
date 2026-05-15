@@ -8,6 +8,7 @@ import {
   listTransactionsForUser,
   applyTopUp,
   applySpend,
+  reloadWallet,
 } from "@/lib/wallet/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
@@ -18,6 +19,9 @@ export async function GET() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  // Cross-Lambda freshness — a top-up credited by a payment webhook
+  // on a sibling Lambda must show in the balance the user sees next.
+  await reloadWallet();
   return NextResponse.json({
     wallet: getWallet(userId),
     transactions: listTransactionsForUser(userId, 100),
@@ -34,6 +38,7 @@ export async function POST(req: NextRequest) {
   if (action === "topup") {
     const amount = Number(body.amountRupees);
     if (!Number.isFinite(amount)) return NextResponse.json({ error: "invalid_amount" }, { status: 400 });
+    await reloadWallet();
     const r = applyTopUp({
       userId,
       amountRupees: Math.floor(amount),
@@ -48,6 +53,10 @@ export async function POST(req: NextRequest) {
   if (action === "spend") {
     const amount = Number(body.amountRupees);
     if (!Number.isFinite(amount)) return NextResponse.json({ error: "invalid_amount" }, { status: 400 });
+    // Critical: reload before checking balance — otherwise a top-up
+    // applied on a sibling Lambda would not yet be in this Lambda's
+    // memory and the spend would falsely return insufficient_funds.
+    await reloadWallet();
     const r = applySpend({
       userId,
       amountRupees: Math.floor(amount),

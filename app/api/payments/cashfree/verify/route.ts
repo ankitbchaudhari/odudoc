@@ -17,7 +17,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOrderStatus } from "@/lib/cashfree";
 import { markPaid as markConsultationPaid, reloadConsultations } from "@/lib/consultations-store";
-import { applyTopUp } from "@/lib/wallet/store";
+import { applyTopUp, reloadWallet } from "@/lib/wallet/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
@@ -45,6 +45,7 @@ export async function GET(req: NextRequest) {
           const userId = status.tags.userId;
           const amount = Number(status.tags.amount || status.amount || 0);
           if (userId && amount > 0) {
+            await reloadWallet();
             const r = applyTopUp({
               userId,
               amountRupees: Math.floor(amount),

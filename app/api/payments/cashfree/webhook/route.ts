@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignatureDetailed, isWebhookReplay, markWebhookProcessed } from "@/lib/cashfree";
 import { markPaid as markConsultationPaid, getConsultation, reloadConsultations } from "@/lib/consultations-store";
-import { applyTopUp } from "@/lib/wallet/store";
+import { applyTopUp, reloadWallet } from "@/lib/wallet/store";
 import { sendPaymentFailedViaSentDm } from "@/lib/sent-dm";
 import { recordPendingPayment } from "@/lib/cashfree-pending-buffer";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
@@ -133,6 +133,7 @@ export async function POST(req: NextRequest) {
         const userId = tags.userId;
         const amount = Number(tags.amount || payment?.payment_amount || 0);
         if (userId && amount > 0) {
+          await reloadWallet();
           const r = applyTopUp({
             userId,
             amountRupees: Math.floor(amount),

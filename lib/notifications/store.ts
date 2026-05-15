@@ -51,12 +51,16 @@ export interface Notification {
 }
 
 const items: Notification[] = [];
-const { hydrate, flush, tombstone } = bindPersistentArray<Notification>(
+const { hydrate, flush, tombstone, reload } = bindPersistentArray<Notification>(
   "notifications",
   items,
   () => []
 );
 await hydrate();
+
+export async function reloadNotifications(): Promise<void> {
+  await reload();
+}
 
 const MAX_PER_USER = 200;
 

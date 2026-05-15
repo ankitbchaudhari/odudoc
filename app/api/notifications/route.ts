@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { listForUser, unreadCount, markRead, markAllRead } from "@/lib/notifications/store";
+import { listForUser, unreadCount, markRead, markAllRead, reloadNotifications } from "@/lib/notifications/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
 export const runtime = "nodejs";
@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
   const url = new URL(req.url);
   const unreadOnly = url.searchParams.get("unreadOnly") === "1";
+  await reloadNotifications();
   return NextResponse.json({
     notifications: listForUser(userId, { unreadOnly, limit: 50 }),
     unread: unreadCount(userId),

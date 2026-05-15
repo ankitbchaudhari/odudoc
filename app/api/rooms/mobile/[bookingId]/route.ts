@@ -23,7 +23,7 @@ import {
   generateRoomName,
   isDailyConfigured,
 } from "@/lib/daily";
-import { createRoom, getAllRooms } from "@/lib/rooms-store";
+import { createRoom, getAllRooms, reloadRooms } from "@/lib/rooms-store";
 import { getBookingById, reloadBookings } from "@/lib/bookings-store";
 import { findUserByEmail, reloadUsers } from "@/lib/users-store";
 import { getDoctorById } from "@/lib/doctors-store";
@@ -137,6 +137,9 @@ export async function GET(
     // Idempotent room lookup — reuse if a row already exists for this
     // bookingId. We keep the same roomUrl so both sides land in the same
     // room regardless of who joins first.
+    // Reload rooms so we find a room created by the other side
+    // (e.g. doctor opened the call first on a sibling Lambda).
+    await reloadRooms();
     let room = getAllRooms().find((r) => r.bookingId === booking.id);
 
     if (!room) {

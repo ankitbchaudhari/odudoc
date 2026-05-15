@@ -16,6 +16,7 @@ import {
   markManyEarningsPaid,
   getPendingBalance,
   getPeriodTotals,
+  reloadDoctorEarnings,
 } from "@/lib/doctor-earnings-store";
 
 export const runtime = "nodejs";
@@ -29,6 +30,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  await reloadDoctorEarnings();
   if (user.role === "admin") {
     const doctorEmail = req.nextUrl.searchParams.get("doctorEmail") || undefined;
     return NextResponse.json({

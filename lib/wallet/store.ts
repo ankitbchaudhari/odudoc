@@ -80,14 +80,21 @@ export interface WalletTransaction {
 }
 
 const accounts: WalletAccount[] = [];
-const { hydrate: hydrateAcc, flush: flushAcc, tombstone: tombAcc } =
+const { hydrate: hydrateAcc, flush: flushAcc, tombstone: tombAcc, reload: reloadAcc } =
   bindPersistentArray<WalletAccount>("wallet_accounts", accounts, () => []);
 await hydrateAcc();
 
 const txs: WalletTransaction[] = [];
-const { hydrate: hydrateTx, flush: flushTx, tombstone: tombTx } =
+const { hydrate: hydrateTx, flush: flushTx, tombstone: tombTx, reload: reloadTx } =
   bindPersistentArray<WalletTransaction>("wallet_transactions", txs, () => []);
 await hydrateTx();
+
+/** Cross-Lambda freshness — call before reading wallet balance or
+ *  transactions so a top-up just credited by a sibling Lambda's
+ *  payment webhook is visible. */
+export async function reloadWallet(): Promise<void> {
+  await Promise.all([reloadAcc(), reloadTx()]);
+}
 
 const TOPUP_BONUS_PCT = 5;
 const MIN_TOPUP_RUPEES = 100;

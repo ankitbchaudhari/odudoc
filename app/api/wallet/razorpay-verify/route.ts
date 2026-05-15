@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { verifyRazorpaySignature, getRazorpayPayment } from "@/lib/razorpay";
-import { applyTopUp } from "@/lib/wallet/store";
+import { applyTopUp, reloadWallet } from "@/lib/wallet/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { parseJson } from "@/lib/api-validate";
 import { log } from "@/lib/log";
@@ -75,6 +75,9 @@ export async function POST(req: NextRequest) {
 
   // 4. Credit the wallet. applyTopUp is idempotent on providerSid so
   //    a duplicate call (e.g. user refreshes after success) is safe.
+  //    Reload first so a sibling-Lambda credit for the same paymentId
+  //    is visible — that's the idempotency check applyTopUp relies on.
+  await reloadWallet();
   const r = applyTopUp({
     userId,
     amountRupees: Math.floor(amount),

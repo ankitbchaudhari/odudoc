@@ -16,8 +16,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { updateRoomStatus, getRoom } from "@/lib/rooms-store";
-import { getConsultationByRoomId, setStatus as setConsultationStatus } from "@/lib/consultations-store";
+import { updateRoomStatus, getRoom, reloadRooms } from "@/lib/rooms-store";
+import { getConsultationByRoomId, setStatus as setConsultationStatus, reloadConsultations } from "@/lib/consultations-store";
 
 export const runtime = "nodejs";
 
@@ -82,6 +82,7 @@ export async function POST(
     // to "completed" so neither side can rejoin — they'd have to book
     // and pay for a fresh appointment.
     try {
+      await Promise.all([reloadRooms(), reloadConsultations()]);
       const room = getRoom(roomId);
       if (room && room.status !== "ended") {
         updateRoomStatus(roomId, "ended");

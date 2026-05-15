@@ -17,7 +17,7 @@ import { findUserById } from "@/lib/users-store";
 import { createCheckoutSession, isCashfreeConfigured } from "@/lib/cashfree";
 import { createStripeWalletCheckout, isStripeConfigured } from "@/lib/stripe-wallet";
 import { createRazorpayOrder, isRazorpayConfigured, razorpayPublicKey } from "@/lib/razorpay";
-import { applyTopUp, getWallet } from "@/lib/wallet/store";
+import { applyTopUp, getWallet, reloadWallet } from "@/lib/wallet/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
 export const runtime = "nodejs";
@@ -106,6 +106,7 @@ export async function POST(req: NextRequest) {
       cashfreeEnv: process.env.CASHFREE_ENV || "(unset)",
       stripeSecretPresent: !!process.env.STRIPE_SECRET_KEY,
     };
+    await reloadWallet();
     const r = applyTopUp({
       userId, amountRupees: amount,
       note: `sandbox top-up (${gateway} not configured)`,

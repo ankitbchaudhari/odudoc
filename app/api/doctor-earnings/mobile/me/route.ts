@@ -16,6 +16,7 @@ import {
   listEarnings,
   getPendingBalance,
   getPeriodTotals,
+  reloadDoctorEarnings,
 } from "@/lib/doctor-earnings-store";
 import { findDoctorByEmail } from "@/lib/doctors-store";
 import { requireMobileUser } from "@/lib/mobile-auth";
@@ -42,6 +43,7 @@ export async function GET(request: NextRequest) {
         { status: 404 }
       );
     }
+    await reloadDoctorEarnings();
     const totals = getPeriodTotals(doctor.email);
     const pendingBalance = getPendingBalance(doctor.email);
     const recent = listEarnings({ doctorEmail: doctor.email }).slice(0, 20);

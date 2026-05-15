@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { createDailyRoom, createDailyToken, generateRoomName, isDailyConfigured } from "@/lib/daily";
-import { createRoom, getRoom, getAllRooms } from "@/lib/rooms-store";
+import { createRoom, getRoom, getAllRooms, reloadRooms } from "@/lib/rooms-store";
 import { consumeConsultToken } from "@/lib/consult-otp";
 import { createConsultation, markPaid, setStatus } from "@/lib/consultations-store";
 
@@ -157,6 +157,7 @@ function migrateLegacyUrl(url: string, roomName: string): string {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const roomId = searchParams.get("roomId");
+  await reloadRooms();
 
   if (roomId) {
     const room = getRoom(roomId);

@@ -437,125 +437,209 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <form onSubmit={submit} onClick={(e) => e.stopPropagation()} className="relative max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Register a clinic</h2>
-        <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Patients will see this on your profile.</p>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <form
+        onSubmit={submit}
+        onClick={(e) => e.stopPropagation()}
+        className="relative flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800"
+      >
+        {/* ── Gradient hero header ────────────────────────────────── */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 px-6 py-5 text-white">
+          {/* Decorative blurred blobs */}
+          <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full bg-white/20 blur-3xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-12 -left-10 h-40 w-40 rounded-full bg-fuchsia-300/30 blur-3xl" />
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          <Field label="Clinic name *" className="sm:col-span-2" value={name} onChange={setName} required />
-          <Field label="Address *" className="sm:col-span-2" value={addressLine1} onChange={setAddr1} required />
-          <Field label="Address line 2" className="sm:col-span-2" value={addressLine2} onChange={setAddr2} />
-          {/* Country drives the State and City option lists. Switching
-              country resets both dependent fields so the doctor picks
-              from the new country's options. */}
-          <SelectField
-            label="Country *"
-            value={countryCode}
-            onChange={(v) => { setCountryCode(v); setStateCode(""); setCity(""); }}
-            required
-            disabled={!csc}
-            options={countries.map((c) => ({ value: c.isoCode, label: c.name }))}
-            placeholder={csc ? "Select country" : "Loading countries…"}
-          />
-          {/* State / Region. country-state-city has states for ~80% of
-              countries; for the rest the list is empty and we fall
-              back to a free-text input so the form still works. */}
-          {states.length > 0 ? (
-            <SelectField
-              label="State / Region *"
-              value={stateCode}
-              onChange={(v) => { setStateCode(v); setCity(""); }}
-              required
-              options={states.map((s) => ({ value: s.isoCode, label: s.name }))}
-              placeholder="Select state"
-            />
-          ) : (
-            <Field label="State / Region" value={stateCode} onChange={setStateCode} />
-          )}
-          {/* City. Cities are huge — ~150k worldwide. We only show the
-              dropdown when a state is picked (limits to a few hundred
-              max). If the package has no cities for this state, the
-              doctor types one in. */}
-          {cities.length > 0 ? (
-            <SelectField
-              label="City *"
-              value={city}
-              onChange={setCity}
-              required
-              options={cities.map((c) => ({ value: c.name, label: c.name }))}
-              placeholder="Select city"
-            />
-          ) : (
-            <Field label="City *" value={city} onChange={setCity} required={!stateCode || states.length === 0} />
-          )}
-          <Field label="Postal code" value={postalCode} onChange={setPC} />
-          <Field label="Clinic phone" value={phone} onChange={setPhone} />
-          <Field label="Google Maps URL" className="sm:col-span-2" value={mapsUrl} onChange={setMaps} />
-          <Field
-            label={`Per-visit fee (${currency.code} ${currency.symbol}) — leave blank to use your default`}
-            className="sm:col-span-2"
-            value={feeOverride}
-            onChange={setFee}
-            type="number"
-          />
+          <div className="relative flex items-start gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-2xl shadow-inner ring-1 ring-white/20 backdrop-blur">
+              🏥
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">OduDoc · Clinic registration</p>
+              <h2 className="mt-0.5 text-xl font-bold leading-tight">Register a clinic</h2>
+              <p className="mt-1 text-sm text-white/80">Patients can book in-person visits here.</p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="absolute right-0 top-0 -mr-1 -mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/90 transition hover:bg-white/20"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <fieldset className="mt-5">
-          <legend className="text-sm font-semibold text-gray-900 dark:text-slate-100">Opening hours</legend>
-          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
-            Set the hours your clinic is open. Toggle "Closed" for days
-            you don&apos;t see patients.
-          </p>
-          <div className="mt-3 space-y-2">
-            {DAYS.map((d, i) => {
-              const row = hours.find((h) => h.day === i)!;
-              return (
-                <div
-                  key={d}
-                  className="grid grid-cols-[3rem_1fr_1fr_auto] items-center gap-2 rounded-lg border border-gray-100 dark:border-slate-800 px-2 py-1.5"
-                >
-                  <span className="text-xs font-semibold text-gray-700 dark:text-slate-200">{d}</span>
-                  <input
-                    type="time"
-                    value={row.open}
-                    disabled={row.closed}
-                    onChange={(e) => setDayHours(i, { open: e.target.value })}
-                    className="rounded border border-gray-300 dark:border-slate-700 px-2 py-1 text-xs outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
-                  />
-                  <input
-                    type="time"
-                    value={row.close}
-                    disabled={row.closed}
-                    onChange={(e) => setDayHours(i, { close: e.target.value })}
-                    className="rounded border border-gray-300 dark:border-slate-700 px-2 py-1 text-xs outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
-                  />
-                  <label className="flex items-center gap-1 text-xs text-gray-600 dark:text-slate-400">
+        {/* ── Scrollable body ─────────────────────────────────────── */}
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          {/* Section: Clinic basics */}
+          <Section icon="✏️" iconBg="from-emerald-500 to-teal-500" title="Clinic basics" subtitle="The name and street address patients will see.">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Clinic name *" className="sm:col-span-2" value={name} onChange={setName} required />
+              <Field label="Address *" className="sm:col-span-2" value={addressLine1} onChange={setAddr1} required />
+              <Field label="Address line 2" className="sm:col-span-2" value={addressLine2} onChange={setAddr2} />
+            </div>
+          </Section>
+
+          {/* Section: Location */}
+          <Section icon="🌍" iconBg="from-sky-500 to-indigo-500" title="Location" subtitle="Used for the map link and patient-facing search.">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <SelectField
+                label="Country *"
+                value={countryCode}
+                onChange={(v) => { setCountryCode(v); setStateCode(""); setCity(""); }}
+                required
+                disabled={!csc}
+                options={countries.map((c) => ({ value: c.isoCode, label: c.name }))}
+                placeholder={csc ? "Select country" : "Loading countries…"}
+              />
+              {states.length > 0 ? (
+                <SelectField
+                  label="State / Region *"
+                  value={stateCode}
+                  onChange={(v) => { setStateCode(v); setCity(""); }}
+                  required
+                  options={states.map((s) => ({ value: s.isoCode, label: s.name }))}
+                  placeholder="Select state"
+                />
+              ) : (
+                <Field label="State / Region" value={stateCode} onChange={setStateCode} />
+              )}
+              {cities.length > 0 ? (
+                <SelectField
+                  label="City *"
+                  value={city}
+                  onChange={setCity}
+                  required
+                  options={cities.map((c) => ({ value: c.name, label: c.name }))}
+                  placeholder="Select city"
+                />
+              ) : (
+                <Field label="City *" value={city} onChange={setCity} required={!stateCode || states.length === 0} />
+              )}
+              <Field label="Postal code" value={postalCode} onChange={setPC} />
+            </div>
+          </Section>
+
+          {/* Section: Contact */}
+          <Section icon="📞" iconBg="from-rose-500 to-pink-500" title="Contact" subtitle="How patients can reach the clinic.">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Clinic phone" value={phone} onChange={setPhone} />
+              <Field label="Google Maps URL" value={mapsUrl} onChange={setMaps} />
+            </div>
+          </Section>
+
+          {/* Section: Pricing */}
+          <Section icon="💰" iconBg="from-amber-500 to-orange-500" title="Pricing" subtitle={`Charged per visit in ${currency.code}. Leave blank to use your profile default.`}>
+            <Field
+              label={`Per-visit fee (${currency.code} ${currency.symbol})`}
+              value={feeOverride}
+              onChange={setFee}
+              type="number"
+            />
+          </Section>
+
+          {/* Section: Hours */}
+          <Section icon="🕐" iconBg="from-violet-500 to-fuchsia-500" title="Opening hours" subtitle="Tick Closed for days you don't see patients.">
+            <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+              {DAYS.map((d, i) => {
+                const row = hours.find((h) => h.day === i)!;
+                const closed = !!row.closed;
+                return (
+                  <div
+                    key={d}
+                    className={`grid grid-cols-[3.5rem_1fr_1fr_5rem] items-center gap-2 px-3 py-2 text-sm ${
+                      i > 0 ? "border-t border-slate-200 dark:border-slate-700" : ""
+                    } ${closed ? "bg-slate-50 dark:bg-slate-900/60" : "bg-white dark:bg-slate-900/30"}`}
+                  >
+                    <span className={`text-xs font-bold uppercase tracking-wider ${closed ? "text-slate-400" : "text-indigo-700 dark:text-indigo-300"}`}>{d}</span>
                     <input
-                      type="checkbox"
-                      checked={!!row.closed}
-                      onChange={(e) => setDayHours(i, { closed: e.target.checked })}
+                      type="time"
+                      value={row.open}
+                      disabled={closed}
+                      onChange={(e) => setDayHours(i, { open: e.target.value })}
+                      className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700"
                     />
-                    Closed
-                  </label>
-                </div>
-              );
-            })}
-          </div>
-        </fieldset>
+                    <input
+                      type="time"
+                      value={row.close}
+                      disabled={closed}
+                      onChange={(e) => setDayHours(i, { close: e.target.value })}
+                      className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700"
+                    />
+                    <label className="flex cursor-pointer items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400">
+                      <input
+                        type="checkbox"
+                        checked={closed}
+                        onChange={(e) => setDayHours(i, { closed: e.target.checked })}
+                        className="h-3.5 w-3.5 rounded accent-rose-500"
+                      />
+                      Closed
+                    </label>
+                  </div>
+                );
+              })}
+            </div>
+          </Section>
 
-        {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
+          {err && (
+            <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">
+              {err}
+            </div>
+          )}
+        </div>
 
-        <div className="mt-6 flex gap-2">
-          <button type="button" onClick={onClose} className="flex-1 rounded-lg border border-gray-200 dark:border-slate-700 px-4 py-2 text-sm text-gray-700 dark:text-slate-300">
+        {/* ── Sticky footer ───────────────────────────────────────── */}
+        <div className="flex gap-2 border-t border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
             Cancel
           </button>
-          <button disabled={busy} className="btn-primary flex-1 disabled:opacity-60">
-            {busy ? "Saving…" : "Register clinic"}
+          <button
+            disabled={busy}
+            className="group relative flex-1 overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full"
+            />
+            <span className="relative">{busy ? "Saving…" : "✨ Register clinic"}</span>
           </button>
         </div>
       </form>
     </div>
+  );
+}
+
+function Section({
+  icon, iconBg, title, subtitle, children,
+}: {
+  icon: string;
+  iconBg: string;        // tailwind gradient stops e.g. "from-emerald-500 to-teal-500"
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mb-6 last:mb-0">
+      <header className="mb-3 flex items-center gap-3">
+        <div className={`flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${iconBg} text-base shadow-md`}>
+          <span aria-hidden>{icon}</span>
+        </div>
+        <div className="min-w-0">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">{title}</h3>
+          {subtitle && <p className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>}
+        </div>
+      </header>
+      {children}
+    </section>
   );
 }
 

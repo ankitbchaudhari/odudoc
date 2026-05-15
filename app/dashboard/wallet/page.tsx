@@ -268,15 +268,40 @@ export default function WalletPage() {
   // top-up's life — the webhook usually fires within seconds, so
   // surfacing "may not have credited" immediately is noisy and wrong.
   // Past 3 minutes without a match, the warning is legitimate.
-  // Razorpay completes inline (success / cancel / fail are all
-  // resolved by the time the modal closes), so pending entries for
-  // that gateway can't be "recovered" via an async webhook — they
-  // were either paid (and the synchronous verify already credited
-  // the wallet) or never paid. Filter them out so abandoned Razorpay
-  // attempts don't clutter the banner indefinitely.
-  const STUCK_GRACE_MS = 3 * 60 * 1000;
+  // After 30 minutes, the warning is no longer useful — Cashfree's
+  // webhook either fired by now or it never will. Silently drop
+  // anything older than the abandon-window so the banner doesn't
+  // turn into a permanent clutter of yesterday's failed attempts.
+  // (Razorpay entries are filtered separately — they complete inline
+  // so they never belong in this banner regardless of age.)
+  const STUCK_GRACE_MS = 3 * 60 * 1000;          // 3 min — show banner after this
+  const ABANDON_AFTER_MS = 30 * 60 * 1000;       // 30 min — auto-drop after this
+
+  // Self-cleaning: every render, sweep entries older than the
+  // abandon window out of state + localStorage. Keeps the cleanup
+  // automatic without forcing the user to click "Dismiss" on
+  // anything ancient.
+  useEffect(() => {
+    const stale = pendingOrders.filter(
+      (p) => Date.now() - p.startedAt > ABANDON_AFTER_MS || p.gateway === "razorpay",
+    );
+    if (stale.length === 0) return;
+    const fresh = pendingOrders.filter((p) => !stale.includes(p));
+    setPendingOrders(fresh);
+    try {
+      localStorage.setItem("odudoc:pending-topups", JSON.stringify(fresh));
+    } catch { /* ignore */ }
+    // Run once on mount; the deps reference primitives so this won't
+    // infinite-loop. Subsequent visits naturally re-trigger via the
+    // page mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const visiblePendingOrders = pendingOrders.filter(
-    (p) => p.gateway !== "razorpay" && Date.now() - p.startedAt > STUCK_GRACE_MS,
+    (p) =>
+      p.gateway !== "razorpay" &&
+      Date.now() - p.startedAt > STUCK_GRACE_MS &&
+      Date.now() - p.startedAt <= ABANDON_AFTER_MS,
   );
 
   // Dismiss every stuck entry at once — useful when many Razorpay

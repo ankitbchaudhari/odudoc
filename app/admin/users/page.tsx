@@ -427,7 +427,11 @@ export default function AdminUsersPage() {
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="whitespace-nowrap px-4 py-3 font-medium">Joined</th>
                 <th className="whitespace-nowrap px-4 py-3 font-medium">Last login</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+                {/* Actions column is sticky-right so it stays visible
+                    even when the table scrolls horizontally. Patient
+                    feedback: at narrower viewports the column kept
+                    falling off the right edge. */}
+                <th className="sticky right-0 z-20 bg-gradient-to-l from-violet-50/95 via-purple-50/95 to-purple-50/0 px-4 py-3 text-right font-medium shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.1)]">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -483,8 +487,11 @@ export default function AdminUsersPage() {
                   <td className="whitespace-nowrap px-4 py-3 text-gray-600">
                     {fmtDate(u.lastLoginAt)}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3">
-                    {/* Action column was overflowing off-screen with 5
+                  <td className="sticky right-0 z-10 bg-white whitespace-nowrap px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.08)]">
+                    {/* sticky right-0 keeps the Actions cell anchored
+                        to the right edge during horizontal scroll. bg-white
+                        prevents columns underneath from bleeding through.
+                        Action column was overflowing off-screen with 5
                         text buttons + 3-line date columns. Switched to
                         icon-only square buttons with title tooltips —
                         same actions, ~⅓ the width. Date columns get

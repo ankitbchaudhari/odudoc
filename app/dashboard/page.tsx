@@ -144,15 +144,20 @@ export default function DashboardPage() {
               <div className="mt-3"><FamilySwitcher /></div>
             </div>
             <div className="flex flex-wrap gap-2">
+              {/* Primary CTA — bright white card on the indigo→violet
+                  gradient. No dark variant: the hero gradient itself
+                  doesn't change in dark mode, so the button shouldn't
+                  either. Earlier dark:bg-slate-900 made the teal text
+                  unreadable. */}
               <Link
                 href="/doctors"
-                className="rounded-xl bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-primary-700 shadow-md transition-transform hover:-translate-y-0.5 hover:shadow-lg"
+                className="rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-indigo-700 shadow-md transition-all hover:-translate-y-0.5 hover:bg-indigo-50 hover:shadow-lg"
               >
                 Book Appointment
               </Link>
               <Link
                 href="/consult"
-                className="rounded-xl bg-white/15 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/25"
+                className="rounded-xl bg-white/20 ring-1 ring-white/40 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/30"
               >
                 Video Consult
               </Link>

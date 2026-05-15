@@ -28,6 +28,11 @@ interface BookingModalProps {
   doctor: Doctor;
   open: boolean;
   onClose: () => void;
+  // Optional: if set, the booking POST tags this appointment as an
+  // in-person visit at this clinic. Surfaced by the "Book online" CTA
+  // on the patient-facing ClinicLocations widget.
+  clinicId?: string;
+  clinicName?: string;
 }
 
 // Parse a slot label like "9:00 AM" into a 24h (hour, minute) tuple.
@@ -99,7 +104,7 @@ function buildDateOptions(days: number): { value: string; label: string; date: D
  *                     for visit. If the endpoint 404s we log and continue.
  */
 
-export default function BookingModal({ doctor, open, onClose }: BookingModalProps) {
+export default function BookingModal({ doctor, open, onClose, clinicId, clinicName }: BookingModalProps) {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>(() => formatDate(new Date()));
   // Internal state machine. `payform` collects contact details; `payment`
@@ -460,6 +465,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
             timeSlot: selectedSlot,
             date: selectedDate,
             consultToken: token,
+            ...(clinicId ? { clinicId, paymentMode: "online" as const } : {}),
           }),
         });
         const data = await res.json();
@@ -497,6 +503,7 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
             date: selectedDate,
             consultToken: token,
             pendingPayment: true,
+            ...(clinicId ? { clinicId, paymentMode: "online" as const } : {}),
           }),
         });
         const bookData = await bookRes.json();
@@ -630,10 +637,13 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
 
         {step === "slot" && (
           <>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Book Appointment</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">
+              {clinicId ? "Book in-person visit" : "Book Appointment"}
+            </h2>
             <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm text-gray-500 dark:text-slate-400">
-                {doctor.name} &middot; {displaySymbol}{displayFee}
+                {doctor.name}
+                {clinicName ? ` · ${clinicName}` : ""} &middot; {displaySymbol}{displayFee}
               </p>
               <CurrencySwitcher />
             </div>
@@ -864,6 +874,8 @@ export default function BookingModal({ doctor, open, onClose }: BookingModalProp
                 patientName={name}
                 patientPhone={phone}
                 doctorId={doctor.id}
+                clinicId={clinicId}
+                date={selectedDate}
                 onSuccess={handlePaymentSuccess}
                 onError={handlePaymentError}
               />

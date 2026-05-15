@@ -66,6 +66,23 @@ export async function POST(request: NextRequest) {
     markEmailVerified(user.email);
     touchLastLogin(user.email);
 
+    // Patient-claim: on first verification, attach any pre-existing
+    // clinic bookings + EMR entries matching this phone. Best-effort —
+    // never block sign-in on the claim path.
+    if (isFirstVerification && user.phone) {
+      try {
+        const { claimBookingsForUser } = await import("@/lib/bookings-store");
+        const { claimEmrForUser } = await import("@/lib/clinic-emr-store");
+        const cb = claimBookingsForUser(user.id, user.phone);
+        const ce = claimEmrForUser(user.id, user.phone);
+        if (cb || ce) {
+          log.info("mobile-verify.patient_claim", { userId: user.id, bookings: cb, emr: ce });
+        }
+      } catch (err) {
+        log.error("mobile-verify.patient_claim_failed", err, { userId: user.id });
+      }
+    }
+
     // Drain the verification flag + last-login update to Postgres
     // before issuing the JWT. Without this strict drain, the Lambda
     // could freeze on response-flush and the verified flag would be

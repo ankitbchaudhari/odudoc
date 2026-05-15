@@ -28,7 +28,21 @@ export interface Booking {
   /** Set by the appointment-reminders cron after a 24h-out push lands.
    *  Idempotency marker — same job re-running won't double-push. */
   reminderSentAt?: string;     // ISO-8601
+
+  // --- Clinic visit fields (May 2026) ---
+  // For in-person clinic appointments. When clinicId is set, the booking
+  // is a physical visit and routes to that clinic's reception. Telemed
+  // bookings leave these null.
+  clinicId?: string;            // CL-XXXX
+  clinicName?: string;          // denormalized for confirmation/notifications
+  clinicAddress?: string;       // single-line formatted, denormalized
+  /** Payment mode chosen by patient. 'online' = paid via Stripe/Cashfree
+   *  at booking; 'clinic' = pay-at-clinic (cash/UPI at reception).
+   *  Telemed bookings default to 'online'. */
+  paymentMode?: "online" | "clinic";
+  arrivedAt?: string;           // ISO; set by reception when patient checks in
 }
+
 
 const bookings: Booking[] = [];
 const { hydrate, flush, tombstone } = bindPersistentArray<Booking>(
@@ -212,4 +226,33 @@ export function cancelBookingByUser(
   b.cancelledBy = 'patient';
   flush();
   return { ok: true, booking: b };
+}
+
+/** Reception "Mark arrived" action — idempotent. */
+export function markBookingArrived(id: string): Booking | undefined {
+  const b = bookings.find((x) => x.id === id);
+  if (!b) return undefined;
+  if (!b.arrivedAt) {
+    b.arrivedAt = new Date().toISOString();
+    flush();
+  }
+  return b;
+}
+
+/** Patient-claim utility — once a patient signs up, find all unclaimed
+ *  bookings (phone match, no patientUserId yet) and stamp the user id.
+ *  Returns the count of bookings claimed. */
+export function claimBookingsForUser(userId: string, phone: string): number {
+  const normalize = (p: string) => (p || "").replace(/[^\d]/g, "").replace(/^0+/, "");
+  const target = normalize(phone);
+  if (!target) return 0;
+  let n = 0;
+  for (const b of bookings) {
+    if (!b.patientUserId && normalize(b.patientPhone) === target) {
+      b.patientUserId = userId;
+      n++;
+    }
+  }
+  if (n > 0) flush();
+  return n;
 }

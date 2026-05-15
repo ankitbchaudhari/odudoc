@@ -51,6 +51,15 @@ export async function POST(req: NextRequest) {
     consultToken = "",
   } = body as Record<string, string | number>;
 
+  // Clinic-visit fields (May 2026). Optional — telemed bookings leave
+  // these undefined. When set, the booking is tagged as an in-person
+  // visit at this clinic and routes to that clinic's reception.
+  const rawClinicId = typeof body?.clinicId === "string" ? body.clinicId.trim() : "";
+  const rawPaymentMode =
+    body?.paymentMode === "clinic" || body?.paymentMode === "online"
+      ? (body.paymentMode as "clinic" | "online")
+      : undefined;
+
   // Verified-identity path: if the client has a consult token from the OTP
   // step, consume it (single-use) and use the server-trusted name + phone.
   // This ensures the doctor's dashboard shows the real verified caller.
@@ -123,6 +132,34 @@ export async function POST(req: NextRequest) {
   // pending state and the webhook flips it to paid on confirmation.
   const pendingPayment = body?.pendingPayment === true;
 
+  // Validate the clinic (if supplied) belongs to this doctor — prevents
+  // tampering with the clinicId in the request body. Also denormalize
+  // the address into the booking row so confirmation page + reminders
+  // can render without extra DB hits.
+  let clinicFields: {
+    clinicId?: string;
+    clinicName?: string;
+    clinicAddress?: string;
+    paymentMode?: "online" | "clinic";
+    appointmentType?: "in-person" | "video";
+  } = {};
+  if (rawClinicId) {
+    const { clinicBelongsToDoctor, getClinicById } = await import("@/lib/clinics-store");
+    if (!clinicBelongsToDoctor(rawClinicId, String(doctorId))) {
+      return NextResponse.json({ error: "Invalid clinic for this doctor" }, { status: 400 });
+    }
+    const c = getClinicById(rawClinicId)!;
+    clinicFields = {
+      clinicId: c.id,
+      clinicName: c.name,
+      clinicAddress: [c.addressLine1, c.addressLine2, c.city, c.state, c.postalCode].filter(Boolean).join(", "),
+      paymentMode: rawPaymentMode || "online",
+      appointmentType: "in-person",
+    };
+  } else if (rawPaymentMode) {
+    clinicFields.paymentMode = rawPaymentMode;
+  }
+
   // 1. Legacy booking record (admin / earnings views).
   const booking = createBooking({
     doctorId: String(doctorId),
@@ -133,6 +170,7 @@ export async function POST(req: NextRequest) {
     fee: feeNum,
     paymentStatus: pendingPayment ? "pending" : "paid",
     paymentIntentId: pendingPayment ? "" : `free_${Date.now()}`,
+    ...clinicFields,
   });
 
   // 2. Consultation record so it shows in the new dashboards.

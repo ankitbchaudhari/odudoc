@@ -10,6 +10,7 @@ import { pickDoctorPhoto } from "@/lib/doctor-photos";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ConsultGateModal from "@/components/ConsultGateModal";
 import DoctorAiAssistant from "@/components/DoctorAiAssistant";
+import ClinicLocations from "@/components/ClinicLocations";
 
 export default function DoctorProfilePage() {
   const params = useParams();
@@ -19,6 +20,11 @@ export default function DoctorProfilePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [videoLoading, setVideoLoading] = useState(false);
   const [consultGateOpen, setConsultGateOpen] = useState(false);
+  // When a patient clicks "Book online" on a clinic card, ClinicLocations
+  // fires the callback below, which opens BookingModal with this clinic
+  // tagged. The booking POST then lands as an in-person clinic visit.
+  const [bookClinicId, setBookClinicId] = useState<string | null>(null);
+  const [bookClinicName, setBookClinicName] = useState<string | null>(null);
 
   // Refresh from the admin-managed API so edits show up live.
   useEffect(() => {
@@ -259,6 +265,15 @@ export default function DoctorProfilePage() {
 
             <DoctorAiAssistant doctorId={doctor.id} />
 
+            <ClinicLocations
+              doctorId={doctor.id}
+              onBookOnline={(cid, cname) => {
+                setBookClinicId(cid);
+                setBookClinicName(cname);
+                setModalOpen(true);
+              }}
+            />
+
             <div className="rounded-2xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800 shadow-sm hover:shadow-md transition p-6">
               <h2 className="mb-3 text-lg font-bold text-gray-900 dark:text-slate-100">Clinic Location</h2>
               <p className="text-sm text-gray-600 dark:text-slate-300">{doctor.location}</p>
@@ -285,7 +300,20 @@ export default function DoctorProfilePage() {
         </div>
       </div>
 
-      <BookingModal doctor={doctor} open={modalOpen} onClose={() => setModalOpen(false)} />
+      <BookingModal
+        doctor={doctor}
+        open={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          // Clear clinic tag so a subsequent "Book Appointment" click
+          // (without a clinic) doesn't accidentally inherit the prior
+          // clinic context.
+          setBookClinicId(null);
+          setBookClinicName(null);
+        }}
+        clinicId={bookClinicId || undefined}
+        clinicName={bookClinicName || undefined}
+      />
 
       <ConsultGateModal
         open={consultGateOpen}

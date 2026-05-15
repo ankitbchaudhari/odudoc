@@ -86,13 +86,34 @@ export function notifyAppointmentBooked(details: {
   date: string;
   time: string;
   type: 'video' | 'in-person';
+  // Clinic visit extras — surfaced in SMS / email / WhatsApp so the
+  // patient knows where to go and can pull up their QR code from the
+  // short URL when they arrive.
+  bookingId?: string;
+  clinicName?: string;
+  clinicAddress?: string;
+  paymentMode?: 'online' | 'clinic';
 }) {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://odudoc.com';
+  const bookingUrl = details.bookingId ? `${baseUrl}/b/${details.bookingId}` : '';
+  const locationLine = details.clinicName
+    ? `\nClinic: ${details.clinicName}${details.clinicAddress ? ` — ${details.clinicAddress}` : ''}`
+    : '';
+  const payLine = details.paymentMode === 'clinic'
+    ? '\nPayment: Pay at clinic (cash / UPI).'
+    : details.paymentMode === 'online'
+    ? '\nPayment: Paid online ✓'
+    : '';
+  const linkLine = bookingUrl
+    ? `\n\nShow this QR / booking ID at reception: ${bookingUrl}`
+    : '';
+
   // Notify patient
   sendNotification({
     to: details.patientEmail,
     type: 'email',
     subject: 'Appointment Confirmed - OduDoc',
-    message: `Dear ${details.patientName}, your ${details.type} appointment with ${details.doctorName} is confirmed for ${details.date} at ${details.time}. ${details.type === 'video' ? 'A video link will be sent before your appointment.' : 'Please arrive 15 minutes early.'} - OduDoc Team`,
+    message: `Dear ${details.patientName}, your ${details.type} appointment with ${details.doctorName} is confirmed for ${details.date} at ${details.time}.${locationLine}${payLine}${details.type === 'video' ? '\nA video link will be sent before your appointment.' : details.clinicName ? '\nPlease arrive 15 minutes early.' : ''}${linkLine}\n\n— OduDoc Team`,
   });
 
   if (details.patientPhone) {
@@ -153,7 +174,7 @@ export function notifyAppointmentBooked(details: {
     sendNotification({
       to: details.patientPhone,
       type: 'sms',
-      message: `OduDoc: Appointment confirmed with ${details.doctorName} on ${details.date} at ${details.time}.`,
+      message: `OduDoc: Appointment confirmed with ${details.doctorName} on ${details.date} at ${details.time}.${details.clinicName ? ` Clinic: ${details.clinicName}.` : ''}${bookingUrl ? ` Details + QR: ${bookingUrl}` : ''}`,
     });
   }
 

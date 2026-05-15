@@ -61,6 +61,29 @@ export async function GET(req: NextRequest) {
     } catch (err) {
       log.error("auth.verify.auto_subscribe_failed", err, { email: user.email });
     }
+
+    // Patient-claim: scan for any prior in-person clinic bookings + EMR
+    // entries that match this user's phone number (recorded by reception
+    // before the patient had an OduDoc account) and attach the new user
+    // id. After this runs the patient's dashboard surfaces those past
+    // visits + clinic-saved prescriptions automatically.
+    if (user.phone) {
+      try {
+        const { claimBookingsForUser } = await import("@/lib/bookings-store");
+        const { claimEmrForUser } = await import("@/lib/clinic-emr-store");
+        const claimedBookings = claimBookingsForUser(user.id, user.phone);
+        const claimedEmr = claimEmrForUser(user.id, user.phone);
+        if (claimedBookings || claimedEmr) {
+          log.info("auth.verify.patient_claim", {
+            userId: user.id,
+            claimedBookings,
+            claimedEmr,
+          });
+        }
+      } catch (err) {
+        log.error("auth.verify.patient_claim_failed", err, { userId: user.id });
+      }
+    }
   }
 
   const purpose = result.purpose;

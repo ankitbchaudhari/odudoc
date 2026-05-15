@@ -17,6 +17,12 @@ interface PaymentFormProps {
   patientName: string;
   patientPhone: string;
   doctorId: string;
+  // Optional clinic-visit context. When set, the booking POST tags this
+  // appointment as an in-person clinic visit and routes to that clinic's
+  // reception. Used by the "Book online + at clinic" flow.
+  clinicId?: string;
+  patientEmail?: string;
+  date?: string;
   onSuccess: (paymentIntentId: string, bookingId: string) => void;
   onError: (message: string) => void;
 }
@@ -29,6 +35,9 @@ function CheckoutForm({
   patientName,
   patientPhone,
   doctorId,
+  clinicId,
+  patientEmail,
+  date,
   onSuccess,
   onError,
 }: PaymentFormProps) {
@@ -81,6 +90,11 @@ function CheckoutForm({
             fee,
             paymentStatus: "paid",
             paymentIntentId: paymentIntent.id,
+            // Clinic-visit context (optional). When set the booking is
+            // tagged as in-person and routed to the clinic's reception.
+            ...(clinicId ? { clinicId, paymentMode: "online", appointmentType: "in-person" } : {}),
+            ...(patientEmail ? { patientEmail } : {}),
+            ...(date ? { date } : {}),
           }),
         });
 

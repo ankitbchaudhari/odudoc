@@ -31,6 +31,10 @@ const BookingSchema = z.object({
   date: z.string().trim().max(64).optional(),
   doctorEmail: z.string().trim().email().max(200).optional(),
   doctorPhone: z.string().trim().max(32).optional(),
+  // Clinic visit fields. When clinicId is set we treat this as an
+  // in-person appointment routed to that clinic's reception.
+  clinicId: z.string().regex(/^CL-\d+$/).optional(),
+  paymentMode: z.enum(['online', 'clinic']).optional(),
 });
 
 export async function GET() {
@@ -67,6 +71,32 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: slotErr }, { status: 400 });
   }
 
+  // Clinic lookup — if a clinicId is supplied verify it belongs to the
+  // requested doctor (prevents tampering) and denormalize the address +
+  // name into the booking row so the confirmation page and notifications
+  // can render without an extra DB hit.
+  let clinicFields: {
+    clinicId?: string;
+    clinicName?: string;
+    clinicAddress?: string;
+    paymentMode?: 'online' | 'clinic';
+  } = {};
+  if (body.clinicId) {
+    const { clinicBelongsToDoctor, getClinicById } = await import('@/lib/clinics-store');
+    if (!clinicBelongsToDoctor(body.clinicId, body.doctorId)) {
+      return NextResponse.json({ error: 'Invalid clinic for this doctor' }, { status: 400 });
+    }
+    const c = getClinicById(body.clinicId)!;
+    clinicFields = {
+      clinicId: c.id,
+      clinicName: c.name,
+      clinicAddress: [c.addressLine1, c.addressLine2, c.city, c.state, c.postalCode].filter(Boolean).join(', '),
+      paymentMode: body.paymentMode || 'clinic',
+    };
+  } else if (body.paymentMode) {
+    clinicFields = { paymentMode: body.paymentMode };
+  }
+
   try {
     const booking = createBooking({
       doctorId: body.doctorId,
@@ -75,8 +105,13 @@ export async function POST(request: NextRequest) {
       patientPhone: body.patientPhone,
       timeSlot: body.timeSlot,
       fee: body.fee,
-      paymentStatus: body.paymentStatus || 'paid',
+      // pay-at-clinic bookings stay 'pending' until reception collects.
+      paymentStatus: body.paymentStatus || (clinicFields.paymentMode === 'clinic' ? 'pending' : 'paid'),
       paymentIntentId: body.paymentIntentId || '',
+      patientEmail: body.patientEmail,
+      date: body.date,
+      appointmentType: clinicFields.clinicId ? 'in-person' : (body.appointmentType || 'in-person'),
+      ...clinicFields,
     });
 
     const doctorEmail =
@@ -94,7 +129,11 @@ export async function POST(request: NextRequest) {
       doctorPhone: body.doctorPhone,
       date: appointmentDate,
       time: body.timeSlot,
-      type: appointmentType,
+      type: clinicFields.clinicId ? 'in-person' : appointmentType,
+      bookingId: booking.id,
+      clinicName: clinicFields.clinicName,
+      clinicAddress: clinicFields.clinicAddress,
+      paymentMode: clinicFields.paymentMode,
     });
 
     // Best-effort WhatsApp alert to the assigned doctor. Looks up

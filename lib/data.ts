@@ -89,19 +89,76 @@ export interface Review {
 
 export const doctors: Doctor[] = [];
 
+// Patient-facing specialty grid used as a fallback when the
+// admin-managed list (lib/departments-store.ts + /api/public/departments)
+// is unavailable. Admin can add / remove / reorder via /admin/departments
+// — that's the canonical list at runtime. This array is a known-good
+// baseline so the UI never renders blank.
 export const specialties: Specialty[] = [
-  { id: "general-physician", name: "General Physician", icon: "🩺", doctorCount: 1200, description: "For common health issues" },
-  { id: "dentist", name: "Dentist", icon: "🦷", doctorCount: 890, description: "For teeth and gum care" },
-  { id: "gynecologist", name: "Gynecologist", icon: "👩‍⚕️", doctorCount: 650, description: "For women's health" },
-  { id: "dermatologist", name: "Dermatologist", icon: "✨", doctorCount: 780, description: "For skin and hair" },
-  { id: "pediatrician", name: "Pediatrician", icon: "👶", doctorCount: 540, description: "For child health" },
-  { id: "orthopedist", name: "Orthopedist", icon: "🦴", doctorCount: 430, description: "For bones and joints" },
-  { id: "cardiologist", name: "Cardiologist", icon: "❤️", doctorCount: 320, description: "For heart health" },
-  { id: "psychiatrist", name: "Psychiatrist", icon: "🧠", doctorCount: 280, description: "For mental health" },
-  { id: "ent-specialist", name: "ENT Specialist", icon: "👂", doctorCount: 350, description: "For ear, nose, throat" },
-  { id: "ophthalmologist", name: "Ophthalmologist", icon: "👁️", doctorCount: 290, description: "For eye care" },
-  { id: "neurologist", name: "Neurologist", icon: "⚡", doctorCount: 210, description: "For brain & nerves" },
-  { id: "urologist", name: "Urologist", icon: "💧", doctorCount: 180, description: "For urinary system" },
+  // ── Primary care ─────────────────────────────────────────────────
+  { id: "general-physician", name: "General Physician", icon: "🩺", doctorCount: 1200, description: "Common health issues, prescriptions" },
+  { id: "family-medicine", name: "Family Medicine", icon: "👨‍👩‍👧", doctorCount: 480, description: "Whole-family primary care" },
+  { id: "pediatrician", name: "Pediatrician", icon: "👶", doctorCount: 540, description: "Child & adolescent health" },
+  { id: "geriatrician", name: "Geriatrician", icon: "🧓", doctorCount: 120, description: "Senior citizen care" },
+  // ── Internal medicine ───────────────────────────────────────────
+  { id: "cardiologist", name: "Cardiologist", icon: "❤️", doctorCount: 320, description: "Heart & cardiovascular" },
+  { id: "pulmonologist", name: "Pulmonologist", icon: "🫁", doctorCount: 180, description: "Lungs & respiratory" },
+  { id: "gastroenterologist", name: "Gastroenterologist", icon: "🩻", doctorCount: 220, description: "Stomach, liver, intestine" },
+  { id: "nephrologist", name: "Nephrologist", icon: "🫘", doctorCount: 95, description: "Kidneys & dialysis" },
+  { id: "endocrinologist", name: "Endocrinologist", icon: "🧬", doctorCount: 160, description: "Diabetes, thyroid, hormones" },
+  { id: "diabetologist", name: "Diabetologist", icon: "🩸", doctorCount: 200, description: "Diabetes specialist" },
+  { id: "rheumatologist", name: "Rheumatologist", icon: "🦴", doctorCount: 75, description: "Joints & autoimmune" },
+  { id: "hematologist", name: "Hematologist", icon: "🩸", doctorCount: 90, description: "Blood disorders" },
+  { id: "oncologist", name: "Oncologist", icon: "🎗️", doctorCount: 140, description: "Cancer care" },
+  { id: "infectious-disease", name: "Infectious Disease", icon: "🦠", doctorCount: 110, description: "Infections & tropical" },
+  // ── Surgical ────────────────────────────────────────────────────
+  { id: "general-surgeon", name: "General Surgeon", icon: "🔪", doctorCount: 260, description: "All surgical procedures" },
+  { id: "orthopedist", name: "Orthopedist", icon: "🦴", doctorCount: 430, description: "Bones & joints" },
+  { id: "neurosurgeon", name: "Neurosurgeon", icon: "🧠", doctorCount: 60, description: "Brain & spine surgery" },
+  { id: "plastic-surgeon", name: "Plastic Surgeon", icon: "💉", doctorCount: 95, description: "Cosmetic & reconstructive" },
+  { id: "cardiothoracic", name: "Cardiothoracic Surgeon", icon: "🫀", doctorCount: 40, description: "Heart & chest surgery" },
+  // ── Women's & reproductive ─────────────────────────────────────
+  { id: "gynecologist", name: "Gynecologist", icon: "👩‍⚕️", doctorCount: 650, description: "Women's health" },
+  { id: "obstetrician", name: "Obstetrician", icon: "🤰", doctorCount: 380, description: "Pregnancy & childbirth" },
+  { id: "fertility", name: "Fertility Specialist", icon: "🧪", doctorCount: 85, description: "IVF & reproductive care" },
+  { id: "andrologist", name: "Andrologist", icon: "👨‍⚕️", doctorCount: 55, description: "Male reproductive" },
+  { id: "sexologist", name: "Sexologist", icon: "❤️‍🩹", doctorCount: 70, description: "Sexual health" },
+  // ── Mental health ──────────────────────────────────────────────
+  { id: "psychiatrist", name: "Psychiatrist", icon: "🧠", doctorCount: 280, description: "Mental health, medication" },
+  { id: "psychologist", name: "Psychologist", icon: "💭", doctorCount: 320, description: "Talk therapy & counseling" },
+  // ── Skin / sensory / ENT ───────────────────────────────────────
+  { id: "dermatologist", name: "Dermatologist", icon: "✨", doctorCount: 780, description: "Skin, hair, nails" },
+  { id: "cosmetologist", name: "Cosmetologist", icon: "💄", doctorCount: 240, description: "Aesthetic medicine" },
+  { id: "ophthalmologist", name: "Ophthalmologist", icon: "👁️", doctorCount: 290, description: "Eye care & vision" },
+  { id: "ent-specialist", name: "ENT Specialist", icon: "👂", doctorCount: 350, description: "Ear, nose, throat" },
+  { id: "audiologist", name: "Audiologist", icon: "🎧", doctorCount: 80, description: "Hearing & balance" },
+  // ── Neurology ──────────────────────────────────────────────────
+  { id: "neurologist", name: "Neurologist", icon: "⚡", doctorCount: 210, description: "Brain & nerves" },
+  // ── Urology ────────────────────────────────────────────────────
+  { id: "urologist", name: "Urologist", icon: "💧", doctorCount: 180, description: "Urinary system" },
+  // ── Dental ─────────────────────────────────────────────────────
+  { id: "dentist", name: "Dentist", icon: "🦷", doctorCount: 890, description: "Teeth & gum care" },
+  { id: "orthodontist", name: "Orthodontist", icon: "😬", doctorCount: 210, description: "Braces & alignment" },
+  { id: "oral-surgeon", name: "Oral Surgeon", icon: "🩼", doctorCount: 130, description: "Tooth extraction & implants" },
+  // ── Therapy & rehab ────────────────────────────────────────────
+  { id: "physiotherapist", name: "Physiotherapist", icon: "🏃", doctorCount: 410, description: "Physical rehabilitation" },
+  { id: "occupational-therapist", name: "Occupational Therapist", icon: "🧩", doctorCount: 150, description: "Daily-living rehab" },
+  { id: "speech-therapist", name: "Speech Therapist", icon: "🗣️", doctorCount: 120, description: "Speech & swallowing" },
+  // ── Diet / lifestyle ───────────────────────────────────────────
+  { id: "nutritionist", name: "Nutritionist / Dietitian", icon: "🥗", doctorCount: 260, description: "Diet & nutrition" },
+  // ── Specialised care ───────────────────────────────────────────
+  { id: "pain-management", name: "Pain Management", icon: "🩹", doctorCount: 90, description: "Chronic pain specialist" },
+  { id: "sleep-specialist", name: "Sleep Specialist", icon: "😴", doctorCount: 60, description: "Sleep disorders" },
+  { id: "allergist", name: "Allergist / Immunologist", icon: "🤧", doctorCount: 75, description: "Allergies & immunity" },
+  { id: "sports-medicine", name: "Sports Medicine", icon: "⚽", doctorCount: 110, description: "Athletic injuries" },
+  { id: "palliative-care", name: "Palliative Care", icon: "🕊️", doctorCount: 50, description: "Comfort & end-of-life" },
+  // ── Diagnostic ─────────────────────────────────────────────────
+  { id: "radiologist", name: "Radiologist", icon: "🩻", doctorCount: 180, description: "Imaging & diagnostics" },
+  { id: "pathologist", name: "Pathologist", icon: "🔬", doctorCount: 150, description: "Lab diagnostics" },
+  // ── AYUSH (India) ──────────────────────────────────────────────
+  { id: "ayurveda", name: "Ayurveda", icon: "🌿", doctorCount: 320, description: "Traditional Indian medicine" },
+  { id: "homeopath", name: "Homeopath", icon: "💊", doctorCount: 280, description: "Homeopathic treatment" },
+  { id: "yoga", name: "Yoga Therapist", icon: "🧘", doctorCount: 180, description: "Therapeutic yoga" },
 ];
 
 export const healthConcerns: HealthConcern[] = [

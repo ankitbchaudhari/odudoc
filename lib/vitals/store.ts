@@ -40,12 +40,16 @@ export interface VitalReading {
 }
 
 const readings: VitalReading[] = [];
-const { hydrate, flush, tombstone } = bindPersistentArray<VitalReading>(
+const { hydrate, flush, tombstone, reload } = bindPersistentArray<VitalReading>(
   "vitals",
   readings,
   () => []
 );
 await hydrate();
+
+export async function reloadVitals(): Promise<void> {
+  await reload();
+}
 
 export const VITAL_LABEL: Record<VitalKind, string> = {
   bp: "Blood pressure",

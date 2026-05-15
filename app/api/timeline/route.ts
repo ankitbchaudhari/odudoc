@@ -17,7 +17,7 @@ import { listPrescriptions, reloadPrescriptions } from "@/lib/prescriptions-stor
 import { listOrdersForPatient, reloadLabOrders } from "@/lib/lab-marketplace/order-store";
 import { listTransactionsForUser } from "@/lib/wallet/store";
 import { listForUser } from "@/lib/notifications/store";
-import { listReadings, classify, VITAL_LABEL } from "@/lib/vitals/store";
+import { listReadings, classify, VITAL_LABEL, reloadVitals } from "@/lib/vitals/store";
 import { listOrdersForPatient as listRxOrdersForPatient, reloadFulfillmentOrders } from "@/lib/rx-fulfillment/order-store";
 import { listSymptoms } from "@/lib/symptoms/store";
 
@@ -187,6 +187,7 @@ export async function GET() {
   // Vital sign readings — userId-keyed.
   if (userId) {
     try {
+      await reloadVitals();
       const vitals = listReadings(userId, { limit: 50 });
       for (const v of vitals) {
         const sev = classify(v);

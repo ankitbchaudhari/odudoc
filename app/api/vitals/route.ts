@@ -10,7 +10,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import {
   addReading, deleteReading, listReadings, latestPerKind,
-  classify, VitalKind, VitalReading,
+  classify, VitalKind, VitalReading, reloadVitals,
 } from "@/lib/vitals/store";
 import { wearableVitalsFor, isWearableVitalId } from "@/lib/vitals/wearable-merge";
 import { maybeAlertOnReading } from "@/lib/vitals/alerts";
@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
   const wantKind = kind && VALID_KINDS.includes(kind) ? kind : undefined;
 
   // Manual self-reported readings.
+  await reloadVitals();
   const manual = listReadings(userId, { kind: wantKind, limit: 200 });
 
   // Wearable-sourced readings projected into the VitalReading shape.

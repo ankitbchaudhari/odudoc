@@ -13,7 +13,7 @@ import {
   createPlan, deletePlan, evaluateTarget, getPlan, listPlans, updatePlan,
   Condition, defaultTargets, CONDITION_LABEL,
 } from "@/lib/care-plan/store";
-import { listReadings } from "@/lib/vitals/store";
+import { listReadings, reloadVitals } from "@/lib/vitals/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
 export const runtime = "nodejs";
@@ -37,6 +37,7 @@ export async function GET() {
   // Drop respiration readings up front so the cast lands cleanly.
   const TARGET_KINDS = new Set(["bp", "weight", "glucose", "heart_rate", "spo2", "temperature"] as const);
   type TargetKind = "bp" | "weight" | "glucose" | "heart_rate" | "spo2" | "temperature";
+  await reloadVitals();
   const readings = listReadings(userId)
     .filter((r) => new Date(r.takenAt) >= since)
     .filter((r): r is typeof r & { kind: TargetKind } => TARGET_KINDS.has(r.kind as TargetKind))

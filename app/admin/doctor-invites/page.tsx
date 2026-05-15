@@ -37,10 +37,15 @@ interface SendResult {
   email: string;
   ok: boolean;
   error?: string;
-  /** Set on WhatsApp-only and dual-channel invites. true ⇒ sent.dm
-   *  template was dispatched automatically. false / undefined ⇒
-   *  admin needs to use the manual wa.me button on the history row. */
+  /** true ⇒ either the Marketing template OR the freeform Cloud API
+   *  send went through. false / undefined ⇒ admin needs to use the
+   *  manual wa.me button on the history row. */
   waAutoSent?: boolean;
+  /** Which automatic channel actually carried the message.
+   *    "template" ⇒ Marketing template via sent.dm (richest UI)
+   *    "freeform" ⇒ freeform text via Meta Cloud API (24h window)
+   *    "none"     ⇒ both failed; fall back to wa.me */
+  waChannel?: "template" | "freeform" | "none";
   waError?: string;
   phone?: string;
   channel?: "whatsapp" | "email";
@@ -293,9 +298,14 @@ export default function DoctorInvitesPage() {
                           sent.dm result so the admin knows whether the
                           doctor actually got the message or needs the
                           manual wa.me follow-up. */}
-                      {r.ok && r.phone && r.waAutoSent && (
-                        <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800" title="sent.dm accepted the call. Marketing-category delivery depends on Meta business verification + recipient opt-in. Use the wa.me button on the row to send from your personal WhatsApp if the doctor doesn't receive it within a minute.">
-                          📨 WhatsApp dispatched — delivery pending Meta confirmation
+                      {r.ok && r.phone && r.waAutoSent && r.waChannel === "template" && (
+                        <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800" title="Marketing template delivered via sent.dm. Recipient sees the OduDoc-branded template card.">
+                          ✓ Marketing template delivered
+                        </span>
+                      )}
+                      {r.ok && r.phone && r.waAutoSent && r.waChannel === "freeform" && (
+                        <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-semibold text-sky-800" title="Marketing template was rejected by Meta (recipient not marketing-opted-in). Freeform text sent via Meta Cloud API inside the open 24h window instead. Free.">
+                          ✓ Freeform message delivered (24h window)
                         </span>
                       )}
                       {r.ok && r.phone && r.waAutoSent === false && (

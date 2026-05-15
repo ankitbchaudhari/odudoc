@@ -21,6 +21,7 @@ import {
 } from "@/lib/doctor-invites-store";
 import { sendDoctorInvitationEmail } from "@/lib/email";
 import { sendDoctorInviteViaSentDm } from "@/lib/sent-dm";
+import { sendFreeformWhatsApp } from "@/lib/whatsapp-cloud";
 import { markInviteWhatsappSent } from "@/lib/doctor-invites-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
@@ -140,27 +141,70 @@ export async function POST(req: NextRequest) {
         sentBy: adminEmail || "admin",
         note: body.note,
       });
-      // Auto-fire the approved WhatsApp template when configured.
-      // Falls back silently to the wa.me click-to-chat path in the
-      // history row when no template is set up — admin can still
-      // send manually from the row.
+      // Two-step auto-send chain:
+      //   1. Marketing template via sent.dm — works for opted-in
+      //      contacts, lands the template UI with a "Apply now" button.
+      //   2. If Marketing fails (unverified recipient / no marketing
+      //      opt-in), try a FREEFORM message via Meta Cloud API.
+      //      This lands when the recipient has messaged us in the
+      //      last 24h ("Hi" → 24h customer-service window). Free.
+      //   3. If both fail, response surfaces the reason so the UI
+      //      points the admin at the wa.me manual fallback.
       let waAutoSent = false;
+      let waChannel: "template" | "freeform" | "none" = "none";
       let waError: string | undefined;
+
+      const doctorName = body.name || "there";
+      const inviteUrl = "https://www.odudoc.com/for-doctors/register?via=invite";
+      const freeformBody =
+        `🩺 Hi ${doctorName.replace(/^Dr\.?\s+/i, "Dr. ")}, OduDoc is inviting you to join our verified doctors panel — earn from online consultations, set your own hours, and reach patients across India.\n\n` +
+        `Apply in under 2 minutes:\n${inviteUrl}\n\n` +
+        `Reply to this chat with any questions.\n\n— Team OduDoc`;
+
+      // Step 1 — Marketing template.
       try {
-        const r = await sendDoctorInviteViaSentDm(phoneE164, {
-          doctorName: body.name || "there",
-        });
+        const r = await sendDoctorInviteViaSentDm(phoneE164, { doctorName });
         if (r.ok) {
           waAutoSent = true;
+          waChannel = "template";
           try { await markInviteWhatsappSent(invite.id); } catch { /* best-effort */ }
         } else {
           waError = r.error;
-          log.warn("admin.doctor_invite.wa_auto_send_failed", { error: r.error || "unknown" });
+          log.warn("admin.doctor_invite.wa_template_failed_trying_freeform", {
+            error: r.error || "unknown",
+          });
         }
       } catch (err) {
         waError = err instanceof Error ? err.message : "send threw";
-        log.warn("admin.doctor_invite.wa_auto_send_threw", { error: waError });
+        log.warn("admin.doctor_invite.wa_template_threw", { error: waError });
       }
+
+      // Step 2 — Freeform inside the 24h customer-service window via
+      // Meta Cloud API. Skipped when step 1 already succeeded.
+      if (!waAutoSent) {
+        try {
+          const r = await sendFreeformWhatsApp(phoneE164, freeformBody);
+          if (r.ok) {
+            waAutoSent = true;
+            waChannel = "freeform";
+            waError = undefined;
+            try { await markInviteWhatsappSent(invite.id); } catch { /* best-effort */ }
+            log.info("admin.doctor_invite.wa_freeform_sent", { messageId: r.messageId });
+          } else if (r.skipped) {
+            log.info("admin.doctor_invite.wa_freeform_skipped_unconfigured");
+          } else {
+            log.warn("admin.doctor_invite.wa_freeform_failed", { error: r.error || "unknown" });
+            if (r.error === "outside_24h_window" && !waError) {
+              waError = "Recipient must message OduDoc on WhatsApp first to open the 24h window. Use the WhatsApp button on the row to send the first message from your phone.";
+            }
+          }
+        } catch (err) {
+          log.warn("admin.doctor_invite.wa_freeform_threw", {
+            error: err instanceof Error ? err.message : "send threw",
+          });
+        }
+      }
+
       try { await awaitAllFlushesStrict(); } catch { /* best-effort */ }
       return NextResponse.json({
         ok: true,
@@ -173,6 +217,7 @@ export async function POST(req: NextRequest) {
           inviteId: invite.id,
           channel: "whatsapp",
           waAutoSent,
+          waChannel,
           waError,
         }],
       });
@@ -227,26 +272,48 @@ export async function POST(req: NextRequest) {
         note: body.note,
       });
       // Dual-channel: when a phone was attached to a single-recipient
-      // send, also fire the WhatsApp template (best-effort, doesn't
-      // block the email-side success).
+      // send, also fire the WhatsApp template + freeform fallback (
+      // best-effort, doesn't block the email-side success).
       if (phoneForRow) {
+        const normalizedPhone = phoneForRow.startsWith("+")
+          ? phoneForRow
+          : `+${phoneForRow.replace(/[^\d]/g, "")}`;
+        const doctorName = body.name || "there";
+        let sent = false;
         try {
-          const normalizedPhone = phoneForRow.startsWith("+")
-            ? phoneForRow
-            : `+${phoneForRow.replace(/[^\d]/g, "")}`;
-          const r = await sendDoctorInviteViaSentDm(normalizedPhone, {
-            doctorName: body.name || "there",
-          });
+          const r = await sendDoctorInviteViaSentDm(normalizedPhone, { doctorName });
           if (r.ok) {
+            sent = true;
             try { await markInviteWhatsappSent(invite.id); } catch { /* best-effort */ }
           } else {
-            log.warn("admin.doctor_invite.wa_dual_send_failed", { error: r.error || "unknown", email });
+            log.warn("admin.doctor_invite.wa_dual_template_failed", { error: r.error || "unknown", email });
           }
         } catch (err) {
-          log.warn("admin.doctor_invite.wa_dual_send_threw", {
+          log.warn("admin.doctor_invite.wa_dual_template_threw", {
             error: err instanceof Error ? err.message : "send threw",
             email,
           });
+        }
+        // Freeform fallback via Meta Cloud API (24h window).
+        if (!sent) {
+          const inviteUrl = "https://www.odudoc.com/for-doctors/register?via=invite";
+          const freeformBody =
+            `🩺 Hi ${doctorName.replace(/^Dr\.?\s+/i, "Dr. ")}, OduDoc is inviting you to join our verified doctors panel — earn from online consultations, set your own hours, and reach patients across India.\n\n` +
+            `Apply in under 2 minutes:\n${inviteUrl}\n\n` +
+            `Reply to this chat with any questions.\n\n— Team OduDoc`;
+          try {
+            const r = await sendFreeformWhatsApp(normalizedPhone, freeformBody);
+            if (r.ok) {
+              try { await markInviteWhatsappSent(invite.id); } catch { /* best-effort */ }
+            } else if (!r.skipped) {
+              log.warn("admin.doctor_invite.wa_dual_freeform_failed", { error: r.error || "unknown", email });
+            }
+          } catch (err) {
+            log.warn("admin.doctor_invite.wa_dual_freeform_threw", {
+              error: err instanceof Error ? err.message : "send threw",
+              email,
+            });
+          }
         }
       }
       results.push({ email, ok: true, inviteId: invite.id });

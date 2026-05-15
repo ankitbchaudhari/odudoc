@@ -223,7 +223,7 @@ export default function ReferralsPage() {
         </div>
 
         {/* Hero card */}
-        <div className="mb-6 overflow-hidden rounded-3xl border border-white/60 bg-white/85 p-7 shadow-xl shadow-indigo-500/5 backdrop-blur-xl sm:p-8">
+        <div className="mb-6 overflow-hidden rounded-3xl border border-white/60 dark:border-slate-800 bg-white/85 dark:bg-slate-900/85 p-7 shadow-xl shadow-indigo-500/5 backdrop-blur-xl sm:p-8">
           <div className="flex flex-wrap items-start gap-5">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-lg shadow-indigo-500/30">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
@@ -231,10 +231,10 @@ export default function ReferralsPage() {
               </svg>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-700">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
                 OduDoc · Referral program
               </p>
-              <h1 className="mt-1 bg-gradient-to-r from-slate-900 via-indigo-900 to-fuchsia-900 bg-clip-text text-2xl font-bold text-transparent sm:text-3xl">
+              <h1 className="mt-1 bg-gradient-to-r from-slate-900 via-indigo-900 to-fuchsia-900 dark:from-slate-100 dark:via-indigo-300 dark:to-fuchsia-300 bg-clip-text text-2xl font-bold text-transparent sm:text-3xl">
                 Share OduDoc, earn up to {doctorReward} per friend
               </h1>
               <p className="mt-2 max-w-xl text-sm text-slate-600 dark:text-slate-300">

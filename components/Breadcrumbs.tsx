@@ -16,14 +16,14 @@ export default function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
   return (
     <nav
       aria-label="Breadcrumb"
-      className="border-b border-gray-100 bg-gray-50/60"
+      className="border-b border-gray-100 bg-gray-50/60 dark:border-slate-800 dark:bg-slate-900/40"
     >
       <ol className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-2 gap-y-1 px-4 py-3 text-sm text-gray-500 dark:text-slate-400 sm:px-6 lg:px-8">
         {items.map((item, idx) => {
           const isLast = idx === items.length - 1;
           return (
             <li key={`${item.href}-${idx}`} className="flex items-center gap-2">
-              {idx > 0 && <span className="text-gray-300">/</span>}
+              {idx > 0 && <span className="text-gray-300 dark:text-slate-600">/</span>}
               {isLast ? (
                 <span className="font-medium text-gray-900 dark:text-slate-100" aria-current="page">
                   {item.name}

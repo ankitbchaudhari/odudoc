@@ -87,6 +87,42 @@
   }
 }
 
+/* Tailwind Forms plugin styles every <input>/<textarea>/<select> with
+   a white background by default. That looks awful on our dark-mode
+   gradient. Override globally so any form anywhere in the app picks
+   up dark-mode contrast without each page needing per-input dark:*
+   classes. Per-component overrides still win (longer selectors). */
+@layer components {
+  .dark input[type="text"]:not([class*="bg-"]),
+  .dark input[type="email"]:not([class*="bg-"]),
+  .dark input[type="tel"]:not([class*="bg-"]),
+  .dark input[type="number"]:not([class*="bg-"]),
+  .dark input[type="password"]:not([class*="bg-"]),
+  .dark input[type="search"]:not([class*="bg-"]),
+  .dark input[type="url"]:not([class*="bg-"]),
+  .dark input[type="date"]:not([class*="bg-"]),
+  .dark input:not([type]):not([class*="bg-"]),
+  .dark textarea:not([class*="bg-"]),
+  .dark select:not([class*="bg-"]) {
+    background-color: rgb(15 23 42);          /* slate-900 */
+    border-color: rgb(51 65 85);              /* slate-700 */
+    color: rgb(226 232 240);                  /* slate-200 */
+  }
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: rgb(100 116 139);                  /* slate-500 */
+  }
+  /* Tailwind Forms also paints .form-input directly — cover that too. */
+  .dark .form-input,
+  .dark .form-textarea,
+  .dark .form-select,
+  .dark .form-multiselect {
+    background-color: rgb(15 23 42);
+    border-color: rgb(51 65 85);
+    color: rgb(226 232 240);
+  }
+}
+
 /* Blog article content styles */
 .blog-content h2 {
   @apply mt-10 mb-4 text-2xl font-bold text-gray-900;

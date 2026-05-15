@@ -13,9 +13,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getClinicSession } from "@/lib/clinic-session";
 import { getClinicById } from "@/lib/clinics-store";
 import { getStaffById, listStaffByClinic } from "@/lib/clinic-staff-store";
-import { getBookings } from "@/lib/bookings-store";
-import { listInvoicesByClinic } from "@/lib/clinic-invoices-store";
-import { listEmrByClinic } from "@/lib/clinic-emr-store";
+import { getBookings, reloadBookings } from "@/lib/bookings-store";
+import { listInvoicesByClinic, reloadInvoices } from "@/lib/clinic-invoices-store";
+import { listEmrByClinic, reloadEmr } from "@/lib/clinic-emr-store";
 
 export const runtime = "nodejs";
 
@@ -38,6 +38,11 @@ export async function GET(req: NextRequest) {
   if (!staff) return NextResponse.json({ error: "staff_not_found" }, { status: 404 });
 
   const { startIso, endIso, todayYmd } = todayBounds();
+
+  // Refresh in-memory state from Postgres so the dashboard reflects
+  // bookings / invoices / EMR rows written by sibling Lambdas
+  // moments before this read.
+  await Promise.all([reloadBookings(), reloadInvoices(), reloadEmr()]);
 
   // Today's bookings for this clinic
   const allBookings = getBookings().filter((b) => b.clinicId === clinic.id);

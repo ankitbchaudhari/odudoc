@@ -11,8 +11,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { listEmrByPatientUserId } from "@/lib/clinic-emr-store";
-import { getBookings } from "@/lib/bookings-store";
+import { listEmrByPatientUserId, reloadEmr } from "@/lib/clinic-emr-store";
+import { getBookings, reloadBookings } from "@/lib/bookings-store";
 import { getClinicById } from "@/lib/clinics-store";
 
 export const runtime = "nodejs";
@@ -25,6 +25,11 @@ export async function GET() {
     return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
   }
   const userId = user.id;
+
+  // Pull fresh state from Postgres before listing — the patient's
+  // visit may have been written by a reception Lambda whose in-
+  // memory data hasn't propagated to the read Lambda yet.
+  await Promise.all([reloadBookings(), reloadEmr()]);
 
   // EMR entries (full visit notes from reception)
   const emr = listEmrByPatientUserId(userId).map((e) => {

@@ -45,12 +45,21 @@ export interface Booking {
 
 
 const bookings: Booking[] = [];
-const { hydrate, flush, tombstone } = bindPersistentArray<Booking>(
+const persistence = bindPersistentArray<Booking>(
   "bookings",
   bookings,
   () => []
 );
+const { hydrate, flush, tombstone, reload } = persistence;
 await hydrate();
+
+/** Force a re-pull from Postgres. Needed on cross-Lambda paths like
+ *  patient signup verification → claim — without this the verify
+ *  Lambda may have a stale snapshot and the claim silently misses
+ *  bookings created by the reception Lambda. */
+export async function reloadBookings(): Promise<void> {
+  await reload();
+}
 
 // One-time cleanup: drop the original demo bookings (BK-1001/1002/1003)
 // that shipped with the initial seed so production doesn't carry fake

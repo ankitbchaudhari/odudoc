@@ -69,8 +69,13 @@ export async function GET(req: NextRequest) {
     // visits + clinic-saved prescriptions automatically.
     if (user.phone) {
       try {
-        const { claimBookingsForUser } = await import("@/lib/bookings-store");
-        const { claimEmrForUser } = await import("@/lib/clinic-emr-store");
+        const { claimBookingsForUser, reloadBookings } = await import("@/lib/bookings-store");
+        const { claimEmrForUser, reloadEmr } = await import("@/lib/clinic-emr-store");
+        // Cross-Lambda staleness: claim runs against in-memory arrays
+        // that may be a few minutes behind Postgres on whichever
+        // Lambda picks up the verification click. Force a reload so
+        // pre-account clinic visits actually get linked.
+        await Promise.all([reloadBookings(), reloadEmr()]);
         const claimedBookings = claimBookingsForUser(user.id, user.phone);
         const claimedEmr = claimEmrForUser(user.id, user.phone);
         if (claimedBookings || claimedEmr) {

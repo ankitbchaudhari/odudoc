@@ -165,8 +165,9 @@ export async function POST(request: NextRequest) {
     // + EMR entries. Best-effort, never blocks sign-in.
     if (user.phone) {
       try {
-        const { claimBookingsForUser } = await import("@/lib/bookings-store");
-        const { claimEmrForUser } = await import("@/lib/clinic-emr-store");
+        const { claimBookingsForUser, reloadBookings } = await import("@/lib/bookings-store");
+        const { claimEmrForUser, reloadEmr } = await import("@/lib/clinic-emr-store");
+        await Promise.all([reloadBookings(), reloadEmr()]);
         const cb = claimBookingsForUser(user.id, user.phone);
         const ce = claimEmrForUser(user.id, user.phone);
         if (cb || ce) log.info("mobile-google.patient_claim", { userId: user.id, bookings: cb, emr: ce });

@@ -53,12 +53,20 @@ export interface ClinicEmrEntry {
 }
 
 const entries: ClinicEmrEntry[] = [];
-const { hydrate, flush } = bindPersistentArray<ClinicEmrEntry>(
+const { hydrate, flush, reload } = bindPersistentArray<ClinicEmrEntry>(
   "clinic_emr",
   entries,
   () => []
 );
 await hydrate();
+
+/** Force a re-pull from Postgres. Needed on cross-Lambda paths like
+ *  patient signup verification → claim and /dashboard/visits — the
+ *  Lambda serving the read may have an older snapshot than the one
+ *  that wrote the EMR row at reception. */
+export async function reloadEmr(): Promise<void> {
+  await reload();
+}
 
 let nextId = entries.reduce((max, e) => {
   const m = /^EMR-(\d+)$/.exec(e.id);

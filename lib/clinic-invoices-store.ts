@@ -67,12 +67,19 @@ export interface ClinicInvoice {
 }
 
 const invoices: ClinicInvoice[] = [];
-const { hydrate, flush } = bindPersistentArray<ClinicInvoice>(
+const { hydrate, flush, reload } = bindPersistentArray<ClinicInvoice>(
   "clinic_invoices",
   invoices,
   () => [],
 );
 await hydrate();
+
+/** Force a re-pull from Postgres. Same cross-Lambda staleness pattern
+ *  as the bookings and EMR stores — needed on the staff dashboard +
+ *  doctor statements pages so reads see the latest invoices. */
+export async function reloadInvoices(): Promise<void> {
+  await reload();
+}
 
 let nextId = invoices.reduce((max, i) => {
   const m = /^INV-(\d+)$/.exec(i.id);

@@ -7,13 +7,17 @@
 // DoctorListRow fetching its own clinic list.
 
 import { NextResponse } from "next/server";
-import { listClinicsByDoctor } from "@/lib/clinics-store";
+import { listClinicsByDoctor, reloadClinics } from "@/lib/clinics-store";
 import { listDoctors } from "@/lib/doctors-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  // Cross-Lambda freshness — a doctor's newly-registered clinic
+  // would otherwise stay invisible on /doctors for visitors served
+  // by a different Lambda than the one that wrote the clinic row.
+  await reloadClinics();
   const doctors = listDoctors({});
   const doctorIds: string[] = [];
   for (const d of doctors) {

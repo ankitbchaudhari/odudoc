@@ -11,6 +11,7 @@ import { findDoctorByEmail } from "@/lib/doctors-store";
 import {
   listInvoicesInRange,
   statementTotals,
+  reloadInvoices,
 } from "@/lib/clinic-invoices-store";
 
 export const runtime = "nodejs";
@@ -33,6 +34,8 @@ export async function GET(req: NextRequest) {
 
   const { startIso, endIso, label } = resolveRange({ period, year, month, quarter });
 
+  // Cross-Lambda freshness — see reloadInvoices() docstring.
+  await reloadInvoices();
   const rows = listInvoicesInRange({ doctorId: doctor.id, startIso, endIso });
   const totals = statementTotals(rows);
 

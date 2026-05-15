@@ -66,12 +66,19 @@ export interface Clinic {
 }
 
 const clinics: Clinic[] = [];
-const { hydrate, flush } = bindPersistentArray<Clinic>(
+const { hydrate, flush, reload } = bindPersistentArray<Clinic>(
   "clinics",
   clinics,
   () => []
 );
 await hydrate();
+
+/** Force a re-pull from Postgres. Needed on cross-Lambda paths like
+ *  the patient-facing /doctors list (the doctor may have registered
+ *  a clinic on a different Lambda than the one serving the visitor). */
+export async function reloadClinics(): Promise<void> {
+  await reload();
+}
 
 let nextId = clinics.reduce((max, c) => {
   const m = /^CL-(\d+)$/.exec(c.id);

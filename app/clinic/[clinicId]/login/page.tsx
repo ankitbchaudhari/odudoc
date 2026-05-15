@@ -1,6 +1,6 @@
 "use client";
 
-// Clinic staff login. URL: /c/CL-1001/login
+// Clinic staff login. URL: /clinic/CL-1001/login
 // Receptionists / assistants / managers sign in here with credentials
 // the owning doctor created. Successful login sets the clinic-session
 // cookie and redirects to /c/CL-1001/reception.
@@ -33,7 +33,7 @@ export default function ClinicLoginPage() {
         setErr(d.error || "Login failed");
         return;
       }
-      router.push(`/c/${clinicId}/reception`);
+      router.push(`/clinic/${clinicId}/reception`);
     } finally {
       setBusy(false);
     }

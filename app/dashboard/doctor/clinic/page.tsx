@@ -3,7 +3,7 @@
 // Doctor → My Clinics. Lists every clinic the doctor has registered,
 // lets them add a new one, edit existing ones, manage staff accounts,
 // and toggle payment options. Each clinic gets its own staff login at
-// /c/<clinicId>/login.
+// /clinic/<clinicId>/login.
 
 import { useEffect, useState } from "react";
 
@@ -133,7 +133,7 @@ function ClinicCard({ clinic, onChanged, expanded, onToggle }: { clinic: Clinic;
           <p className="mt-1 text-xs font-mono text-gray-400 dark:text-slate-500">{clinic.id}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <a href={`/c/${clinic.id}/login`} target="_blank" rel="noreferrer" className="rounded-lg border border-gray-200 dark:border-slate-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800">
+          <a href={`/clinic/${clinic.id}/login`} target="_blank" rel="noreferrer" className="rounded-lg border border-gray-200 dark:border-slate-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800">
             Reception login →
           </a>
           <button onClick={onToggle} className="rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-700">
@@ -260,7 +260,7 @@ function ClinicStaffPanel({ clinicId }: { clinicId: string }) {
     <div>
       <h4 className="text-sm font-semibold text-gray-900 dark:text-slate-100">Reception staff</h4>
       <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
-        Staff log in at <code className="rounded bg-gray-100 dark:bg-slate-800 px-1">/c/{clinicId}/login</code> to look up bookings.
+        Staff log in at <code className="rounded bg-gray-100 dark:bg-slate-800 px-1">/clinic/{clinicId}/login</code> to look up bookings.
       </p>
 
       {staff.length > 0 && (

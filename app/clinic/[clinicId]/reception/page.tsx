@@ -1,6 +1,6 @@
 "use client";
 
-// Clinic reception dashboard. URL: /c/CL-1001/reception
+// Clinic reception dashboard. URL: /clinic/CL-1001/reception
 // Staff signs in (clinic-session cookie), then either types a booking ID
 // or scans the patient's QR (which encodes /b/BK-XXXX → already opened on
 // staff's device since they scanned it). Lookup pulls the booking +
@@ -65,11 +65,11 @@ export default function ReceptionPage() {
       const r = await fetch("/api/clinic/auth", { cache: "no-store" });
       const d = await r.json();
       if (!d.session) {
-        router.replace(`/c/${clinicId}/login`);
+        router.replace(`/clinic/${clinicId}/login`);
         return;
       }
       if (d.session.clinicId !== clinicId) {
-        router.replace(`/c/${d.session.clinicId}/reception`);
+        router.replace(`/clinic/${d.session.clinicId}/reception`);
         return;
       }
       setSession({ staffName: d.session.staffName, role: d.session.role, clinicName: d.session.clinicName });
@@ -119,7 +119,7 @@ export default function ReceptionPage() {
 
   const logout = async () => {
     await fetch("/api/clinic/auth", { method: "DELETE" });
-    router.replace(`/c/${clinicId}/login`);
+    router.replace(`/clinic/${clinicId}/login`);
   };
 
   if (!session) {

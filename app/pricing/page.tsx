@@ -92,15 +92,21 @@ export default function PricingPage() {
             {pricingPlans.map((plan) => (
               <div
                 key={plan.id}
-                className={`relative rounded-2xl border-2 bg-white dark:bg-slate-900 p-8 shadow-md transition-all duration-300 hover:shadow-xl ${
+                className={`relative rounded-2xl border-2 p-8 shadow-md transition-all duration-300 hover:shadow-xl ${
+                  // Split the bg class out of the base so each branch
+                  // OWNS the background explicitly. Earlier the popular
+                  // branch added a dark:bg-gradient that conflicted
+                  // with the base bg-white dark:bg-slate-900 — Tailwind
+                  // merged both and produced an inconsistent visual
+                  // result in dark mode (light surface with invisible
+                  // dark text).
+                  //
+                  // Now: both branches set a single bg + dark bg.
+                  // Popular distinction lives in the ring + border +
+                  // scale, NOT in a bg gradient.
                   plan.popular
-                    // Popular plan was previously rendering with a
-                    // bright/white look in dark mode because of how
-                    // shadow-lg blends on the slightly-scaled card.
-                    // Explicit dark gradient bg + glow ring restores
-                    // contrast while keeping the "lifted" feel.
-                    ? "border-primary-600 dark:border-primary-500 scale-[1.02] md:scale-105 shadow-lg shadow-primary-500/20 dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-900 ring-2 ring-primary-500/20 dark:ring-primary-400/30"
-                    : "border-gray-200 dark:border-slate-800"
+                    ? "bg-white dark:bg-slate-900 border-primary-600 dark:border-primary-500 scale-[1.02] md:scale-105 shadow-lg shadow-primary-500/20 ring-4 ring-primary-500/20 dark:ring-primary-400/30"
+                    : "bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-800"
                 }`}
               >
                 {plan.popular && (

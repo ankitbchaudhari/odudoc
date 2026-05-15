@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { verifyClinicStaffCredentials, getStaffById } from "@/lib/clinic-staff-store";
+import { verifyClinicStaffCredentials, getStaffById, reloadStaff } from "@/lib/clinic-staff-store";
 import { getClinicById } from "@/lib/clinics-store";
 import {
   signClinicSession,
@@ -31,6 +31,11 @@ export async function POST(req: NextRequest) {
   if (!clinic) {
     return NextResponse.json({ error: "Clinic not found" }, { status: 404 });
   }
+  // Force a re-pull of staff rows from Postgres before checking
+  // credentials. Without this, a Lambda warmed up before the doctor
+  // added the staff member won't see that record and login fails as
+  // "Invalid email or password" even though the row exists in the DB.
+  await reloadStaff();
   const staff = await verifyClinicStaffCredentials(clinicId, email, password);
   if (!staff) {
     return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });

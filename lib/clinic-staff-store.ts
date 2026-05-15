@@ -25,12 +25,22 @@ export interface ClinicStaff {
 }
 
 const staff: ClinicStaff[] = [];
-const { hydrate, flush } = bindPersistentArray<ClinicStaff>(
+const persistence = bindPersistentArray<ClinicStaff>(
   "clinic_staff",
   staff,
   () => []
 );
+const { hydrate, flush, reload } = persistence;
 await hydrate();
+
+/** Force a re-pull from Postgres. Required on the login path because
+ *  staff created by Lambda A (via the doctor's clinic-management page)
+ *  isn't visible to Lambda B (handling the staff's login request)
+ *  until B's in-memory array is refreshed — Vercel serverless doesn't
+ *  share state across Lambdas. */
+export async function reloadStaff(): Promise<void> {
+  await reload();
+}
 
 let nextId = staff.reduce((max, s) => {
   const m = /^CST-(\d+)$/.exec(s.id);

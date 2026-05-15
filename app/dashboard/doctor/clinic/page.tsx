@@ -5,8 +5,16 @@
 // and toggle payment options. Each clinic gets its own staff login at
 // /clinic/<clinicId>/login.
 
-import { useEffect, useState } from "react";
-import { COUNTRIES, statesForCountry, citiesForCountry } from "@/lib/location-data";
+import { useEffect, useMemo, useState } from "react";
+
+// Worldwide country/state/city data. Bundled lazily — the npm package
+// `country-state-city` ships ~150k cities + ~5k states (≈1.6MB), so we
+// dynamic-import it the first time the form mounts to avoid bloating
+// the rest of the doctor-dashboard bundle.
+type Csc = typeof import("country-state-city");
+interface CscCountry { name: string; isoCode: string }
+interface CscState { name: string; isoCode: string; countryCode: string }
+interface CscCity { name: string }
 
 interface ClinicHours {
   day: number;
@@ -304,9 +312,13 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
   const [name, setName] = useState("");
   const [addressLine1, setAddr1] = useState("");
   const [addressLine2, setAddr2] = useState("");
+  // We track ISO codes internally because country-state-city's lookup
+  // helpers key on them — but we POST the human-readable names to the
+  // API so the API contract (country / state / city as plain strings)
+  // is unchanged.
+  const [countryCode, setCountryCode] = useState("IN");  // default India
+  const [stateCode, setStateCode] = useState("");
   const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [country, setCountry] = useState("India");
   const [postalCode, setPC] = useState("");
   const [phone, setPhone] = useState("");
   const [mapsUrl, setMaps] = useState("");
@@ -315,12 +327,36 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  // Country-dependent option lists for the State + City dropdowns.
-  // Countries we don't have explicit lists for fall back to free-text
-  // inputs so the form still works (statesForCountry / citiesForCountry
-  // return empty arrays).
-  const stateOptions = statesForCountry(country);
-  const cityOptions = citiesForCountry(country);
+  // country-state-city is ~1.6MB minified. Lazy-load on first open so
+  // the rest of the doctor dashboard isn't penalised. Until the lib
+  // lands the dropdowns render disabled with a "Loading…" placeholder.
+  const [csc, setCsc] = useState<Csc | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    import("country-state-city").then((mod) => {
+      if (!cancelled) setCsc(mod);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const countries: CscCountry[] = useMemo(
+    () => (csc ? (csc.Country.getAllCountries() as CscCountry[]) : []),
+    [csc],
+  );
+  const states: CscState[] = useMemo(
+    () => (csc && countryCode ? (csc.State.getStatesOfCountry(countryCode) as CscState[]) : []),
+    [csc, countryCode],
+  );
+  const cities: CscCity[] = useMemo(
+    () => (csc && countryCode && stateCode
+      ? (csc.City.getCitiesOfState(countryCode, stateCode) as CscCity[])
+      : []),
+    [csc, countryCode, stateCode],
+  );
+
+  // Resolve human-readable names for the API payload.
+  const countryName = countries.find((c) => c.isoCode === countryCode)?.name || countryCode;
+  const stateName = states.find((s) => s.isoCode === stateCode)?.name || stateCode;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -335,8 +371,8 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
           addressLine1,
           addressLine2: addressLine2 || undefined,
           city,
-          state: state || undefined,
-          country,
+          state: stateName || undefined,
+          country: countryName,
           postalCode: postalCode || undefined,
           phone: phone || undefined,
           mapsUrl: mapsUrl || undefined,
@@ -371,46 +407,48 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
           <Field label="Clinic name *" className="sm:col-span-2" value={name} onChange={setName} required />
           <Field label="Address *" className="sm:col-span-2" value={addressLine1} onChange={setAddr1} required />
           <Field label="Address line 2" className="sm:col-span-2" value={addressLine2} onChange={setAddr2} />
-          {/* Country drives the State + City option lists, so it renders
-              first. Default "India" — flips state/city to free text
-              when the doctor picks anything we don't have a curated
-              list for. */}
+          {/* Country drives the State and City option lists. Switching
+              country resets both dependent fields so the doctor picks
+              from the new country's options. */}
           <SelectField
             label="Country *"
-            value={country}
-            onChange={(v) => {
-              setCountry(v);
-              // Clear dependent fields so the user picks a valid
-              // option from the new country's list (or types fresh).
-              setState("");
-              setCity("");
-            }}
+            value={countryCode}
+            onChange={(v) => { setCountryCode(v); setStateCode(""); setCity(""); }}
             required
-            options={COUNTRIES.map((c) => c.name)}
+            disabled={!csc}
+            options={countries.map((c) => ({ value: c.isoCode, label: c.name }))}
+            placeholder={csc ? "Select country" : "Loading countries…"}
           />
-          {stateOptions.length > 0 ? (
+          {/* State / Region. country-state-city has states for ~80% of
+              countries; for the rest the list is empty and we fall
+              back to a free-text input so the form still works. */}
+          {states.length > 0 ? (
             <SelectField
               label="State / Region *"
-              value={state}
-              onChange={setState}
+              value={stateCode}
+              onChange={(v) => { setStateCode(v); setCity(""); }}
               required
-              options={stateOptions}
+              options={states.map((s) => ({ value: s.isoCode, label: s.name }))}
               placeholder="Select state"
             />
           ) : (
-            <Field label="State / Region" value={state} onChange={setState} />
+            <Field label="State / Region" value={stateCode} onChange={setStateCode} />
           )}
-          {cityOptions.length > 0 ? (
+          {/* City. Cities are huge — ~150k worldwide. We only show the
+              dropdown when a state is picked (limits to a few hundred
+              max). If the package has no cities for this state, the
+              doctor types one in. */}
+          {cities.length > 0 ? (
             <SelectField
               label="City *"
               value={city}
               onChange={setCity}
               required
-              options={cityOptions}
+              options={cities.map((c) => ({ value: c.name, label: c.name }))}
               placeholder="Select city"
             />
           ) : (
-            <Field label="City *" value={city} onChange={setCity} required />
+            <Field label="City *" value={city} onChange={setCity} required={!stateCode || states.length === 0} />
           )}
           <Field label="Postal code" value={postalCode} onChange={setPC} />
           <Field label="Clinic phone" value={phone} onChange={setPhone} />
@@ -458,30 +496,39 @@ function Field({ label, value, onChange, required, type = "text", className = ""
   );
 }
 
+type SelectOption = string | { value: string; label: string };
+
 function SelectField({
-  label, value, onChange, required, options, placeholder, className = "",
+  label, value, onChange, required, options, placeholder, className = "", disabled,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   required?: boolean;
-  options: ReadonlyArray<string>;
+  options: ReadonlyArray<SelectOption>;
   placeholder?: string;
   className?: string;
+  disabled?: boolean;
 }) {
+  // Accepts either plain strings (where value === label) or {value,
+  // label} pairs (used by the country/state pickers where value is an
+  // ISO code and label is the human-readable name).
   return (
     <label className={`block ${className}`}>
       <span className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-400">{label}</span>
       <select
         required={required}
         value={value}
+        disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+        className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 disabled:opacity-60"
       >
         <option value="">{placeholder || `Select ${label.replace(/\s*\*$/, "").toLowerCase()}`}</option>
-        {options.map((o) => (
-          <option key={o} value={o}>{o}</option>
-        ))}
+        {options.map((o) => {
+          const v = typeof o === "string" ? o : o.value;
+          const l = typeof o === "string" ? o : o.label;
+          return <option key={v} value={v}>{l}</option>;
+        })}
       </select>
     </label>
   );

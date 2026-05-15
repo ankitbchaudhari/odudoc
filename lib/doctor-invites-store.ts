@@ -106,6 +106,7 @@ export async function markInviteWhatsappSent(
   id: string,
 ): Promise<DoctorInvite | undefined> {
   await hydrateInvites();
+  await reloadInvitesInternal();
   const idx = invites.findIndex((i) => i.id === id);
   if (idx === -1) return undefined;
   const next: DoctorInvite = {
@@ -140,6 +141,11 @@ export async function markInviteRegistered(
   applicationId: string,
 ): Promise<DoctorInvite | undefined> {
   await hydrateInvites();
+  // Cross-Lambda freshness — admin issued the invite on Lambda A,
+  // doctor's register click usually lands on Lambda B which hasn't
+  // seen the invite row yet. Without this reload the conversion-
+  // tracking column on /admin/doctor-invites stays "sent" forever.
+  await reloadInvitesInternal();
   const normalised = email.trim().toLowerCase();
   const idx = invites
     .map((i, i2) => ({ i, i2 }))
@@ -158,6 +164,7 @@ export async function markInviteRegistered(
 
 export async function cancelInvite(id: string): Promise<DoctorInvite | undefined> {
   await hydrateInvites();
+  await reloadInvitesInternal();
   const idx = invites.findIndex((i) => i.id === id);
   if (idx === -1) return undefined;
   const next: DoctorInvite = { ...invites[idx], status: "cancelled" };

@@ -96,6 +96,10 @@ export type VerifyResult =
  */
 export async function verifyMobileOtp(email: string, code: string): Promise<VerifyResult> {
   await ready();
+  // Cross-Lambda freshness — issueMobileOtp ran on a different Lambda
+  // in most cases; without reload the verify silently 404s on a valid
+  // code.
+  await handle.reload();
   cleanup();
 
   const lower = email.toLowerCase();

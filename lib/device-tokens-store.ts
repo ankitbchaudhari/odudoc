@@ -67,11 +67,16 @@ export async function removeDeviceToken(token: string): Promise<boolean> {
 /** Best-effort lookup. Used by sender helpers that fan out to every device. */
 export async function getTokensForUser(userId: string): Promise<DeviceToken[]> {
   await ready();
+  // Cross-Lambda freshness — a fresh app register on Lambda A must
+  // be visible to Lambda B doing the fan-out push, or the user
+  // misses notifications until the Lambda's TTL expires.
+  await handle.reload();
   return tokens.filter((t) => t.userId === userId);
 }
 
 export async function getTokensForEmail(email: string): Promise<DeviceToken[]> {
   await ready();
+  await handle.reload();
   const e = email.toLowerCase();
   return tokens.filter((t) => t.email === e);
 }

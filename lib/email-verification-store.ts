@@ -30,17 +30,11 @@ const handle = bindPersistentArray<VerificationToken>(
   tokens,
   () => []
 );
-// Hydrate at module init. The earlier `await handle` (non-Promise!)
-// was a silent no-op — tokens never loaded from Postgres on cold
-// start and a brand-new Lambda saw an empty array. Combined with
-// the missing reload in consumeVerificationToken below, this meant
-// signup-verify links opened on a different Lambda than the one
-// that issued them returned "invalid". Fix is twofold: actually
-// hydrate here, and reload before each consume.
-await handle.hydrate();
 
 async function ready(): Promise<void> {
-  /* hydration already awaited at module top */
+  // bindPersistentArray returns a thenable that triggers hydrate()
+  // on first await. Idempotent on subsequent calls.
+  await handle;
 }
 
 function cleanupExpired() {

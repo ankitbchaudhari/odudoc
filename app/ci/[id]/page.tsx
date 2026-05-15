@@ -6,15 +6,18 @@
 // invoice their doctor's clinic sent them via WhatsApp/email/SMS
 // without forcing them through OduDoc account creation first.
 
-import { getInvoiceById } from "@/lib/clinic-invoices-store";
-import { getClinicById } from "@/lib/clinics-store";
+import { getInvoiceById, reloadInvoices } from "@/lib/clinic-invoices-store";
+import { getClinicById, reloadClinics } from "@/lib/clinics-store";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export default function ClinicInvoicePage({ params }: { params: { id: string } }) {
+export default async function ClinicInvoicePage({ params }: { params: { id: string } }) {
+  // Invoice may have been issued seconds ago on a sibling Lambda;
+  // without reload the patient's WhatsApp/email link would 404.
+  await Promise.all([reloadInvoices(), reloadClinics()]);
   const inv = getInvoiceById(params.id);
   if (!inv) notFound();
 

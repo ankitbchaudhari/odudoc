@@ -13,7 +13,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { listEmrByPatientUserId, reloadEmr } from "@/lib/clinic-emr-store";
 import { getBookings, reloadBookings } from "@/lib/bookings-store";
-import { getClinicById } from "@/lib/clinics-store";
+import { getClinicById, reloadClinics } from "@/lib/clinics-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,7 +29,7 @@ export async function GET() {
   // Pull fresh state from Postgres before listing — the patient's
   // visit may have been written by a reception Lambda whose in-
   // memory data hasn't propagated to the read Lambda yet.
-  await Promise.all([reloadBookings(), reloadEmr()]);
+  await Promise.all([reloadBookings(), reloadEmr(), reloadClinics()]);
 
   // EMR entries (full visit notes from reception)
   const emr = listEmrByPatientUserId(userId).map((e) => {

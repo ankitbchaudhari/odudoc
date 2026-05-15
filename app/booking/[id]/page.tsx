@@ -3,8 +3,8 @@
 // page), clinic address, payment mode, and a "Save to wallet" -style
 // helper. No auth required — the booking ID is the access control for v1.
 
-import { getBookingById } from "@/lib/bookings-store";
-import { getClinicById } from "@/lib/clinics-store";
+import { getBookingById, reloadBookings } from "@/lib/bookings-store";
+import { getClinicById, reloadClinics } from "@/lib/clinics-store";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
@@ -24,7 +24,11 @@ function qrImageUrl(data: string, size = 280): string {
   return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}`;
 }
 
-export default function BookingConfirmationPage({ params }: { params: { id: string } }) {
+export default async function BookingConfirmationPage({ params }: { params: { id: string } }) {
+  // Booking may have just been written on a sibling Lambda — without
+  // a Postgres reload the patient's post-create redirect would hit
+  // notFound() despite the row existing.
+  await Promise.all([reloadBookings(), reloadClinics()]);
   const booking = getBookingById(params.id);
   if (!booking) notFound();
 

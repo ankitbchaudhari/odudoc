@@ -6,7 +6,7 @@
 //   - less than 30 minutes until the slot starts (matches slot-utils lead)
 
 import { NextRequest, NextResponse } from "next/server";
-import { cancelBookingByUser } from "@/lib/bookings-store";
+import { cancelBookingByUser, reloadBookings } from "@/lib/bookings-store";
 import { requireMobileUser } from "@/lib/mobile-auth";
 import { BOOKING_LEAD_MIN } from "@/lib/slot-utils";
 import { sendToEmail } from "@/lib/fcm";
@@ -30,6 +30,7 @@ export async function POST(
   }
 
   try {
+    await reloadBookings();
     const result = cancelBookingByUser(params.id, auth.userId, {
       leadMinutes: BOOKING_LEAD_MIN,
     });

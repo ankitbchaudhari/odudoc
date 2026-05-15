@@ -26,12 +26,21 @@ export interface PendingPayment {
 }
 
 const rows: PendingPayment[] = [];
-const { hydrate, flush } = bindPersistentArray<PendingPayment>(
+const { hydrate, flush, reload } = bindPersistentArray<PendingPayment>(
   "cashfree-pending-buffer",
   rows,
   () => [],
 );
 await hydrate();
+
+/** Cross-Lambda freshness — the webhook that recorded a pending
+ *  payment likely ran on a different Lambda than the booking-create
+ *  flow that wants to claim it. Without reload the claim returns
+ *  null and the patient sees "payment received but no booking
+ *  created", a worst-case silent drop. */
+export async function reloadPendingPayments(): Promise<void> {
+  await reload();
+}
 
 export interface RecordPendingInput {
   orderId: string;

@@ -12,7 +12,7 @@ import { validateSlot } from "@/lib/slot-utils";
 import { paymentsDisabled } from "@/lib/payments-config";
 import { consumeConsultToken } from "@/lib/consult-otp";
 import { sendPatientBookingReceived, sendDoctorNewRequest } from "@/lib/consultation-emails";
-import { claimPendingPayment } from "@/lib/cashfree-pending-buffer";
+import { claimPendingPayment, reloadPendingPayments } from "@/lib/cashfree-pending-buffer";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -233,6 +233,10 @@ export async function POST(req: NextRequest) {
       (body as Record<string, unknown>)?.cashfreeOrderId || "",
     ).trim();
     if (cashfreeOrderId) {
+      // Webhook + this booking-create flow run on different Lambdas in
+      // the common case. Reload first or the claim silently misses
+      // a paid payment.
+      await reloadPendingPayments();
       const claimed = claimPendingPayment(cashfreeOrderId);
       if (claimed) {
         markPaid(consultation.id, claimed.paymentId || cashfreeOrderId);

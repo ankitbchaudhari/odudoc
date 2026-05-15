@@ -16,7 +16,7 @@ import { NextResponse } from "next/server";
 import { loadJsonStrict } from "@/lib/persistent-array";
 import { notify } from "@/lib/notifications/notify";
 import { addAdminNotification } from "@/lib/admin-notifications-store";
-import { expiredPendingPayments } from "@/lib/cashfree-pending-buffer";
+import { expiredPendingPayments, reloadPendingPayments } from "@/lib/cashfree-pending-buffer";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -134,6 +134,7 @@ export async function GET(req: Request) {
   // 48h that never got claimed by a booking persist. These are likely
   // paid orders with no consultation row and need manual reconciliation.
   try {
+    await reloadPendingPayments();
     const stuck = expiredPendingPayments(48);
     if (stuck.length > 0) {
       for (const row of stuck) {

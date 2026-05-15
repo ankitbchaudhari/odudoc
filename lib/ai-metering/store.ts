@@ -72,12 +72,19 @@ export interface AiAccount {
 
 const usage: AiUsageEntry[] = [];
 const accounts: AiAccount[] = [];
-const { hydrate: hydrateUsage, flush: flushUsage, tombstone: tombstoneUsage } =
+const { hydrate: hydrateUsage, flush: flushUsage, tombstone: tombstoneUsage, reload: reloadUsage } =
   bindPersistentArray<AiUsageEntry>("ai_usage", usage, () => []);
-const { hydrate: hydrateAccounts, flush: flushAccounts, tombstone: tombstoneAccount } =
+const { hydrate: hydrateAccounts, flush: flushAccounts, tombstone: tombstoneAccount, reload: reloadAccounts } =
   bindPersistentArray<AiAccount>("ai_accounts", accounts, () => []);
 await hydrateUsage();
 await hydrateAccounts();
+
+/** Cross-Lambda freshness — AI usage written by one Lambda must be
+ *  visible to another reading the doctor's account balance / usage
+ *  history. Call before reads-after-writes that span Lambdas. */
+export async function reloadAiMetering(): Promise<void> {
+  await Promise.all([reloadUsage(), reloadAccounts()]);
+}
 
 /** Per-feature unit cost — operators can tune from /admin/ai-pricing
  *  in a future round; the table is canonical. */

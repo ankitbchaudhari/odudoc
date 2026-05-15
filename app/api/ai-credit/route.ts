@@ -11,6 +11,7 @@ import { authOptions } from "@/lib/auth";
 import {
   AI_PRICING, AiFeature, debitAiCredit, getAccount, listUsage,
   quoteCost, refundEntry, setAutoTopup, summarizeUsage, topupAccount,
+  reloadAiMetering,
 } from "@/lib/ai-metering/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
@@ -34,6 +35,7 @@ export async function GET(req: NextRequest) {
   if (ownerKind === "org" && role(session) !== "admin" && role(session) !== "staff") {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
+  await reloadAiMetering();
   return NextResponse.json({
     pricing: AI_PRICING,
     account: getAccount(ownerKind, ownerId),
@@ -54,6 +56,10 @@ export async function POST(req: NextRequest) {
 
   if (action === "consume") {
     if (!FEATURES.includes(body.feature)) return NextResponse.json({ error: "invalid_feature" }, { status: 400 });
+    // Reload first — a top-up applied on a sibling Lambda must be in
+    // memory before debit checks the balance, or the call falsely
+    // returns 402 insufficient_credit despite credits available.
+    await reloadAiMetering();
     const r = debitAiCredit({
       ownerKind, ownerId,
       feature: body.feature,
@@ -85,6 +91,7 @@ export async function POST(req: NextRequest) {
     if (ownerKind === "org" && role(session) !== "admin" && role(session) !== "staff") {
       return NextResponse.json({ error: "forbidden" }, { status: 403 });
     }
+    await reloadAiMetering();
     const a = topupAccount({
       ownerKind, ownerId, amountRupees: amount,
       source: body.source || "ops",
@@ -98,6 +105,7 @@ export async function POST(req: NextRequest) {
     if (ownerKind === "org" && role(session) !== "admin" && role(session) !== "staff") {
       return NextResponse.json({ error: "forbidden" }, { status: 403 });
     }
+    await reloadAiMetering();
     const a = setAutoTopup({
       ownerKind, ownerId,
       enabled: !!body.enabled,
@@ -113,6 +121,7 @@ export async function POST(req: NextRequest) {
     if (role(session) !== "admin") {
       return NextResponse.json({ error: "forbidden" }, { status: 403 });
     }
+    await reloadAiMetering();
     const ok = refundEntry(String(body.entryId), body.reason);
     return NextResponse.json({ ok });
   }

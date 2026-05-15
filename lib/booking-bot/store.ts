@@ -38,12 +38,20 @@ export interface BookingConversation {
 }
 
 const conversations: BookingConversation[] = [];
-const { hydrate, flush } = bindPersistentArray<BookingConversation>(
+const { hydrate, flush, reload } = bindPersistentArray<BookingConversation>(
   "booking_conversations",
   conversations,
   () => []
 );
 await hydrate();
+
+/** Cross-Lambda freshness — Twilio webhooks for the same WhatsApp
+ *  conversation can land on different Lambdas. Without reload, the
+ *  bot would restart the conversation from scratch on each turn.
+ *  Callers in the chatbot route should await this before findOrCreate. */
+export async function reloadBookingBot(): Promise<void> {
+  await reload();
+}
 
 export function findOrCreate(channel: Channel, fromPhone: string): BookingConversation {
   let c = conversations.find((x) => x.channel === channel && x.fromPhone === fromPhone && x.stage !== "completed" && x.stage !== "handed_off");

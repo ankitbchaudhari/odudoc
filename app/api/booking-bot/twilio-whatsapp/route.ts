@@ -6,7 +6,7 @@
 
 import { NextRequest } from "next/server";
 import { getConfig, verifyTwilioSignature } from "@/lib/voice-bot/providers/twilio";
-import { appendMessage, findOrCreate, nextTurn, setStage, type Channel } from "@/lib/booking-bot/store";
+import { appendMessage, findOrCreate, nextTurn, setStage, reloadBookingBot, type Channel } from "@/lib/booking-bot/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,6 +33,10 @@ export async function POST(req: NextRequest) {
   const text = params.Body || "";
   if (!fromPhone || !text) return twiml(`<?xml version="1.0"?><Response/>`);
 
+  // Reload so a conversation row created by a sibling Lambda on a
+  // prior message is visible — otherwise the bot restarts the
+  // patient's flow from "awaiting_intent" on every other turn.
+  await reloadBookingBot();
   const conversation = findOrCreate(channel, fromPhone);
   appendMessage(conversation, "patient", text);
   const turn = nextTurn(conversation, text);

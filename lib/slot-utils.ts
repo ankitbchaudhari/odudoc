@@ -196,14 +196,54 @@ export function availableSlots(args: {
  *  endpoint. Returns null if valid, or a short human message if not.
  *  Keeps the UI and backend in lockstep — a slot the grid won't render
  *  cannot be accepted via an inspected request either. */
+/** Booking shape accepted by validateSlot — duck-typed so callers can
+ *  pass either full Booking objects from bookings-store or any subset
+ *  that carries the four blocking fields. */
+export interface SlotBlockingBooking {
+  id?: string;
+  date?: string;        // YYYY-MM-DD
+  timeSlot?: string;    // "HH:MM" or "hh:mm AM/PM"
+  status?: string;      // "scheduled" / "cancelled" / etc.
+}
+
+const BLOCKING_BOOKING_STATUSES = new Set([
+  "scheduled",
+  "arrived",
+  "in_progress",
+  "rescheduled",
+]);
+
+/** Slots already taken by bookings (separate from consultations).
+ *  Clinic-visit bookings often don't have a paired consultation row,
+ *  so consultations-only slot checks would miss them. */
+export function bookedSlotsFromBookings(
+  bookings: SlotBlockingBooking[],
+  dateStr: string
+): Set<string> {
+  const taken = new Set<string>();
+  for (const b of bookings) {
+    if (!b.date || b.date !== dateStr) continue;
+    const status = (b.status || "scheduled").toLowerCase();
+    if (!BLOCKING_BOOKING_STATUSES.has(status)) continue;
+    const norm = b.timeSlot ? normalizeSlot(b.timeSlot) : null;
+    if (norm) taken.add(norm);
+  }
+  return taken;
+}
+
 export function validateSlot(args: {
   dateStr: string;
   slot: string; // accepts either format
   consultations: Consultation[];
+  /** Bookings store for the same doctor + date (or wider — filtered
+   *  internally). Optional; legacy callers continue working. */
+  bookings?: SlotBlockingBooking[];
   window?: typeof DEFAULT_WINDOW;
   now?: Date;
   /** When rescheduling, ignore this consultation's own hold on the slot. */
   ignoreConsultationId?: string;
+  /** When rescheduling a booking, ignore its own hold on the slot. */
+  ignoreBookingId?: string;
 }): string | null {
   const norm = normalizeSlot(args.slot);
   if (!norm) return "Invalid time format.";
@@ -219,6 +259,14 @@ export function validateSlot(args: {
     : args.consultations;
   const taken = bookedSlotsForDate(others, args.dateStr);
   if (taken.has(norm)) return "That slot was just taken. Please choose another.";
+
+  if (args.bookings && args.bookings.length > 0) {
+    const otherBookings = args.ignoreBookingId
+      ? args.bookings.filter((b) => b.id !== args.ignoreBookingId)
+      : args.bookings;
+    const bTaken = bookedSlotsFromBookings(otherBookings, args.dateStr);
+    if (bTaken.has(norm)) return "That slot was just taken. Please choose another.";
+  }
 
   return null;
 }

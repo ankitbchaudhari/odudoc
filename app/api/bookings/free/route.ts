@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { createBooking } from "@/lib/bookings-store";
+import { createBooking, getBookings, reloadBookings } from "@/lib/bookings-store";
 import {
   createConsultation,
   markPaid,
@@ -119,11 +119,12 @@ export async function POST(req: NextRequest) {
   // rendered it. Keeps the slot-utils helper as the sole source of
   // truth, so inspecting the DOM + replaying the POST can't slip past.
   const dateStr = `${scheduledDate.getFullYear()}-${String(scheduledDate.getMonth() + 1).padStart(2, "0")}-${String(scheduledDate.getDate()).padStart(2, "0")}`;
-  await reloadConsultations();
+  await Promise.all([reloadConsultations(), reloadBookings()]);
   const slotErr = validateSlot({
     dateStr,
     slot: String(timeSlot),
     consultations: listConsultations({ doctorId: String(doctorId) }),
+    bookings: getBookings().filter((b) => b.doctorId === String(doctorId)),
   });
   if (slotErr) {
     return NextResponse.json({ error: slotErr }, { status: 400 });

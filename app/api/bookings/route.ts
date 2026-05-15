@@ -6,6 +6,7 @@ import { validateSlot } from '@/lib/slot-utils';
 import { notifyAppointmentBooked } from '@/lib/notifications';
 import { parseJson } from '@/lib/api-validate';
 import { findUserById } from '@/lib/users-store';
+import { getDoctorById } from '@/lib/doctors-store';
 import { sendDoctorNewAppointmentViaSentDm } from '@/lib/sent-dm';
 import { log } from "@/lib/log";
 
@@ -56,6 +57,17 @@ export async function POST(request: NextRequest) {
   if (!parsed.ok) return parsed.response;
   const body = parsed.data;
 
+  // Guard against an unauthenticated POST that just claims to be paid.
+  // A real "paid" booking must carry the upstream gateway's intent id;
+  // the verify endpoints (Stripe/Razorpay/etc.) confirm with the gateway
+  // before flipping a pending booking to paid.
+  if (body.paymentStatus === 'paid' && !body.paymentIntentId) {
+    return NextResponse.json(
+      { error: 'paymentIntentId is required to record a paid booking.' },
+      { status: 400 },
+    );
+  }
+
   // Mirror the 15-min ladder / 30-min lead / no-double-book rules here
   // too — this endpoint bypasses the free-booking path so it needs its
   // own guard. Accepts ISO YYYY-MM-DD in body.date; falls back to today.
@@ -65,11 +77,13 @@ export async function POST(request: NextRequest) {
       : new Date().toISOString().slice(0, 10);
   // Reload consultations from Postgres so the no-double-book check
   // catches slots taken on a sibling Lambda since this Lambda hydrated.
-  await reloadConsultations();
+  await Promise.all([reloadConsultations(), reloadBookings()]);
+  const doctorBookings = getBookings().filter((b) => b.doctorId === body.doctorId);
   const slotErr = validateSlot({
     dateStr,
     slot: body.timeSlot,
     consultations: listConsultations({ doctorId: body.doctorId }),
+    bookings: doctorBookings,
   });
   if (slotErr) {
     return NextResponse.json({ error: slotErr }, { status: 400 });
@@ -85,6 +99,7 @@ export async function POST(request: NextRequest) {
     clinicAddress?: string;
     paymentMode?: 'online' | 'clinic';
   } = {};
+  let serverFee = body.fee;       // fallback — will be overwritten below
   if (body.clinicId) {
     const { clinicBelongsToDoctor, getClinicById, reloadClinics } = await import('@/lib/clinics-store');
     // Doctor may have registered this clinic on a sibling Lambda
@@ -101,8 +116,18 @@ export async function POST(request: NextRequest) {
       clinicAddress: [c.addressLine1, c.addressLine2, c.city, c.state, c.postalCode].filter(Boolean).join(', '),
       paymentMode: body.paymentMode || 'clinic',
     };
+    // Server-trusted fee: per-clinic override wins, else the doctor's
+    // base fee. Never trust body.fee for the amount that hits the DB —
+    // a malicious client could otherwise book at fee=1.
+    const doc = getDoctorById(body.doctorId);
+    serverFee = c.feeOverride ?? doc?.fee ?? 0;
   } else if (body.paymentMode) {
     clinicFields = { paymentMode: body.paymentMode };
+    const doc = getDoctorById(body.doctorId);
+    serverFee = doc?.fee ?? 0;
+  } else {
+    const doc = getDoctorById(body.doctorId);
+    serverFee = doc?.fee ?? body.fee;
   }
 
   try {
@@ -112,7 +137,7 @@ export async function POST(request: NextRequest) {
       patientName: body.patientName,
       patientPhone: body.patientPhone,
       timeSlot: body.timeSlot,
-      fee: body.fee,
+      fee: serverFee,
       // pay-at-clinic bookings stay 'pending' until reception collects.
       paymentStatus: body.paymentStatus || (clinicFields.paymentMode === 'clinic' ? 'pending' : 'paid'),
       paymentIntentId: body.paymentIntentId || '',

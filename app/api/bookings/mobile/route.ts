@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   createBooking,
+  getBookings,
   getBookingsForUser,
   reloadBookings,
 } from "@/lib/bookings-store";
@@ -63,11 +64,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "doctor_not_found" }, { status: 404 });
     }
 
-    await reloadConsultations();
+    await Promise.all([reloadConsultations(), reloadBookings()]);
     const slotErr = validateSlot({
       dateStr: body.date,
       slot: body.timeSlot,
       consultations: listConsultations({ doctorId: doctor.id }),
+      bookings: getBookings().filter((b) => b.doctorId === doctor.id),
     });
     if (slotErr) {
       return NextResponse.json({ error: "slot_invalid", message: slotErr }, { status: 400 });

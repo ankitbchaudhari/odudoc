@@ -4,6 +4,7 @@ import {
   getConsultation,
   markPaid as markConsultationPaid,
   markPaymentFailed as markConsultationPaymentFailed,
+  reloadConsultations,
 } from "@/lib/consultations-store";
 import {
   upgradeSubscription,
@@ -61,6 +62,7 @@ export async function POST(request: NextRequest) {
 
         if (paymentType === "consultation") {
           const orderId: string = metadata.orderId || "";
+          if (orderId) await reloadConsultations();
           const consultation = orderId
             ? markConsultationPaid(orderId, paymentId)
             : null;
@@ -138,6 +140,7 @@ export async function POST(request: NextRequest) {
         const orderId: string = metadata.orderId || "";
 
         if (paymentType === "consultation" && orderId) {
+          await reloadConsultations();
           const consultation = markConsultationPaymentFailed(orderId);
           if (consultation) {
             addAdminNotification({

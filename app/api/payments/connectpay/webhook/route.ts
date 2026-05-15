@@ -13,7 +13,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignature } from "@/lib/connectpay";
-import { getConsultation, markPaid, markPaymentFailed } from "@/lib/consultations-store";
+import { getConsultation, markPaid, markPaymentFailed, reloadConsultations } from "@/lib/consultations-store";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
   const paymentId = data.id || "";
   const state = (data.state || data.status || "").toLowerCase();
 
+  if (referenceId) await reloadConsultations();
   if (referenceId && getConsultation(referenceId)) {
     try {
       const isSuccess =

@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignatureDetailed, isWebhookReplay, markWebhookProcessed } from "@/lib/cashfree";
-import { markPaid as markConsultationPaid, getConsultation } from "@/lib/consultations-store";
+import { markPaid as markConsultationPaid, getConsultation, reloadConsultations } from "@/lib/consultations-store";
 import { applyTopUp } from "@/lib/wallet/store";
 import { sendPaymentFailedViaSentDm } from "@/lib/sent-dm";
 import { recordPendingPayment } from "@/lib/cashfree-pending-buffer";
@@ -92,6 +92,7 @@ export async function POST(req: NextRequest) {
     const type = tags.type;
     try {
       if (type === "consultation") {
+        await reloadConsultations();
         const cfPaymentId = String(payment?.cf_payment_id ?? "");
         const updated = markConsultationPaid(orderId, cfPaymentId);
         if (!updated) {
@@ -184,6 +185,7 @@ export async function POST(req: NextRequest) {
     if (status === "FAILED" || status === "USER_DROPPED" || status === "CANCELLED") {
       const tags = order?.order_tags || {};
       if (tags.type === "consultation") {
+        await reloadConsultations();
         const c = getConsultation(orderId);
         if (c?.patientPhone) {
           (async () => {

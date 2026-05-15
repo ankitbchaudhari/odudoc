@@ -9,7 +9,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { verifyResponse } from "@/lib/payu";
-import { getConsultation, markPaid, markPaymentFailed } from "@/lib/consultations-store";
+import { getConsultation, markPaid, markPaymentFailed, reloadConsultations } from "@/lib/consultations-store";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -46,6 +46,7 @@ async function handle(req: NextRequest) {
   const status = (body.status || "").toLowerCase();
   const paymentId = body.mihpayid || body.payuMoneyId || body.txnid || txnid;
 
+  if (txnid) await reloadConsultations();
   if (txnid && getConsultation(txnid)) {
     try {
       if (status === "success") markPaid(txnid, `payu_${paymentId}`);

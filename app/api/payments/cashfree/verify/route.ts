@@ -16,7 +16,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getOrderStatus } from "@/lib/cashfree";
-import { markPaid as markConsultationPaid } from "@/lib/consultations-store";
+import { markPaid as markConsultationPaid, reloadConsultations } from "@/lib/consultations-store";
 import { applyTopUp } from "@/lib/wallet/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
@@ -67,6 +67,7 @@ export async function GET(req: NextRequest) {
         } else if (type === "consultation" || type === undefined) {
           // Fall back to the consultation path for orders without
           // explicit type tags — preserves the pre-tag-aware behaviour.
+          await reloadConsultations();
           markConsultationPaid(orderId, "");
         }
         await awaitAllFlushesStrict();

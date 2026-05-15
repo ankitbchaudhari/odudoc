@@ -9,6 +9,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import QrScanner, { extractBookingId } from "@/components/QrScanner";
 
 interface Booking {
@@ -133,7 +134,13 @@ export default function ReceptionPage() {
     <main className="mx-auto max-w-3xl px-4 py-6">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 dark:border-slate-800 pb-4">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">{session.clinicName} · Reception</h1>
+          <Link
+            href={`/clinic/${clinicId}/dashboard`}
+            className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+          >
+            ← Back to dashboard
+          </Link>
+          <h1 className="mt-1 text-xl font-bold text-gray-900 dark:text-slate-100">{session.clinicName} · Reception</h1>
           <p className="text-xs text-gray-500 dark:text-slate-400">Signed in as {session.staffName} ({session.role})</p>
         </div>
         <button onClick={logout} className="rounded-lg border border-gray-200 dark:border-slate-700 px-3 py-1.5 text-xs text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800">

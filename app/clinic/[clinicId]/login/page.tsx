@@ -33,7 +33,7 @@ export default function ClinicLoginPage() {
         setErr(d.error || "Login failed");
         return;
       }
-      router.push(`/clinic/${clinicId}/reception`);
+      router.push(`/clinic/${clinicId}/dashboard`);
     } finally {
       setBusy(false);
     }

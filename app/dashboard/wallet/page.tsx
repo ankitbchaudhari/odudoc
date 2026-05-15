@@ -46,6 +46,110 @@ async function launchCashfreeCheckout(paymentSessionId: string): Promise<void> {
   await cashfree.checkout({ paymentSessionId, redirectTarget: "_self" });
 }
 
+// ─── Razorpay overlay for wallet top-ups ─────────────────────────────
+// Mirrors components/RazorpayCheckout.tsx but inlined here because
+// the wallet top-up has a different verify endpoint (credits the
+// wallet instead of a booking). Reusing the same checkout.js loader
+// pattern Cashfree uses above.
+
+const RZP_SCRIPT_SRC = "https://checkout.razorpay.com/v1/checkout.js";
+
+interface RazorpayResp {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+// Note: window.Razorpay is already declared globally in
+// components/RazorpayCheckout.tsx. We don't redeclare it here to
+// avoid TS2717 (subsequent declarations must match exactly). Use the
+// same type indirectly through the global lookup.
+
+interface RazorpayInstanceLike {
+  open: () => void;
+  on?: (event: string, cb: (e: unknown) => void) => void;
+}
+
+function loadRazorpayScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === "undefined") return reject(new Error("no window"));
+    if (window.Razorpay) return resolve();
+    const existing = document.querySelector(`script[src="${RZP_SCRIPT_SRC}"]`);
+    if (existing) {
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error("razorpay_js_failed")), { once: true });
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = RZP_SCRIPT_SRC;
+    s.async = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("razorpay_js_failed"));
+    document.head.appendChild(s);
+  });
+}
+
+async function launchRazorpayWalletCheckout(opts: {
+  orderId: string;
+  amountPaise: number;
+  currency: string;
+  keyId: string;
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    await loadRazorpayScript();
+    if (!window.Razorpay) return { ok: false, error: "Razorpay SDK did not initialise" };
+  } catch {
+    return { ok: false, error: "Could not load Razorpay" };
+  }
+
+  return new Promise((resolve) => {
+    // Cast through unknown because the global declaration in
+    // RazorpayCheckout.tsx uses a stricter prop type than what we
+    // need here (we only set a subset of options).
+    const Ctor = window.Razorpay as unknown as new (opts: Record<string, unknown>) => RazorpayInstanceLike;
+    const rz = new Ctor({
+      key: opts.keyId,
+      amount: opts.amountPaise,
+      currency: opts.currency,
+      order_id: opts.orderId,
+      name: "OduDoc",
+      description: "Wallet top-up",
+      theme: { color: "#3D5CFF" },
+      handler: async (resp: RazorpayResp) => {
+        try {
+          const v = await fetch("/api/wallet/razorpay-verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(resp),
+          });
+          const d = await v.json();
+          if (!v.ok || !d.credited) {
+            resolve({ ok: false, error: d.error || "Verification failed" });
+            return;
+          }
+          resolve({ ok: true });
+        } catch (e) {
+          resolve({ ok: false, error: e instanceof Error ? e.message : "Verify network error" });
+        }
+      },
+      modal: {
+        ondismiss: () => {
+          // User closed the modal without paying. Not an error;
+          // surface a soft "cancelled" toast.
+          resolve({ ok: false, error: "Cancelled — no money was charged." });
+        },
+      },
+    });
+    if (rz.on) {
+      rz.on("payment.failed", (e: unknown) => {
+        const eo = e as { error?: { description?: string; reason?: string } } | undefined;
+        resolve({ ok: false, error: eo?.error?.description || eo?.error?.reason || "Payment failed" });
+      });
+    }
+    rz.open();
+  });
+}
+
 interface Wallet {
   userId: string; balanceRupees: number; bonusBalanceRupees: number;
   lifetimeToppedUp: number; lifetimeSpent: number;
@@ -256,7 +360,7 @@ export default function WalletPage() {
     return () => { cancelled = true; };
   }, [load]);
 
-  const topup = async (gateway?: "cashfree" | "stripe") => {
+  const topup = async (gateway?: "cashfree" | "stripe" | "razorpay") => {
     setBusy(true);
     try {
       // Pass the user-selected gateway through to the route. Falls
@@ -286,6 +390,27 @@ export default function WalletPage() {
               const trimmed = pending.filter((p: { startedAt: number }) => p.startedAt > cutoff).slice(-10);
               localStorage.setItem("odudoc:pending-topups", JSON.stringify(trimmed));
             } catch { /* localStorage full / blocked — non-fatal */ }
+          }
+          if (d.gateway === "razorpay" && d.razorpayOrderId) {
+            // Razorpay path — load checkout.js, open the modal, then
+            // verify via /api/wallet/razorpay-verify on success. The
+            // server-side verify is what actually credits the wallet
+            // (idempotent on payment id) so a refresh after success
+            // doesn't double-credit.
+            const ok = await launchRazorpayWalletCheckout({
+              orderId: d.razorpayOrderId,
+              amountPaise: d.amountPaise,
+              currency: d.currency || "INR",
+              keyId: d.keyId,
+            });
+            if (ok.ok) {
+              setToast({ kind: "ok", text: `Wallet credited ₹${amount} (+ 5% bonus).` });
+              setShowTopup(false);
+              await load();
+            } else {
+              setToast({ kind: "err", text: ok.error });
+            }
+            return;
           }
           if (d.paymentLink) {
             window.location.href = d.paymentLink;
@@ -534,10 +659,19 @@ export default function WalletPage() {
             </div>
 
             <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
-              Choose your payment method. UPI / RuPay / Indian cards are best on Cashfree. International cards and Apple Pay / Google Pay work via Stripe.
+              Choose your payment method. UPI / cards / netbanking on Razorpay or Cashfree (best for India). International cards and Apple Pay / Google Pay work via Stripe.
             </p>
 
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <button
+                onClick={() => topup("razorpay")}
+                disabled={busy || amount < 100 || amount > 50000}
+                className="flex flex-col items-center justify-center rounded-xl bg-gradient-to-r from-[#072654] via-[#1f3e8c] to-[#3D5CFF] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-xl disabled:opacity-50 disabled:shadow-none"
+              >
+                <span className="text-[11px] font-medium uppercase tracking-wider opacity-80">Pay with</span>
+                <span className="text-base">🇮🇳 Razorpay</span>
+                <span className="mt-0.5 text-[10px] opacity-75">UPI · Cards · Netbanking</span>
+              </button>
               <button
                 onClick={() => topup("cashfree")}
                 disabled={busy || amount < 100 || amount > 50000}

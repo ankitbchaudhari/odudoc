@@ -16,6 +16,7 @@ import { authOptions } from "@/lib/auth";
 import { findUserById } from "@/lib/users-store";
 import { createCheckoutSession, isCashfreeConfigured } from "@/lib/cashfree";
 import { createStripeWalletCheckout, isStripeConfigured } from "@/lib/stripe-wallet";
+import { createRazorpayOrder, isRazorpayConfigured, razorpayPublicKey } from "@/lib/razorpay";
 import { applyTopUp, getWallet } from "@/lib/wallet/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
@@ -32,17 +33,23 @@ export const dynamic = "force-dynamic";
  *  set up yet (common during initial rollout when only one of the
  *  two has been wired). The sandbox path remains as the last resort
  *  when NEITHER gateway is configured. */
-function pickGateway(country: string | null | undefined): "cashfree" | "stripe" {
+type Gateway = "cashfree" | "stripe" | "razorpay";
+
+function pickGateway(country: string | null | undefined): Gateway {
   const c = (country || "IN").toUpperCase();
-  const natural = c === "IN" ? "cashfree" : "stripe";
-  if (natural === "cashfree" && isCashfreeConfigured()) return "cashfree";
-  if (natural === "stripe" && isStripeConfigured()) return "stripe";
-  // Natural gateway not configured — try the other.
-  if (isCashfreeConfigured()) return "cashfree";
+  // For Indian users prefer Razorpay > Cashfree > Stripe (Razorpay is
+  // primary merchant per Account & Settings; Cashfree is the backup
+  // domestic gateway). For everywhere else Stripe stays default.
+  if (c === "IN") {
+    if (isRazorpayConfigured()) return "razorpay";
+    if (isCashfreeConfigured()) return "cashfree";
+    if (isStripeConfigured()) return "stripe";
+    return "razorpay"; // sandbox fallback target
+  }
   if (isStripeConfigured()) return "stripe";
-  // Neither is configured — return natural; the caller's
-  // `!gatewayConfigured` branch will route to the sandbox path.
-  return natural;
+  if (isRazorpayConfigured()) return "razorpay";
+  if (isCashfreeConfigured()) return "cashfree";
+  return "stripe";
 }
 
 export async function POST(req: NextRequest) {
@@ -65,13 +72,14 @@ export async function POST(req: NextRequest) {
   // configured. If they pick "stripe" but Stripe isn't wired up,
   // we transparently fall through to Cashfree (and vice versa).
   const clientChoice =
-    body.gateway === "cashfree" || body.gateway === "stripe"
-      ? (body.gateway as "cashfree" | "stripe")
+    body.gateway === "cashfree" || body.gateway === "stripe" || body.gateway === "razorpay"
+      ? (body.gateway as Gateway)
       : null;
-  let gateway: "cashfree" | "stripe";
+  let gateway: Gateway;
   if (clientChoice) {
     if (clientChoice === "cashfree" && isCashfreeConfigured()) gateway = "cashfree";
     else if (clientChoice === "stripe" && isStripeConfigured()) gateway = "stripe";
+    else if (clientChoice === "razorpay" && isRazorpayConfigured()) gateway = "razorpay";
     else gateway = pickGateway(user.country); // requested gateway not configured — use fallback chain
   } else {
     gateway = pickGateway(user.country);
@@ -81,7 +89,10 @@ export async function POST(req: NextRequest) {
 
   // Sandbox path — when the chosen gateway's keys are missing,
   // credit the wallet directly so the demo still works.
-  const gatewayConfigured = gateway === "cashfree" ? isCashfreeConfigured() : isStripeConfigured();
+  const gatewayConfigured =
+    gateway === "cashfree" ? isCashfreeConfigured()
+    : gateway === "razorpay" ? isRazorpayConfigured()
+    : isStripeConfigured();
   if (!gatewayConfigured) {
     // Diagnostic — echo back which env vars the runtime can see so
     // operators can tell "env vars set in Vercel but not in Lambda"
@@ -112,6 +123,34 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    if (gateway === "razorpay") {
+      // Razorpay path — create an order tagged with type=wallet_topup
+      // so the wallet razorpay-verify endpoint can credit the wallet
+      // on payment success. The client then opens checkout.js with the
+      // returned order_id + public key.
+      const order = await createRazorpayOrder({
+        amountPaise: amount * 100,
+        currency: "INR",
+        receipt: orderId,
+        notes: {
+          type: "wallet_topup",
+          userId,
+          amount: String(amount),
+          internalOrderId: orderId,
+        },
+      });
+      return NextResponse.json({
+        mode: "live",
+        gateway: "razorpay",
+        orderId,
+        razorpayOrderId: order.id,
+        amountPaise: order.amount,
+        currency: order.currency,
+        keyId: razorpayPublicKey(),
+        wallet: getWallet(userId),
+      });
+    }
+
     if (gateway === "stripe") {
       // Stripe Checkout — webhook credits wallet on
       // checkout.session.completed with metadata.type=wallet_topup.
@@ -174,8 +213,10 @@ export async function POST(req: NextRequest) {
     const msg = (err as Error).message || "";
     const env = gateway === "cashfree"
       ? (process.env.CASHFREE_ENV || "PROD").toUpperCase()
+      : gateway === "razorpay"
+      ? (process.env.RAZORPAY_KEY_ID?.startsWith("rzp_test_") ? "TEST" : "LIVE")
       : (process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_") ? "TEST" : "LIVE");
-    const gwName = gateway === "cashfree" ? "Cashfree" : "Stripe";
+    const gwName = gateway === "cashfree" ? "Cashfree" : gateway === "razorpay" ? "Razorpay" : "Stripe";
 
     // SAFETY: never auto-mint wallet credit when the gateway is
     // present but rejects our keys. Earlier versions of this route

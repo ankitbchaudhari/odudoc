@@ -63,6 +63,17 @@ function defaultHours(): ClinicHours[] {
   }));
 }
 
+/** Per-day rows for every day Sun–Sat, with Mon-Sat open 09:00–18:00
+ *  and Sun marked closed. Doctors edit individual rows from the form. */
+function buildAllDayHours(): ClinicHours[] {
+  return [0, 1, 2, 3, 4, 5, 6].map((day) => ({
+    day,
+    open: "09:00",
+    close: "18:00",
+    closed: day === 0, // Sunday closed by default
+  }));
+}
+
 export default function DoctorClinicPage() {
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [loading, setLoading] = useState(true);
@@ -324,7 +335,12 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
   const [postalCode, setPC] = useState("");
   const [phone, setPhone] = useState("");
   const [mapsUrl, setMaps] = useState("");
-  const [hours] = useState<ClinicHours[]>(defaultHours());
+  const [hours, setHours] = useState<ClinicHours[]>(() => buildAllDayHours());
+
+  // Helper to mutate one day's row by index (Sun=0..Sat=6).
+  const setDayHours = (day: number, patch: Partial<ClinicHours>) => {
+    setHours((prev) => prev.map((h) => (h.day === day ? { ...h, ...patch } : h)));
+  };
   const [feeOverride, setFee] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -422,7 +438,7 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <form onSubmit={submit} onClick={(e) => e.stopPropagation()} className="relative w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+      <form onSubmit={submit} onClick={(e) => e.stopPropagation()} className="relative max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
         <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Register a clinic</h2>
         <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Patients will see this on your profile.</p>
 
@@ -486,12 +502,45 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
         </div>
 
         <fieldset className="mt-5">
-          <legend className="text-sm font-semibold text-gray-900 dark:text-slate-100">Hours (Mon–Sat 9–6 by default)</legend>
-          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">You can edit hours after creation.</p>
-          <div className="mt-2 grid grid-cols-7 gap-1 text-center text-xs">
-            {DAYS.map((d, i) => (
-              <div key={d} className={`rounded px-1 py-1 ${hours.find((h) => h.day === i) ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500"}`}>{d}</div>
-            ))}
+          <legend className="text-sm font-semibold text-gray-900 dark:text-slate-100">Opening hours</legend>
+          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+            Set the hours your clinic is open. Toggle "Closed" for days
+            you don&apos;t see patients.
+          </p>
+          <div className="mt-3 space-y-2">
+            {DAYS.map((d, i) => {
+              const row = hours.find((h) => h.day === i)!;
+              return (
+                <div
+                  key={d}
+                  className="grid grid-cols-[3rem_1fr_1fr_auto] items-center gap-2 rounded-lg border border-gray-100 dark:border-slate-800 px-2 py-1.5"
+                >
+                  <span className="text-xs font-semibold text-gray-700 dark:text-slate-200">{d}</span>
+                  <input
+                    type="time"
+                    value={row.open}
+                    disabled={row.closed}
+                    onChange={(e) => setDayHours(i, { open: e.target.value })}
+                    className="rounded border border-gray-300 dark:border-slate-700 px-2 py-1 text-xs outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
+                  />
+                  <input
+                    type="time"
+                    value={row.close}
+                    disabled={row.closed}
+                    onChange={(e) => setDayHours(i, { close: e.target.value })}
+                    className="rounded border border-gray-300 dark:border-slate-700 px-2 py-1 text-xs outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
+                  />
+                  <label className="flex items-center gap-1 text-xs text-gray-600 dark:text-slate-400">
+                    <input
+                      type="checkbox"
+                      checked={!!row.closed}
+                      onChange={(e) => setDayHours(i, { closed: e.target.checked })}
+                    />
+                    Closed
+                  </label>
+                </div>
+              );
+            })}
           </div>
         </fieldset>
 

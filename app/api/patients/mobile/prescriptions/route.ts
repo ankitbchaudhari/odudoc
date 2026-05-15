@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireMobileUser } from "@/lib/mobile-auth";
-import { listPrescriptions } from "@/lib/prescriptions-store";
+import { listPrescriptions, reloadPrescriptions } from "@/lib/prescriptions-store";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    await reloadPrescriptions();
     const records = listPrescriptions({ patientEmail: auth.email });
     // Map to the slimmer shape the patient app expects (lib/data.ts Prescription):
     //   { id, doctorName, date, medications: [{ name, dosage, duration }] }

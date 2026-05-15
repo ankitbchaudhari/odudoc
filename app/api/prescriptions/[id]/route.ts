@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { cancelPrescription, getPrescription } from "@/lib/prescriptions-store";
+import { cancelPrescription, getPrescription, reloadPrescriptions } from "@/lib/prescriptions-store";
 
 export const runtime = "nodejs";
 
@@ -18,6 +18,7 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  await reloadPrescriptions();
   const rx = getPrescription(params.id);
   if (!rx) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -46,6 +47,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  await reloadPrescriptions();
   const existing = getPrescription(params.id);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 

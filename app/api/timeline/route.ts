@@ -13,7 +13,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { listAppointments } from "@/lib/appointments-store";
-import { listPrescriptions } from "@/lib/prescriptions-store";
+import { listPrescriptions, reloadPrescriptions } from "@/lib/prescriptions-store";
 import { listOrdersForPatient } from "@/lib/lab-marketplace/order-store";
 import { listTransactionsForUser } from "@/lib/wallet/store";
 import { listForUser } from "@/lib/notifications/store";
@@ -74,6 +74,7 @@ export async function GET() {
   // Prescriptions — keyed on email.
   if (email) {
     try {
+      await reloadPrescriptions();
       const rxs = listPrescriptions({ patientEmail: email });
       for (const rx of rxs) {
         events.push({

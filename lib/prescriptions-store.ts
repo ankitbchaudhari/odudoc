@@ -20,12 +20,19 @@ export interface PrescriptionRecord {
 }
 
 const prescriptions: PrescriptionRecord[] = [];
-const { hydrate, flush } = bindPersistentArray<PrescriptionRecord>(
+const { hydrate, flush, reload } = bindPersistentArray<PrescriptionRecord>(
   "prescriptions",
   prescriptions,
   () => []
 );
 await hydrate();
+
+/** Cross-Lambda freshness — call before reading prescriptions so a
+ *  doctor's just-issued Rx is visible on the patient's view served by
+ *  a sibling Lambda. */
+export async function reloadPrescriptions(): Promise<void> {
+  await reload();
+}
 
 export function addPrescription(
   input: Omit<PrescriptionRecord, "id" | "createdAt" | "status">

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getPrescription } from "@/lib/prescriptions-store";
+import { getPrescription, reloadPrescriptions } from "@/lib/prescriptions-store";
 import { PRESCRIPTION_TEMPLATES } from "@/lib/prescription-templates";
 import PrescriptionRenderer from "@/components/PrescriptionRenderer";
 import PrintBar from "./PrintBar";
@@ -13,6 +13,10 @@ export default async function PrescriptionViewPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  // Cross-Lambda freshness — Rx may have been issued seconds ago on
+  // a sibling Lambda; without reload the patient's link from the
+  // post-visit email would 404.
+  await reloadPrescriptions();
   const rx = getPrescription(id);
   if (!rx) notFound();
 

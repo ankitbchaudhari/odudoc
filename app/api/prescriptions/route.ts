@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import {
   addPrescription,
   listPrescriptions,
+  reloadPrescriptions,
   type PrescriptionRecord,
 } from "@/lib/prescriptions-store";
 import type { PrescriptionData } from "@/lib/prescription-templates";
@@ -129,6 +130,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  await reloadPrescriptions();
   let items: PrescriptionRecord[];
   if (user.role === "admin" || user.role === "pharmacist") {
     // Pharmacists need to see every prescription to dispense. They can't

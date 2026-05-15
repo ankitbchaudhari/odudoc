@@ -16,7 +16,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getBookingById, getBookings, reloadBookings } from "@/lib/bookings-store";
 import { findDoctorByEmail } from "@/lib/doctors-store";
 import { findUserByEmail, reloadUsers } from "@/lib/users-store";
-import { listPrescriptions } from "@/lib/prescriptions-store";
+import { listPrescriptions, reloadPrescriptions } from "@/lib/prescriptions-store";
 import { requireMobileUser } from "@/lib/mobile-auth";
 import { log } from "@/lib/log";
 
@@ -71,6 +71,7 @@ export async function GET(
       return b.patientName === booking.patientName;
     }).slice(0, 30);
 
+    if (booking.patientEmail) await reloadPrescriptions();
     const prescriptions = booking.patientEmail
       ? listPrescriptions({ patientEmail: booking.patientEmail }).slice(0, 30)
       : [];

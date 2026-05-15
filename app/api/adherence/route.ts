@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { listPrescriptions } from "@/lib/prescriptions-store";
+import { listPrescriptions, reloadPrescriptions } from "@/lib/prescriptions-store";
 import { listDoseEvents, logDose, slotsFor, DoseAction } from "@/lib/adherence/store";
 import { runRefillCheck } from "@/lib/adherence/refill";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
@@ -44,6 +44,7 @@ export async function GET() {
   if (!userId || !email) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
 
   const today = todayIso();
+  await reloadPrescriptions();
   const rxs = listPrescriptions({ patientEmail: email })
     .filter((rx) => rx.status === "active");
   // Best-effort refill check on every load. Idempotent in the
@@ -110,6 +111,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
   // Verify the prescription belongs to this user.
+  await reloadPrescriptions();
   const rxs = listPrescriptions({ patientEmail: email });
   if (!rxs.some((r) => r.id === body.rxId)) {
     return NextResponse.json({ error: "rx_not_found" }, { status: 403 });

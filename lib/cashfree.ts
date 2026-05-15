@@ -26,6 +26,7 @@
 
 import crypto from "node:crypto";
 import { log } from "./log";
+import { bindPersistentArray } from "./persistent-array";
 
 const API_VERSION = "2023-08-01";
 
@@ -295,24 +296,43 @@ export function verifyWebhookSignature(
 }
 
 // ── Webhook event idempotency ─────────────────────────────────────
-// In-memory ring of processed webhook event ids. Cashfree retries
-// failed webhooks; remembering the last N event ids stops a retry
-// from double-marking the same order paid if our 5xx came after we
-// successfully wrote state.
-const processedEvents = new Map<string, number>();
+// Persistent ring of processed webhook event ids. Cashfree retries
+// failed webhooks; remembering recent event ids stops a retry from
+// double-marking the same order paid (or worse, double-recording a
+// doctor's commission earning, which is NOT idempotent on its own).
+// Lives in Postgres so a retry landing on a different Lambda still
+// hits the dedupe — the in-memory map missed that case entirely.
+
+interface ProcessedEvent {
+  id: string;        // = eventId for bindPersistentArray dedupe
+  at: number;
+}
+const processedEvents: ProcessedEvent[] = [];
+const processedPa = bindPersistentArray<ProcessedEvent>(
+  "cashfree_processed_events",
+  processedEvents,
+  () => [],
+);
+await processedPa.hydrate();
 const MAX_PROCESSED_EVENTS = 1000;
 
-export function isWebhookReplay(eventId: string | undefined | null): boolean {
+export async function isWebhookReplay(eventId: string | undefined | null): Promise<boolean> {
   if (!eventId) return false;
-  return processedEvents.has(eventId);
+  await processedPa.reload();
+  return processedEvents.some((e) => e.id === eventId);
 }
 export function markWebhookProcessed(eventId: string | undefined | null): void {
   if (!eventId) return;
-  processedEvents.set(eventId, Date.now());
-  if (processedEvents.size > MAX_PROCESSED_EVENTS) {
-    const first = processedEvents.keys().next().value;
-    if (first !== undefined) processedEvents.delete(first);
+  if (processedEvents.some((e) => e.id === eventId)) return;
+  processedEvents.push({ id: eventId, at: Date.now() });
+  // Trim oldest entries to cap the size. Sort by `at` so we drop the
+  // oldest rather than relying on insertion order (cross-Lambda merges
+  // can shuffle order).
+  if (processedEvents.length > MAX_PROCESSED_EVENTS) {
+    processedEvents.sort((a, b) => a.at - b.at);
+    processedEvents.splice(0, processedEvents.length - MAX_PROCESSED_EVENTS);
   }
+  processedPa.flush();
 }
 
 /** OduDoc takes a 30 % platform commission off every paid consult.

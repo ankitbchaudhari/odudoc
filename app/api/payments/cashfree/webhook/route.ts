@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
   // Replay-on-our-side check: if we've already processed this event
   // id (Cashfree retries on our 5xx), short-circuit with 200 so the
   // webhook doesn't fire twice.
-  if (isWebhookReplay(evt.event_id)) {
+  if (await isWebhookReplay(evt.event_id)) {
     log.info("cashfree.webhook.replay_short_circuit", { eventId: evt.event_id });
     return NextResponse.json({ ok: true, replay: true });
   }

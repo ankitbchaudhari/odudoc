@@ -466,7 +466,7 @@ function DoctorRegisterForm() {
 
       <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <div className="mb-10 text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-700 shadow-sm backdrop-blur-sm">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary-200 dark:border-primary-500/40 bg-white/80 dark:bg-slate-900/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-700 dark:text-primary-300 shadow-sm backdrop-blur-sm">
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
@@ -481,7 +481,7 @@ function DoctorRegisterForm() {
         </div>
 
         {/* Stepper */}
-        <div className="mb-10 rounded-2xl border border-gray-100 bg-white/70 p-5 shadow-sm backdrop-blur">
+        <div className="mb-10 rounded-2xl border border-gray-100 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 p-5 shadow-sm backdrop-blur">
           <div className="flex items-center justify-between">
             {STEPS.map((s, idx) => (
               <div key={s.num} className="flex flex-1 items-center">
@@ -525,7 +525,7 @@ function DoctorRegisterForm() {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-gray-100 bg-white/90 p-6 shadow-xl ring-1 ring-black/5 backdrop-blur md:p-10">
+        <div className="rounded-3xl border border-gray-100 dark:border-slate-800 bg-white/90 dark:bg-slate-900/85 p-6 shadow-xl ring-1 ring-black/5 dark:ring-white/5 backdrop-blur md:p-10">
           {step === 1 && (
             <Step1 form={form} update={update} errors={errors} />
           )}
@@ -623,13 +623,17 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-slate-200">
-        {icon && <span className="text-primary-500">{icon}</span>}
-        <span>{label}</span>
-        {required && <span className="text-red-500">*</span>}
+      <label className="mb-2 flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wide text-gray-800 dark:text-slate-100">
+        {icon && (
+          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary-50 text-primary-600 dark:bg-primary-500/15 dark:text-primary-300">
+            {icon}
+          </span>
+        )}
+        <span className="normal-case tracking-normal">{label}</span>
+        {required && <span className="text-rose-500 dark:text-rose-400">*</span>}
       </label>
       {children}
-      {hint && !error && <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">{hint}</p>}
+      {hint && !error && <p className="mt-1.5 text-xs text-gray-500 dark:text-slate-400">{hint}</p>}
       {error && (
         <p className="mt-1 flex items-center gap-1 text-xs font-medium text-red-600">
           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -643,7 +647,7 @@ function Field({
 }
 
 const inputClass =
-  "w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 shadow-sm transition-all placeholder:text-gray-400 dark:text-slate-500 hover:border-gray-300 dark:border-slate-700 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100";
+  "w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm font-medium text-gray-900 dark:text-slate-100 shadow-sm transition-all placeholder:text-gray-400 dark:placeholder:text-slate-500 hover:border-gray-300 dark:hover:border-slate-600 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/15";
 
 const ICONS = {
   user: (
@@ -1049,7 +1053,7 @@ function Step2({
                 value={langQuery}
                 onChange={(e) => setLangQuery(e.target.value)}
                 placeholder={`Search ${LANGUAGES.length}+ languages…`}
-                className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 pl-9 pr-3 text-sm transition-all placeholder:text-gray-400 dark:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100"
+                className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-9 pr-3 text-sm transition-all placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/15"
               />
             </div>
 

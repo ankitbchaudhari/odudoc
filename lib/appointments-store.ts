@@ -24,7 +24,7 @@ export interface Appointment {
 const now = () => new Date().toISOString();
 
 const appointments: Appointment[] = [];
-const { hydrate, flush, tombstone } = bindPersistentArray<Appointment>(
+const { hydrate, flush, tombstone, reload } = bindPersistentArray<Appointment>(
   "appointments",
   appointments,
   () => {
@@ -44,6 +44,10 @@ const { hydrate, flush, tombstone } = bindPersistentArray<Appointment>(
   }
 );
 await hydrate();
+
+export async function reloadAppointments(): Promise<void> {
+  await reload();
+}
 
 export function listAppointments(opts: { status?: AppointmentStatus | "All"; date?: string } = {}): Appointment[] {
   let list = [...appointments];

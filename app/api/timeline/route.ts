@@ -12,7 +12,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { listAppointments } from "@/lib/appointments-store";
+import { listAppointments, reloadAppointments } from "@/lib/appointments-store";
 import { listPrescriptions, reloadPrescriptions } from "@/lib/prescriptions-store";
 import { listOrdersForPatient } from "@/lib/lab-marketplace/order-store";
 import { listTransactionsForUser } from "@/lib/wallet/store";
@@ -52,6 +52,7 @@ export async function GET() {
   // Appointments — keyed on email.
   if (email) {
     try {
+      await reloadAppointments();
       const all = listAppointments();
       for (const a of all) {
         if ((a.patientEmail || "").toLowerCase() !== email) continue;

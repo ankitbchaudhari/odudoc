@@ -13,7 +13,7 @@ import {
   getBookingsForUser,
   reloadBookings,
 } from "@/lib/bookings-store";
-import { listConsultations } from "@/lib/consultations-store";
+import { listConsultations, reloadConsultations } from "@/lib/consultations-store";
 import { validateSlot } from "@/lib/slot-utils";
 import { getDoctorById } from "@/lib/doctors-store";
 import { findUserByEmail, reloadUsers } from "@/lib/users-store";
@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "doctor_not_found" }, { status: 404 });
     }
 
+    await reloadConsultations();
     const slotErr = validateSlot({
       dateStr: body.date,
       slot: body.timeSlot,

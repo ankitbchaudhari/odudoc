@@ -6,6 +6,7 @@ import {
   createConsultation,
   markPaid,
   listConsultations,
+  reloadConsultations,
 } from "@/lib/consultations-store";
 import { validateSlot } from "@/lib/slot-utils";
 import { paymentsDisabled } from "@/lib/payments-config";
@@ -118,6 +119,7 @@ export async function POST(req: NextRequest) {
   // rendered it. Keeps the slot-utils helper as the sole source of
   // truth, so inspecting the DOM + replaying the POST can't slip past.
   const dateStr = `${scheduledDate.getFullYear()}-${String(scheduledDate.getMonth() + 1).padStart(2, "0")}-${String(scheduledDate.getDate()).padStart(2, "0")}`;
+  await reloadConsultations();
   const slotErr = validateSlot({
     dateStr,
     slot: String(timeSlot),
@@ -144,7 +146,8 @@ export async function POST(req: NextRequest) {
     appointmentType?: "in-person" | "video";
   } = {};
   if (rawClinicId) {
-    const { clinicBelongsToDoctor, getClinicById } = await import("@/lib/clinics-store");
+    const { clinicBelongsToDoctor, getClinicById, reloadClinics } = await import("@/lib/clinics-store");
+    await reloadClinics();
     if (!clinicBelongsToDoctor(rawClinicId, String(doctorId))) {
       return NextResponse.json({ error: "Invalid clinic for this doctor" }, { status: 400 });
     }

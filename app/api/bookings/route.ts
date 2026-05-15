@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createBooking, getBookings, reloadBookings } from '@/lib/bookings-store';
-import { listConsultations } from '@/lib/consultations-store';
+import { listConsultations, reloadConsultations } from '@/lib/consultations-store';
 import { validateSlot } from '@/lib/slot-utils';
 import { notifyAppointmentBooked } from '@/lib/notifications';
 import { parseJson } from '@/lib/api-validate';
@@ -63,6 +63,9 @@ export async function POST(request: NextRequest) {
     body.date && /^\d{4}-\d{2}-\d{2}$/.test(body.date)
       ? body.date
       : new Date().toISOString().slice(0, 10);
+  // Reload consultations from Postgres so the no-double-book check
+  // catches slots taken on a sibling Lambda since this Lambda hydrated.
+  await reloadConsultations();
   const slotErr = validateSlot({
     dateStr,
     slot: body.timeSlot,
@@ -83,7 +86,11 @@ export async function POST(request: NextRequest) {
     paymentMode?: 'online' | 'clinic';
   } = {};
   if (body.clinicId) {
-    const { clinicBelongsToDoctor, getClinicById } = await import('@/lib/clinics-store');
+    const { clinicBelongsToDoctor, getClinicById, reloadClinics } = await import('@/lib/clinics-store');
+    // Doctor may have registered this clinic on a sibling Lambda
+    // moments before this booking arrived — without reload the
+    // check spuriously rejects valid clinics.
+    await reloadClinics();
     if (!clinicBelongsToDoctor(body.clinicId, body.doctorId)) {
       return NextResponse.json({ error: 'Invalid clinic for this doctor' }, { status: 400 });
     }

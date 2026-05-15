@@ -117,7 +117,7 @@ export interface Consultation {
 }
 
 const consultations: Consultation[] = [];
-const { hydrate, flush } = bindPersistentArray<Consultation>(
+const { hydrate, flush, reload } = bindPersistentArray<Consultation>(
   "consultations",
   consultations,
   () => []
@@ -128,6 +128,12 @@ const { hydrate, flush } = bindPersistentArray<Consultation>(
 // guaranteed to see the latest data on first call — no caller-side
 // `await ready()` needed. Cold start adds ~50-200ms once per Lambda.
 await hydrate();
+
+/** Cross-Lambda freshness — call before slot validation or any read
+ *  that must reflect a write that happened on a sibling Lambda. */
+export async function reloadConsultations(): Promise<void> {
+  await reload();
+}
 
 const now = () => new Date().toISOString();
 const genId = () => `cs-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;

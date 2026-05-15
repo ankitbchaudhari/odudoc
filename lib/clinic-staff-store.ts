@@ -60,8 +60,16 @@ export async function createClinicStaff(input: {
   const existing = staff.find((s) => s.clinicId === input.clinicId && s.email === email);
   if (existing) throw new Error("A staff member with this email already exists at this clinic.");
   const passwordHash = await bcrypt.hash(input.password, 10);
+  // Race-safe id — see bookings-store createBooking for rationale.
+  const maxExisting = staff.reduce((max, s) => {
+    const m = /^CST-(\d+)$/.exec(s.id);
+    const n = m ? parseInt(m[1], 10) : 0;
+    return n > max ? n : max;
+  }, 1000);
+  const candidate = Math.max(nextId, maxExisting + 1);
+  nextId = candidate + 1;
   const record: ClinicStaff = {
-    id: `CST-${nextId++}`,
+    id: `CST-${candidate}`,
     clinicId: input.clinicId,
     name: input.name.trim(),
     email,

@@ -90,9 +90,17 @@ export function createClinic(
   data: Omit<Clinic, "id" | "createdAt" | "updatedAt">
 ): Clinic {
   const now = new Date().toISOString();
+  // Race-safe id — see bookings-store createBooking for rationale.
+  const maxExisting = clinics.reduce((max, c) => {
+    const m = /^CL-(\d+)$/.exec(c.id);
+    const n = m ? parseInt(m[1], 10) : 0;
+    return n > max ? n : max;
+  }, 1000);
+  const candidate = Math.max(nextId, maxExisting + 1);
+  nextId = candidate + 1;
   const clinic: Clinic = {
     ...data,
-    id: `CL-${nextId++}`,
+    id: `CL-${candidate}`,
     createdAt: now,
     updatedAt: now,
   };

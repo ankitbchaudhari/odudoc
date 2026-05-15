@@ -90,9 +90,22 @@ let nextId = bookings.reduce((max, b) => {
 export function createBooking(
   data: Omit<Booking, 'id' | 'createdAt'>
 ): Booking {
+  // Recompute nextId from the current array on every call. A stale
+  // closure counter would race against another Lambda that minted
+  // an id from the same starting point — both would then push the
+  // same BK-NNNN and one would be silently lost when the merge-save
+  // dedupes by id. The reduce is O(N) but N is small (~thousands)
+  // and the cost is negligible vs the consequences of a dropped row.
+  const maxExisting = bookings.reduce((max, b) => {
+    const m = /^BK-(\d+)$/.exec(b.id);
+    const n = m ? parseInt(m[1], 10) : 0;
+    return n > max ? n : max;
+  }, 1003);
+  const candidate = Math.max(nextId, maxExisting + 1);
+  nextId = candidate + 1;
   const booking: Booking = {
     ...data,
-    id: `BK-${nextId++}`,
+    id: `BK-${candidate}`,
     createdAt: new Date().toISOString(),
   };
   bookings.push(booking);

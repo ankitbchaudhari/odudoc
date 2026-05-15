@@ -129,8 +129,18 @@ export function upsertEmrEntry(input: {
     flush();
     return existing;
   }
+  // Race-safe id: recompute the max from the current array so a
+  // sibling Lambda that pushed since this Lambda hydrated doesn't
+  // collide with us.
+  const maxExisting = entries.reduce((max, e) => {
+    const m = /^EMR-(\d+)$/.exec(e.id);
+    const n = m ? parseInt(m[1], 10) : 0;
+    return n > max ? n : max;
+  }, 1000);
+  const candidate = Math.max(nextId, maxExisting + 1);
+  nextId = candidate + 1;
   const record: ClinicEmrEntry = {
-    id: `EMR-${nextId++}`,
+    id: `EMR-${candidate}`,
     ...input,
     createdAt: now,
     updatedAt: now,

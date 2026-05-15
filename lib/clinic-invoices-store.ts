@@ -103,9 +103,17 @@ function nextInvoiceNumber(clinicId: string): string {
 export function createClinicInvoice(
   data: Omit<ClinicInvoice, "id" | "number" | "issuedAt" | "status">,
 ): ClinicInvoice {
+  // Race-safe id — see bookings-store createBooking for rationale.
+  const maxExisting = invoices.reduce((max, i) => {
+    const m = /^INV-(\d+)$/.exec(i.id);
+    const n = m ? parseInt(m[1], 10) : 0;
+    return n > max ? n : max;
+  }, 1000);
+  const candidate = Math.max(nextId, maxExisting + 1);
+  nextId = candidate + 1;
   const invoice: ClinicInvoice = {
     ...data,
-    id: `INV-${nextId++}`,
+    id: `INV-${candidate}`,
     number: nextInvoiceNumber(data.clinicId),
     issuedAt: new Date().toISOString(),
     status: "issued",

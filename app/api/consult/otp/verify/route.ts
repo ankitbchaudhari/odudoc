@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkVerification, toE164 } from "@/lib/consult-otp";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
+import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
 export const runtime = "nodejs";
 
@@ -30,6 +31,9 @@ export async function POST(req: NextRequest) {
   if (!result.success) {
     return NextResponse.json({ error: result.error }, { status: 400 });
   }
+  // Drain so the consultToken we're about to hand the client is
+  // already in Postgres when their next request lands on any Lambda.
+  try { await awaitAllFlushesStrict(); } catch { /* best-effort */ }
 
   return NextResponse.json({
     ok: true,

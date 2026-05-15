@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, isAdminConfigured } from "@/lib/firebase-admin";
 import { mintConsultToken, toE164 } from "@/lib/consult-otp";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
+import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -80,6 +81,10 @@ export async function POST(req: NextRequest) {
 
   const e164 = toE164(phone);
   const { token } = mintConsultToken({ firstName, lastName, phone: e164 });
+  // Drain the flush before responding — the client will immediately
+  // POST this token to /api/bookings/free or /api/rooms which may
+  // hit a different Lambda and need to read it from Postgres.
+  try { await awaitAllFlushesStrict(); } catch { /* best-effort */ }
 
   return NextResponse.json({
     ok: true,

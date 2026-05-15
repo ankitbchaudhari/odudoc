@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { startVerification, toE164, isVerifyConfigured } from "@/lib/consult-otp";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
+import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -56,6 +57,10 @@ export async function POST(req: NextRequest) {
     log.warn("consult-otp.start_failed", { phone, channel, error: result.error });
     return NextResponse.json({ error: result.error }, { status: 502 });
   }
+  // Drain pending-identity flush — the client will POST the code to
+  // /api/consult/otp/verify next, which may land on a sibling Lambda
+  // and needs the pending row to be visible in Postgres.
+  try { await awaitAllFlushesStrict(); } catch { /* best-effort */ }
 
   return NextResponse.json({
     ok: true,

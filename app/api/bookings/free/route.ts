@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       { status: 401 },
     );
   }
-  const verified = consumeConsultToken(tokenStr);
+  const verified = await consumeConsultToken(tokenStr);
   if (!verified) {
     return NextResponse.json(
       { error: "Verification expired. Please request a new code." },

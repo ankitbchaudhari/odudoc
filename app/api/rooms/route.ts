@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     // trusted name + phone from the server-side record, so a random caller
     // can't just POST arbitrary patientName into /api/rooms.
     if (consultToken) {
-      const rec = consumeConsultToken(consultToken);
+      const rec = await consumeConsultToken(consultToken);
       if (!rec) {
         return NextResponse.json(
           { error: "Your verification has expired. Please verify your phone again." },

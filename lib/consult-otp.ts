@@ -13,6 +13,7 @@
 //   TWILIO_VERIFY_CHANNEL      — optional; "sms" (default) | "whatsapp" | "call"
 
 import crypto from "crypto";
+import { bindPersistentArray } from "./persistent-array";
 
 const SID = process.env.TWILIO_ACCOUNT_SID?.trim();
 const TOKEN = process.env.TWILIO_AUTH_TOKEN?.trim();
@@ -24,32 +25,53 @@ export function isVerifyConfigured(): boolean {
 
 // -- Name cache ------------------------------------------------------------
 // Verify doesn't let us attach arbitrary metadata to a verification, so we
-// keep a tiny in-memory map of phone → {firstName, lastName} between the
-// send and verify calls.
+// keep a small persistent list of phone → {firstName, lastName} between
+// the send and verify calls. Backed by Postgres so the verify hop sees
+// the identity even when it lands on a different Lambda than the send.
 interface PendingIdentity {
+  // bindPersistentArray dedupes by `id`; we set id=phone so a second
+  // start-verification for the same phone overwrites the prior row.
+  id: string;
   phone: string;
   firstName: string;
   lastName: string;
   expiresAt: number;
 }
-const pending = new Map<string, PendingIdentity>();
+const pending: PendingIdentity[] = [];
+const pendingPa = bindPersistentArray<PendingIdentity>(
+  "consult_otp_pending",
+  pending,
+  () => [],
+);
+await pendingPa.hydrate();
 const PENDING_TTL_MS = 15 * 60 * 1000; // matches Verify's default code TTL
 
 // -- Post-verify token -----------------------------------------------------
 interface ConsultVerifiedToken {
+  id: string; // = token; lets persistent-array key on it
   token: string;
   phone: string;
   firstName: string;
   lastName: string;
   expiresAt: number;
 }
-const verified = new Map<string, ConsultVerifiedToken>();
+const verified: ConsultVerifiedToken[] = [];
+const verifiedPa = bindPersistentArray<ConsultVerifiedToken>(
+  "consult_otp_verified",
+  verified,
+  () => [],
+);
+await verifiedPa.hydrate();
 const VERIFIED_TTL_MS = 15 * 60 * 1000;
 
 function cleanup(): void {
   const now = Date.now();
-  pending.forEach((v, k) => { if (v.expiresAt < now) pending.delete(k); });
-  verified.forEach((v, k) => { if (v.expiresAt < now) verified.delete(k); });
+  for (let i = pending.length - 1; i >= 0; i--) {
+    if (pending[i].expiresAt < now) pending.splice(i, 1);
+  }
+  for (let i = verified.length - 1; i >= 0; i--) {
+    if (verified[i].expiresAt < now) verified.splice(i, 1);
+  }
 }
 
 // OduDoc is worldwide — never silently assume a country code. If the user
@@ -80,13 +102,22 @@ export async function startVerification(
   if (!isVerifyConfigured()) {
     return { ok: false, error: "Verify is not configured on the server." };
   }
-  // Stash the identity keyed on the E.164 phone so /verify can retrieve it.
-  pending.set(phone, {
+  // Stash the identity keyed on the E.164 phone so /verify can retrieve
+  // it — even when the verify hop lands on a different Lambda than this
+  // send. We reload first so a re-send for the same phone overwrites
+  // the prior row.
+  await pendingPa.reload();
+  const idx = pending.findIndex((p) => p.id === phone);
+  const row: PendingIdentity = {
+    id: phone,
     phone,
     firstName: firstName.trim(),
     lastName: lastName.trim(),
     expiresAt: Date.now() + PENDING_TTL_MS,
-  });
+  };
+  if (idx >= 0) pending.splice(idx, 1, row);
+  else pending.push(row);
+  pendingPa.flush();
 
   try {
     const form = new URLSearchParams({ To: phone, Channel: channel });
@@ -129,7 +160,10 @@ export async function checkVerification(
   if (!isVerifyConfigured()) {
     return { success: false, error: "Verify is not configured on the server." };
   }
-  const identity = pending.get(phone);
+  // Reload so a pending row written by a sibling Lambda's startVerification
+  // is visible to this Lambda's verify hop.
+  await pendingPa.reload();
+  const identity = pending.find((p) => p.id === phone);
   if (!identity) {
     return { success: false, error: "No pending verification for that number. Please request a new code." };
   }
@@ -163,15 +197,19 @@ export async function checkVerification(
     return { success: false, error: (e as Error).message };
   }
 
-  pending.delete(phone);
+  const pIdx = pending.findIndex((p) => p.id === phone);
+  if (pIdx >= 0) pending.splice(pIdx, 1);
+  pendingPa.flush();
   const token = crypto.randomBytes(24).toString("hex");
-  verified.set(token, {
+  verified.push({
+    id: token,
     token,
     phone: identity.phone,
     firstName: identity.firstName,
     lastName: identity.lastName,
     expiresAt: Date.now() + VERIFIED_TTL_MS,
   });
+  verifiedPa.flush();
   return {
     success: true,
     token,
@@ -192,27 +230,33 @@ export function mintConsultToken(identity: {
   cleanup();
   const token = crypto.randomBytes(24).toString("hex");
   const expiresAt = Date.now() + VERIFIED_TTL_MS;
-  verified.set(token, {
+  verified.push({
+    id: token,
     token,
     phone: identity.phone,
     firstName: identity.firstName.trim(),
     lastName: identity.lastName.trim(),
     expiresAt,
   });
+  verifiedPa.flush();
   return { token, expiresAt };
 }
 
 // Consume a verified token on the room-creation side. Single-use.
-export function consumeConsultToken(token: string):
+// Async so we can reload from Postgres — the token may have been
+// minted by checkVerification / mintConsultToken running on a
+// different Lambda than this consumer.
+export async function consumeConsultToken(token: string): Promise<
   | { phone: string; firstName: string; lastName: string }
-  | null {
+  | null
+> {
   cleanup();
-  const rec = verified.get(token);
-  if (!rec) return null;
-  if (rec.expiresAt < Date.now()) {
-    verified.delete(token);
-    return null;
-  }
-  verified.delete(token);
+  await verifiedPa.reload();
+  const idx = verified.findIndex((v) => v.id === token);
+  if (idx < 0) return null;
+  const rec = verified[idx];
+  verified.splice(idx, 1);
+  verifiedPa.flush();
+  if (rec.expiresAt < Date.now()) return null;
   return { phone: rec.phone, firstName: rec.firstName, lastName: rec.lastName };
 }

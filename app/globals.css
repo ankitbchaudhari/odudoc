@@ -133,7 +133,7 @@
    compile to inline-equivalent utilities Tailwind sorts in cascade
    order and they include their own !important when applied with
    tailwind dark variants. */
-html.dark input:where([type="text"], [type="email"], [type="tel"], [type="number"], [type="password"], [type="search"], [type="url"], [type="date"], :not([type])),
+html.dark input:where([type="text"], [type="email"], [type="tel"], [type="number"], [type="password"], [type="search"], [type="url"], [type="date"], [type="time"], [type="datetime-local"], [type="month"], [type="week"], :not([type])),
 html.dark textarea,
 html.dark select {
   /* slate-800 is lighter than slate-900 (modal/card bg) and lighter

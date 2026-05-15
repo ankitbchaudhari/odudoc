@@ -7,6 +7,7 @@ import {
   createOrder,
   listOrdersForPatient,
   listOrdersForPharmacy,
+  reloadFulfillmentOrders,
   type OrderLine,
 } from "@/lib/rx-fulfillment/order-store";
 import { decrementStock } from "@/lib/rx-fulfillment/pharmacy-stock-store";
@@ -20,6 +21,7 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  await reloadFulfillmentOrders();
   const url = new URL(req.url);
   const view = url.searchParams.get("view") || "patient";
   const pharmacyId = url.searchParams.get("pharmacyId");

@@ -71,12 +71,16 @@ export interface FulfillmentOrder {
 }
 
 const orders: FulfillmentOrder[] = [];
-const { hydrate, flush, tombstone } = bindPersistentArray<FulfillmentOrder>(
+const { hydrate, flush, tombstone, reload } = bindPersistentArray<FulfillmentOrder>(
   "rx_fulfillment_orders",
   orders,
   () => []
 );
 await hydrate();
+
+export async function reloadFulfillmentOrders(): Promise<void> {
+  await reload();
+}
 
 const DEFAULT_MARKETPLACE_FEE_PCT = 8;
 

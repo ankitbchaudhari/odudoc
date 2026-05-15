@@ -18,7 +18,7 @@ import { listOrdersForPatient, reloadLabOrders } from "@/lib/lab-marketplace/ord
 import { listTransactionsForUser } from "@/lib/wallet/store";
 import { listForUser } from "@/lib/notifications/store";
 import { listReadings, classify, VITAL_LABEL } from "@/lib/vitals/store";
-import { listOrdersForPatient as listRxOrdersForPatient } from "@/lib/rx-fulfillment/order-store";
+import { listOrdersForPatient as listRxOrdersForPatient, reloadFulfillmentOrders } from "@/lib/rx-fulfillment/order-store";
 import { listSymptoms } from "@/lib/symptoms/store";
 
 export const runtime = "nodejs";
@@ -163,6 +163,7 @@ export async function GET() {
   // Pharmacy fulfillment orders — userId-keyed, one row per status transition.
   if (userId) {
     try {
+      await reloadFulfillmentOrders();
       const orders = listRxOrdersForPatient(userId);
       for (const o of orders) {
         for (const ev of o.events) {

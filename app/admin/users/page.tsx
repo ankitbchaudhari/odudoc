@@ -420,8 +420,12 @@ export default function AdminUsersPage() {
                 <th className="px-4 py-3 font-medium">Email</th>
                 <th className="px-4 py-3 font-medium">Role</th>
                 <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Joined</th>
-                <th className="px-4 py-3 font-medium">Last login</th>
+                {/* Joined + Last login hidden below xl breakpoint so
+                    the Actions column is always reachable without
+                    horizontal scrolling. The data is still in the row
+                    detail / drawer if you click into a user. */}
+                <th className="hidden px-4 py-3 font-medium xl:table-cell">Joined</th>
+                <th className="hidden px-4 py-3 font-medium 2xl:table-cell">Last login</th>
                 <th className="px-4 py-3 text-right font-medium">Actions</th>
               </tr>
             </thead>
@@ -472,10 +476,10 @@ export default function AdminUsersPage() {
                       </span>
                     )}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-gray-600">
+                  <td className="hidden whitespace-nowrap px-4 py-3 text-gray-600 xl:table-cell">
                     {fmtDate(u.createdAt)}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-gray-600">
+                  <td className="hidden whitespace-nowrap px-4 py-3 text-gray-600 2xl:table-cell">
                     {fmtDate(u.lastLoginAt)}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">

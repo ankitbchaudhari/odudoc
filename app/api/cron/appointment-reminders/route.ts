@@ -17,6 +17,7 @@ import { listConsultations } from "@/lib/consultations-store";
 import {
   getBookingsDueForReminder,
   markBookingReminderSent,
+  reloadBookings,
 } from "@/lib/bookings-store";
 import { sendEmail } from "@/lib/email";
 import { sendToUser, sendToEmail } from "@/lib/fcm";
@@ -128,6 +129,7 @@ export async function GET(req: Request) {
   // idempotency marker. Bookings only get an FCM push (no email): the
   // confirmation email already covers the slot details, and reminders are
   // a "while you're holding your phone" prompt.
+  await reloadBookings();
   const bookingsDue = getBookingsDueForReminder(windowStart, windowEnd);
   let bookingsSent = 0;
   for (const b of bookingsDue) {

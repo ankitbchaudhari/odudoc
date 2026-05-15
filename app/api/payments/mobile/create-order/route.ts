@@ -20,6 +20,7 @@ import { stripe } from "@/lib/stripe";
 import {
   getBookingById,
   setBookingPayment,
+  reloadBookings,
 } from "@/lib/bookings-store";
 import { findUserByEmail, reloadUsers } from "@/lib/users-store";
 import { requireMobileUser } from "@/lib/mobile-auth";
@@ -61,6 +62,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    await reloadBookings();
     const booking = getBookingById(bookingId);
     if (!booking) {
       return NextResponse.json({ error: "booking_not_found" }, { status: 404 });

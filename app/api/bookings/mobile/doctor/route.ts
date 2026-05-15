@@ -6,7 +6,7 @@
 // patient (they should be hitting /api/bookings/mobile instead).
 
 import { NextRequest, NextResponse } from "next/server";
-import { getBookingsForDoctor } from "@/lib/bookings-store";
+import { getBookingsForDoctor, reloadBookings } from "@/lib/bookings-store";
 import { findDoctorByEmail } from "@/lib/doctors-store";
 import { requireMobileUser } from "@/lib/mobile-auth";
 import { log } from "@/lib/log";
@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
         { status: 404 }
       );
     }
+    await reloadBookings();
     const bookings = getBookingsForDoctor(doctor.id);
     return NextResponse.json({ bookings, doctorId: doctor.id, doctorName: doctor.name });
   } catch (err) {

@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   createBooking,
   getBookingsForUser,
+  reloadBookings,
 } from "@/lib/bookings-store";
 import { listConsultations } from "@/lib/consultations-store";
 import { validateSlot } from "@/lib/slot-utils";
@@ -162,6 +163,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    await reloadBookings();
     const bookings = getBookingsForUser(auth.userId, auth.email);
     return NextResponse.json({ bookings });
   } catch (err) {

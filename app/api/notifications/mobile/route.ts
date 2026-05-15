@@ -9,7 +9,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireMobileUser } from "@/lib/mobile-auth";
-import { getBookingsForUser } from "@/lib/bookings-store";
+import { getBookingsForUser, reloadBookings } from "@/lib/bookings-store";
 import { log } from "@/lib/log";
 
 export const runtime = "nodejs";
@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
   if (auth instanceof NextResponse) return auth;
 
   try {
+    await reloadBookings();
     const bookings = getBookingsForUser(auth.userId, auth.email);
     const now = new Date();
     const today = now.toISOString().slice(0, 10);

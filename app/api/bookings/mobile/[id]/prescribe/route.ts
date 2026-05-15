@@ -12,7 +12,7 @@
 // defaults fill the rest from the doctor profile + booking.
 
 import { NextRequest, NextResponse } from "next/server";
-import { getBookingById } from "@/lib/bookings-store";
+import { getBookingById, reloadBookings } from "@/lib/bookings-store";
 import { findDoctorByEmail } from "@/lib/doctors-store";
 import { findUserByEmail, reloadUsers } from "@/lib/users-store";
 import { addPrescription } from "@/lib/prescriptions-store";
@@ -84,6 +84,7 @@ export async function POST(
   const body = parsed;
 
   try {
+    await reloadBookings();
     const booking = getBookingById(params.id);
     if (!booking) {
       return NextResponse.json({ error: "booking_not_found" }, { status: 404 });

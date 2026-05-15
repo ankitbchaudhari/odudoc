@@ -13,7 +13,7 @@
 //   }
 
 import { NextRequest, NextResponse } from "next/server";
-import { getBookingById, getBookings } from "@/lib/bookings-store";
+import { getBookingById, getBookings, reloadBookings } from "@/lib/bookings-store";
 import { findDoctorByEmail } from "@/lib/doctors-store";
 import { findUserByEmail, reloadUsers } from "@/lib/users-store";
 import { listPrescriptions } from "@/lib/prescriptions-store";
@@ -36,6 +36,7 @@ export async function GET(
   }
 
   try {
+    await reloadBookings();
     const booking = getBookingById(params.bookingId);
     if (!booking) {
       return NextResponse.json({ error: "booking_not_found" }, { status: 404 });

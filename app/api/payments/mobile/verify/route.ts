@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { getBookingById, setBookingPayment } from "@/lib/bookings-store";
+import { getBookingById, setBookingPayment, reloadBookings } from "@/lib/bookings-store";
 import { requireMobileUser } from "@/lib/mobile-auth";
 import { parseJson, z } from "@/lib/validate";
 import { log } from "@/lib/log";
@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
   const { bookingId, paymentIntentId } = parsed;
 
   try {
+    await reloadBookings();
     const booking = getBookingById(bookingId);
     if (!booking) {
       return NextResponse.json({ error: "booking_not_found" }, { status: 404 });

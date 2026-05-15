@@ -24,7 +24,7 @@ import {
   isDailyConfigured,
 } from "@/lib/daily";
 import { createRoom, getAllRooms } from "@/lib/rooms-store";
-import { getBookingById } from "@/lib/bookings-store";
+import { getBookingById, reloadBookings } from "@/lib/bookings-store";
 import { findUserByEmail, reloadUsers } from "@/lib/users-store";
 import { getDoctorById } from "@/lib/doctors-store";
 import { requireMobileUser } from "@/lib/mobile-auth";
@@ -54,6 +54,7 @@ export async function GET(
   if (auth instanceof NextResponse) return auth;
 
   try {
+    await reloadBookings();
     const booking = getBookingById(params.bookingId);
     if (!booking) {
       return NextResponse.json({ error: "booking_not_found" }, { status: 404 });

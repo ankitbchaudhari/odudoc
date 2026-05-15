@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { verifyClinicStaffCredentials, getStaffById, reloadStaff } from "@/lib/clinic-staff-store";
-import { getClinicById } from "@/lib/clinics-store";
+import { getClinicById, reloadClinics } from "@/lib/clinics-store";
 import {
   signClinicSession,
   getClinicSession,
@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.ok) return parsed.response;
   const { clinicId, email, password } = parsed.data;
 
+  await reloadClinics();
   const clinic = getClinicById(clinicId);
   if (!clinic) {
     return NextResponse.json({ error: "Clinic not found" }, { status: 404 });

@@ -16,7 +16,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { verifyRazorpaySignature, getRazorpayPayment } from "@/lib/razorpay";
-import { updateBookingStatus, getBookingById } from "@/lib/bookings-store";
+import { updateBookingStatus, getBookingById, reloadBookings } from "@/lib/bookings-store";
 import { markPaid as markConsultationPaid } from "@/lib/consultations-store";
 import { parseJson } from "@/lib/api-validate";
 import { log } from "@/lib/log";
@@ -76,6 +76,10 @@ export async function POST(req: NextRequest) {
   // Update our own records. Both helpers are idempotent — webhook firing
   // later with the same ids is a safe no-op.
   if (bookingId) {
+    // Cross-Lambda freshness — the booking row may have been written on
+    // a sibling Lambda moments ago; without reload we'd silently skip
+    // the mark-paid step and the patient would see "pending" forever.
+    await reloadBookings();
     const booking = getBookingById(bookingId);
     if (booking) {
       // bookings-store keys on paymentIntentId; we store the order id

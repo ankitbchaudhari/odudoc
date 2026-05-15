@@ -39,6 +39,12 @@ const UpdateSchema = z.object({
   feeOverride: z.number().positive().max(100000).nullable().optional(),
   photoUrls: z.array(z.string().url()).max(10).optional(),
   active: z.boolean().optional(),
+  legalBusinessName: z.string().trim().max(200).optional(),
+  taxCountryCode: z.string().trim().length(2).optional(),
+  taxIdType: z.enum(["GSTIN", "PAN", "VAT", "EIN", "TRN", "ABN", "OTHER"]).optional(),
+  taxId: z.string().trim().max(40).optional(),
+  taxRegistered: z.boolean().optional(),
+  homeStateCode: z.string().trim().max(10).optional(),
 });
 
 async function authorize(req: NextRequest, clinicId: string) {

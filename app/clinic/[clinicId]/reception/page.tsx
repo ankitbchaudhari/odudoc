@@ -7,7 +7,7 @@
 // existing EMR entry, lets staff mark arrival, take payment notes, and
 // save vitals/diagnosis/prescription into the clinic EMR.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import QrScanner, { extractBookingId } from "@/components/QrScanner";
 
@@ -58,6 +58,7 @@ export default function ReceptionPage() {
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
 
   // Session check on mount — if no clinic-session cookie, redirect to login.
   useEffect(() => {
@@ -200,6 +201,9 @@ export default function ReceptionPage() {
                   Mark arrived
                 </button>
               )}
+              <button onClick={() => setInvoiceOpen(true)} className="rounded-lg bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:shadow-md">
+                🧾 Generate invoice
+              </button>
             </div>
           </div>
 
@@ -225,6 +229,14 @@ export default function ReceptionPage() {
 
           <EmrEditor bookingId={booking.id} initial={emr} onSaved={setEmr} />
         </section>
+      )}
+
+      {booking && invoiceOpen && (
+        <InvoiceModal
+          booking={booking}
+          onClose={() => setInvoiceOpen(false)}
+          onCreated={() => setInvoiceOpen(false)}
+        />
       )}
     </main>
   );
@@ -346,5 +358,206 @@ function Vital({ label, value, setValue, step }: { label: string; value: string;
         className="mt-0.5 w-full rounded-lg border border-gray-300 dark:border-slate-700 px-2 py-1.5 text-sm"
       />
     </label>
+  );
+}
+
+interface InvoiceLineDraft {
+  description: string;
+  category: "consultation" | "lab_test" | "imaging" | "medicine" | "consumable" | "room_charge" | "surgery" | "other";
+  amount: string;
+}
+
+function InvoiceModal({
+  booking,
+  onClose,
+  onCreated,
+}: {
+  booking: Booking;
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  // Pre-fill the first line with the doctor's consultation fee from
+  // the booking. Reception can add more lines (medicines, procedures)
+  // before issuing.
+  const [lines, setLines] = useState<InvoiceLineDraft[]>([
+    { description: "Consultation", category: "consultation", amount: String(booking.fee || "") },
+  ]);
+  const [intraState, setIntraState] = useState(true);
+  const [markPaidNow, setMarkPaidNow] = useState(booking.paymentMode === "clinic");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  // Live preview of the computed tax — fetched from the server so
+  // numbers shown here exactly match what gets persisted.
+  const [preview, setPreview] = useState<{ tax: { totalTaxRupees: number; grandTotalRupees: number } } | null>(null);
+
+  const total = useMemo(() => {
+    return lines.reduce((s, l) => s + (Number(l.amount) || 0), 0);
+  }, [lines]);
+
+  const updateLine = (idx: number, patch: Partial<InvoiceLineDraft>) => {
+    setLines((prev) => prev.map((l, i) => (i === idx ? { ...l, ...patch } : l)));
+  };
+
+  const addLine = () => {
+    setLines((prev) => [...prev, { description: "", category: "other", amount: "" }]);
+  };
+
+  const removeLine = (idx: number) => {
+    setLines((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const submit = async () => {
+    setErr(null);
+    const payloadLines = lines
+      .filter((l) => l.description.trim() && Number(l.amount) > 0)
+      .map((l) => ({
+        description: l.description.trim(),
+        category: l.category,
+        amountRupees: Number(l.amount),
+      }));
+    if (payloadLines.length === 0) {
+      setErr("Add at least one line with a description and amount.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const r = await fetch("/api/clinic/invoices", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookingId: booking.id,
+          patientName: booking.patientName,
+          patientPhone: booking.patientPhone,
+          patientEmail: booking.patientEmail,
+          lines: payloadLines,
+          intraState,
+          markPaidNow,
+        }),
+      });
+      const d = await r.json();
+      if (!r.ok) {
+        setErr(d.error || "Failed to issue invoice");
+        return;
+      }
+      setPreview(d.invoice);
+      onCreated();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800"
+      >
+        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 px-6 py-5 text-white">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full bg-white/20 blur-3xl" />
+          <div className="relative flex items-start gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-2xl shadow-inner ring-1 ring-white/20 backdrop-blur">🧾</div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">OduDoc · Invoice</p>
+              <h2 className="mt-0.5 text-xl font-bold leading-tight">Generate invoice</h2>
+              <p className="mt-1 text-sm text-white/80">For {booking.patientName} · {booking.id}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          <h3 className="text-sm font-bold text-gray-900 dark:text-slate-100">Line items</h3>
+          <p className="text-xs text-gray-500 dark:text-slate-400">Tax is computed from your clinic country &amp; category. Doctor services are typically exempt; medicines are reduced-rate.</p>
+
+          <ul className="mt-3 space-y-2">
+            {lines.map((line, i) => (
+              <li key={i} className="grid grid-cols-[1fr_8rem_6rem_auto] items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 p-2">
+                <input
+                  value={line.description}
+                  onChange={(e) => updateLine(i, { description: e.target.value })}
+                  placeholder="Description (e.g. Consultation, Paracetamol)"
+                  className="rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                />
+                <select
+                  value={line.category}
+                  onChange={(e) => updateLine(i, { category: e.target.value as InvoiceLineDraft["category"] })}
+                  className="rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-1.5 text-xs outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                >
+                  <option value="consultation">Consultation</option>
+                  <option value="medicine">Medicine</option>
+                  <option value="lab_test">Lab test</option>
+                  <option value="imaging">Imaging</option>
+                  <option value="consumable">Consumable</option>
+                  <option value="room_charge">Room</option>
+                  <option value="surgery">Procedure</option>
+                  <option value="other">Other</option>
+                </select>
+                <input
+                  type="number"
+                  min={0}
+                  value={line.amount}
+                  onChange={(e) => updateLine(i, { amount: e.target.value })}
+                  placeholder="0"
+                  className="rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-1.5 text-right text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeLine(i)}
+                  disabled={lines.length === 1}
+                  className="rounded-md p-1.5 text-rose-500 hover:bg-rose-50 disabled:opacity-30 dark:hover:bg-rose-950/40"
+                  aria-label="Remove line"
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <button type="button" onClick={addLine} className="mt-3 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/40">
+            + Add line
+          </button>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <label className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm">
+              <input type="checkbox" checked={intraState} onChange={(e) => setIntraState(e.target.checked)} className="h-4 w-4 accent-indigo-500" />
+              <span className="text-slate-700 dark:text-slate-300">Patient is in same state (intra-state GST)</span>
+            </label>
+            <label className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm">
+              <input type="checkbox" checked={markPaidNow} onChange={(e) => setMarkPaidNow(e.target.checked)} className="h-4 w-4 accent-emerald-500" />
+              <span className="text-slate-700 dark:text-slate-300">Mark as paid now (cash / UPI received)</span>
+            </label>
+          </div>
+
+          <div className="mt-5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 px-4 py-3 text-sm">
+            <div className="flex justify-between text-gray-600 dark:text-slate-300">
+              <span>Subtotal (pre-tax)</span>
+              <span className="font-mono font-semibold">{total.toFixed(2)}</span>
+            </div>
+            <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+              The exact tax (CGST / SGST / IGST / VAT) is computed server-side using your clinic&apos;s country rule and shown on the printed invoice.
+            </p>
+            {preview && (
+              <div className="mt-2 flex justify-between text-emerald-700 dark:text-emerald-300">
+                <span>Invoice issued #{(preview as { number?: string }).number || ""}</span>
+                <span className="font-mono">total {preview.tax.grandTotalRupees}</span>
+              </div>
+            )}
+          </div>
+
+          {err && <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">{err}</p>}
+        </div>
+
+        <div className="flex gap-2 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-4">
+          <button onClick={onClose} className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
+            Cancel
+          </button>
+          <button onClick={submit} disabled={busy} className="flex-1 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 disabled:cursor-not-allowed disabled:opacity-60">
+            {busy ? "Issuing…" : "Issue invoice"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

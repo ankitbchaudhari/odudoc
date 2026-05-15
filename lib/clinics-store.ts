@@ -37,6 +37,28 @@ export interface Clinic {
    *  in patient currency). If omitted, the doctor's default fee applies. */
   feeOverride?: number;
   photoUrls?: string[];
+
+  // ── Tax details (filled at registration or first invoice) ──────────
+  // Doctors / hospitals must declare their tax identity so every
+  // invoice generated at this clinic carries valid tax info. India →
+  // GSTIN (15 chars), US → EIN, UK → VAT number, etc. The tax engine
+  // uses the clinic's country (above) to pick the right rate; the
+  // identity fields below appear on the printed invoice.
+  legalBusinessName?: string;
+  /** ISO-3166 alpha-2, e.g. "IN". Defaults to the country field on
+   *  the clinic; we copy it here at create time so the invoice path
+   *  has a stable code without re-mapping the country name. */
+  taxCountryCode?: string;
+  /** Format of the tax id: GSTIN / PAN / VAT / EIN / etc. */
+  taxIdType?: "GSTIN" | "PAN" | "VAT" | "EIN" | "TRN" | "ABN" | "OTHER";
+  taxId?: string;
+  /** When false, invoices issued by this clinic are zero-tax (e.g.
+   *  individual doctor under threshold, services-exempt). */
+  taxRegistered?: boolean;
+  /** India only: doctor's state code (e.g. "GJ"). Drives intra-state
+   *  vs inter-state GST split. */
+  homeStateCode?: string;
+
   /** Admin can disable a clinic without deleting (preserves booking history) */
   active: boolean;
   createdAt: string;

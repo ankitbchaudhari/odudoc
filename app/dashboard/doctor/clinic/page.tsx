@@ -342,6 +342,13 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
     setHours((prev) => prev.map((h) => (h.day === day ? { ...h, ...patch } : h)));
   };
   const [feeOverride, setFee] = useState("");
+
+  // Tax details — collected once at registration so every invoice
+  // generated at this clinic carries valid tax info.
+  const [legalBusinessName, setLegalBusinessName] = useState("");
+  const [taxRegistered, setTaxRegistered] = useState(false);
+  const [taxIdType, setTaxIdType] = useState<"GSTIN" | "PAN" | "VAT" | "EIN" | "TRN" | "ABN" | "OTHER">("GSTIN");
+  const [taxId, setTaxId] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -423,6 +430,15 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
           acceptOnlinePayment: true,
           acceptClinicPayment: true,
           feeOverride: feeUsd,
+          // Tax fields — only sent when the doctor opted in. taxId is
+          // surfaced on every printed invoice; taxIdType drives the
+          // label (GSTIN vs VAT vs EIN).
+          legalBusinessName: legalBusinessName.trim() || undefined,
+          taxCountryCode: countryCode,
+          taxIdType: taxRegistered ? taxIdType : undefined,
+          taxId: taxRegistered && taxId.trim() ? taxId.trim() : undefined,
+          taxRegistered,
+          homeStateCode: stateCode || undefined,
         }),
       });
       const d = await r.json();
@@ -541,6 +557,64 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
               onChange={setFee}
               type="number"
             />
+          </Section>
+
+          {/* Section: Tax */}
+          <Section
+            icon="🧾"
+            iconBg="from-cyan-500 to-blue-500"
+            title="Tax details"
+            subtitle={
+              taxRegistered
+                ? `Required on every invoice issued at this clinic.`
+                : `Skip if you're an individual practitioner under the threshold.`
+            }
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field
+                label="Legal business name"
+                className="sm:col-span-2"
+                value={legalBusinessName}
+                onChange={setLegalBusinessName}
+              />
+              <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm sm:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={taxRegistered}
+                  onChange={(e) => setTaxRegistered(e.target.checked)}
+                  className="h-4 w-4 accent-cyan-500"
+                />
+                <span className="text-slate-700 dark:text-slate-300">
+                  This clinic is registered for tax (GST / VAT / sales tax).
+                  Invoices will include the tax breakdown.
+                </span>
+              </label>
+              {taxRegistered && (
+                <>
+                  <SelectField
+                    label="Tax ID type *"
+                    value={taxIdType}
+                    onChange={(v) => setTaxIdType(v as typeof taxIdType)}
+                    required
+                    options={[
+                      { value: "GSTIN", label: "GSTIN (India)" },
+                      { value: "PAN", label: "PAN (India)" },
+                      { value: "VAT", label: "VAT (EU / UK / GCC)" },
+                      { value: "EIN", label: "EIN (US)" },
+                      { value: "TRN", label: "TRN (UAE / Saudi)" },
+                      { value: "ABN", label: "ABN (Australia)" },
+                      { value: "OTHER", label: "Other" },
+                    ]}
+                  />
+                  <Field
+                    label={`${taxIdType} number *`}
+                    value={taxId}
+                    onChange={setTaxId}
+                    required={taxRegistered}
+                  />
+                </>
+              )}
+            </div>
           </Section>
 
           {/* Section: Hours */}

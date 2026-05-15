@@ -43,6 +43,14 @@ const CreateClinicSchema = z.object({
   acceptClinicPayment: z.boolean().default(true),
   feeOverride: z.number().positive().max(100000).optional(),
   photoUrls: z.array(z.string().url()).max(10).optional(),
+  // Tax fields — optional at registration time; doctor can also add
+  // later via the edit endpoint before the first invoice is issued.
+  legalBusinessName: z.string().trim().max(200).optional(),
+  taxCountryCode: z.string().trim().length(2).optional(),
+  taxIdType: z.enum(["GSTIN", "PAN", "VAT", "EIN", "TRN", "ABN", "OTHER"]).optional(),
+  taxId: z.string().trim().max(40).optional(),
+  taxRegistered: z.boolean().optional(),
+  homeStateCode: z.string().trim().max(10).optional(),
 });
 
 function getDoctor(email: string) {

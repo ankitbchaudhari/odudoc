@@ -88,7 +88,7 @@ const FAQS = [
 
 export default function PharmacyPartnersPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-emerald-50/30 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-white via-emerald-50/30 to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute -right-32 -top-32 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-emerald-300/35 to-teal-300/25 blur-3xl" />
@@ -204,7 +204,7 @@ export default function PharmacyPartnersPage() {
       </section>
 
       {/* How it works */}
-      <section className="bg-gradient-to-b from-emerald-50/40 to-white py-16 lg:py-20">
+      <section className="bg-gradient-to-b from-emerald-50/40 to-white dark:from-slate-900 dark:to-slate-950 py-16 lg:py-20">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10 text-center">
             <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-emerald-700">3 steps · 24 hours</p>

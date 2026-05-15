@@ -582,8 +582,8 @@ export default function CorporatePage() {
             {clinicalAi.map((f, i) => (
               <div
                 key={f.eyebrow}
-                className={`grid grid-cols-1 gap-8 rounded-3xl border border-gray-100 bg-white dark:bg-slate-900 p-8 shadow-sm md:grid-cols-[auto_1fr_auto] md:items-center md:p-10 ${
-                  i % 2 === 1 ? "md:bg-gradient-to-br md:from-white md:to-indigo-50/40" : ""
+                className={`grid grid-cols-1 gap-8 rounded-3xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-sm md:grid-cols-[auto_1fr_auto] md:items-center md:p-10 ${
+                  i % 2 === 1 ? "md:bg-gradient-to-br md:from-white md:to-indigo-50/40 md:dark:from-slate-900 md:dark:to-slate-900" : ""
                 }`}
               >
                 <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-teal-500 text-4xl shadow-lg">
@@ -687,7 +687,7 @@ export default function CorporatePage() {
       </section>
 
       {/* Enterprise module customiser */}
-      <section id="customise" className="bg-gradient-to-b from-gray-50 to-white py-20">
+      <section id="customise" className="bg-gradient-to-b from-gray-50 to-white dark:from-slate-900 dark:to-slate-950 py-20">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <span className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-indigo-700">

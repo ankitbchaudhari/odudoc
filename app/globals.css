@@ -123,6 +123,28 @@
   }
 }
 
+/* Tailwind Forms plugin paints inputs at very high specificity using
+   their own [type='...'] selectors loaded after our @layer rules.
+   The selectors above lose that race for the BookingModal contact
+   form etc. — visible as white-on-white "Priya / Sharma" inputs on
+   the dark-mode booking screen. !important here is the pragmatic fix:
+   we deliberately override any plain-Tailwind input bg in dark mode.
+   Per-component explicit bg-* classes are unaffected because those
+   compile to inline-equivalent utilities Tailwind sorts in cascade
+   order and they include their own !important when applied with
+   tailwind dark variants. */
+html.dark input:where([type="text"], [type="email"], [type="tel"], [type="number"], [type="password"], [type="search"], [type="url"], [type="date"], :not([type])),
+html.dark textarea,
+html.dark select {
+  background-color: rgb(15 23 42) !important;
+  border-color: rgb(51 65 85) !important;
+  color: rgb(226 232 240) !important;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: rgb(100 116 139) !important;
+}
+
 /* Blog article content styles */
 .blog-content h2 {
   @apply mt-10 mb-4 text-2xl font-bold text-gray-900;

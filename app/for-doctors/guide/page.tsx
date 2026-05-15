@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 
 export default function ForDoctorsGuidePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <header className="mb-10">
           <p className="text-xs font-bold uppercase tracking-widest text-primary-600">

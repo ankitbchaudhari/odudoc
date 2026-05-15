@@ -109,12 +109,12 @@ export default function EnterpriseCustomiser({ groups }: Props) {
   return (
     <form
       onSubmit={submit}
-      className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8"
+      className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-xl font-bold text-gray-900">Customise your Enterprise plan</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-slate-100">Customise your Enterprise plan</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
             Pick the modules you need. We&apos;ll send a tailored quote with implementation timeline.
           </p>
         </div>
@@ -122,14 +122,14 @@ export default function EnterpriseCustomiser({ groups }: Props) {
           <button
             type="button"
             onClick={selectAll}
-            className="rounded-md border border-gray-200 px-3 py-1 font-semibold text-gray-700 hover:bg-gray-50"
+            className="rounded-md border border-gray-200 dark:border-slate-700 px-3 py-1 font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
           >
             Select all
           </button>
           <button
             type="button"
             onClick={clearAll}
-            className="rounded-md border border-gray-200 px-3 py-1 font-semibold text-gray-700 hover:bg-gray-50"
+            className="rounded-md border border-gray-200 dark:border-slate-700 px-3 py-1 font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
           >
             Clear
           </button>
@@ -142,7 +142,7 @@ export default function EnterpriseCustomiser({ groups }: Props) {
       <div className="mt-6 space-y-6">
         {groups.map((g) => (
           <div key={g.label}>
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-500">{g.label}</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">{g.label}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {g.items.map((m) => {
                 const on = selected.has(m.id);
@@ -154,7 +154,7 @@ export default function EnterpriseCustomiser({ groups }: Props) {
                     className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                       on
                         ? "bg-indigo-600 text-white shadow-sm"
-                        : "border border-gray-200 bg-white text-gray-600 hover:border-indigo-300"
+                        : "border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:border-indigo-300"
                     }`}
                   >
                     {on ? "✓ " : ""}
@@ -169,7 +169,7 @@ export default function EnterpriseCustomiser({ groups }: Props) {
 
       <div className="mt-8 grid gap-4 border-t border-gray-100 pt-6 sm:grid-cols-2">
         <label className="block">
-          <span className="text-xs font-semibold uppercase text-gray-500">Company / hospital</span>
+          <span className="text-xs font-semibold uppercase text-gray-500 dark:text-slate-400">Company / hospital</span>
           <input
             required
             value={company}
@@ -179,7 +179,7 @@ export default function EnterpriseCustomiser({ groups }: Props) {
           />
         </label>
         <label className="block">
-          <span className="text-xs font-semibold uppercase text-gray-500">Beds / branches</span>
+          <span className="text-xs font-semibold uppercase text-gray-500 dark:text-slate-400">Beds / branches</span>
           <input
             value={beds}
             onChange={(e) => setBeds(e.target.value)}
@@ -188,7 +188,7 @@ export default function EnterpriseCustomiser({ groups }: Props) {
           />
         </label>
         <label className="block">
-          <span className="text-xs font-semibold uppercase text-gray-500">Your name</span>
+          <span className="text-xs font-semibold uppercase text-gray-500 dark:text-slate-400">Your name</span>
           <input
             required
             value={contactName}
@@ -198,7 +198,7 @@ export default function EnterpriseCustomiser({ groups }: Props) {
           />
         </label>
         <label className="block">
-          <span className="text-xs font-semibold uppercase text-gray-500">Work email</span>
+          <span className="text-xs font-semibold uppercase text-gray-500 dark:text-slate-400">Work email</span>
           <input
             required
             type="email"
@@ -209,7 +209,7 @@ export default function EnterpriseCustomiser({ groups }: Props) {
           />
         </label>
         <label className="block">
-          <span className="text-xs font-semibold uppercase text-gray-500">Phone (optional)</span>
+          <span className="text-xs font-semibold uppercase text-gray-500 dark:text-slate-400">Phone (optional)</span>
           {/* Country-code dropdown + national-number input. Sales gets
               a clean E.164-ish string on the lead row even when the
               prospect just types their local number. */}
@@ -236,7 +236,7 @@ export default function EnterpriseCustomiser({ groups }: Props) {
           </div>
         </label>
         <label className="block sm:col-span-2">
-          <span className="text-xs font-semibold uppercase text-gray-500">
+          <span className="text-xs font-semibold uppercase text-gray-500 dark:text-slate-400">
             Custom requirements (integrations, regions, SLAs, …)
           </span>
           <textarea

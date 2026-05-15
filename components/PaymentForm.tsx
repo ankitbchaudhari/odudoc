@@ -8,6 +8,7 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { getStripePromise } from "@/lib/stripe";
+import PaymentProcessorDisclosure from "@/components/PaymentProcessorDisclosure";
 
 interface PaymentFormProps {
   clientSecret: string;
@@ -229,6 +230,7 @@ function CheckoutForm({
           `Pay $${fee.toFixed(2)}`
         )}
       </button>
+      <PaymentProcessorDisclosure processor="stripe" />
     </form>
   );
 }

@@ -229,6 +229,13 @@ export default function CashfreeCheckout({
         <span className="font-semibold text-[#6933FF]">Cashfree Payments</span>
         {" "}· Secure · 256-bit TLS · India&apos;s most trusted UPI gateway
       </p>
+      <p className="text-center text-[11px] leading-relaxed text-slate-400 dark:text-slate-500">
+        By paying you agree to Cashfree&apos;s{" "}
+        <a href="https://www.cashfree.com/policies/terms-and-conditions" target="_blank" rel="noreferrer" className="underline hover:text-slate-700 dark:hover:text-slate-200">Terms</a>
+        {" "}and{" "}
+        <a href="https://www.cashfree.com/policies/privacy-policy" target="_blank" rel="noreferrer" className="underline hover:text-slate-700 dark:hover:text-slate-200">Privacy Policy</a>.
+        OduDoc does not store your card details.
+      </p>
     </div>
   );
 }

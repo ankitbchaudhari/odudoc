@@ -22,7 +22,7 @@ const sections = [
           {[
             { label: "Account Data", desc: "Name, email, phone, date of birth, and gender when you create an account.", color: "border-blue-200 bg-blue-50" },
             { label: "Medical Info", desc: "Health records, prescriptions, lab reports, symptoms, diagnoses, and treatment history.", color: "border-green-200 bg-green-50" },
-            { label: "Payment Data", desc: "Card numbers, billing addresses, and transaction history. Processed by Stripe — we never store full card numbers.", color: "border-purple-200 bg-purple-50" },
+            { label: "Payment Data", desc: "Card numbers, UPI IDs, billing addresses, and transaction history. Processed by Razorpay, Cashfree, or Stripe — we never store full card numbers on our servers.", color: "border-purple-200 bg-purple-50" },
             { label: "Doctor Info", desc: "Medical license, qualifications, clinic details, and professional experience for doctor profiles.", color: "border-amber-200 bg-amber-50" },
           ].map((item) => (
             <div key={item.label} className={`rounded-xl border p-4 ${item.color}`}>
@@ -81,7 +81,7 @@ const sections = [
         <div className="space-y-3">
           {[
             { who: "Healthcare Providers", why: "Doctors you consult with receive your relevant medical information." },
-            { who: "Payment Processors", why: "Stripe processes payments on our behalf under their own privacy policy." },
+            { who: "Payment Processors", why: "Razorpay, Cashfree, and Stripe process payments on our behalf under their own privacy policies (razorpay.com/privacy, cashfree.com/privacy-policy, stripe.com/privacy)." },
             { who: "Lab Partners", why: "When you order lab tests, necessary details are shared with accredited labs." },
             { who: "Legal Requirements", why: "When required by law, subpoena, or government request." },
           ].map((item) => (

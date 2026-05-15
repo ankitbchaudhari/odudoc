@@ -115,7 +115,7 @@ const sections = [
       <div className="grid gap-3 sm:grid-cols-2">
         {[
           { label: "Transparent Pricing", desc: "All fees displayed before booking, including applicable taxes", icon: "text-green-600 bg-green-50" },
-          { label: "Secure Payments", desc: "Processed securely via Stripe with 256-bit encryption", icon: "text-blue-600 bg-blue-50" },
+          { label: "Secure Payments", desc: "Processed securely via Razorpay (UPI/cards/netbanking in India), Cashfree, or Stripe with 256-bit encryption. Payments are subject to the respective processor's terms — see razorpay.com/terms, cashfree.com/policies/terms-and-conditions, stripe.com/legal.", icon: "text-blue-600 bg-blue-50" },
           { label: "Refund Timeline", desc: "Refunds processed within 5-7 business days to original method", icon: "text-purple-600 bg-purple-50" },
           { label: "Dispute Window", desc: "Disputes must be raised within 7 days of the transaction", icon: "text-amber-600 bg-amber-50" },
         ].map((item) => (

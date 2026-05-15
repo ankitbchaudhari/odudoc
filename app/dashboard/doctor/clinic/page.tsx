@@ -6,6 +6,8 @@
 // /clinic/<clinicId>/login.
 
 import { useEffect, useMemo, useState } from "react";
+import { byCountry, byCode } from "@/lib/currencies";
+import { convert } from "@/lib/currency-convert";
 
 // Worldwide country/state/city data. Bundled lazily — the npm package
 // `country-state-city` ships ~150k cities + ~5k states (≈1.6MB), so we
@@ -358,11 +360,32 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
   const countryName = countries.find((c) => c.isoCode === countryCode)?.name || countryCode;
   const stateName = states.find((s) => s.isoCode === stateCode)?.name || stateCode;
 
+  // Per-country currency: when the doctor picks India the fee field
+  // flips to "Per-visit fee (INR ₹)"; UAE → "(AED د.إ)"; etc.
+  // byCountry uses ISO-3166 alpha-2 codes which match country-state-city's
+  // isoCode field exactly. Falls back to USD if the country isn't in
+  // our currency table (rare — currencies.ts covers ~150 countries).
+  const currency = byCountry(countryCode) || byCode("USD")!;
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);
     setBusy(true);
     try {
+      // Convert the doctor-entered fee from their country's currency
+      // back to USD before posting. The /api/doctor/clinics route
+      // stores fees in USD as the canonical unit (matches doctors-store
+      // and the existing per-currency display layer at /doctors/[id]).
+      let feeUsd: number | undefined;
+      if (feeOverride) {
+        const raw = Number(feeOverride);
+        if (Number.isFinite(raw) && raw > 0) {
+          feeUsd = currency.code === "USD"
+            ? raw
+            : await convert(raw, currency.code, "USD");
+        }
+      }
+
       const r = await fetch("/api/doctor/clinics", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -383,7 +406,7 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
           // patient wants to pay.
           acceptOnlinePayment: true,
           acceptClinicPayment: true,
-          feeOverride: feeOverride ? Number(feeOverride) : undefined,
+          feeOverride: feeUsd,
         }),
       });
       const d = await r.json();
@@ -453,7 +476,13 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
           <Field label="Postal code" value={postalCode} onChange={setPC} />
           <Field label="Clinic phone" value={phone} onChange={setPhone} />
           <Field label="Google Maps URL" className="sm:col-span-2" value={mapsUrl} onChange={setMaps} />
-          <Field label="Per-visit fee (USD) — leave blank to use your default" className="sm:col-span-2" value={feeOverride} onChange={setFee} type="number" />
+          <Field
+            label={`Per-visit fee (${currency.code} ${currency.symbol}) — leave blank to use your default`}
+            className="sm:col-span-2"
+            value={feeOverride}
+            onChange={setFee}
+            type="number"
+          />
         </div>
 
         <fieldset className="mt-5">

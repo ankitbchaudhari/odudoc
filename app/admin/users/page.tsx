@@ -409,23 +409,24 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table — scrolls both directions. The outer wrapper caps
+          height at 70vh so the user list never pushes the page taller
+          than the viewport; the inner div allows horizontal scroll
+          when the columns total wider than the visible area. The
+          thead is sticky so headers stay anchored during vertical
+          scroll. */}
       <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
         <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500" />
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gradient-to-r from-violet-50/60 via-purple-50/40 to-indigo-50/60 text-xs uppercase text-gray-600">
+        <div className="max-h-[70vh] overflow-auto">
+          <table className="w-full min-w-[1100px] text-left text-sm">
+            <thead className="sticky top-0 z-10">
+              <tr className="border-b border-gray-100 bg-gradient-to-r from-violet-50/95 via-purple-50/95 to-indigo-50/95 text-xs uppercase text-gray-600 backdrop-blur">
                 <th className="px-4 py-3 font-medium">User</th>
                 <th className="px-4 py-3 font-medium">Email</th>
                 <th className="px-4 py-3 font-medium">Role</th>
                 <th className="px-4 py-3 font-medium">Status</th>
-                {/* Joined + Last login hidden below xl breakpoint so
-                    the Actions column is always reachable without
-                    horizontal scrolling. The data is still in the row
-                    detail / drawer if you click into a user. */}
-                <th className="hidden px-4 py-3 font-medium xl:table-cell">Joined</th>
-                <th className="hidden px-4 py-3 font-medium 2xl:table-cell">Last login</th>
+                <th className="whitespace-nowrap px-4 py-3 font-medium">Joined</th>
+                <th className="whitespace-nowrap px-4 py-3 font-medium">Last login</th>
                 <th className="px-4 py-3 text-right font-medium">Actions</th>
               </tr>
             </thead>
@@ -476,10 +477,10 @@ export default function AdminUsersPage() {
                       </span>
                     )}
                   </td>
-                  <td className="hidden whitespace-nowrap px-4 py-3 text-gray-600 xl:table-cell">
+                  <td className="whitespace-nowrap px-4 py-3 text-gray-600">
                     {fmtDate(u.createdAt)}
                   </td>
-                  <td className="hidden whitespace-nowrap px-4 py-3 text-gray-600 2xl:table-cell">
+                  <td className="whitespace-nowrap px-4 py-3 text-gray-600">
                     {fmtDate(u.lastLoginAt)}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">

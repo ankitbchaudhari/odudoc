@@ -481,24 +481,35 @@ export default function WalletPage() {
         await load();
       } else {
         const body = await r.json().catch(() => ({} as Record<string, unknown>));
-        // Surface the user-friendly message when the API provides one;
-        // suppress raw Cashfree internals from the patient's view.
-        // When the response wasn't JSON (Vercel edge 502 / 504) we
-        // synthesise a plain-English fallback for the common HTTP
-        // statuses so the toast never shows just "(502)".
+        // Tell the user exactly WHICH gateway choked + nudge them to
+        // try a different one. Earlier we showed a generic "Payment
+        // gateway is unreachable" toast which gave no clue whether
+        // the issue was with the gateway they clicked or the whole
+        // payment system, so they retried the same broken option.
+        const gatewayLabel = gateway === "razorpay" ? "Razorpay"
+          : gateway === "cashfree" ? "Cashfree"
+          : gateway === "stripe" ? "Stripe"
+          : "the payment gateway";
+        const alternatives = ["cashfree", "razorpay", "stripe"]
+          .filter((g) => g !== gateway)
+          .map((g) => g === "cashfree" ? "Cashfree" : g === "razorpay" ? "Razorpay" : "Stripe");
+        const altSuggestion = alternatives.length > 0
+          ? ` Try ${alternatives.join(" or ")} instead.`
+          : "";
+
         const statusFallback =
-          r.status === 502 ? "Payment gateway is unreachable right now. Please try again in a moment."
-          : r.status === 504 ? "Payment gateway took too long to respond. Please try again."
+          r.status === 502 ? `${gatewayLabel} is unreachable right now.${altSuggestion}`
+          : r.status === 504 ? `${gatewayLabel} took too long to respond.${altSuggestion}`
           : r.status === 429 ? "Too many top-up attempts. Please wait a minute and try again."
-          : r.status >= 500 ? "Something went wrong on our side. Please try again in a moment."
+          : r.status >= 500 ? `${gatewayLabel} had a server error.${altSuggestion}`
           : null;
         const userMsg = (body.message as string | undefined)
-          || (body.error === "payment_gateway_auth_failed" ? "Payment gateway temporarily unavailable. Please try again shortly." : null)
-          || (body.error === "payment_gateway_timeout" ? "Payment gateway is slow right now. Please try again in a moment." : null)
-          || (body.error === "payment_gateway_unreachable" ? "Couldn't reach the payment gateway. Please try again." : null)
+          || (body.error === "payment_gateway_auth_failed" ? `${gatewayLabel} rejected our credentials — they may need rotation.${altSuggestion}` : null)
+          || (body.error === "payment_gateway_timeout" ? `${gatewayLabel} is slow right now.${altSuggestion}` : null)
+          || (body.error === "payment_gateway_unreachable" ? `Couldn't reach ${gatewayLabel}.${altSuggestion}` : null)
           || (body.error === "invalid_amount" ? "Top-up must be between ₹100 and ₹50,000." : null)
           || statusFallback
-          || `Top-up failed (${(body.error as string | undefined) || r.status}).`;
+          || `Top-up via ${gatewayLabel} failed (${(body.error as string | undefined) || r.status}).${altSuggestion}`;
         setToast({ kind: "err", text: userMsg });
         // Operator diagnostic — only logged client-side, not shown.
         if (body.diagnostic) console.warn("[wallet topup]", body.diagnostic);

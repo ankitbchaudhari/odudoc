@@ -893,7 +893,13 @@ export default function BookingModal({ doctor, open, onClose, clinicId, clinicNa
                 {razorpayAvailable && (
                   <button
                     type="button"
-                    onClick={() => setProvider("razorpay")}
+                    onClick={() => {
+                      // Razorpay creates its own order on the button
+                      // click inside <RazorpayCheckout/>, so we only
+                      // need to flip the provider state.
+                      setProvider("razorpay");
+                      setPaymentError(null);
+                    }}
                     className={`rounded-full px-3 py-1.5 transition ${provider === "razorpay" ? "bg-white dark:bg-slate-900 text-[#3D5CFF] shadow-sm" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-slate-100"}`}
                   >
                     🇮🇳 UPI / Cards (Razorpay)
@@ -902,7 +908,20 @@ export default function BookingModal({ doctor, open, onClose, clinicId, clinicNa
                 {cashfreeAvailable && (
                   <button
                     type="button"
-                    onClick={() => setProvider("cashfree")}
+                    onClick={() => {
+                      // Cashfree needs an orderId up-front; mint one
+                      // here if the patient is switching to Cashfree
+                      // after having started with another provider on
+                      // the previous step. Otherwise the modal falls
+                      // through to the Stripe card form.
+                      setProvider("cashfree");
+                      setPaymentError(null);
+                      if (!cashfreeOrderId) {
+                        setCashfreeOrderId(
+                          `pre_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+                        );
+                      }
+                    }}
                     className={`rounded-full px-3 py-1.5 transition ${provider === "cashfree" ? "bg-white dark:bg-slate-900 text-[#6933FF] shadow-sm" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-slate-100"}`}
                   >
                     🇮🇳 UPI / Cards (Cashfree)
@@ -910,7 +929,40 @@ export default function BookingModal({ doctor, open, onClose, clinicId, clinicNa
                 )}
                 <button
                   type="button"
-                  onClick={() => setProvider("stripe")}
+                  onClick={async () => {
+                    setProvider("stripe");
+                    setPaymentError(null);
+                    // Stripe needs a PaymentIntent (clientSecret) — if
+                    // the patient initially picked Cashfree/Razorpay
+                    // and is now switching to Stripe, create one now
+                    // so the card form has something to confirm.
+                    if (!clientSecret) {
+                      try {
+                        const res = await fetch("/api/payments/create-intent", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            doctorId: doctor.id,
+                            doctorName: doctor.name,
+                            fee: doctor.fee,
+                            patientName: name,
+                            patientPhone: phone.trim(),
+                            timeSlot: selectedSlot,
+                            currency: checkout.code,
+                          }),
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                          setClientSecret(data.clientSecret);
+                          setPaymentIntentId(data.paymentIntentId);
+                        } else {
+                          setPaymentError(data.error || "Could not load card payment");
+                        }
+                      } catch {
+                        setPaymentError("Network error switching to Stripe");
+                      }
+                    }
+                  }}
                   className={`rounded-full px-3 py-1.5 transition ${provider === "stripe" ? "bg-white dark:bg-slate-900 text-indigo-600 shadow-sm" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-slate-100"}`}
                 >
                   💳 International (Stripe)
@@ -938,22 +990,30 @@ export default function BookingModal({ doctor, open, onClose, clinicId, clinicNa
                 }}
                 onError={handlePaymentError}
               />
-            ) : provider === "cashfree" && cashfreeOrderId ? (
-              <CashfreeCheckout
-                orderId={cashfreeOrderId}
-                amount={Number((convertedFee ?? doctor.fee).toFixed(2))}
-                currency={(checkout.code === "INR" ? "INR" : "INR") as "INR"}
-                customerName={name}
-                customerEmail={(typeof window !== "undefined" && new URLSearchParams(window.location.search).get("email")) || `${phone.replace(/[^0-9]/g, "")}@odudoc.example`}
-                customerPhone={phone.replace(/^\+/, "")}
-                description={`Consultation with ${doctor.name} on ${selectedSlot}`}
-                doctorId={doctor.id}
-                // Cashfree's success path doesn't carry a stripe-style
-                // PaymentIntent id — the orderId IS what the webhook
-                // keys on, so we forward it as paymentIntentId.
-                onSuccess={() => handlePaymentSuccess("", cashfreeOrderId)}
-                onError={handlePaymentError}
-              />
+            ) : provider === "cashfree" ? (
+              cashfreeOrderId ? (
+                <CashfreeCheckout
+                  orderId={cashfreeOrderId}
+                  amount={Number((convertedFee ?? doctor.fee).toFixed(2))}
+                  currency={(checkout.code === "INR" ? "INR" : "INR") as "INR"}
+                  customerName={name}
+                  customerEmail={(typeof window !== "undefined" && new URLSearchParams(window.location.search).get("email")) || `${phone.replace(/[^0-9]/g, "")}@odudoc.example`}
+                  customerPhone={phone.replace(/^\+/, "")}
+                  description={`Consultation with ${doctor.name} on ${selectedSlot}`}
+                  doctorId={doctor.id}
+                  // Cashfree's success path doesn't carry a stripe-style
+                  // PaymentIntent id — the orderId IS what the webhook
+                  // keys on, so we forward it as paymentIntentId.
+                  onSuccess={() => handlePaymentSuccess("", cashfreeOrderId)}
+                  onError={handlePaymentError}
+                />
+              ) : (
+                // Defensive fallback — toggling to Cashfree always
+                // mints an orderId now, but if for any reason it
+                // hasn't landed yet, show a loader rather than letting
+                // the Stripe card form leak through.
+                <p className="text-sm text-slate-500 dark:text-slate-400">Initialising Cashfree…</p>
+              )
             ) : clientSecret ? (
               <PaymentForm
                 clientSecret={clientSecret}

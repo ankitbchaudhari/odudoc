@@ -31,12 +31,16 @@ export interface DoctorReferral {
 }
 
 const referrals: DoctorReferral[] = [];
-const { hydrate, flush } = bindPersistentArray<DoctorReferral>(
+const { hydrate, flush, reload } = bindPersistentArray<DoctorReferral>(
   "doctor-referrals",
   referrals,
   () => [],
 );
 await hydrate();
+
+export async function reloadDoctorReferrals(): Promise<void> {
+  await reload();
+}
 
 const now = () => new Date().toISOString();
 const genId = () =>

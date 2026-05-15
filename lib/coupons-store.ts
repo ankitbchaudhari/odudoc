@@ -13,12 +13,16 @@ export interface Coupon {
 }
 
 const coupons: Coupon[] = [];
-const { hydrate, flush } = bindPersistentArray<Coupon>(
+const { hydrate, flush, reload } = bindPersistentArray<Coupon>(
   "coupons",
   coupons,
   () => []
 );
 await hydrate();
+
+export async function reloadCoupons(): Promise<void> {
+  await reload();
+}
 
 // One-time cleanup: drop the demo coupons that shipped with the initial
 // seed. Admin creates real coupons via /admin/coupons.

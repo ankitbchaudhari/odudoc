@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { createDoctorReferral, countReferralsByPatient } from "@/lib/doctor-referrals-store";
+import { createDoctorReferral, countReferralsByPatient, reloadDoctorReferrals } from "@/lib/doctor-referrals-store";
 import { addAdminNotification } from "@/lib/admin-notifications-store";
 import { sendEmail } from "@/lib/email";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
@@ -61,6 +61,9 @@ export async function POST(req: NextRequest) {
   }
 
   // Soft per-patient cap so one bad actor can't blast 100 doctors.
+  // Reload first so referrals made on sibling Lambdas count toward
+  // the cap — otherwise the rate-limit is per-Lambda, not per-user.
+  await reloadDoctorReferrals();
   const existing = countReferralsByPatient(user.email);
   if (existing >= 25) {
     return NextResponse.json(

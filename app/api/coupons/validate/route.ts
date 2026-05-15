@@ -7,7 +7,7 @@
 // usage — redeem happens server-side once payment succeeds.
 
 import { NextRequest, NextResponse } from "next/server";
-import { applyCoupon, validateCoupon } from "@/lib/coupons-store";
+import { applyCoupon, validateCoupon, reloadCoupons } from "@/lib/coupons-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,6 +27,9 @@ export async function POST(req: NextRequest) {
   if (!Number.isFinite(subtotal) || subtotal < 0) {
     return NextResponse.json({ ok: false, error: "Invalid subtotal" }, { status: 400 });
   }
+  // Reload so a coupon admin just published on a sibling Lambda
+  // validates correctly here.
+  await reloadCoupons();
   const check = validateCoupon(code, subtotal);
   if (!check.valid || !check.coupon) {
     return NextResponse.json({ ok: false, error: check.error || "Invalid code" }, { status: 200 });

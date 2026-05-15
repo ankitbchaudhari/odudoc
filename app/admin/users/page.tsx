@@ -472,68 +472,65 @@ export default function AdminUsersPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">
+                  <td className="whitespace-nowrap px-4 py-3 text-gray-600">
                     {fmtDate(u.createdAt)}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">
+                  <td className="whitespace-nowrap px-4 py-3 text-gray-600">
                     {fmtDate(u.lastLoginAt)}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="whitespace-nowrap px-4 py-3">
+                    {/* Action column was overflowing off-screen with 5
+                        text buttons + 3-line date columns. Switched to
+                        icon-only square buttons with title tooltips —
+                        same actions, ~⅓ the width. Date columns get
+                        whitespace-nowrap above so they don't wrap to 3
+                        lines either. */}
                     <div className="flex items-center justify-end gap-1">
                       {u.status === "active" ? (
-                        <button
+                        <IconBtn
                           onClick={() => setBanFor(u)}
                           disabled={busyId === u.id}
-                          className="rounded-lg bg-red-50 px-2 py-1 text-xs font-semibold text-red-600 ring-1 ring-red-100 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow disabled:opacity-50"
                           title="Ban user"
-                        >
-                          Ban
-                        </button>
+                          tone="bg-red-50 text-red-600 ring-red-100 hover:bg-red-100"
+                          icon="🚫"
+                        />
                       ) : (
-                        <button
+                        <IconBtn
                           onClick={() => doUnban(u)}
                           disabled={busyId === u.id}
-                          className="rounded-lg bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-600 ring-1 ring-emerald-100 transition hover:-translate-y-0.5 hover:bg-emerald-100 hover:shadow disabled:opacity-50"
                           title="Unban user"
-                        >
-                          Unban
-                        </button>
+                          tone="bg-emerald-50 text-emerald-600 ring-emerald-100 hover:bg-emerald-100"
+                          icon="✓"
+                        />
                       )}
-                      <button
+                      <IconBtn
                         onClick={() => setWarningFor(u)}
                         disabled={busyId === u.id}
-                        className="rounded-lg bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-100 transition hover:-translate-y-0.5 hover:bg-amber-100 hover:shadow disabled:opacity-50"
                         title="Send warning"
-                      >
-                        Warn
-                      </button>
-                      <button
-                        onClick={() => {
-                          setNewRole(u.role);
-                          setRoleFor(u);
-                        }}
+                        tone="bg-amber-50 text-amber-700 ring-amber-100 hover:bg-amber-100"
+                        icon="⚠️"
+                      />
+                      <IconBtn
+                        onClick={() => { setNewRole(u.role); setRoleFor(u); }}
                         disabled={busyId === u.id}
-                        className="rounded-lg bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-600 ring-1 ring-indigo-100 transition hover:-translate-y-0.5 hover:bg-indigo-100 hover:shadow disabled:opacity-50"
                         title="Change role"
-                      >
-                        Role
-                      </button>
-                      <button
+                        tone="bg-indigo-50 text-indigo-600 ring-indigo-100 hover:bg-indigo-100"
+                        icon="🛡"
+                      />
+                      <IconBtn
                         onClick={() => doResetPassword(u)}
                         disabled={busyId === u.id}
-                        className="rounded-lg bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600 ring-1 ring-blue-100 transition hover:-translate-y-0.5 hover:bg-blue-100 hover:shadow disabled:opacity-50"
                         title="Reset password"
-                      >
-                        Reset pw
-                      </button>
-                      <button
+                        tone="bg-blue-50 text-blue-600 ring-blue-100 hover:bg-blue-100"
+                        icon="🔑"
+                      />
+                      <IconBtn
                         onClick={() => doDelete(u)}
                         disabled={busyId === u.id}
-                        className="rounded-lg bg-rose-50 px-2 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-100 transition hover:-translate-y-0.5 hover:bg-rose-100 hover:shadow disabled:opacity-50"
                         title="Delete user"
-                      >
-                        Delete
-                      </button>
+                        tone="bg-rose-50 text-rose-700 ring-rose-100 hover:bg-rose-100"
+                        icon="🗑"
+                      />
                     </div>
                   </td>
                 </tr>
@@ -794,5 +791,36 @@ function Modal({
         {children}
       </div>
     </div>
+  );
+}
+
+/** Compact icon-only action button used in the Users table actions
+ *  column. Same affordance as the previous text buttons (ring, hover
+ *  lift, disabled state) but ~⅓ the width — keeps the actions column
+ *  on-screen without horizontal scrolling. */
+function IconBtn({
+  onClick,
+  disabled,
+  title,
+  tone,
+  icon,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  title: string;
+  tone: string;
+  icon: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      aria-label={title}
+      className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm ring-1 transition hover:-translate-y-0.5 hover:shadow disabled:opacity-50 ${tone}`}
+    >
+      {icon}
+    </button>
   );
 }

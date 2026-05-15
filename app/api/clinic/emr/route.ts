@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getClinicSession } from "@/lib/clinic-session";
-import { getBookingById } from "@/lib/bookings-store";
+import { getBookingById, reloadBookings } from "@/lib/bookings-store";
 import { upsertEmrEntry } from "@/lib/clinic-emr-store";
 import { getClinicById } from "@/lib/clinics-store";
 import { parseJson } from "@/lib/api-validate";
@@ -46,6 +46,9 @@ export async function POST(req: NextRequest) {
   if (!parsed.ok) return parsed.response;
   const { bookingId, ...rest } = parsed.data;
 
+  // Cross-Lambda freshness — booking row may live on a sibling Lambda's
+  // memory; without reload we'd 404 here despite the row existing in PG.
+  await reloadBookings();
   const booking = getBookingById(bookingId);
   if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
   if (booking.clinicId && booking.clinicId !== session.clinicId) {

@@ -7,6 +7,7 @@ import {
   getInvoiceById,
   markInvoicePaid,
   voidInvoice,
+  reloadInvoices,
 } from "@/lib/clinic-invoices-store";
 
 export const runtime = "nodejs";
@@ -14,6 +15,7 @@ export const runtime = "nodejs";
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const session = getClinicSession(req);
   if (!session) return NextResponse.json({ error: "not_signed_in" }, { status: 401 });
+  await reloadInvoices();
   const inv = getInvoiceById(params.id);
   if (!inv) return NextResponse.json({ error: "not_found" }, { status: 404 });
   if (inv.clinicId !== session.clinicId) {
@@ -25,6 +27,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const session = getClinicSession(req);
   if (!session) return NextResponse.json({ error: "not_signed_in" }, { status: 401 });
+  await reloadInvoices();
   const inv = getInvoiceById(params.id);
   if (!inv) return NextResponse.json({ error: "not_found" }, { status: 404 });
   if (inv.clinicId !== session.clinicId) {

@@ -11,11 +11,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getClinicSession } from "@/lib/clinic-session";
 import { getClinicById } from "@/lib/clinics-store";
-import { getBookingById } from "@/lib/bookings-store";
+import { getBookingById, reloadBookings } from "@/lib/bookings-store";
 import { computeInvoice, getRule } from "@/lib/tax/engine";
 import {
   createClinicInvoice,
   listInvoicesByClinic,
+  reloadInvoices,
   type ClinicInvoiceLineInput,
 } from "@/lib/clinic-invoices-store";
 import { parseJson } from "@/lib/api-validate";
@@ -80,6 +81,7 @@ export async function POST(req: NextRequest) {
     intraStateInIndia: intraState,
   });
 
+  if (body.bookingId) await reloadBookings();
   const booking = body.bookingId ? getBookingById(body.bookingId) : undefined;
   if (booking && booking.clinicId && booking.clinicId !== clinic.id) {
     return NextResponse.json({ error: "booking_belongs_to_different_clinic" }, { status: 403 });
@@ -123,6 +125,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const session = getClinicSession(req);
   if (!session) return NextResponse.json({ error: "not_signed_in" }, { status: 401 });
+  await reloadInvoices();
   const list = listInvoicesByClinic(session.clinicId);
   return NextResponse.json({ invoices: list });
 }

@@ -8,8 +8,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getClinicSession } from "@/lib/clinic-session";
-import { getBookingById, markBookingArrived } from "@/lib/bookings-store";
-import { getEmrByBookingId } from "@/lib/clinic-emr-store";
+import { getBookingById, markBookingArrived, reloadBookings } from "@/lib/bookings-store";
+import { getEmrByBookingId, reloadEmr } from "@/lib/clinic-emr-store";
 import { getClinicById } from "@/lib/clinics-store";
 
 export const runtime = "nodejs";
@@ -18,6 +18,9 @@ export async function GET(req: NextRequest, { params }: { params: { bookingId: s
   const session = getClinicSession(req);
   if (!session) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
 
+  // Cross-Lambda freshness — patient may have booked seconds ago on a
+  // different Lambda than the one serving this reception lookup.
+  await Promise.all([reloadBookings(), reloadEmr()]);
   const booking = getBookingById(params.bookingId);
   if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
   if (booking.clinicId && booking.clinicId !== session.clinicId) {
@@ -34,6 +37,7 @@ export async function GET(req: NextRequest, { params }: { params: { bookingId: s
 export async function POST(req: NextRequest, { params }: { params: { bookingId: string } }) {
   const session = getClinicSession(req);
   if (!session) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+  await reloadBookings();
   const booking = getBookingById(params.bookingId);
   if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
   if (booking.clinicId && booking.clinicId !== session.clinicId) {

@@ -11,7 +11,17 @@ import type { Doctor } from "@/lib/data";
 import DoctorPresenceBadge from "@/components/DoctorPresenceBadge";
 import { pickDoctorPhoto } from "@/lib/doctor-photos";
 
-export default function DoctorListRow({ doctor }: { doctor: Doctor }) {
+export default function DoctorListRow({
+  doctor,
+  hasClinic,
+}: {
+  doctor: Doctor;
+  /** When true, this doctor has at least one active clinic registered.
+   *  Surfaces the "Visit clinic" CTA so patients can book an in-person
+   *  visit straight from the listing instead of having to open the
+   *  full profile first. */
+  hasClinic?: boolean;
+}) {
   const photo = pickDoctorPhoto({
     id: doctor.id,
     gender: doctor.gender,
@@ -124,6 +134,19 @@ export default function DoctorListRow({ doctor }: { doctor: Doctor }) {
           >
             Consult Online
           </Link>
+          {hasClinic && (
+            // Surface a third CTA when the doctor has registered at
+            // least one physical clinic. Deep-links to the doctor
+            // profile with a hash so the page scrolls straight to the
+            // ClinicLocations card where the patient picks the
+            // specific clinic to book at.
+            <Link
+              href={`/doctors/${doctor.id}#clinics`}
+              className="flex-1 rounded-lg border border-rose-200 bg-rose-50 dark:border-rose-800/60 dark:bg-rose-950/40 py-2.5 text-center text-sm font-medium text-rose-700 dark:text-rose-300 transition-colors hover:bg-rose-100 dark:hover:bg-rose-900/40"
+            >
+              🏥 Visit Clinic
+            </Link>
+          )}
           <div className="hidden text-center text-xs text-gray-400 dark:text-slate-500 sm:block">
             No Booking Fee
           </div>

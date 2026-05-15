@@ -54,6 +54,21 @@ export default function DoctorsPage() {
   const [liveSpecialties, setLiveSpecialties] = useState<PublicSpecialty[]>(
     () => fallbackSpecialties.map((s) => ({ id: s.id, name: s.name, emoji: s.icon }))
   );
+  // Set of doctor ids who have at least one active clinic. Drives
+  // the per-row "🏥 Visit Clinic" CTA so we only show it for doctors
+  // who can actually take in-person visits.
+  const [clinicDoctorIds, setClinicDoctorIds] = useState<Set<string>>(() => new Set());
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/clinics/doctors-with-clinics", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled || !d || !Array.isArray(d.doctorIds)) return;
+        setClinicDoctorIds(new Set(d.doctorIds as string[]));
+      })
+      .catch(() => { /* CTA just stays hidden — non-fatal */ });
+    return () => { cancelled = true; };
+  }, []);
   useEffect(() => {
     let cancelled = false;
     fetch("/api/public/departments", { cache: "no-store" })
@@ -451,7 +466,9 @@ export default function DoctorsPage() {
                   </div>
                 ))
               ) : filtered.length > 0 ? (
-                filtered.map((d) => <DoctorListRow key={d.id} doctor={d} />)
+                filtered.map((d) => (
+                  <DoctorListRow key={d.id} doctor={d} hasClinic={clinicDoctorIds.has(d.id)} />
+                ))
               ) : (
                 <div className="rounded-2xl bg-white dark:bg-slate-900 py-16 px-6 text-center shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
                   <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-sky-100 via-cyan-100 to-teal-100 dark:from-sky-950/40 dark:via-cyan-950/40 dark:to-teal-950/40 text-6xl shadow-inner">

@@ -6,8 +6,10 @@ import {
   listConsultations,
   recordDecision,
   attachRefund,
+  reloadConsultations,
   type DecisionAction,
 } from "@/lib/consultations-store";
+import { getBookings, reloadBookings } from "@/lib/bookings-store";
 import { validateSlot } from "@/lib/slot-utils";
 import {
   sendPatientApproved,
@@ -33,6 +35,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!user.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
+  await reloadConsultations();
   const c = getConsultation(id);
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -70,10 +73,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
       return NextResponse.json({ error: "Invalid rescheduleTo date." }, { status: 400 });
     }
+    await reloadBookings();
     const slotErr = validateSlot({
       dateStr,
       slot: targetSlot,
       consultations: listConsultations({ doctorId: c.doctorId }),
+      bookings: getBookings().filter((b) => b.doctorId === c.doctorId),
       ignoreConsultationId: c.id,
     });
     if (slotErr) {

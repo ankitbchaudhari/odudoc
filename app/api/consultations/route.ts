@@ -5,8 +5,10 @@ import {
   createConsultation,
   listConsultations,
   markPaid,
+  reloadConsultations,
   type MedicalHistory,
 } from "@/lib/consultations-store";
+import { getBookings, reloadBookings } from "@/lib/bookings-store";
 import { sendPatientBookingReceived, sendDoctorNewRequest } from "@/lib/consultation-emails";
 import { paymentsDisabled } from "@/lib/payments-config";
 import { validateSlot } from "@/lib/slot-utils";
@@ -46,6 +48,10 @@ export async function GET(req: NextRequest) {
   if (!user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status") || undefined;
+
+  // Cross-Lambda freshness — booking written on a sibling Lambda
+  // must surface in the next read for doctors and patients alike.
+  await reloadConsultations();
 
   let list;
   if (user.role === "admin") {
@@ -141,10 +147,12 @@ export async function POST(req: NextRequest) {
   // doctor-collision check (no doctor yet) but still get ladder + lead.
   const dateStr = String(body.scheduledFor).slice(0, 10);
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    await Promise.all([reloadConsultations(), reloadBookings()]);
     const err = validateSlot({
       dateStr,
       slot: String(body.timeSlot),
       consultations: isPool ? [] : listConsultations({ doctorId: String(body.doctorId) }),
+      bookings: isPool ? [] : getBookings().filter((b) => b.doctorId === String(body.doctorId)),
     });
     if (err) return NextResponse.json({ error: err }, { status: 400 });
   }

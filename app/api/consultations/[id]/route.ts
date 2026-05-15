@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getConsultation } from "@/lib/consultations-store";
+import { getConsultation, reloadConsultations } from "@/lib/consultations-store";
 
 export const runtime = "nodejs";
 
@@ -24,6 +24,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const user = (session?.user as { email?: string; name?: string; role?: string } | undefined) || {};
   if (!user.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
+  await reloadConsultations();
   const c = getConsultation(id);
   if (!c) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (!canView(c, user)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });

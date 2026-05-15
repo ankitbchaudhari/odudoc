@@ -268,10 +268,25 @@ export default function WalletPage() {
   // top-up's life — the webhook usually fires within seconds, so
   // surfacing "may not have credited" immediately is noisy and wrong.
   // Past 3 minutes without a match, the warning is legitimate.
+  // Razorpay completes inline (success / cancel / fail are all
+  // resolved by the time the modal closes), so pending entries for
+  // that gateway can't be "recovered" via an async webhook — they
+  // were either paid (and the synchronous verify already credited
+  // the wallet) or never paid. Filter them out so abandoned Razorpay
+  // attempts don't clutter the banner indefinitely.
   const STUCK_GRACE_MS = 3 * 60 * 1000;
   const visiblePendingOrders = pendingOrders.filter(
-    (p) => Date.now() - p.startedAt > STUCK_GRACE_MS,
+    (p) => p.gateway !== "razorpay" && Date.now() - p.startedAt > STUCK_GRACE_MS,
   );
+
+  // Dismiss every stuck entry at once — useful when many Razorpay
+  // attempts piled up before the fix above shipped.
+  const dismissAllPending = useCallback(() => {
+    setPendingOrders([]);
+    try {
+      localStorage.setItem("odudoc:pending-topups", "[]");
+    } catch { /* ignore */ }
+  }, []);
 
   const verifyPending = useCallback(async (orderId: string) => {
     setVerifyingOrder(orderId);
@@ -403,6 +418,17 @@ export default function WalletPage() {
               currency: d.currency || "INR",
               keyId: d.keyId,
             });
+            // Razorpay completes inline (success / cancel / fail are
+            // all known by the time launchRazorpayWalletCheckout
+            // resolves). The async-recovery banner is meaningless for
+            // Razorpay — drop the pending entry regardless of outcome
+            // so it doesn't pile up across abandoned modals.
+            try {
+              const remaining = JSON.parse(localStorage.getItem("odudoc:pending-topups") || "[]");
+              const next = remaining.filter((p: { orderId: string }) => p.orderId !== d.orderId);
+              localStorage.setItem("odudoc:pending-topups", JSON.stringify(next));
+              setPendingOrders(next);
+            } catch { /* localStorage blocked — non-fatal */ }
             if (ok.ok) {
               setToast({ kind: "ok", text: `Wallet credited ₹${amount} (+ 5% bonus).` });
               setShowTopup(false);
@@ -513,9 +539,19 @@ export default function WalletPage() {
           <div className="flex items-start gap-3">
             <span className="text-xl" aria-hidden>⚠️</span>
             <div className="flex-1">
-              <p className="text-sm font-bold text-amber-900 dark:text-amber-200">
-                {visiblePendingOrders.length === 1 ? "1 payment may not have credited" : `${visiblePendingOrders.length} payments may not have credited`}
-              </p>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-bold text-amber-900 dark:text-amber-200">
+                  {visiblePendingOrders.length === 1 ? "1 payment may not have credited" : `${visiblePendingOrders.length} payments may not have credited`}
+                </p>
+                {visiblePendingOrders.length > 1 && (
+                  <button
+                    onClick={dismissAllPending}
+                    className="rounded-md bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300 ring-1 ring-slate-300 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
+                  >
+                    Dismiss all
+                  </button>
+                )}
+              </div>
               <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">
                 You started these top-ups more than 3 minutes ago and they haven't shown up in your transaction history yet. If you completed the payment, click <strong>Verify</strong>. If you cancelled, click <strong>Dismiss</strong>.
               </p>

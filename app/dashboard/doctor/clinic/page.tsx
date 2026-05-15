@@ -6,6 +6,7 @@
 // /clinic/<clinicId>/login.
 
 import { useEffect, useState } from "react";
+import { COUNTRIES, statesForCountry, citiesForCountry } from "@/lib/location-data";
 
 interface ClinicHours {
   day: number;
@@ -311,18 +312,19 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
   const [mapsUrl, setMaps] = useState("");
   const [hours] = useState<ClinicHours[]>(defaultHours());
   const [feeOverride, setFee] = useState("");
-  const [online, setOnline] = useState(true);
-  const [atClinic, setAtClinic] = useState(true);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  // Country-dependent option lists for the State + City dropdowns.
+  // Countries we don't have explicit lists for fall back to free-text
+  // inputs so the form still works (statesForCountry / citiesForCountry
+  // return empty arrays).
+  const stateOptions = statesForCountry(country);
+  const cityOptions = citiesForCountry(country);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);
-    if (!online && !atClinic) {
-      setErr("Enable at least one payment method.");
-      return;
-    }
     setBusy(true);
     try {
       const r = await fetch("/api/doctor/clinics", {
@@ -339,8 +341,12 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
           phone: phone || undefined,
           mapsUrl: mapsUrl || undefined,
           hours,
-          acceptOnlinePayment: online,
-          acceptClinicPayment: atClinic,
+          // Both payment options are enabled by default — patients pick
+          // online vs at-clinic at booking time. Doctor doesn't need to
+          // configure this; we'd rather accept money any way the
+          // patient wants to pay.
+          acceptOnlinePayment: true,
+          acceptClinicPayment: true,
           feeOverride: feeOverride ? Number(feeOverride) : undefined,
         }),
       });
@@ -365,22 +371,52 @@ function NewClinicModal({ onClose, onCreated }: { onClose: () => void; onCreated
           <Field label="Clinic name *" className="sm:col-span-2" value={name} onChange={setName} required />
           <Field label="Address *" className="sm:col-span-2" value={addressLine1} onChange={setAddr1} required />
           <Field label="Address line 2" className="sm:col-span-2" value={addressLine2} onChange={setAddr2} />
-          <Field label="City *" value={city} onChange={setCity} required />
-          <Field label="State / Region" value={state} onChange={setState} />
-          <Field label="Country *" value={country} onChange={setCountry} required />
+          {/* Country drives the State + City option lists, so it renders
+              first. Default "India" — flips state/city to free text
+              when the doctor picks anything we don't have a curated
+              list for. */}
+          <SelectField
+            label="Country *"
+            value={country}
+            onChange={(v) => {
+              setCountry(v);
+              // Clear dependent fields so the user picks a valid
+              // option from the new country's list (or types fresh).
+              setState("");
+              setCity("");
+            }}
+            required
+            options={COUNTRIES.map((c) => c.name)}
+          />
+          {stateOptions.length > 0 ? (
+            <SelectField
+              label="State / Region *"
+              value={state}
+              onChange={setState}
+              required
+              options={stateOptions}
+              placeholder="Select state"
+            />
+          ) : (
+            <Field label="State / Region" value={state} onChange={setState} />
+          )}
+          {cityOptions.length > 0 ? (
+            <SelectField
+              label="City *"
+              value={city}
+              onChange={setCity}
+              required
+              options={cityOptions}
+              placeholder="Select city"
+            />
+          ) : (
+            <Field label="City *" value={city} onChange={setCity} required />
+          )}
           <Field label="Postal code" value={postalCode} onChange={setPC} />
           <Field label="Clinic phone" value={phone} onChange={setPhone} />
           <Field label="Google Maps URL" className="sm:col-span-2" value={mapsUrl} onChange={setMaps} />
           <Field label="Per-visit fee (USD) — leave blank to use your default" className="sm:col-span-2" value={feeOverride} onChange={setFee} type="number" />
         </div>
-
-        <fieldset className="mt-5">
-          <legend className="text-sm font-semibold text-gray-900 dark:text-slate-100">Payment options</legend>
-          <div className="mt-2 flex flex-col gap-1.5 text-sm text-gray-700 dark:text-slate-300">
-            <label className="flex items-center gap-2"><input type="checkbox" checked={online} onChange={(e) => setOnline(e.target.checked)} /> Pay online at booking</label>
-            <label className="flex items-center gap-2"><input type="checkbox" checked={atClinic} onChange={(e) => setAtClinic(e.target.checked)} /> Pay at clinic</label>
-          </div>
-        </fieldset>
 
         <fieldset className="mt-5">
           <legend className="text-sm font-semibold text-gray-900 dark:text-slate-100">Hours (Mon–Sat 9–6 by default)</legend>
@@ -418,6 +454,35 @@ function Field({ label, value, onChange, required, type = "text", className = ""
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
       />
+    </label>
+  );
+}
+
+function SelectField({
+  label, value, onChange, required, options, placeholder, className = "",
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
+  options: ReadonlyArray<string>;
+  placeholder?: string;
+  className?: string;
+}) {
+  return (
+    <label className={`block ${className}`}>
+      <span className="mb-1 block text-xs font-medium text-gray-600 dark:text-slate-400">{label}</span>
+      <select
+        required={required}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+      >
+        <option value="">{placeholder || `Select ${label.replace(/\s*\*$/, "").toLowerCase()}`}</option>
+        {options.map((o) => (
+          <option key={o} value={o}>{o}</option>
+        ))}
+      </select>
     </label>
   );
 }

@@ -60,12 +60,16 @@ export interface CarePlan {
 }
 
 const plans: CarePlan[] = [];
-const { hydrate, flush, tombstone } = bindPersistentArray<CarePlan>(
+const { hydrate, flush, tombstone, reload } = bindPersistentArray<CarePlan>(
   "care_plans",
   plans,
   () => []
 );
 await hydrate();
+
+export async function reloadCarePlans(): Promise<void> {
+  await reload();
+}
 
 /** Default target presets per condition. Editing these in the UI
  *  overrides — the preset just bootstraps. */

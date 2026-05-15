@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { listPrescriptions, reloadPrescriptions } from "@/lib/prescriptions-store";
-import { listDoseEvents, logDose, slotsFor, DoseAction } from "@/lib/adherence/store";
+import { listDoseEvents, logDose, slotsFor, reloadAdherence, DoseAction } from "@/lib/adherence/store";
 import { runRefillCheck } from "@/lib/adherence/refill";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 
@@ -53,6 +53,7 @@ export async function GET() {
   for (const rx of rxs) {
     try { await runRefillCheck(rx); } catch { /* skip */ }
   }
+  await reloadAdherence();
   const events = listDoseEvents(userId, { since: today });
 
   const schedule: ScheduledDose[] = [];

@@ -26,12 +26,16 @@ export interface DoseEvent {
 }
 
 const events: DoseEvent[] = [];
-const { hydrate, flush, tombstone } = bindPersistentArray<DoseEvent>(
+const { hydrate, flush, tombstone, reload } = bindPersistentArray<DoseEvent>(
   "dose_events",
   events,
   () => []
 );
 await hydrate();
+
+export async function reloadAdherence(): Promise<void> {
+  await reload();
+}
 
 export interface LogDoseInput {
   userId: string;

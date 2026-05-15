@@ -11,7 +11,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import {
   createPlan, deletePlan, evaluateTarget, getPlan, listPlans, updatePlan,
-  Condition, defaultTargets, CONDITION_LABEL,
+  Condition, defaultTargets, CONDITION_LABEL, reloadCarePlans,
 } from "@/lib/care-plan/store";
 import { listReadings, reloadVitals } from "@/lib/vitals/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
@@ -29,6 +29,7 @@ export async function GET() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  await reloadCarePlans();
   const plans = listPlans(userId);
   // Pull last 30 days of readings once, then evaluate each target
   // against the relevant subset.
@@ -84,6 +85,7 @@ export async function PATCH(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
   const body = await req.json().catch(() => ({}));
   if (!body.id) return NextResponse.json({ error: "missing_id" }, { status: 400 });
+  await reloadCarePlans();
   if (!getPlan(String(body.id), userId)) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
@@ -103,6 +105,7 @@ export async function DELETE(req: NextRequest) {
   const url = new URL(req.url);
   const id = url.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "missing_id" }, { status: 400 });
+  await reloadCarePlans();
   const ok = deletePlan(id, userId);
   if (!ok) return NextResponse.json({ error: "not_found" }, { status: 404 });
   try { await awaitAllFlushesStrict(); } catch { /* best-effort */ }

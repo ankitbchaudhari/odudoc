@@ -11,6 +11,7 @@ import {
   getClinicById,
   updateClinic,
   deleteClinic,
+  reloadClinics,
 } from "@/lib/clinics-store";
 import { parseJson } from "@/lib/api-validate";
 
@@ -53,6 +54,7 @@ async function authorize(req: NextRequest, clinicId: string) {
   if (!user.email || user.role !== "doctor") return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
   const doctor = findDoctorByEmail(user.email);
   if (!doctor) return { error: NextResponse.json({ error: "Doctor not found" }, { status: 404 }) };
+  await reloadClinics();
   const clinic = getClinicById(clinicId);
   if (!clinic) return { error: NextResponse.json({ error: "Clinic not found" }, { status: 404 }) };
   if (clinic.doctorId !== doctor.id) return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };

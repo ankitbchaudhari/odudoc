@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getClinicSession } from "@/lib/clinic-session";
-import { getInvoiceById } from "@/lib/clinic-invoices-store";
+import { getInvoiceById, reloadInvoices } from "@/lib/clinic-invoices-store";
 import { sendNotification } from "@/lib/notifications";
 import { sentDmSend } from "@/lib/sent-dm";
 import { log } from "@/lib/log";
@@ -21,6 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const session = getClinicSession(req);
   if (!session) return NextResponse.json({ error: "not_signed_in" }, { status: 401 });
 
+  await reloadInvoices();
   const inv = getInvoiceById(params.id);
   if (!inv) return NextResponse.json({ error: "not_found" }, { status: 404 });
   if (inv.clinicId !== session.clinicId) {

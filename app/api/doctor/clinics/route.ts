@@ -13,6 +13,7 @@ import { findDoctorByEmail } from "@/lib/doctors-store";
 import {
   createClinic,
   listClinicsByDoctor,
+  reloadClinics,
   type ClinicHours,
 } from "@/lib/clinics-store";
 import { parseJson } from "@/lib/api-validate";
@@ -65,6 +66,7 @@ export async function GET() {
   }
   const doctor = getDoctor(user.email);
   if (!doctor) return NextResponse.json({ clinics: [] });
+  await reloadClinics();
   return NextResponse.json({ clinics: listClinicsByDoctor(doctor.id) });
 }
 

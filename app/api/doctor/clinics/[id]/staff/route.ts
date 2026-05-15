@@ -6,10 +6,11 @@ import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { findDoctorByEmail } from "@/lib/doctors-store";
-import { getClinicById } from "@/lib/clinics-store";
+import { getClinicById, reloadClinics } from "@/lib/clinics-store";
 import {
   createClinicStaff,
   listStaffByClinic,
+  reloadStaff,
 } from "@/lib/clinic-staff-store";
 import { parseJson } from "@/lib/api-validate";
 
@@ -29,6 +30,7 @@ async function authorize(clinicId: string) {
   if (!user.email || user.role !== "doctor") return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
   const doctor = findDoctorByEmail(user.email);
   if (!doctor) return { error: NextResponse.json({ error: "Doctor not found" }, { status: 404 }) };
+  await reloadClinics();
   const clinic = getClinicById(clinicId);
   if (!clinic || clinic.doctorId !== doctor.id) return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
   return { clinic };
@@ -37,6 +39,7 @@ async function authorize(clinicId: string) {
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const r = await authorize(params.id);
   if ("error" in r) return r.error;
+  await reloadStaff();
   // Strip password hashes before returning.
   const staff = listStaffByClinic(params.id).map(({ passwordHash: _ph, ...rest }) => rest);
   return NextResponse.json({ staff });

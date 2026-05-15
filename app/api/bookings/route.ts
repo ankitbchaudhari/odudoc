@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createBooking, getBookings } from '@/lib/bookings-store';
+import { createBooking, getBookings, reloadBookings } from '@/lib/bookings-store';
 import { listConsultations } from '@/lib/consultations-store';
 import { validateSlot } from '@/lib/slot-utils';
 import { notifyAppointmentBooked } from '@/lib/notifications';
@@ -39,6 +39,7 @@ const BookingSchema = z.object({
 
 export async function GET() {
   try {
+    await reloadBookings();
     const bookings = getBookings();
     return NextResponse.json({ bookings });
   } catch (error: unknown) {

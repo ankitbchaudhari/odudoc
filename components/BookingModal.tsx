@@ -160,14 +160,26 @@ export default function BookingModal({ doctor, open, onClose, clinicId, clinicNa
   // the slot/confirm screen.
   const checkout = useCheckoutCurrency();
   const [convertedFee, setConvertedFee] = useState<number | null>(null);
+  // INR fee is a separate conversion path — Razorpay + Cashfree are
+  // INR-only and must charge the local rupee equivalent regardless of
+  // what currency the visitor picked for *display*. Without this the
+  // SGD/USD display amount was being passed to those gateways with
+  // the currency label changed to INR — so a $48 fee charged as
+  // ₹48 / ₹61, not ₹4,000+.
+  const [inrFee, setInrFee] = useState<number | null>(null);
   useEffect(() => {
     let cancelled = false;
     if (!checkout.code || checkout.code === "USD") {
       setConvertedFee(null);
-      return;
+    } else {
+      convert(doctor.fee, "USD", checkout.code).then((v) => {
+        if (!cancelled) setConvertedFee(v);
+      });
     }
-    convert(doctor.fee, "USD", checkout.code).then((v) => {
-      if (!cancelled) setConvertedFee(v);
+    // Always compute the INR equivalent for the India gateways,
+    // independent of display currency.
+    convert(doctor.fee, "USD", "INR").then((v) => {
+      if (!cancelled) setInrFee(v);
     });
     return () => { cancelled = true; };
   }, [doctor.fee, checkout.code]);
@@ -972,7 +984,10 @@ export default function BookingModal({ doctor, open, onClose, clinicId, clinicNa
 
             {provider === "razorpay" ? (
               <RazorpayCheckout
-                amountInr={Number((convertedFee ?? doctor.fee).toFixed(2))}
+                // INR equivalent of the USD fee. Falls back to a
+                // sensible default (≈ ₹83 per USD) while the convert
+                // call is pending so the button isn't ever blank.
+                amountInr={Number((inrFee ?? doctor.fee * 83).toFixed(2))}
                 customerName={name}
                 customerEmail={(typeof window !== "undefined" && new URLSearchParams(window.location.search).get("email")) || `${phone.replace(/[^0-9]/g, "")}@odudoc.example`}
                 customerPhone={phone.replace(/^\+/, "")}
@@ -994,7 +1009,11 @@ export default function BookingModal({ doctor, open, onClose, clinicId, clinicNa
               cashfreeOrderId ? (
                 <CashfreeCheckout
                   orderId={cashfreeOrderId}
-                  amount={Number((convertedFee ?? doctor.fee).toFixed(2))}
+                  // Same fix as Razorpay — use the INR-converted fee,
+                  // not the display-currency conversion. Cashfree is
+                  // INR-only here so the visitor's checkout currency
+                  // doesn't apply at the gateway.
+                  amount={Number((inrFee ?? doctor.fee * 83).toFixed(2))}
                   currency={(checkout.code === "INR" ? "INR" : "INR") as "INR"}
                   customerName={name}
                   customerEmail={(typeof window !== "undefined" && new URLSearchParams(window.location.search).get("email")) || `${phone.replace(/[^0-9]/g, "")}@odudoc.example`}

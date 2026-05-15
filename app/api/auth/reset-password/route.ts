@@ -22,7 +22,7 @@ export const runtime = "nodejs";
 // to show "invalid/expired" up front.
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token") || "";
-  const rec = peekResetToken(token);
+  const rec = await peekResetToken(token);
   if (!rec) {
     return NextResponse.json({ valid: false }, { status: 200 });
   }
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   if (parsed instanceof NextResponse) return parsed;
   const { token, password } = parsed;
 
-  const rec = consumeResetToken(token);
+  const rec = await consumeResetToken(token);
   if (!rec) {
     return NextResponse.json(
       { error: "This reset link is invalid or has expired. Please request a new one." },

@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   // Fire-and-forget: generate token + send email only when the user exists.
   // Either way we return ok:true so the caller can't tell.
   if (user) {
-    const rec = createResetToken(user.email);
+    const rec = await createResetToken(user.email);
     const resetUrl = `${SITE_URL}/auth/reset-password?token=${rec.token}`;
     try {
       await sendPasswordResetEmail({ to: user.email, resetUrl });

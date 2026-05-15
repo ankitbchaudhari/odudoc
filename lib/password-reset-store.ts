@@ -12,7 +12,7 @@
 // read so the store doesn't grow indefinitely.
 
 import { randomBytes } from "crypto";
-import { bindPersistentArray } from "./persistent-array";
+import { bindPersistentArray, awaitAllFlushes } from "./persistent-array";
 
 export interface PasswordResetToken {
   token: string;
@@ -24,7 +24,7 @@ export interface PasswordResetToken {
 const TTL_MS = 30 * 60 * 1000; // 30 minutes
 
 const tokens: PasswordResetToken[] = [];
-const { hydrate, flush } = bindPersistentArray<PasswordResetToken>(
+const { hydrate, flush, reload } = bindPersistentArray<PasswordResetToken>(
   "password_reset_tokens",
   tokens,
   () => []
@@ -40,7 +40,7 @@ function pruneExpired() {
   }
 }
 
-export function createResetToken(email: string): PasswordResetToken {
+export async function createResetToken(email: string): Promise<PasswordResetToken> {
   pruneExpired();
   // Drop any existing tokens for this email so the most recent link wins.
   for (let i = tokens.length - 1; i >= 0; i--) {
@@ -57,10 +57,16 @@ export function createResetToken(email: string): PasswordResetToken {
   };
   tokens.push(rec);
   flush();
+  // Drain the flush so the user's reset-link click — which may land on
+  // a different Lambda — sees the token in Postgres immediately.
+  await awaitAllFlushes();
   return rec;
 }
 
-export function consumeResetToken(token: string): PasswordResetToken | null {
+export async function consumeResetToken(token: string): Promise<PasswordResetToken | null> {
+  // Cross-Lambda freshness — token created by /forgot-password on
+  // Lambda A; /reset-password click typically lands on Lambda B.
+  await reload();
   pruneExpired();
   const idx = tokens.findIndex((t) => t.token === token);
   if (idx < 0) return null;
@@ -71,7 +77,8 @@ export function consumeResetToken(token: string): PasswordResetToken | null {
 
 // Peek without consuming — used by the reset page to show "invalid/expired
 // link" up-front instead of waiting for submit.
-export function peekResetToken(token: string): PasswordResetToken | null {
+export async function peekResetToken(token: string): Promise<PasswordResetToken | null> {
+  await reload();
   pruneExpired();
   return tokens.find((t) => t.token === token) || null;
 }

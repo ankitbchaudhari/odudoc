@@ -13,9 +13,12 @@ export type ConversationStage =
   | "awaiting_intent"
   | "awaiting_specialty"
   | "awaiting_date"
+  | "awaiting_time"
+  | "awaiting_name"
   | "awaiting_confirm"
   | "completed"
-  | "handed_off";
+  | "handed_off"
+  | "opted_out";
 
 export interface BookingMessage {
   role: "patient" | "bot";
@@ -31,7 +34,13 @@ export interface BookingConversation {
   patientUserId?: string;
   stage: ConversationStage;
   /** Accumulated slot values. */
-  slots: { specialty?: string; preferredDate?: string; doctorName?: string };
+  slots: {
+    specialty?: string;
+    preferredDate?: string;
+    preferredTime?: string;
+    patientName?: string;
+    doctorName?: string;
+  };
   messages: BookingMessage[];
   createdAt: string;
   updatedAt: string;
@@ -91,36 +100,82 @@ export function listRecent(limit = 50): BookingConversation[] {
  *  new stage. Free-text intent classifier is the same one Twilio
  *  voice uses — keeps booking copy consistent across channels. */
 export function nextTurn(c: BookingConversation, patientText: string): { reply: string; stage: ConversationStage; slots: BookingConversation["slots"] } {
-  const t = patientText.trim().toLowerCase();
+  const raw = patientText.trim();
+  const t = raw.toLowerCase();
   const slots = { ...c.slots };
 
+  // Global commands — match at any stage. STOP honours WhatsApp/SMS
+  // opt-out requirements; HELP routes to a human; RESTART wipes the
+  // slot accumulator without losing the conversation row.
+  if (/^stop$|unsubscribe|opt.?out/.test(t)) {
+    return {
+      reply: "You've opted out of OduDoc messages. We won't text you again. Reply START to opt back in.",
+      stage: "opted_out",
+      slots: {},
+    };
+  }
+  if (/^start$/.test(t) && c.stage === "opted_out") {
+    return {
+      reply: "Welcome back. Reply BOOK to schedule a doctor, or HELP to talk to a person.",
+      stage: "awaiting_intent",
+      slots: {},
+    };
+  }
+  if (/^(restart|reset|start.?over)$/.test(t)) {
+    return {
+      reply: "Starting over. Reply BOOK to schedule a doctor, HELP for a human agent.",
+      stage: "awaiting_intent",
+      slots: {},
+    };
+  }
+  if (/^help$|talk.*(person|human|agent)/.test(t)) {
+    return {
+      reply: "Connecting you to a human agent. They'll message back within 30 minutes during business hours. Or call our 24/7 helpline: +1 (302) 899-2625.",
+      stage: "handed_off",
+      slots,
+    };
+  }
+
+  if (c.stage === "opted_out") {
+    return { reply: "You're opted out. Reply START to re-enable OduDoc messages.", stage: "opted_out", slots };
+  }
+
   if (c.stage === "awaiting_intent") {
-    if (/book|appointment|consult|doctor|need.*see/.test(t)) {
+    if (/^(hi|hello|hey|hii|namaste|namaskar)$/.test(t)) {
       return {
-        reply: "Sure. Which specialty? Common options: General Medicine, Cardiology, Dermatology, Pediatrics, Gynaecology, Orthopaedics. Reply with the specialty name.",
+        reply: "Hi from OduDoc 👋\nReply BOOK to schedule a doctor, HELP to talk to a person, or STOP to opt out.",
+        stage: "awaiting_intent",
+        slots,
+      };
+    }
+    if (/book|appointment|consult|doctor|need.*see|डॉक्टर|appoint/.test(t)) {
+      return {
+        reply: "Sure! Which specialty do you need?\nCommon: General Medicine, Cardiology, Dermatology, Pediatrics, Gynaecology, Orthopaedics, Psychiatry.\nReply with the specialty name.",
         stage: "awaiting_specialty",
         slots,
       };
     }
-    if (/cancel|reschedul|refill|lab|result|talk.*person|human/.test(t)) {
+    if (/cancel|reschedul|refill|lab|result/.test(t)) {
       return {
-        reply: "I'll hand you to a human agent. They'll message you within 30 minutes.",
-        stage: "handed_off",
+        reply: "For cancellations, reschedules, lab results, or prescription refills — please use the OduDoc app or visit www.odudoc.com/dashboard. Or reply HELP for a human agent.",
+        stage: "awaiting_intent",
         slots,
       };
     }
     return {
-      reply: "Hi from OduDoc. Reply BOOK to schedule a doctor, or HELP to talk to a person.",
+      reply: "Hi from OduDoc 👋\nReply BOOK to schedule a doctor, HELP to talk to a person, or STOP to opt out.",
       stage: "awaiting_intent",
       slots,
     };
   }
 
   if (c.stage === "awaiting_specialty") {
-    if (t.length < 3) return { reply: "Please reply with the specialty name.", stage: "awaiting_specialty", slots };
-    slots.specialty = patientText.trim();
+    if (t.length < 3) {
+      return { reply: "Please reply with the specialty name (e.g. Cardiology).", stage: "awaiting_specialty", slots };
+    }
+    slots.specialty = raw;
     return {
-      reply: `Got it — ${slots.specialty}. Which date works for you? Reply in DD-MM format (e.g. 15-12) or say TODAY / TOMORROW.`,
+      reply: `Got it — ${slots.specialty}.\nWhich date works for you?\nReply DD-MM (e.g. 15-12), or TODAY / TOMORROW.`,
       stage: "awaiting_date",
       slots,
     };
@@ -134,27 +189,79 @@ export function nextTurn(c: BookingConversation, patientText: string): { reply: 
       const m = t.match(/(\d{1,2})[-\/.](\d{1,2})/);
       if (m) when = `${m[1].padStart(2, "0")}-${m[2].padStart(2, "0")}`;
     }
-    if (!when) return { reply: "I didn't catch that. Reply DD-MM, TODAY, or TOMORROW.", stage: "awaiting_date", slots };
+    if (!when) {
+      return { reply: "I didn't catch that. Please reply DD-MM (e.g. 15-12), TODAY, or TOMORROW.", stage: "awaiting_date", slots };
+    }
     slots.preferredDate = when;
     return {
-      reply: `Booking ${slots.specialty} for ${when}. Reply YES to confirm, NO to change.`,
+      reply: `Date set: ${when}.\nWhat time works best?\nReply MORNING / AFTERNOON / EVENING, or HH:MM (24-hour, e.g. 14:30).`,
+      stage: "awaiting_time",
+      slots,
+    };
+  }
+
+  if (c.stage === "awaiting_time") {
+    let time = "";
+    if (/morning/.test(t)) time = "morning (9 AM – 12 PM)";
+    else if (/afternoon|noon/.test(t)) time = "afternoon (12 PM – 4 PM)";
+    else if (/evening|night/.test(t)) time = "evening (4 PM – 8 PM)";
+    else {
+      const m = t.match(/(\d{1,2}):(\d{2})/);
+      if (m) {
+        const h = parseInt(m[1], 10);
+        const min = parseInt(m[2], 10);
+        if (h >= 0 && h <= 23 && min >= 0 && min <= 59) {
+          time = `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+        }
+      }
+    }
+    if (!time) {
+      return { reply: "Please reply MORNING / AFTERNOON / EVENING, or a time like 14:30.", stage: "awaiting_time", slots };
+    }
+    slots.preferredTime = time;
+    return {
+      reply: `Time set: ${time}.\nLastly, what's the patient's full name? (Reply with the name as it should appear on the prescription.)`,
+      stage: "awaiting_name",
+      slots,
+    };
+  }
+
+  if (c.stage === "awaiting_name") {
+    if (raw.length < 3 || raw.length > 80 || !/[a-zA-Zऀ-ॿ]/.test(raw)) {
+      return {
+        reply: "Please reply with the patient's full name (3-80 characters).",
+        stage: "awaiting_name",
+        slots,
+      };
+    }
+    slots.patientName = raw;
+    return {
+      reply: `Almost done. Booking summary:\n👤 ${slots.patientName}\n🩺 ${slots.specialty}\n📅 ${slots.preferredDate} · ${slots.preferredTime}\n\nReply YES to confirm, NO to start over.`,
       stage: "awaiting_confirm",
       slots,
     };
   }
 
   if (c.stage === "awaiting_confirm") {
-    if (/^y(es)?$/.test(t)) {
+    if (/^y(es)?|confirm/.test(t)) {
       return {
-        reply: `Confirmed. A doctor will message you within 4 hours with the appointment slot. Pay through OduDoc app or web at booking time.`,
+        reply: `✅ Booking request received for ${slots.patientName}.\nA matching ${slots.specialty} doctor will reach out within 4 hours to confirm the exact slot and share a payment link.\n\nFinish faster on web: https://www.odudoc.com/consult-now\nReply HELP anytime to talk to a person.`,
         stage: "completed",
         slots,
       };
     }
-    if (/^n(o)?$/.test(t)) {
-      return { reply: "OK. Reply BOOK to start over.", stage: "awaiting_intent", slots: {} };
+    if (/^n(o)?|cancel/.test(t)) {
+      return { reply: "No problem — request cancelled. Reply BOOK any time to start a new appointment.", stage: "awaiting_intent", slots: {} };
     }
-    return { reply: "Reply YES to confirm or NO to cancel.", stage: "awaiting_confirm", slots };
+    return { reply: "Please reply YES to confirm or NO to cancel.", stage: "awaiting_confirm", slots };
+  }
+
+  if (c.stage === "completed" || c.stage === "handed_off") {
+    return {
+      reply: "Your previous request is being handled. Reply BOOK to start a new appointment, or HELP for a human agent.",
+      stage: "awaiting_intent",
+      slots: {},
+    };
   }
 
   return { reply: "Reply BOOK to schedule, or HELP for a human.", stage: "awaiting_intent", slots: {} };

@@ -110,6 +110,18 @@ export default function HeroWithTextSlider() {
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            {/* Instant-consult CTA — pulses to indicate live availability. */}
+            <Link
+              href="/consult-now"
+              className="group relative inline-flex items-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/40 transition-all hover:scale-105 hover:shadow-xl"
+            >
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-200/80" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
+              </span>
+              Consult Now
+              <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">Live</span>
+            </Link>
             <Link
               href="/doctors"
               className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary-600 via-teal-600 to-emerald-600 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary-600/30 transition-all hover:scale-105 hover:shadow-xl"

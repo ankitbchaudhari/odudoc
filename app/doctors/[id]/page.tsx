@@ -11,6 +11,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import ConsultGateModal from "@/components/ConsultGateModal";
 import DoctorAiAssistant from "@/components/DoctorAiAssistant";
 import ClinicLocations from "@/components/ClinicLocations";
+import { councilLabelFor } from "@/lib/medical-councils";
 
 export default function DoctorProfilePage() {
   const params = useParams();
@@ -163,6 +164,18 @@ export default function DoctorProfilePage() {
               </div>
               <p className="text-base font-semibold text-sky-700 dark:text-sky-400">{doctor.specialty}</p>
               <p className="text-sm text-gray-500 dark:text-slate-400">{doctor.qualifications}</p>
+              {doctor.verified && doctor.licenseNumber && (() => {
+                const council = councilLabelFor(doctor.licenseCountry);
+                return (
+                  <p
+                    className="mt-1 inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300"
+                    title={`${council.full} — verified by OduDoc`}
+                  >
+                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" fill="none" /></svg>
+                    {council.label} Reg. {doctor.licenseNumber}
+                  </p>
+                );
+              })()}
               <div className="mt-3 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
                 <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/40 dark:to-yellow-950/40 ring-1 ring-amber-200 dark:ring-amber-900 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
                   <svg className="h-3.5 w-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
@@ -287,8 +300,18 @@ export default function DoctorProfilePage() {
                 <div className="space-y-4">
                   {reviews.map((r, i) => (
                     <div key={i} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-900 dark:text-slate-100">{r.name}</span>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-medium text-gray-900 dark:text-slate-100">{r.name}</span>
+                          {r.verifiedVisit && (
+                            <span
+                              title="This review is from a patient whose booking we confirmed"
+                              className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300"
+                            >
+                              <span aria-hidden="true">✓</span> Verified visit
+                            </span>
+                          )}
+                        </div>
                         <span className="text-xs text-gray-400 dark:text-slate-500">{r.date}</span>
                       </div>
                       <div className="mt-1 flex gap-0.5">

@@ -26,6 +26,13 @@ export interface Doctor {
    *  public doctor cards + profile. Optional so seed/legacy rows
    *  that never went through the verification gate render unbadged. */
   verified?: boolean;
+  /** Public-facing medical council credentials. The API GET only
+   *  returns these for verified doctors so unconfirmed numbers don't
+   *  appear authoritative. Country drives the label (NMC for IN,
+   *  NPI for US, GMC for GB, etc.) — see councilLabelFor() in
+   *  lib/medical-councils.ts. */
+  licenseCountry?: string;
+  licenseNumber?: string;
 }
 
 export interface Specialty {
@@ -83,6 +90,11 @@ export interface Review {
   rating: number;
   date: string;
   text: string;
+  /** True when the review is from a patient whose booking with this
+   *  doctor was actually confirmed paid. Reviews API stamps this
+   *  before persisting, so the public profile renders a "Verified
+   *  visit" badge that fake / planted reviews can't fake. */
+  verifiedVisit?: boolean;
 }
 
 // ============ DATA ============

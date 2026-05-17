@@ -48,6 +48,11 @@ function toPublic(admin: AdminDoctor): PublicDoctor {
     photoUrl: admin.imageUrl,
     instantAvailable: isInstantlyAvailable(admin),
     verified: admin.verified === true,
+    // Council credentials — only exposed once admin has verified the
+    // doctor. An unverified doctor's self-typed license number is
+    // unreliable, so hiding it prevents passing it off as authoritative.
+    licenseCountry: admin.verified ? admin.licenseCountry : undefined,
+    licenseNumber: admin.verified ? admin.licenseNumber : undefined,
   };
 }
 

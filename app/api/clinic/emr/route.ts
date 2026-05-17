@@ -41,6 +41,14 @@ const EmrSchema = z.object({
 export async function POST(req: NextRequest) {
   const session = getClinicSession(req);
   if (!session) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+  // Role gate — receptionist is patient-flow only. Assistant + manager
+  // are the ones who actually record clinical notes.
+  if (session.role !== "assistant" && session.role !== "manager") {
+    return NextResponse.json(
+      { error: "Your role can't save EMR entries. Ask your doctor to upgrade you to assistant or manager." },
+      { status: 403 },
+    );
+  }
 
   const parsed = await parseJson(req, EmrSchema);
   if (!parsed.ok) return parsed.response;

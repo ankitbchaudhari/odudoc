@@ -117,6 +117,30 @@ export function deactivateStaff(id: string): boolean {
   return true;
 }
 
+/** Doctor flips an existing staff member to a new role — used by the
+ *  My Clinics page to "give / remove power" without re-creating the
+ *  account. The clinic-session cookie is keyed off staffId, so the
+ *  new role takes effect on the staff member's next request without
+ *  forcing a re-login. */
+export function updateStaffRole(id: string, role: ClinicRole): ClinicStaff | null {
+  const s = staff.find((x) => x.id === id);
+  if (!s) return null;
+  s.role = role;
+  flush();
+  return s;
+}
+
+/** Suspend or restore a staff member without deleting. Login is
+ *  gated on `active`, so a suspended staff member can't sign in
+ *  until the doctor restores them. */
+export function setStaffActive(id: string, active: boolean): ClinicStaff | null {
+  const s = staff.find((x) => x.id === id);
+  if (!s) return null;
+  s.active = active;
+  flush();
+  return s;
+}
+
 export function deleteStaff(id: string): boolean {
   const idx = staff.findIndex((s) => s.id === id);
   if (idx === -1) return false;

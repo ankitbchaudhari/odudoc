@@ -49,6 +49,14 @@ const CreateSchema = z.object({
 export async function POST(req: NextRequest) {
   const session = getClinicSession(req);
   if (!session) return NextResponse.json({ error: "not_signed_in" }, { status: 401 });
+  // Invoices are manager-only — billing is a sensitive, money-touching
+  // workflow that shouldn't be open to every front-desk login.
+  if (session.role !== "manager") {
+    return NextResponse.json(
+      { error: "Only managers can create invoices. Ask your doctor to upgrade you." },
+      { status: 403 },
+    );
+  }
 
   const parsed = await parseJson(req, CreateSchema);
   if (!parsed.ok) return parsed.response;

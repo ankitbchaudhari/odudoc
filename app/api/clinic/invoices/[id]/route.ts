@@ -27,6 +27,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const session = getClinicSession(req);
   if (!session) return NextResponse.json({ error: "not_signed_in" }, { status: 401 });
+  if (session.role !== "manager") {
+    return NextResponse.json(
+      { error: "Only managers can mark invoices paid or void them." },
+      { status: 403 },
+    );
+  }
   await reloadInvoices();
   const inv = getInvoiceById(params.id);
   if (!inv) return NextResponse.json({ error: "not_found" }, { status: 404 });

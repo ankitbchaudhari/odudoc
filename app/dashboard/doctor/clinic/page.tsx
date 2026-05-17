@@ -362,6 +362,36 @@ function ClinicStaffPanel({ clinicId }: { clinicId: string }) {
     if (r.ok) load();
   };
 
+  const patchStaff = async (staffId: string, patch: { role?: Staff["role"]; active?: boolean }) => {
+    const r = await fetch(`/api/doctor/clinics/${clinicId}/staff/${staffId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    });
+    if (r.ok) load();
+  };
+
+  // Permission summary per role — shown under each staff row so the
+  // doctor can see at a glance what each level can do, and so the
+  // "give / remove power" UX is explicit rather than implicit.
+  const ROLE_INFO: Record<Staff["role"], { label: string; color: string; perms: string }> = {
+    receptionist: {
+      label: "Receptionist",
+      color: "bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300",
+      perms: "Look up bookings · check patients in",
+    },
+    assistant: {
+      label: "Assistant",
+      color: "bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300",
+      perms: "Reception + save EMR notes / vitals",
+    },
+    manager: {
+      label: "Manager",
+      color: "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300",
+      perms: "Everything + invoices, statements, refunds",
+    },
+  };
+
   return (
     <div>
       <div className="flex items-center gap-2">
@@ -373,33 +403,75 @@ function ClinicStaffPanel({ clinicId }: { clinicId: string }) {
         <code className="rounded bg-gray-100 dark:bg-slate-800 px-1.5 py-0.5 text-[11px] text-gray-700 dark:text-slate-300">
           /clinic/{clinicId}/login
         </code>{" "}
-        to look up bookings.
+        to look up bookings. Promote anyone to give them more power.
       </p>
 
       {staff.length > 0 && (
         <ul className="mt-3 divide-y divide-gray-100 dark:divide-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 overflow-hidden">
-          {staff.map((s) => (
-            <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
-              <div className="flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 to-violet-500 text-xs font-semibold text-white">
-                  {(s.name || s.email || "?").trim().charAt(0).toUpperCase()}
-                </span>
-                <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{s.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-slate-400">
-                    {s.email} · <span className="capitalize">{s.role}</span>
-                    {s.lastLoginAt ? ` · last login ${new Date(s.lastLoginAt).toLocaleString()}` : ""}
-                  </p>
+          {staff.map((s) => {
+            const info = ROLE_INFO[s.role];
+            return (
+              <li key={s.id} className="flex flex-wrap items-start justify-between gap-3 px-4 py-3">
+                <div className="flex min-w-0 items-start gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 to-violet-500 text-xs font-semibold text-white">
+                    {(s.name || s.email || "?").trim().charAt(0).toUpperCase()}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{s.name}</p>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${info.color}`}>
+                        {info.label}
+                      </span>
+                      {!s.active && (
+                        <span className="rounded-full bg-rose-100 dark:bg-rose-950/60 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-rose-700 dark:text-rose-300">
+                          Suspended
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400 truncate">
+                      {s.email}
+                      {s.lastLoginAt ? ` · last login ${new Date(s.lastLoginAt).toLocaleString()}` : ""}
+                    </p>
+                    <p className="mt-1 text-[11px] text-gray-500 dark:text-slate-500">{info.perms}</p>
+                  </div>
                 </div>
-              </div>
-              <button
-                onClick={() => remove(s.id)}
-                className="rounded-md px-2 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
-              >
-                Remove
-              </button>
-            </li>
-          ))}
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    value={s.role}
+                    onChange={(e) => patchStaff(s.id, { role: e.target.value as Staff["role"] })}
+                    title="Change role / give power"
+                    className="rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-2 py-1 text-xs text-gray-900 dark:text-slate-100 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                  >
+                    <option value="receptionist">👋 Receptionist</option>
+                    <option value="assistant">🩺 Assistant</option>
+                    <option value="manager">🏷️ Manager</option>
+                  </select>
+                  {s.active ? (
+                    <button
+                      onClick={() => patchStaff(s.id, { active: false })}
+                      title="Suspend — staff can't log in until restored"
+                      className="rounded-md px-2 py-1 text-xs font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition"
+                    >
+                      Suspend
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => patchStaff(s.id, { active: true })}
+                      className="rounded-md px-2 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition"
+                    >
+                      Restore
+                    </button>
+                  )}
+                  <button
+                    onClick={() => remove(s.id)}
+                    className="rounded-md px-2 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
 

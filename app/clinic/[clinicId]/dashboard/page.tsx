@@ -100,8 +100,23 @@ export default function ClinicDashboardPage() {
 
   const { clinic, staff, bookingStats, invoiceStats, emrTodayCount, activity, staffList } = data;
   const isManager = staff.role === "manager";
+  const isAssistant = staff.role === "assistant";
+  const isReceptionist = staff.role === "receptionist";
+  // Role capability table — drives which stats / tiles / sections render.
+  // Receptionist: patient flow only (lookup + arrival).
+  // Assistant:    + save EMR notes / vitals.
+  // Manager:      + invoices, statements, staff snapshot.
+  const canBill = isManager;
+  const canEmr = isManager || isAssistant;
   const fmtINR = (n: number) =>
     new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n || 0);
+
+  const ROLE_BADGE: Record<Role, { label: string; emoji: string; tone: string }> = {
+    receptionist: { label: "Receptionist", emoji: "👋", tone: "bg-sky-500/20 text-sky-100 ring-sky-300/30" },
+    assistant:    { label: "Assistant",    emoji: "🩺", tone: "bg-violet-500/20 text-violet-100 ring-violet-300/30" },
+    manager:      { label: "Manager",      emoji: "🏷️", tone: "bg-amber-500/20 text-amber-100 ring-amber-300/30" },
+  };
+  const roleBadge = ROLE_BADGE[staff.role];
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
@@ -117,9 +132,12 @@ export default function ClinicDashboardPage() {
             <h1 className="mt-1 text-2xl font-bold leading-tight">
               {greet()}, {firstName(staff.name)}
             </h1>
-            <p className="mt-1 text-sm text-white/80">
-              Signed in as <span className="font-semibold">{staff.role}</span> · {staff.email}
-            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-white/85">
+              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${roleBadge.tone}`}>
+                <span>{roleBadge.emoji}</span> {roleBadge.label}
+              </span>
+              <span className="text-white/70">{staff.email}</span>
+            </div>
           </div>
           <button
             onClick={logout}
@@ -130,7 +148,8 @@ export default function ClinicDashboardPage() {
         </div>
       </header>
 
-      {/* Stats row */}
+      {/* Stats row — role-aware. Receptionist sees only the patient-
+          flow stats; assistant adds EMR count; manager sees money. */}
       <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Today's bookings"
@@ -140,37 +159,65 @@ export default function ClinicDashboardPage() {
           icon="📋"
         />
         <StatCard
-          label="Invoices today"
-          value={invoiceStats.todayCount}
-          sub={`Issued ${fmtINR(invoiceStats.todayInvoiced)}`}
-          tone="from-emerald-900/40 to-emerald-950/60 text-emerald-200 border-emerald-900/60"
-          icon="🧾"
-        />
-        <StatCard
-          label="Collected today"
-          value={fmtINR(invoiceStats.todayCollected)}
-          sub={`Tax due ${fmtINR(invoiceStats.todayTaxDue)}`}
-          tone="from-violet-900/40 to-violet-950/60 text-violet-200 border-violet-900/60"
-          icon="💰"
-        />
-        <StatCard
-          label="EMR entries today"
-          value={emrTodayCount}
-          sub={`${bookingStats.upcoming} upcoming bookings`}
+          label={isReceptionist ? "Upcoming bookings" : "EMR entries today"}
+          value={isReceptionist ? bookingStats.upcoming : emrTodayCount}
+          sub={isReceptionist ? "Scheduled, not yet arrived" : `${bookingStats.upcoming} upcoming bookings`}
           tone="from-rose-900/40 to-rose-950/60 text-rose-200 border-rose-900/60"
-          icon="🩺"
+          icon={isReceptionist ? "📅" : "🩺"}
         />
+        {canBill && (
+          <>
+            <StatCard
+              label="Invoices today"
+              value={invoiceStats.todayCount}
+              sub={`Issued ${fmtINR(invoiceStats.todayInvoiced)}`}
+              tone="from-emerald-900/40 to-emerald-950/60 text-emerald-200 border-emerald-900/60"
+              icon="🧾"
+            />
+            <StatCard
+              label="Collected today"
+              value={fmtINR(invoiceStats.todayCollected)}
+              sub={`Tax due ${fmtINR(invoiceStats.todayTaxDue)}`}
+              tone="from-violet-900/40 to-violet-950/60 text-violet-200 border-violet-900/60"
+              icon="💰"
+            />
+          </>
+        )}
+        {/* Receptionist + Assistant still get a 4-col row by padding
+            with a paid-today tile that's visible to anyone. */}
+        {!canBill && (
+          <StatCard
+            label="Paid at clinic today"
+            value={bookingStats.todayPaid}
+            sub={`${bookingStats.todayTotal - bookingStats.todayPaid} not yet`}
+            tone="from-emerald-900/40 to-emerald-950/60 text-emerald-200 border-emerald-900/60"
+            icon="💳"
+          />
+        )}
+        {!canBill && (
+          <StatCard
+            label="Walk-up queue"
+            value={bookingStats.todayPending}
+            sub="Awaiting check-in"
+            tone="from-amber-900/40 to-amber-950/60 text-amber-200 border-amber-900/60"
+            icon="⏳"
+          />
+        )}
       </section>
 
-      {/* Quick actions */}
+      {/* Quick actions — strictly limited to what this role can do.
+          Showing a "Generate invoice" tile to a receptionist would just
+          lead to a 403, so we hide it instead. */}
       <section className="mb-6">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">Quick actions</h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
+          Quick actions
+        </h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <ActionTile
             href={`/clinic/${clinicId}/reception`}
             icon="🔍"
             title="Look up booking"
-            body="Scan QR or type booking ID to pull up patient details and save EMR."
+            body="Scan QR or type booking ID to pull up patient details."
             accent="from-sky-500 to-blue-500"
           />
           <ActionTile
@@ -180,13 +227,40 @@ export default function ClinicDashboardPage() {
             body="Check patients in when they reach reception."
             accent="from-emerald-500 to-teal-500"
           />
-          <ActionTile
-            href={`/clinic/${clinicId}/reception`}
-            icon="🧾"
-            title="Generate invoice"
-            body="Issue a tax-compliant invoice for the visit's services."
-            accent="from-amber-500 to-orange-500"
-          />
+          {canEmr && (
+            <ActionTile
+              href={`/clinic/${clinicId}/reception`}
+              icon="🩺"
+              title="Save EMR note"
+              body="Record vitals, diagnosis, prescription, and notes for this visit."
+              accent="from-violet-500 to-fuchsia-500"
+            />
+          )}
+          {canBill && (
+            <>
+              <ActionTile
+                href={`/clinic/${clinicId}/reception`}
+                icon="🧾"
+                title="Generate invoice"
+                body="Issue a tax-compliant invoice for the visit's services."
+                accent="from-amber-500 to-orange-500"
+              />
+              <ActionTile
+                href="/dashboard/doctor/statements"
+                icon="📊"
+                title="Statements"
+                body="Monthly / quarterly / yearly clinic revenue + tax."
+                accent="from-indigo-500 to-violet-500"
+              />
+              <ActionTile
+                href="/dashboard/doctor/clinic"
+                icon="👥"
+                title="Manage staff"
+                body="See the full staff list and roles."
+                accent="from-rose-500 to-pink-500"
+              />
+            </>
+          )}
         </div>
       </section>
 

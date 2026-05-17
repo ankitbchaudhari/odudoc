@@ -20,6 +20,12 @@ type Channel = "email" | "sms" | "whatsapp" | "all";
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const session = getClinicSession(req);
   if (!session) return NextResponse.json({ error: "not_signed_in" }, { status: 401 });
+  if (session.role !== "manager") {
+    return NextResponse.json(
+      { error: "Only managers can send invoices to patients." },
+      { status: 403 },
+    );
+  }
 
   await reloadInvoices();
   const inv = getInvoiceById(params.id);

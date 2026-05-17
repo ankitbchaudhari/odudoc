@@ -210,12 +210,101 @@ function ClinicCard({ clinic, onChanged, expanded, onToggle }: { clinic: Clinic;
       </div>
 
       {expanded && (
-        <div className="border-t border-gray-100 dark:border-slate-800 bg-gray-50/40 dark:bg-slate-950/40 p-5">
+        <div className="border-t border-gray-100 dark:border-slate-800 bg-gray-50/40 dark:bg-slate-950/40 p-5 space-y-6">
           <ClinicStaffPanel clinicId={clinic.id} />
-          <div className="mt-6">
-            <PaymentToggles clinic={clinic} onChanged={onChanged} />
-          </div>
+          <ClinicFeeEditor clinic={clinic} onChanged={onChanged} />
+          <PaymentToggles clinic={clinic} onChanged={onChanged} />
         </div>
+      )}
+    </div>
+  );
+}
+
+function ClinicFeeEditor({ clinic, onChanged }: { clinic: Clinic; onChanged: () => void }) {
+  // Empty string = inherit from the doctor's default fee. Stored as a
+  // string so the input can render "" cleanly vs a placeholder 0.
+  const [fee, setFee] = useState<string>(
+    clinic.feeOverride !== undefined ? String(clinic.feeOverride) : "",
+  );
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+
+  const save = async () => {
+    setErr(null);
+    let body: Record<string, unknown>;
+    if (fee.trim() === "") {
+      // Clear override → inherit doctor's default. The PUT route accepts
+      // null to mean "remove the override".
+      body = { feeOverride: null };
+    } else {
+      const n = Number(fee);
+      if (!Number.isFinite(n) || n <= 0) {
+        setErr("Enter a positive amount, or leave blank to inherit.");
+        return;
+      }
+      body = { feeOverride: n };
+    }
+    setSaving(true);
+    try {
+      const r = await fetch(`/api/doctor/clinics/${clinic.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        setErr(d.error || "Failed to save");
+      } else {
+        setSavedAt(Date.now());
+        onChanged();
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center gap-2">
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-300 text-sm">💵</span>
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-slate-100">In-clinic visit fee</h4>
+      </div>
+      <p className="mt-1 ml-9 text-xs text-gray-500 dark:text-slate-400">
+        What patients pay for an in-person visit at <strong>{clinic.name}</strong>. Leave
+        blank to charge your default telemed fee. Set this when in-person visits
+        cost more (or less) than a video consult.
+      </p>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="relative">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 dark:text-slate-500">$</span>
+          <input
+            type="number"
+            min={0}
+            step="0.01"
+            inputMode="decimal"
+            placeholder="Inherit telemed fee"
+            value={fee}
+            onChange={(e) => setFee(e.target.value)}
+            className="w-44 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 pl-7 pr-3 py-2 text-sm text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={save}
+          disabled={saving}
+          className="rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-emerald-500/30 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition"
+        >
+          {saving ? "Saving…" : "Save fee"}
+        </button>
+        {savedAt && Date.now() - savedAt < 2500 && (
+          <span className="text-xs text-emerald-700 dark:text-emerald-300">✓ Saved</span>
+        )}
+      </div>
+      {err && (
+        <p className="mt-2 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 px-3 py-1.5 text-xs text-rose-700 dark:text-rose-300">
+          {err}
+        </p>
       )}
     </div>
   );

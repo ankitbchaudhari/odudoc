@@ -25,6 +25,19 @@ export default function DoctorProfilePage() {
   // tagged. The booking POST then lands as an in-person clinic visit.
   const [bookClinicId, setBookClinicId] = useState<string | null>(null);
   const [bookClinicName, setBookClinicName] = useState<string | null>(null);
+  // Clinic summary for the header CTA. Drives:
+  //   - whether the "Visit Clinic" button renders at all (only if the
+  //     doctor has at least one active clinic),
+  //   - the destination URL (single clinic → straight to /book-clinic,
+  //     multiple → /clinics picker),
+  //   - the price chip ("Clinic visit $X") shown alongside the telemed
+  //     price when the override differs from the doctor's default fee.
+  const [clinicSummary, setClinicSummary] = useState<{
+    count: number;
+    firstId: string | null;
+    minFee: number | null;
+    maxFee: number | null;
+  } | null>(null);
 
   // Refresh from the admin-managed API so edits show up live.
   useEffect(() => {
@@ -41,6 +54,28 @@ export default function DoctorProfilePage() {
       })
       .catch(() => setDoctor(null))
       .finally(() => setLoading(false));
+
+    // Fetch active clinics in parallel so the header CTA can render
+    // immediately on first paint, not after a second async ping.
+    fetch(`/api/clinics/by-doctor/${params.id}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { clinics: [] }))
+      .then((d) => {
+        const list: Array<{ id: string; feeOverride?: number }> = d.clinics || [];
+        if (list.length === 0) {
+          setClinicSummary({ count: 0, firstId: null, minFee: null, maxFee: null });
+          return;
+        }
+        const fees = list
+          .map((c) => c.feeOverride)
+          .filter((f): f is number => typeof f === "number");
+        setClinicSummary({
+          count: list.length,
+          firstId: list[0].id,
+          minFee: fees.length ? Math.min(...fees) : null,
+          maxFee: fees.length ? Math.max(...fees) : null,
+        });
+      })
+      .catch(() => setClinicSummary({ count: 0, firstId: null, minFee: null, maxFee: null }));
   }, [params.id]);
 
   if (loading) {
@@ -142,15 +177,53 @@ export default function DoctorProfilePage() {
               </div>
               <p className="mt-2 text-sm text-gray-400 dark:text-slate-500">{doctor.location}</p>
             </div>
-            <div className="flex flex-col items-center gap-3">
-              <p className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-sky-600 to-teal-600 dark:from-sky-400 dark:to-teal-400 bg-clip-text text-transparent">${doctor.fee}</p>
+            <div className="flex flex-col items-stretch gap-3 sm:items-end">
+              {/* Price summary — when the clinic charges a different
+                  amount than telemed, show both side by side so the
+                  patient picks knowing the difference. */}
+              {clinicSummary && clinicSummary.count > 0 && clinicSummary.minFee !== null && clinicSummary.minFee !== doctor.fee ? (
+                <div className="flex flex-col items-end">
+                  <div className="flex items-baseline gap-3">
+                    <span className="flex flex-col items-center">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-500/70 dark:text-indigo-300/70">📹 Video</span>
+                      <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-sky-600 to-teal-600 dark:from-sky-400 dark:to-teal-400 bg-clip-text text-transparent">${doctor.fee}</span>
+                    </span>
+                    <span className="text-gray-300 dark:text-slate-700">·</span>
+                    <span className="flex flex-col items-center">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500/80 dark:text-emerald-300/70">🏥 Clinic</span>
+                      <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
+                        {clinicSummary.minFee === clinicSummary.maxFee
+                          ? `$${clinicSummary.minFee}`
+                          : `$${clinicSummary.minFee}–$${clinicSummary.maxFee}`}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-sky-600 to-teal-600 dark:from-sky-400 dark:to-teal-400 bg-clip-text text-transparent">${doctor.fee}</p>
+              )}
+
               <button onClick={() => setModalOpen(true)} className="rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 transition whitespace-nowrap">
                 Book Appointment
               </button>
+
+              {clinicSummary && clinicSummary.count > 0 && (
+                <Link
+                  href={
+                    clinicSummary.count === 1 && clinicSummary.firstId
+                      ? `/doctors/${doctor.id}/book-clinic/${clinicSummary.firstId}`
+                      : `/doctors/${doctor.id}/clinics`
+                  }
+                  className="rounded-xl border-2 border-emerald-500/60 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 dark:from-emerald-500/20 dark:to-teal-500/20 px-6 py-2.5 text-center text-sm font-bold text-emerald-700 dark:text-emerald-300 hover:from-emerald-500/20 hover:to-teal-500/20 transition whitespace-nowrap"
+                >
+                  🏥 Visit Clinic
+                </Link>
+              )}
+
               <button
                 onClick={() => setConsultGateOpen(true)}
                 disabled={videoLoading}
-                className="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:underline disabled:opacity-50"
+                className="flex items-center justify-center gap-1.5 text-sm font-medium text-primary-600 hover:underline disabled:opacity-50"
               >
                 {videoLoading ? (
                   <>

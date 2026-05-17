@@ -16,6 +16,7 @@ import { getStaffById, listStaffByClinic } from "@/lib/clinic-staff-store";
 import { getBookings, reloadBookings } from "@/lib/bookings-store";
 import { listInvoicesByClinic, reloadInvoices } from "@/lib/clinic-invoices-store";
 import { listEmrByClinic, reloadEmr } from "@/lib/clinic-emr-store";
+import { countPendingInbound, reloadClinicReferrals } from "@/lib/clinic-referrals-store";
 
 export const runtime = "nodejs";
 
@@ -42,7 +43,9 @@ export async function GET(req: NextRequest) {
   // Refresh in-memory state from Postgres so the dashboard reflects
   // bookings / invoices / EMR rows written by sibling Lambdas
   // moments before this read.
-  await Promise.all([reloadBookings(), reloadInvoices(), reloadEmr()]);
+  await Promise.all([reloadBookings(), reloadInvoices(), reloadEmr(), reloadClinicReferrals()]);
+
+  const pendingReferrals = countPendingInbound(clinic.id);
 
   // Today's bookings for this clinic
   const allBookings = getBookings().filter((b) => b.clinicId === clinic.id);
@@ -126,6 +129,7 @@ export async function GET(req: NextRequest) {
     bookingStats,
     invoiceStats,
     emrTodayCount: emrToday.length,
+    pendingReferrals,
     activity,
   });
 }

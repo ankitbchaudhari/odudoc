@@ -38,6 +38,7 @@ interface DashboardResp {
     todayTaxDue: number;
   };
   emrTodayCount: number;
+  pendingReferrals?: number;
   activity: Array<{
     kind: "invoice" | "arrival" | "emr";
     id: string;
@@ -98,7 +99,7 @@ export default function ClinicDashboardPage() {
     );
   }
 
-  const { clinic, staff, bookingStats, invoiceStats, emrTodayCount, activity, staffList } = data;
+  const { clinic, staff, bookingStats, invoiceStats, emrTodayCount, activity, staffList, pendingReferrals } = data;
   const isManager = staff.role === "manager";
   const isAssistant = staff.role === "assistant";
   const isReceptionist = staff.role === "receptionist";
@@ -226,6 +227,13 @@ export default function ClinicDashboardPage() {
             title="Mark arrival"
             body="Check patients in when they reach reception."
             accent="from-emerald-500 to-teal-500"
+          />
+          <ActionTile
+            href={`/clinic/${clinicId}/referrals`}
+            icon="↗️"
+            title={pendingReferrals && pendingReferrals > 0 ? `Referrals · ${pendingReferrals} pending` : "Referrals"}
+            body="Refer a patient to another clinic or hospital in the OduDoc network — or act on inbound referrals."
+            accent="from-fuchsia-500 to-pink-500"
           />
           {canEmr && (
             <ActionTile

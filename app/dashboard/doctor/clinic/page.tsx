@@ -96,27 +96,49 @@ export default function DoctorClinicPage() {
   }, []);
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
-      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">My Clinics</h1>
-          <p className="text-sm text-gray-500 dark:text-slate-400">
-            Register the physical clinics where you see patients in person. Patients can book at a specific clinic from your profile.
-          </p>
+    <main className="relative mx-auto max-w-4xl px-4 py-8">
+      {/* Ambient gradient blob */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 overflow-hidden">
+        <div className="absolute -top-24 left-1/2 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-gradient-to-tr from-indigo-400/25 via-fuchsia-400/25 to-emerald-300/25 blur-3xl dark:from-indigo-600/25 dark:via-fuchsia-600/25 dark:to-emerald-500/15" />
+      </div>
+
+      <header className="mb-6 overflow-hidden rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg shadow-indigo-500/5">
+        <div className="relative bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 px-6 py-6 text-white">
+          <div className="relative flex flex-wrap items-end justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/70">My clinics</p>
+              <h1 className="mt-1 text-2xl font-bold">Where you see patients</h1>
+              <p className="mt-1 max-w-xl text-sm text-white/80">
+                Register the physical clinics where you practice. Patients book at a specific clinic from your profile.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowNew(true)}
+              className="shrink-0 rounded-xl bg-white/15 backdrop-blur-sm px-4 py-2.5 text-sm font-semibold text-white ring-1 ring-white/30 hover:bg-white/25 transition"
+            >
+              + Add clinic
+            </button>
+          </div>
+          {/* Decorative rings */}
+          <div className="pointer-events-none absolute -right-12 -bottom-12 h-40 w-40 rounded-full border-2 border-white/10" />
+          <div className="pointer-events-none absolute -right-20 -bottom-20 h-56 w-56 rounded-full border border-white/5" />
         </div>
-        <button onClick={() => setShowNew(true)} className="btn-primary">+ Add clinic</button>
       </header>
 
       {loading ? (
         <p className="text-sm text-gray-500 dark:text-slate-400">Loading…</p>
       ) : clinics.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/50 p-8 text-center">
-          <p className="text-sm text-gray-700 dark:text-slate-300">You haven&apos;t registered any clinics yet.</p>
-          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+        <div className="rounded-2xl border border-dashed border-gray-300 dark:border-slate-700 bg-gradient-to-br from-indigo-50/50 via-violet-50/30 to-fuchsia-50/50 dark:from-indigo-950/20 dark:via-violet-950/20 dark:to-fuchsia-950/20 p-10 text-center">
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-2xl text-white shadow-lg shadow-indigo-500/30">🏥</span>
+          <p className="mt-3 text-base font-semibold text-gray-900 dark:text-slate-100">No clinics yet</p>
+          <p className="mx-auto mt-1 max-w-md text-xs text-gray-500 dark:text-slate-400">
             Add your clinic so patients can book in-person visits and see your location on your profile.
           </p>
-          <button onClick={() => setShowNew(true)} className="btn-primary mt-4">
-            Register your first clinic
+          <button
+            onClick={() => setShowNew(true)}
+            className="mt-5 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition"
+          >
+            Register your first clinic →
           </button>
         </div>
       ) : (
@@ -142,30 +164,53 @@ export default function DoctorClinicPage() {
 
 function ClinicCard({ clinic, onChanged, expanded, onToggle }: { clinic: Clinic; onChanged: () => void; expanded: boolean; onToggle: () => void }) {
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">{clinic.name}</h3>
-            {!clinic.active && <span className="rounded-full bg-gray-100 dark:bg-slate-800 px-2 py-0.5 text-xs text-gray-600 dark:text-slate-400">Inactive</span>}
+    <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm transition hover:shadow-md hover:shadow-indigo-500/5">
+      <div className="flex flex-wrap items-start justify-between gap-3 p-5">
+        <div className="min-w-0 flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-lg text-white shadow-md shadow-indigo-500/30">🏥</span>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">{clinic.name}</h3>
+              {clinic.active ? (
+                <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                  Active
+                </span>
+              ) : (
+                <span className="rounded-full bg-gray-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-gray-600 dark:text-slate-400">
+                  Inactive
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
+              📍 {[clinic.addressLine1, clinic.city, clinic.state, clinic.country].filter(Boolean).join(", ")}
+            </p>
+            <p className="mt-1 text-[11px] font-mono text-gray-400 dark:text-slate-500">{clinic.id}</p>
           </div>
-          <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
-            {[clinic.addressLine1, clinic.city, clinic.state, clinic.country].filter(Boolean).join(", ")}
-          </p>
-          <p className="mt-1 text-xs font-mono text-gray-400 dark:text-slate-500">{clinic.id}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <a href={`/clinic/${clinic.id}/login`} target="_blank" rel="noreferrer" className="rounded-lg border border-gray-200 dark:border-slate-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800">
+          <a
+            href={`/clinic/${clinic.id}/login`}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 hover:border-indigo-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/30 transition"
+          >
             Reception login →
           </a>
-          <button onClick={onToggle} className="rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-700">
+          <button
+            onClick={onToggle}
+            className={
+              expanded
+                ? "rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition"
+                : "rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm shadow-indigo-500/30 hover:shadow-md transition"
+            }
+          >
             {expanded ? "Close" : "Manage"}
           </button>
         </div>
       </div>
 
       {expanded && (
-        <div className="mt-5 border-t border-gray-100 dark:border-slate-800 pt-5">
+        <div className="border-t border-gray-100 dark:border-slate-800 bg-gray-50/40 dark:bg-slate-950/40 p-5">
           <ClinicStaffPanel clinicId={clinic.id} />
           <div className="mt-6">
             <PaymentToggles clinic={clinic} onChanged={onChanged} />
@@ -208,21 +253,60 @@ function PaymentToggles({ clinic, onChanged }: { clinic: Clinic; onChanged: () =
 
   return (
     <div>
-      <h4 className="text-sm font-semibold text-gray-900 dark:text-slate-100">Payment options</h4>
-      <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">Patients pick one at booking time.</p>
-      <div className="mt-3 flex flex-col gap-2">
-        <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-          <input type="checkbox" checked={online} onChange={(e) => setOnline(e.target.checked)} />
-          Pay online at booking (Stripe / Cashfree)
+      <div className="flex items-center gap-2">
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-300 text-sm">💳</span>
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-slate-100">Payment options</h4>
+      </div>
+      <p className="mt-1 ml-9 text-xs text-gray-500 dark:text-slate-400">Patients pick one at booking time.</p>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <label
+          className={
+            online
+              ? "flex cursor-pointer items-start gap-3 rounded-xl border-2 border-indigo-500 bg-gradient-to-br from-indigo-500/10 to-violet-500/10 dark:from-indigo-500/20 dark:to-violet-500/20 p-3 transition"
+              : "flex cursor-pointer items-start gap-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 p-3 hover:border-indigo-300 transition"
+          }
+        >
+          <input
+            type="checkbox"
+            checked={online}
+            onChange={(e) => setOnline(e.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-indigo-600"
+          />
+          <div>
+            <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">⚡ Pay online at booking</p>
+            <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">Stripe / Cashfree, paid up front</p>
+          </div>
         </label>
-        <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-          <input type="checkbox" checked={atClinic} onChange={(e) => setAtClinic(e.target.checked)} />
-          Pay at clinic (cash / UPI / card at reception)
+        <label
+          className={
+            atClinic
+              ? "flex cursor-pointer items-start gap-3 rounded-xl border-2 border-emerald-500 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 dark:from-emerald-500/20 dark:to-teal-500/20 p-3 transition"
+              : "flex cursor-pointer items-start gap-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 p-3 hover:border-emerald-300 transition"
+          }
+        >
+          <input
+            type="checkbox"
+            checked={atClinic}
+            onChange={(e) => setAtClinic(e.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-emerald-600"
+          />
+          <div>
+            <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">🏥 Pay at clinic</p>
+            <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">Cash / UPI / card at reception</p>
+          </div>
         </label>
       </div>
-      {err && <p className="mt-2 text-xs text-red-600">{err}</p>}
-      <button onClick={save} disabled={saving} className="mt-3 rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-60">
-        {saving ? "Saving…" : "Save"}
+      {err && (
+        <p className="mt-2 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 px-3 py-1.5 text-xs text-rose-700 dark:text-rose-300">
+          {err}
+        </p>
+      )}
+      <button
+        onClick={save}
+        disabled={saving}
+        className="mt-3 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-indigo-500/30 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition"
+      >
+        {saving ? "Saving…" : "Save payment options"}
       </button>
     </div>
   );
@@ -280,41 +364,98 @@ function ClinicStaffPanel({ clinicId }: { clinicId: string }) {
 
   return (
     <div>
-      <h4 className="text-sm font-semibold text-gray-900 dark:text-slate-100">Reception staff</h4>
-      <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
-        Staff log in at <code className="rounded bg-gray-100 dark:bg-slate-800 px-1">/clinic/{clinicId}/login</code> to look up bookings.
+      <div className="flex items-center gap-2">
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-fuchsia-100 dark:bg-fuchsia-950/60 text-fuchsia-600 dark:text-fuchsia-300 text-sm">👥</span>
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-slate-100">Reception staff</h4>
+      </div>
+      <p className="mt-1 ml-9 text-xs text-gray-500 dark:text-slate-400">
+        Staff log in at{" "}
+        <code className="rounded bg-gray-100 dark:bg-slate-800 px-1.5 py-0.5 text-[11px] text-gray-700 dark:text-slate-300">
+          /clinic/{clinicId}/login
+        </code>{" "}
+        to look up bookings.
       </p>
 
       {staff.length > 0 && (
-        <ul className="mt-3 divide-y divide-gray-100 dark:divide-slate-800 rounded-lg border border-gray-100 dark:border-slate-800">
+        <ul className="mt-3 divide-y divide-gray-100 dark:divide-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 overflow-hidden">
           {staff.map((s) => (
-            <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
-              <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{s.name}</p>
-                <p className="text-xs text-gray-500 dark:text-slate-400">
-                  {s.email} · {s.role}
-                  {s.lastLoginAt ? ` · last login ${new Date(s.lastLoginAt).toLocaleString()}` : ""}
-                </p>
+            <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 to-violet-500 text-xs font-semibold text-white">
+                  {(s.name || s.email || "?").trim().charAt(0).toUpperCase()}
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{s.name}</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">
+                    {s.email} · <span className="capitalize">{s.role}</span>
+                    {s.lastLoginAt ? ` · last login ${new Date(s.lastLoginAt).toLocaleString()}` : ""}
+                  </p>
+                </div>
               </div>
-              <button onClick={() => remove(s.id)} className="text-xs text-red-600 hover:underline">Remove</button>
+              <button
+                onClick={() => remove(s.id)}
+                className="rounded-md px-2 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+              >
+                Remove
+              </button>
             </li>
           ))}
         </ul>
       )}
 
-      <form onSubmit={add} className="mt-4 grid gap-2 rounded-lg border border-dashed border-gray-200 dark:border-slate-700 p-3 sm:grid-cols-2">
-        <input required placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} className="rounded border border-gray-300 dark:border-slate-700 px-2 py-1.5 text-sm" />
-        <input required type="email" placeholder="Email (login)" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded border border-gray-300 dark:border-slate-700 px-2 py-1.5 text-sm" />
-        <input placeholder="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded border border-gray-300 dark:border-slate-700 px-2 py-1.5 text-sm" />
-        <select value={role} onChange={(e) => setRole(e.target.value as "receptionist" | "assistant" | "manager")} className="rounded border border-gray-300 dark:border-slate-700 px-2 py-1.5 text-sm">
+      <form
+        onSubmit={add}
+        className="mt-4 grid gap-2.5 rounded-xl border border-dashed border-gray-200 dark:border-slate-700 bg-gray-50/60 dark:bg-slate-900/40 p-4 sm:grid-cols-2"
+      >
+        <input
+          required
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition"
+        />
+        <input
+          required
+          type="email"
+          placeholder="Email (login)"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition"
+        />
+        <input
+          placeholder="Phone (optional)"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition"
+        />
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value as "receptionist" | "assistant" | "manager")}
+          className="rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-gray-900 dark:text-slate-100 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition"
+        >
           <option value="receptionist">Receptionist</option>
           <option value="assistant">Assistant</option>
           <option value="manager">Manager</option>
         </select>
-        <input required type="password" placeholder="Password (min 8 chars)" minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="rounded border border-gray-300 dark:border-slate-700 px-2 py-1.5 text-sm sm:col-span-2" />
-        {err && <p className="text-xs text-red-600 sm:col-span-2">{err}</p>}
-        <button disabled={busy} className="rounded bg-primary-600 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60 sm:col-span-2">
-          {busy ? "Adding…" : "Add staff member"}
+        <input
+          required
+          type="password"
+          placeholder="Password (min 8 chars)"
+          minLength={8}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition sm:col-span-2"
+        />
+        {err && (
+          <p className="rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 px-3 py-1.5 text-xs text-rose-700 dark:text-rose-300 sm:col-span-2">
+            {err}
+          </p>
+        )}
+        <button
+          disabled={busy}
+          className="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-3 py-2 text-sm font-semibold text-white shadow-sm shadow-indigo-500/30 hover:shadow-md hover:shadow-indigo-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition sm:col-span-2"
+        >
+          {busy ? "Adding…" : "+ Add staff member"}
         </button>
       </form>
     </div>

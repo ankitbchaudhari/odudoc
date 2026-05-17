@@ -20,9 +20,17 @@ export async function GET() {
   await reloadClinics();
   const doctors = listDoctors({});
   const doctorIds: string[] = [];
+  // singleClinic[doctorId] = clinicId when the doctor has EXACTLY
+  // one active clinic. The DoctorListRow uses this to deep-link the
+  // "🏥 Visit Clinic" CTA past the picker and straight to the
+  // booking form, saving a full navigation hop.
+  const singleClinic: Record<string, string> = {};
   for (const d of doctors) {
-    const clinics = listClinicsByDoctor(d.id);
-    if (clinics.some((c) => c.active)) doctorIds.push(d.id);
+    const active = listClinicsByDoctor(d.id).filter((c) => c.active);
+    if (active.length > 0) {
+      doctorIds.push(d.id);
+      if (active.length === 1) singleClinic[d.id] = active[0].id;
+    }
   }
-  return NextResponse.json({ doctorIds });
+  return NextResponse.json({ doctorIds, singleClinic });
 }

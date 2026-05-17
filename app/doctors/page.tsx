@@ -56,8 +56,11 @@ export default function DoctorsPage() {
   );
   // Set of doctor ids who have at least one active clinic. Drives
   // the per-row "🏥 Visit Clinic" CTA so we only show it for doctors
-  // who can actually take in-person visits.
+  // who can actually take in-person visits. singleClinicByDoctor
+  // lets the CTA deep-link past the picker and straight to the
+  // booking form when the doctor only has one clinic.
   const [clinicDoctorIds, setClinicDoctorIds] = useState<Set<string>>(() => new Set());
+  const [singleClinicByDoctor, setSingleClinicByDoctor] = useState<Record<string, string>>({});
   useEffect(() => {
     let cancelled = false;
     fetch("/api/clinics/doctors-with-clinics", { cache: "no-store" })
@@ -65,6 +68,9 @@ export default function DoctorsPage() {
       .then((d) => {
         if (cancelled || !d || !Array.isArray(d.doctorIds)) return;
         setClinicDoctorIds(new Set(d.doctorIds as string[]));
+        if (d.singleClinic && typeof d.singleClinic === "object") {
+          setSingleClinicByDoctor(d.singleClinic as Record<string, string>);
+        }
       })
       .catch(() => { /* CTA just stays hidden — non-fatal */ });
     return () => { cancelled = true; };
@@ -467,7 +473,12 @@ export default function DoctorsPage() {
                 ))
               ) : filtered.length > 0 ? (
                 filtered.map((d) => (
-                  <DoctorListRow key={d.id} doctor={d} hasClinic={clinicDoctorIds.has(d.id)} />
+                  <DoctorListRow
+                    key={d.id}
+                    doctor={d}
+                    hasClinic={clinicDoctorIds.has(d.id)}
+                    singleClinicId={singleClinicByDoctor[d.id]}
+                  />
                 ))
               ) : (
                 <div className="rounded-2xl bg-white dark:bg-slate-900 py-16 px-6 text-center shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">

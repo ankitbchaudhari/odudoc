@@ -8,7 +8,7 @@
 
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { getDoctorById, reloadDoctors } from "@/lib/doctors-store";
+import { getDoctorById } from "@/lib/doctors-store";
 import { listActiveClinicsByDoctor, reloadClinics } from "@/lib/clinics-store";
 
 export const runtime = "nodejs";
@@ -21,9 +21,9 @@ export default async function VisitClinicPickerPage({
 }: {
   params: { id: string };
 }) {
-  // Cross-Lambda freshness — a clinic registered on a sibling Lambda
-  // must show up here on first read.
-  await Promise.all([reloadDoctors(), reloadClinics()]);
+  // Cross-Lambda freshness — clinics only. The doctor record is
+  // weeks-stable; skip the reloadDoctors Postgres hit here.
+  await reloadClinics();
 
   const doctor = getDoctorById(params.id);
   if (!doctor) notFound();

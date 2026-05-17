@@ -14,6 +14,7 @@ import { pickDoctorPhoto } from "@/lib/doctor-photos";
 export default function DoctorListRow({
   doctor,
   hasClinic,
+  singleClinicId,
 }: {
   doctor: Doctor;
   /** When true, this doctor has at least one active clinic registered.
@@ -21,6 +22,10 @@ export default function DoctorListRow({
    *  visit straight from the listing instead of having to open the
    *  full profile first. */
   hasClinic?: boolean;
+  /** If the doctor has exactly one active clinic, that clinic's id.
+   *  Lets the "Visit clinic" CTA deep-link past the picker and
+   *  straight to the booking form, saving one full nav hop. */
+  singleClinicId?: string;
 }) {
   const photo = pickDoctorPhoto({
     id: doctor.id,
@@ -136,11 +141,16 @@ export default function DoctorListRow({
           </Link>
           {hasClinic && (
             // Surface a third CTA when the doctor has registered at
-            // least one physical clinic. Routes to a focused clinic
-            // picker; if the doctor only has one clinic, that page
-            // server-redirects straight into the booking flow.
+            // least one physical clinic. When we know the doctor only
+            // has one clinic, deep-link straight to the booking form
+            // — saves a server hop vs going through the picker.
+            // Multi-clinic doctors still hit the picker first.
             <Link
-              href={`/doctors/${doctor.id}/clinics`}
+              href={
+                singleClinicId
+                  ? `/doctors/${doctor.id}/book-clinic/${singleClinicId}`
+                  : `/doctors/${doctor.id}/clinics`
+              }
               className="flex-1 rounded-lg border border-rose-200 bg-rose-50 dark:border-rose-800/60 dark:bg-rose-950/40 py-2.5 text-center text-sm font-medium text-rose-700 dark:text-rose-300 transition-colors hover:bg-rose-100 dark:hover:bg-rose-900/40"
             >
               🏥 Visit Clinic

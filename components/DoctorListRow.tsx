@@ -136,12 +136,11 @@ export default function DoctorListRow({
           </Link>
           {hasClinic && (
             // Surface a third CTA when the doctor has registered at
-            // least one physical clinic. Deep-links to the doctor
-            // profile with a hash so the page scrolls straight to the
-            // ClinicLocations card where the patient picks the
-            // specific clinic to book at.
+            // least one physical clinic. Routes to a focused clinic
+            // picker; if the doctor only has one clinic, that page
+            // server-redirects straight into the booking flow.
             <Link
-              href={`/doctors/${doctor.id}#clinics`}
+              href={`/doctors/${doctor.id}/clinics`}
               className="flex-1 rounded-lg border border-rose-200 bg-rose-50 dark:border-rose-800/60 dark:bg-rose-950/40 py-2.5 text-center text-sm font-medium text-rose-700 dark:text-rose-300 transition-colors hover:bg-rose-100 dark:hover:bg-rose-900/40"
             >
               🏥 Visit Clinic

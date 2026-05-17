@@ -194,7 +194,7 @@ function ClinicCard({ clinic, onChanged, expanded, onToggle }: { clinic: Clinic;
             rel="noreferrer"
             className="rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 hover:border-indigo-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/30 transition"
           >
-            Reception login →
+            Staff login →
           </a>
           <button
             onClick={onToggle}

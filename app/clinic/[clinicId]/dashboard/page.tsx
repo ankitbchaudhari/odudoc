@@ -56,14 +56,14 @@ export default function ClinicDashboardPage() {
 
   if (loading && !data) {
     return (
-      <DashboardShell role="corporate">
+      <DashboardShell role="corporate" hideUserMenu>
         <div className="flex min-h-[60vh] items-center justify-center text-sm text-white/60">Loading…</div>
       </DashboardShell>
     );
   }
   if (!data) {
     return (
-      <DashboardShell role="corporate">
+      <DashboardShell role="corporate" hideUserMenu>
         <GlassCard className="mx-auto max-w-md">
           <p className="text-sm text-rose-200">{err || "Couldn't load the dashboard."}</p>
           <Link href={`/clinic/${clinicId}/login`} className="mt-4 inline-block text-sm text-amber-300 hover:underline">
@@ -91,7 +91,7 @@ export default function ClinicDashboardPage() {
   const roleBadge = ROLE_BADGE[staff.role];
 
   return (
-    <DashboardShell role="corporate">
+    <DashboardShell role="corporate" hideUserMenu>
       {/* Hero */}
       <GlassCard glow className="mb-6 overflow-hidden">
         <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 opacity-30 blur-3xl" />

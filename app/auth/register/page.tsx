@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -58,7 +58,19 @@ function scorePassword(pw: string): number {
   return Math.min(s, 4);
 }
 
+// Wraps the actual form in a Suspense boundary so useSearchParams()
+// doesn't bail out of static rendering. Next.js 14 enforces this:
+// any client component using useSearchParams must be inside Suspense
+// or the build's static-export step fails the whole route.
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterPageInner />
+    </Suspense>
+  );
+}
+
+function RegisterPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   // Read the gateway-selected path + (for corporate) the sub-type slug.

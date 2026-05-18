@@ -2,12 +2,21 @@
 
 import { useMemo, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { COUNTRIES } from "@/lib/countries";
 import PhoneInput from "@/components/PhoneInput";
 import Logo from "@/components/Logo";
 import AppDownloadBadges from "@/components/AppDownloadBadges";
+import { getCorporateType } from "@/lib/corporate-types";
+
+// Context labels for the path query param (?path=patient|doctor|corporate).
+// Picked up from the /signup gateway + corporate sub-type landings.
+const PATH_LABELS: Record<string, { label: string; sub: string }> = {
+  patient: { label: "Signing up as a Patient", sub: "Personal account · free · always" },
+  doctor: { label: "Signing up as a Doctor", sub: "Verification in 24–48h after submission" },
+  corporate: { label: "Signing up as an Organisation", sub: "Pick your tenant type — admin console after verification" },
+};
 
 // Tiny inline icon helpers to keep JSX readable.
 const Icon = {
@@ -51,6 +60,12 @@ function scorePassword(pw: string): number {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // Read the gateway-selected path + (for corporate) the sub-type slug.
+  const path = searchParams?.get("path") || "";
+  const typeSlug = searchParams?.get("type") || "";
+  const pathLabel = PATH_LABELS[path];
+  const corpType = path === "corporate" && typeSlug ? getCorporateType(typeSlug) : undefined;
 
   const [form, setForm] = useState({
     name: "",
@@ -153,6 +168,24 @@ export default function RegisterPage() {
             <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
               Join OduDoc for faster, safer healthcare access.
             </p>
+            {/* Path context — the gateway page (or a sub-type
+                landing) routed the user here with a path query param.
+                Show what they picked so they can confirm or back out. */}
+            {pathLabel && (
+              <div className="mt-4 inline-flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-left dark:border-emerald-800 dark:bg-emerald-950/40">
+                <span className="mt-0.5 text-lg">{corpType?.emoji ?? (path === "doctor" ? "🩺" : path === "corporate" ? "🏢" : "🧑")}</span>
+                <div>
+                  <p className="text-sm font-bold text-emerald-800 dark:text-emerald-200">
+                    {corpType ? `Signing up as a ${corpType.singular}` : pathLabel.label}
+                  </p>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300">
+                    {corpType?.tagline ?? pathLabel.sub}
+                    {" "}
+                    <Link href="/signup" className="font-semibold underline">Wrong path?</Link>
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="rounded-3xl border border-gray-100 bg-white/80 p-7 shadow-xl shadow-primary-900/5 backdrop-blur-xl sm:p-8">

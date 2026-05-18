@@ -65,6 +65,11 @@ export default function Analytics() {
           bootstrap: { distinctID: distinctId },
           capture_pageview: false, // we capture manually below
           capture_pageleave: true,
+          // Surveys.js is a 33 KB add-on that the homepage probe
+          // showed downloading in the critical path. We don't use
+          // it yet — disable to keep LCP clean. Flip back on when
+          // a surveys feature is actually built.
+          disable_surveys: true,
           autocapture: {
             // Don't capture sensitive form inputs.
             css_selector_allowlist: undefined,

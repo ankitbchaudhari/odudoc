@@ -14,11 +14,25 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
   // prospects — no nav, no banners, no distractions. Keeps focus
   // on the value prop and the calendar booking CTA.
   const isPilot = pathname === "/pilot" || pathname.startsWith("/pilot/");
+  // Post-login app surfaces — patient, doctor, clinic, corporate
+  // dashboards. Suppress the public-site navbar / emergency banner /
+  // footer so the dashboard feels like a focused app rather than a
+  // website wrapper. Users who sign out land back on a public route
+  // and immediately get the full chrome again.
+  const isDashboard = pathname.startsWith("/dashboard");
+  // Clinic staff pages are everything under /clinic/<id>/ (dashboard,
+  // reception, insurance, pharmacy, referrals, login). The public
+  // "/clinic" listing — if it ever ships — would live at /clinic
+  // exactly, which doesn't match this prefix.
+  const isClinicStaff = /^\/clinic\/[^/]+\//.test(pathname);
+  // /corporate/login is the customer sign-in page; the /corporate
+  // marketing page itself stays public.
+  const isCorporateApp = pathname.startsWith("/corporate/login");
 
-  if (isAdmin || isPilot) {
-    // Admin pages render their own chrome in app/admin/layout.tsx. Wrap
-    // the body in <main> so screen readers still see the document
-    // landmark structure they expect.
+  if (isAdmin || isPilot || isDashboard || isClinicStaff || isCorporateApp) {
+    // These surfaces render their own chrome (DashboardShell or
+    // admin sidebar). Wrap the body in <main> so screen readers
+    // still see the document landmark structure they expect.
     return <main id="main-content">{children}</main>;
   }
 

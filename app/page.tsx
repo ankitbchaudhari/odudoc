@@ -1,4 +1,5 @@
 import HeroWithTextSlider from "@/components/hero/HeroWithTextSlider";
+import SymptomChecker from "@/components/SymptomChecker";
 import WorkingProcess from "@/components/WorkingProcess";
 import StatsSection from "@/components/StatsSection";
 import AwardsSection from "@/components/AwardsSection";
@@ -50,6 +51,11 @@ export default async function Home() {
         }))}
       />
       <HeroWithTextSlider />
+
+      {/* Symptom checker — pre-signup triage wizard. Captures
+          patients who don't yet know which specialist they need
+          and routes them to the right specialty + booking flow. */}
+      <SymptomChecker />
 
       {/* Feature catalogue teaser — single CTA strip directing
           visitors to the comprehensive /features page. Compact

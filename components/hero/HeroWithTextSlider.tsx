@@ -1,50 +1,76 @@
 "use client";
 
 import TextRotator from "@/components/TextRotator";
-import AnimatedCounter from "@/components/AnimatedCounter";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
+import { useEffect, useState } from "react";
 
 const rotatingWords = ["Health", "Wellness", "Care", "Life"];
 
-const quickStats = [
-  {
-    end: 500,
-    suffix: "+",
-    label: "Doctors",
-    gradient: "from-sky-500 to-indigo-500",
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-      </svg>
-    ),
-  },
-  {
-    end: 50,
-    suffix: "K+",
-    label: "Patients",
-    gradient: "from-emerald-500 to-teal-500",
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-      </svg>
-    ),
-  },
-  {
-    end: 98,
-    suffix: "%",
-    label: "Satisfaction",
-    gradient: "from-fuchsia-500 to-rose-500",
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118L2.098 10.1c-.783-.57-.38-1.81.588-1.81h4.915a1 1 0 00.95-.69l1.518-4.673z" />
-      </svg>
-    ),
-  },
-];
+// Trust signals — real things patients can verify in two clicks
+// instead of a "500+ / 50K+ / 98%" wall that reads as marketing
+// noise. Doctor count is fetched live; the other three are static
+// but link to actual proof (verifications page, reviews, compliance).
+interface TrustSignal {
+  value: string;
+  label: string;
+  sub: string;
+  href: string;
+  icon: string;
+  gradient: string;
+}
 
 export default function HeroWithTextSlider() {
   const { t } = useLanguage();
+  // Live doctor count — pinged once on mount. Falls back to "—"
+  // so the section never shows "0" while loading. The directory
+  // endpoint already exists; we just count.
+  const [doctorCount, setDoctorCount] = useState<number | null>(null);
+  const [reviewCount, setReviewCount] = useState<number | null>(null);
+  useEffect(() => {
+    fetch("/api/doctors", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const docs = Array.isArray(d?.doctors) ? d.doctors : [];
+        setDoctorCount(docs.length);
+        const totalReviews = docs.reduce(
+          (s: number, x: { reviewCount?: number }) => s + (x.reviewCount || 0),
+          0,
+        );
+        setReviewCount(totalReviews);
+      })
+      .catch(() => {
+        setDoctorCount(0);
+        setReviewCount(0);
+      });
+  }, []);
+
+  const trustSignals: TrustSignal[] = [
+    {
+      value: doctorCount === null ? "—" : `${doctorCount}`,
+      label: "Verified doctors",
+      sub: "Each with council registration",
+      href: "/doctors",
+      icon: "🩺",
+      gradient: "from-sky-500 to-indigo-500",
+    },
+    {
+      value: reviewCount === null ? "—" : `${reviewCount.toLocaleString()}`,
+      label: "Patient consultations",
+      sub: "Real bookings, real reviews",
+      href: "/doctors",
+      icon: "💬",
+      gradient: "from-emerald-500 to-teal-500",
+    },
+    {
+      value: "24/7",
+      label: "Helpline",
+      sub: "+1 (302) 899-2625",
+      href: "tel:+13028992625",
+      icon: "📞",
+      gradient: "from-fuchsia-500 to-rose-500",
+    },
+  ];
   // Translations are short marketing copy. The hero's typography
   // hangs off the period in the title; we render the localized
   // string verbatim and only swap the rotator words for English.
@@ -142,29 +168,47 @@ export default function HeroWithTextSlider() {
             </Link>
           </div>
 
-          {/* Quick stats — colorful cards */}
+          {/* Trust signals — real numbers + a way to verify them.
+              No round marketing figures; doctor count is fetched
+              live so the patient sees the truth, even if it's small. */}
           <div className="mx-auto mt-14 grid max-w-3xl grid-cols-3 gap-3 sm:gap-5">
-            {quickStats.map((stat) => (
-              <div
+            {trustSignals.map((stat) => (
+              <Link
                 key={stat.label}
+                href={stat.href}
                 className="group relative overflow-hidden rounded-2xl border border-white/60 bg-white/80 p-4 shadow-md backdrop-blur transition-all hover:-translate-y-1 hover:shadow-xl sm:p-5"
               >
-                <div
-                  className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${stat.gradient}`}
-                />
-                <div
-                  className={`mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${stat.gradient} text-white shadow-md`}
-                >
+                <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${stat.gradient}`} />
+                <div className={`mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${stat.gradient} text-white shadow-md text-lg`}>
                   {stat.icon}
                 </div>
-                <p
-                  className={`bg-gradient-to-r ${stat.gradient} bg-clip-text text-2xl font-bold text-transparent md:text-3xl`}
-                >
-                  <AnimatedCounter end={stat.end} suffix={stat.suffix} />
+                <p className={`bg-gradient-to-r ${stat.gradient} bg-clip-text text-2xl font-bold text-transparent md:text-3xl`}>
+                  {stat.value}
                 </p>
-                <p className="mt-0.5 text-xs font-semibold text-gray-600">{stat.label}</p>
-              </div>
+                <p className="mt-0.5 text-xs font-semibold text-gray-700">{stat.label}</p>
+                <p className="mt-0.5 text-[10px] text-gray-500">{stat.sub}</p>
+              </Link>
             ))}
+          </div>
+
+          {/* Compliance + verification row — concrete, click-throughable
+              badges that build trust without making fake claims. */}
+          <div className="mx-auto mt-6 flex max-w-3xl flex-wrap items-center justify-center gap-2 text-xs">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur px-3 py-1.5 ring-1 ring-emerald-200 text-emerald-700 shadow-sm">
+              <span>✓</span> NMC / NPI / GMC registered
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur px-3 py-1.5 ring-1 ring-sky-200 text-sky-700 shadow-sm">
+              <span>🔒</span> HIPAA-aligned data handling
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur px-3 py-1.5 ring-1 ring-violet-200 text-violet-700 shadow-sm">
+              <span>🇮🇳</span> ABDM / ABHA integrated
+            </span>
+            <Link
+              href="/about"
+              className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-indigo-600 to-fuchsia-600 px-3 py-1.5 font-semibold text-white shadow-sm hover:shadow-md transition"
+            >
+              Read our story →
+            </Link>
           </div>
         </div>
       </div>

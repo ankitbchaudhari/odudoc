@@ -47,6 +47,11 @@ export interface DrugRegistration {
   manufacturerLicense: string;
   /** Country of registration — ISO-3166-1 alpha-2. */
   countryIso2: string;
+  /** Pharmacy store class this SKU belongs to. Drives which
+   *  pharmacy tenants can stock it (a pharmacy enables a subset of
+   *  classes) and which storefront filter it appears under. Spec
+   *  v5.1 §41.1. Defaults to "medicine" for legacy rows. */
+  storeClass?: import("../pharmacy-store-classes").PharmacyStoreClass;
   /** Batch register — each batch ships with its own lab report. */
   batches: Array<{
     batchNumber: string;
@@ -92,6 +97,7 @@ export interface CreateDrugInput {
   scheduleClass: DrugScheduleClass;
   manufacturerLicense: string;
   countryIso2: string;
+  storeClass?: import("../pharmacy-store-classes").PharmacyStoreClass;
 }
 
 export function createDrug(input: CreateDrugInput): DrugRegistration {
@@ -107,6 +113,7 @@ export function createDrug(input: CreateDrugInput): DrugRegistration {
     scheduleClass: input.scheduleClass,
     manufacturerLicense: input.manufacturerLicense.trim(),
     countryIso2: input.countryIso2.trim().toUpperCase(),
+    storeClass: input.storeClass || "medicine",
     batches: [],
     attachments: [],
     authorizedDistributorIds: [],

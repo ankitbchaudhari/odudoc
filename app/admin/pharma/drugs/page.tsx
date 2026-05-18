@@ -9,6 +9,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PageHero } from "@/components/admin/PageShell";
 import DrugScheduleBadge from "@/components/DrugScheduleBadge";
+import StoreClassBadge from "@/components/StoreClassBadge";
+import { STORE_CLASS_LIST, type PharmacyStoreClass } from "@/lib/pharmacy-store-classes";
 
 type Form = "tablet" | "capsule" | "syrup" | "injection" | "topical" | "inhaler" | "drops" | "patch" | "other";
 type Schedule = "OTC" | "H" | "H1" | "X" | "G" | "K";
@@ -20,6 +22,7 @@ interface Drug {
   brandName: string; genericName: string; composition: string;
   form: Form; strength: string; scheduleClass: Schedule;
   manufacturerLicense: string; countryIso2: string;
+  storeClass?: PharmacyStoreClass;
   batches: Batch[]; attachments: Attachment[];
   active: boolean; updatedAt: string;
 }
@@ -87,6 +90,7 @@ export default function DrugsAdminPage() {
                       <p className="text-sm font-bold text-slate-900">{d.brandName}</p>
                       <span className="text-xs text-slate-500">· {d.genericName}</span>
                       <DrugScheduleBadge schedule={d.scheduleClass} />
+                      <StoreClassBadge storeClass={d.storeClass || "medicine"} />
                       <span className="text-[10px] text-slate-400">{d.form} · {d.strength}</span>
                     </div>
                     <p className="text-xs text-slate-500">{d.composition}</p>
@@ -114,7 +118,7 @@ export default function DrugsAdminPage() {
 function DrugForm({ orgId, onSaved }: { orgId: string; onSaved: () => void }) {
   const [s, setS] = useState({
     brandName: "", genericName: "", composition: "",
-    form: "tablet" as Form, strength: "", scheduleClass: "H" as Schedule,
+    form: "tablet" as Form, strength: "", scheduleClass: "H" as Schedule, storeClass: "medicine" as PharmacyStoreClass,
     manufacturerLicense: "", countryIso2: "IN",
   });
   const [busy, setBusy] = useState(false);
@@ -145,6 +149,18 @@ function DrugForm({ orgId, onSaved }: { orgId: string; onSaved: () => void }) {
         <I label="Strength" v={s.strength} on={(v) => setS({ ...s, strength: v })} placeholder="500 mg" />
         <S label="Form" v={s.form} on={(v) => setS({ ...s, form: v as Form })} options={FORMS} />
         <S label="Schedule class" v={s.scheduleClass} on={(v) => setS({ ...s, scheduleClass: v as Schedule })} options={SCHEDULES} />
+        <label className="text-xs font-semibold text-slate-700">
+          Store class
+          <select
+            value={s.storeClass}
+            onChange={(e) => setS({ ...s, storeClass: e.target.value as PharmacyStoreClass })}
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal"
+          >
+            {STORE_CLASS_LIST.map((c) => (
+              <option key={c.code} value={c.code}>{c.emoji} {c.label}</option>
+            ))}
+          </select>
+        </label>
         <I label="Manufacturer license" v={s.manufacturerLicense} on={(v) => setS({ ...s, manufacturerLicense: v })} />
         <I label="Country (ISO-2)" v={s.countryIso2} on={(v) => setS({ ...s, countryIso2: v })} />
       </div>

@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
       scheduleClass: body.scheduleClass,
       manufacturerLicense: String(body.manufacturerLicense || ""),
       countryIso2: String(body.countryIso2 || "IN"),
+      storeClass: body.storeClass || "medicine",
     });
     try { await awaitAllFlushesStrict(); } catch { /* best-effort */ }
     return NextResponse.json({ drug: d });

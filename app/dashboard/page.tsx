@@ -11,6 +11,9 @@ import FamilySwitcher from "@/components/FamilySwitcher";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
 import QuickActionsRow from "@/components/QuickActionsRow";
 import TempPasswordBanner from "@/components/TempPasswordBanner";
+import DashboardShell from "@/components/ui/DashboardShell";
+import GlassCard from "@/components/ui/GlassCard";
+import StatTile from "@/components/ui/StatTile";
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -28,9 +31,6 @@ export default function DashboardPage() {
   useEffect(() => {
     if (status !== "authenticated") return;
     const role = session?.user?.role;
-    // Role-based landing — keep this list as the canonical map.
-    // Each non-patient role lands on its own console; patients fall
-    // through to the rest of this page.
     if (role === "doctor") router.replace("/dashboard/doctor");
     else if (role === "admin") router.replace("/admin");
     else if (role === "staff") router.replace("/admin/products");
@@ -81,12 +81,14 @@ export default function DashboardPage() {
 
   if (status === "loading") {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <svg className="h-8 w-8 animate-spin text-primary-600" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-        </svg>
-      </div>
+      <DashboardShell role="patient">
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <svg className="h-8 w-8 animate-spin text-emerald-400" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+        </div>
+      </DashboardShell>
     );
   }
 
@@ -95,337 +97,302 @@ export default function DashboardPage() {
   const stats = [
     {
       label: "Upcoming",
-      value: String(upcoming.length),
+      value: upcoming.length,
       gradient: "from-sky-400 to-blue-600",
-      icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
+      iconPath: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
       href: "/dashboard/consultations",
     },
     {
       label: "Completed",
-      value: String(completedCount),
+      value: completedCount,
       gradient: "from-emerald-400 to-teal-600",
-      icon: "M5 13l4 4L19 7",
+      iconPath: "M5 13l4 4L19 7",
       href: "/dashboard/consultations",
     },
     {
       label: "Prescriptions",
-      value: String(prescriptions.length),
+      value: prescriptions.length,
       gradient: "from-orange-400 to-rose-500",
-      icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
+      iconPath: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
       href: "/dashboard/prescriptions",
     },
     {
       label: "Health Records",
-      value: String(historyItems.length),
+      value: historyItems.length,
       gradient: "from-fuchsia-400 to-purple-600",
-      icon: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
+      iconPath: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
       href: "/dashboard/consultations",
     },
   ];
 
+  // Quick-action grid — each tile becomes a glass square with a
+  // gradient icon and a neon accent strip on hover. Order = priority.
+  const actions = [
+    { label: "Find Doctors", href: "/doctors", icon: "👨‍⚕️", grad: "from-sky-400 to-blue-600" },
+    { label: "Health Timeline", href: "/dashboard/timeline", icon: "🗓️", grad: "from-violet-400 to-indigo-600" },
+    { label: "My Vitals", href: "/dashboard/vitals", icon: "❤️", grad: "from-rose-400 to-pink-600" },
+    { label: "Today's Meds", href: "/dashboard/adherence", icon: "💊", grad: "from-emerald-400 to-teal-600" },
+    { label: "Vaccinations", href: "/dashboard/vaccinations", icon: "💉", grad: "from-cyan-400 to-sky-600" },
+    { label: "Care Plans", href: "/dashboard/care-plan", icon: "📋", grad: "from-teal-400 to-cyan-600" },
+    { label: "Symptom Log", href: "/dashboard/symptoms", icon: "🩺", grad: "from-rose-400 to-fuchsia-600" },
+    { label: "Notifications", href: "/dashboard/notifications", icon: "🔔", grad: "from-fuchsia-400 to-purple-600" },
+    { label: "Health Passport", href: "/dashboard/health-passport", icon: "🪪", grad: "from-emerald-400 to-teal-600" },
+    { label: "Past visits", href: "/dashboard/visits", icon: "🏥", grad: "from-sky-400 to-blue-600" },
+    { label: "My Family", href: "/dashboard/family", icon: "👨‍👩‍👧‍👦", grad: "from-pink-400 to-rose-600" },
+    { label: "Refer & earn", href: "/dashboard/referrals", icon: "🎁", grad: "from-indigo-400 to-fuchsia-600" },
+    { label: "Insurance", href: "/dashboard/insurance", icon: "🛡️", grad: "from-amber-400 to-yellow-600" },
+    { label: "Order Meds", href: "/dashboard/rx-fulfillment", icon: "💊", grad: "from-rose-400 to-pink-600" },
+    { label: "Book Labs", href: "/dashboard/labs", icon: "🧪", grad: "from-teal-400 to-emerald-600" },
+    { label: "Wallet", href: "/dashboard/wallet", icon: "💰", grad: "from-indigo-400 to-purple-600" },
+    { label: "Wearables", href: "/dashboard/wearables", icon: "⌚", grad: "from-cyan-400 to-sky-600" },
+    { label: "Import Rx", href: "/dashboard/rx-import", icon: "📷", grad: "from-orange-400 to-amber-600" },
+    { label: "ABHA / ABDM", href: "/dashboard/abha", icon: "🇮🇳", grad: "from-yellow-400 to-orange-600" },
+    { label: "Profile", href: "/profile", icon: "⚙️", grad: "from-violet-400 to-fuchsia-600" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/40 to-fuchsia-50/30">
-      {/* Temp-password warning — staff added by an org admin land
-          here on first login with a 3-day TTL password. */}
+    <DashboardShell role="patient">
       <TempPasswordBanner />
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Hero Welcome */}
-        <div className="relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-br from-primary-600 via-indigo-600 to-purple-600 p-8 text-white shadow-xl">
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
-          <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-fuchsia-300/20 blur-2xl" />
-          <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-medium text-white/80">{greeting()} 👋</p>
-              <h1 className="mt-1 text-3xl font-bold md:text-4xl">
-                Welcome back, {userName}!
-              </h1>
-              <p className="mt-2 max-w-lg text-white/80">
-                Here&apos;s a snapshot of your health journey. Book a consult,
-                review your prescriptions, or track your care history.
-              </p>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <FamilySwitcher />
-                <LocaleSwitcher />
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {/* Primary CTA — bright white card on the indigo→violet
-                  gradient. No dark variant: the hero gradient itself
-                  doesn't change in dark mode, so the button shouldn't
-                  either. Earlier dark:bg-slate-900 made the teal text
-                  unreadable. */}
-              <Link
-                href="/doctors"
-                className="rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-indigo-700 shadow-md transition-all hover:-translate-y-0.5 hover:bg-indigo-50 hover:shadow-lg"
-              >
-                Book Appointment
-              </Link>
-              <Link
-                href="/consult"
-                className="rounded-xl bg-white/20 ring-1 ring-white/40 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/30"
-              >
-                Video Consult
-              </Link>
+
+      {/* Hero — large glass card with role-themed aurora bleeding through */}
+      <GlassCard glow className="mb-8 overflow-hidden">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 opacity-30 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-gradient-to-br from-cyan-400 via-emerald-500 to-teal-500 opacity-20 blur-3xl" />
+        <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-emerald-300/90">{greeting()} 👋</p>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight md:text-4xl">
+              Welcome back,{" "}
+              <span className="bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-300 bg-clip-text text-transparent">
+                {userName}
+              </span>
+            </h1>
+            <p className="mt-2 max-w-lg text-sm text-white/70">
+              Here&apos;s a snapshot of your health journey. Book a consult,
+              review your prescriptions, or track your care history.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <FamilySwitcher />
+              <LocaleSwitcher />
             </div>
           </div>
-        </div>
-
-        {/* Quick actions — surface the patient's likely-next tap
-            (rebook last doctor, reorder last Rx, share referral code)
-            above the stat grid for retention + viral growth. */}
-        <QuickActionsRow
-          consultations={consultations}
-          prescriptions={prescriptions}
-        />
-
-        {/* Colourful stat cards */}
-        <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {stats.map((s) => (
+          <div className="flex flex-wrap gap-2">
             <Link
-              key={s.label}
-              href={s.href}
-              className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+              href="/doctors"
+              className="rounded-xl bg-gradient-to-r from-emerald-400 to-teal-500 px-5 py-2.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-500/40 transition-all hover:-translate-y-0.5 hover:shadow-emerald-500/60"
             >
-              <div
-                className={`absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gradient-to-br ${s.gradient} opacity-20 blur-xl transition-opacity group-hover:opacity-40`}
-              />
-              <div
-                className={`flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${s.gradient} text-white shadow-lg`}
-              >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={s.icon} />
-                </svg>
-              </div>
-              <p className="mt-4 text-3xl font-bold text-gray-900 dark:text-slate-100">{s.value}</p>
-              <p className="text-sm text-gray-500 dark:text-slate-400">{s.label}</p>
+              Book Appointment
             </Link>
-          ))}
-        </div>
-
-        {/* Quick Actions - colourful tiles */}
-        <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          {[
-            { label: "Find Doctors", href: "/doctors", icon: "👨‍⚕️", bg: "from-sky-100 to-blue-100 dark:from-sky-900/40 dark:to-blue-900/40", ring: "ring-sky-200 dark:ring-sky-800/60" },
-            { label: "Health Timeline", href: "/dashboard/timeline", icon: "🗓️", bg: "from-violet-100 to-indigo-100 dark:from-violet-900/40 dark:to-indigo-900/40", ring: "ring-violet-200 dark:ring-violet-800/60" },
-            { label: "My Vitals", href: "/dashboard/vitals", icon: "❤️", bg: "from-rose-100 to-pink-100 dark:from-rose-900/40 dark:to-pink-900/40", ring: "ring-rose-200 dark:ring-rose-800/60" },
-            { label: "Today's Meds", href: "/dashboard/adherence", icon: "💊", bg: "from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40", ring: "ring-emerald-200 dark:ring-emerald-800/60" },
-            { label: "Vaccinations", href: "/dashboard/vaccinations", icon: "💉", bg: "from-cyan-100 to-blue-100 dark:from-cyan-900/40 dark:to-blue-900/40", ring: "ring-cyan-200 dark:ring-cyan-800/60" },
-            { label: "Care Plans", href: "/dashboard/care-plan", icon: "📋", bg: "from-teal-100 to-cyan-100 dark:from-teal-900/40 dark:to-cyan-900/40", ring: "ring-teal-200 dark:ring-teal-800/60" },
-            { label: "Symptom Log", href: "/dashboard/symptoms", icon: "🩺", bg: "from-rose-100 to-fuchsia-100 dark:from-rose-900/40 dark:to-fuchsia-900/40", ring: "ring-rose-200 dark:ring-rose-800/60" },
-            { label: "Notifications", href: "/dashboard/notifications", icon: "🔔", bg: "from-fuchsia-100 to-purple-100 dark:from-fuchsia-900/40 dark:to-purple-900/40", ring: "ring-fuchsia-200 dark:ring-fuchsia-800/60" },
-            { label: "Health Passport", href: "/dashboard/health-passport", icon: "🪪", bg: "from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40", ring: "ring-emerald-200 dark:ring-emerald-800/60" },
-            { label: "Past clinic visits", href: "/dashboard/visits", icon: "🏥", bg: "from-sky-100 to-blue-100 dark:from-sky-900/40 dark:to-blue-900/40", ring: "ring-sky-200 dark:ring-sky-800/60" },
-            { label: "My Family", href: "/dashboard/family", icon: "👨‍👩‍👧‍👦", bg: "from-pink-100 to-rose-100 dark:from-pink-900/40 dark:to-rose-900/40", ring: "ring-pink-200 dark:ring-pink-800/60" },
-            { label: "Refer & earn", href: "/dashboard/referrals", icon: "🎁", bg: "from-indigo-100 to-fuchsia-100 dark:from-indigo-900/40 dark:to-fuchsia-900/40", ring: "ring-indigo-200 dark:ring-indigo-800/60" },
-            { label: "Insurance & Cashless", href: "/dashboard/insurance", icon: "🛡️", bg: "from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40", ring: "ring-amber-200 dark:ring-amber-800/60" },
-            { label: "Order Medicines", href: "/dashboard/rx-fulfillment", icon: "💊", bg: "from-rose-100 to-pink-100 dark:from-rose-900/40 dark:to-pink-900/40", ring: "ring-rose-200 dark:ring-rose-800/60" },
-            { label: "Book Lab Tests", href: "/dashboard/labs", icon: "🧪", bg: "from-teal-100 to-emerald-100 dark:from-teal-900/40 dark:to-emerald-900/40", ring: "ring-teal-200 dark:ring-teal-800/60" },
-            { label: "Wallet", href: "/dashboard/wallet", icon: "💰", bg: "from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40", ring: "ring-indigo-200 dark:ring-indigo-800/60" },
-            { label: "Wearables", href: "/dashboard/wearables", icon: "⌚", bg: "from-cyan-100 to-sky-100 dark:from-cyan-900/40 dark:to-sky-900/40", ring: "ring-cyan-200 dark:ring-cyan-800/60" },
-            { label: "Import old Rx", href: "/dashboard/rx-import", icon: "📷", bg: "from-orange-100 to-amber-100 dark:from-orange-900/40 dark:to-amber-900/40", ring: "ring-orange-200 dark:ring-orange-800/60" },
-            { label: "ABHA / ABDM", href: "/dashboard/abha", icon: "🇮🇳", bg: "from-yellow-100 to-orange-100 dark:from-yellow-900/40 dark:to-orange-900/40", ring: "ring-yellow-200 dark:ring-yellow-800/60" },
-            { label: "My Profile", href: "/profile", icon: "⚙️", bg: "from-violet-100 to-fuchsia-100 dark:from-violet-900/40 dark:to-fuchsia-900/40", ring: "ring-violet-200 dark:ring-violet-800/60" },
-            { label: "Get Started", href: "/dashboard/onboarding", icon: "🚀", bg: "from-lime-100 to-green-100 dark:from-lime-900/40 dark:to-green-900/40", ring: "ring-lime-200 dark:ring-lime-800/60" },
-          ].map((a) => (
             <Link
-              key={a.label}
-              href={a.href}
-              className={`flex flex-col items-center gap-2 rounded-2xl bg-gradient-to-br ${a.bg} p-5 shadow-sm ring-1 ${a.ring} transition-transform hover:-translate-y-0.5`}
+              href="/consult"
+              className="rounded-xl border border-white/15 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/15"
             >
-              <span className="text-3xl">{a.icon}</span>
-              <span className="text-sm font-semibold text-slate-800 dark:text-slate-50">{a.label}</span>
+              Video Consult
             </Link>
-          ))}
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Main column */}
-          <div className="space-y-6 lg:col-span-2">
-            {/* Upcoming Appointments */}
-            <Card>
-              <CardHeader
-                title="Upcoming Appointments"
-                accent="bg-gradient-to-r from-sky-500 to-blue-600"
-                right={
-                  <Link href="/doctors" className="text-sm font-semibold text-primary-600 hover:text-primary-700">
-                    Book new →
-                  </Link>
-                }
-              />
-              {upcoming.length === 0 ? (
-                <EmptyState emoji="📅" label="No upcoming appointments" sub="Browse doctors to book your first consult." />
-              ) : (
-                <ul className="space-y-3">
-                  {upcoming.map((c) => (
-                    <li key={c.id}>
-                      <Link
-                        href={`/dashboard/consultations/${c.id}`}
-                        className="group flex items-center gap-3 rounded-xl border border-gray-100 bg-white dark:bg-slate-900 p-3 transition-all hover:border-primary-200 hover:bg-primary-50/30"
-                      >
-                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 text-sm font-bold text-white shadow">
-                          {c.doctorName.split(" ").map((n) => n[0]).join("").slice(0, 2)}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-gray-900 dark:text-slate-100">{c.doctorName}</p>
-                          <p className="truncate text-xs text-gray-500 dark:text-slate-400">
-                            {c.specialty} · {c.dateLabel} · {c.timeSlot}
-                          </p>
-                        </div>
-                        <span className="rounded-full bg-primary-100 px-3 py-1 text-xs font-semibold text-primary-700">
-                          {c.status.replace(/_/g, " ")}
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Card>
-
-            {/* Recent Consultations */}
-            <Card>
-              <CardHeader
-                title="Recent Consultations"
-                accent="bg-gradient-to-r from-emerald-500 to-teal-600"
-                right={
-                  <Link href="/dashboard/consultations" className="text-sm font-semibold text-primary-600 hover:text-primary-700">
-                    View all →
-                  </Link>
-                }
-              />
-              {recent.length === 0 ? (
-                <EmptyState emoji="🩺" label="No recent consultations" sub="Your past visits will show up here." />
-              ) : (
-                <ul className="divide-y divide-gray-100 dark:divide-slate-800">
-                  {recent.slice(0, 5).map((c) => (
-                    <li key={c.id}>
-                      <Link
-                        href={`/dashboard/consultations/${c.id}`}
-                        className="flex items-center justify-between py-3 transition-colors hover:bg-gray-50 dark:hover:bg-slate-800"
-                      >
-                        <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{c.doctorName}</p>
-                          <p className="text-xs text-gray-500 dark:text-slate-400">
-                            {c.dateLabel} · {c.timeSlot}
-                          </p>
-                        </div>
-                        <StatusPill status={c.status} />
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Card>
-
-            {/* Recent Prescriptions */}
-            <Card>
-              <CardHeader
-                title="Recent Prescriptions"
-                accent="bg-gradient-to-r from-orange-500 to-rose-500"
-                right={
-                  <Link href="/dashboard/prescriptions" className="text-sm font-semibold text-primary-600 hover:text-primary-700">
-                    View all →
-                  </Link>
-                }
-              />
-              {prescriptions.length === 0 ? (
-                <EmptyState emoji="💊" label="No prescriptions yet" sub="Doctors will send prescriptions here after your consult." />
-              ) : (
-                <ul className="divide-y divide-gray-100 dark:divide-slate-800">
-                  {prescriptions.slice(0, 5).map((p) => (
-                    <li key={p.id}>
-                      <Link
-                        href="/dashboard/prescriptions"
-                        className="flex items-center justify-between py-3 transition-colors hover:bg-gray-50 dark:hover:bg-slate-800"
-                      >
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-gray-900 dark:text-slate-100">
-                            {p.data.diagnosis || "Prescription"}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-slate-400">
-                            by {p.data.doctorName || p.doctorEmail} ·{" "}
-                            {new Date(p.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <span className="shrink-0 rounded-full bg-gradient-to-r from-orange-100 to-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">
-                          {p.data.medications.length} med{p.data.medications.length === 1 ? "" : "s"}
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Card>
           </div>
+        </div>
+      </GlassCard>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Medical History */}
-            <Card>
-              <CardHeader
-                title="Medical History"
-                accent="bg-gradient-to-r from-fuchsia-500 to-purple-600"
-                right={
-                  <Link href="/dashboard/consultations" className="text-xs font-semibold text-primary-600 hover:text-primary-700">
-                    View all
-                  </Link>
-                }
-              />
-              {historyItems.length === 0 ? (
-                <EmptyState emoji="📋" label="No health records yet" sub="Records build up as you consult doctors." />
-              ) : (
-                <ul className="space-y-3">
-                  {historyItems.map((h, i) => (
-                    <li
-                      key={i}
-                      className="rounded-xl bg-gradient-to-br from-fuchsia-50 to-purple-50 dark:from-slate-900 dark:to-slate-900 p-3 ring-1 ring-fuchsia-100"
+      {/* Quick re-engagement actions — keeps last-doctor / last-Rx /
+          referral surfaced above the fold so retention loop kicks in. */}
+      <QuickActionsRow consultations={consultations} prescriptions={prescriptions} />
+
+      {/* Stat tiles */}
+      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {stats.map((s) => (
+          <StatTile
+            key={s.label}
+            label={s.label}
+            value={s.value}
+            iconPath={s.iconPath}
+            gradient={s.gradient}
+            href={s.href}
+          />
+        ))}
+      </div>
+
+      {/* Quick-action grid — 20 glass tiles, each with a coloured icon
+          and a glow on hover. */}
+      <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        {actions.map((a) => (
+          <Link
+            key={a.label}
+            href={a.href}
+            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.08]"
+          >
+            <div
+              className={`pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gradient-to-br ${a.grad} opacity-20 blur-2xl transition-opacity group-hover:opacity-50`}
+            />
+            <div className="relative flex items-center gap-3">
+              <span className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${a.grad} text-xl shadow-md`}>
+                {a.icon}
+              </span>
+              <span className="text-sm font-semibold text-white/90">{a.label}</span>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* Two-column main grid */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Main column */}
+        <div className="space-y-6 lg:col-span-2">
+          {/* Upcoming Appointments */}
+          <GlassCard>
+            <SectionHeader title="Upcoming Appointments" accent="from-sky-400 to-blue-500" right={
+              <Link href="/doctors" className="text-sm font-semibold text-emerald-300 hover:text-emerald-200">
+                Book new →
+              </Link>
+            } />
+            {upcoming.length === 0 ? (
+              <EmptyState emoji="📅" label="No upcoming appointments" sub="Browse doctors to book your first consult." />
+            ) : (
+              <ul className="space-y-2">
+                {upcoming.map((c) => (
+                  <li key={c.id}>
+                    <Link
+                      href={`/dashboard/consultations/${c.id}`}
+                      className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3 transition-all hover:border-emerald-400/40 hover:bg-emerald-500/10"
                     >
-                      <p className="line-clamp-2 text-sm font-medium text-gray-900 dark:text-slate-100">{h.complaint}</p>
-                      <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
-                        {h.doctor} · {h.date}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Card>
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 text-sm font-bold text-white shadow-lg">
+                        {c.doctorName.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-white">{c.doctorName}</p>
+                        <p className="truncate text-xs text-white/60">
+                          {c.specialty} · {c.dateLabel} · {c.timeSlot}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-200">
+                        {c.status.replace(/_/g, " ")}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </GlassCard>
 
-            {/* Health Tip */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-500 via-emerald-500 to-green-500 p-6 text-white shadow-lg">
-              <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
-              <span className="text-3xl">💡</span>
-              <h3 className="mt-2 text-lg font-bold">Daily Health Tip</h3>
-              <p className="mt-1 text-sm text-emerald-50">
-                Drink 8 glasses of water today. Staying hydrated boosts energy,
-                mood, and concentration.
-              </p>
-            </div>
-
-            {/* Complete Profile CTA */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-primary-600 to-purple-600 p-6 text-white shadow-lg">
-              <div className="absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
-              <h3 className="text-lg font-bold">Complete Your Profile</h3>
-              <p className="mt-1 text-sm text-primary-100">
-                Add your medical history and preferences for personalized care.
-              </p>
-              <Link
-                href="/profile"
-                className="mt-4 inline-block rounded-lg bg-white dark:bg-slate-900 px-4 py-2 text-sm font-semibold text-primary-700 shadow transition-transform hover:-translate-y-0.5"
-              >
-                Update Profile
+          {/* Recent Consultations */}
+          <GlassCard>
+            <SectionHeader title="Recent Consultations" accent="from-emerald-400 to-teal-500" right={
+              <Link href="/dashboard/consultations" className="text-sm font-semibold text-emerald-300 hover:text-emerald-200">
+                View all →
               </Link>
-            </div>
+            } />
+            {recent.length === 0 ? (
+              <EmptyState emoji="🩺" label="No recent consultations" sub="Your past visits will show up here." />
+            ) : (
+              <ul className="divide-y divide-white/5">
+                {recent.slice(0, 5).map((c) => (
+                  <li key={c.id}>
+                    <Link
+                      href={`/dashboard/consultations/${c.id}`}
+                      className="flex items-center justify-between py-3 transition-colors hover:bg-white/[0.04]"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-white">{c.doctorName}</p>
+                        <p className="text-xs text-white/60">{c.dateLabel} · {c.timeSlot}</p>
+                      </div>
+                      <StatusPill status={c.status} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </GlassCard>
+
+          {/* Recent Prescriptions */}
+          <GlassCard>
+            <SectionHeader title="Recent Prescriptions" accent="from-orange-400 to-rose-500" right={
+              <Link href="/dashboard/prescriptions" className="text-sm font-semibold text-emerald-300 hover:text-emerald-200">
+                View all →
+              </Link>
+            } />
+            {prescriptions.length === 0 ? (
+              <EmptyState emoji="💊" label="No prescriptions yet" sub="Doctors will send prescriptions here after your consult." />
+            ) : (
+              <ul className="divide-y divide-white/5">
+                {prescriptions.slice(0, 5).map((p) => (
+                  <li key={p.id}>
+                    <Link
+                      href="/dashboard/prescriptions"
+                      className="flex items-center justify-between py-3 transition-colors hover:bg-white/[0.04]"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-white">{p.data.diagnosis || "Prescription"}</p>
+                        <p className="text-xs text-white/60">
+                          by {p.data.doctorName || p.doctorEmail} · {new Date(p.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-gradient-to-r from-orange-500/20 to-rose-500/20 px-3 py-1 text-xs font-semibold text-orange-200">
+                        {p.data.medications.length} med{p.data.medications.length === 1 ? "" : "s"}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </GlassCard>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          <GlassCard>
+            <SectionHeader title="Medical History" accent="from-fuchsia-400 to-purple-500" right={
+              <Link href="/dashboard/consultations" className="text-xs font-semibold text-emerald-300 hover:text-emerald-200">
+                View all
+              </Link>
+            } />
+            {historyItems.length === 0 ? (
+              <EmptyState emoji="📋" label="No health records yet" sub="Records build up as you consult doctors." />
+            ) : (
+              <ul className="space-y-2">
+                {historyItems.map((h, i) => (
+                  <li
+                    key={i}
+                    className="rounded-2xl border border-fuchsia-400/15 bg-gradient-to-br from-fuchsia-500/10 to-purple-500/5 p-3"
+                  >
+                    <p className="line-clamp-2 text-sm font-medium text-white">{h.complaint}</p>
+                    <p className="mt-1 text-xs text-white/60">{h.doctor} · {h.date}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </GlassCard>
+
+          {/* Daily health tip — solid coloured glass card. */}
+          <div className="relative overflow-hidden rounded-3xl border border-emerald-400/20 bg-gradient-to-br from-emerald-500/20 via-teal-500/15 to-cyan-500/10 p-6 backdrop-blur-xl">
+            <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-400/20 blur-2xl" />
+            <span className="text-3xl">💡</span>
+            <h3 className="mt-2 text-lg font-bold text-white">Daily Health Tip</h3>
+            <p className="mt-1 text-sm text-emerald-100/80">
+              Drink 8 glasses of water today. Staying hydrated boosts energy,
+              mood, and concentration.
+            </p>
+          </div>
+
+          {/* Complete profile CTA */}
+          <div className="relative overflow-hidden rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-500/20 via-indigo-500/15 to-fuchsia-500/10 p-6 backdrop-blur-xl">
+            <div className="pointer-events-none absolute -bottom-10 -right-10 h-32 w-32 rounded-full bg-violet-400/20 blur-2xl" />
+            <h3 className="text-lg font-bold text-white">Complete Your Profile</h3>
+            <p className="mt-1 text-sm text-white/70">
+              Add your medical history and preferences for personalized care.
+            </p>
+            <Link
+              href="/profile"
+              className="mt-4 inline-flex items-center gap-1 rounded-xl bg-gradient-to-r from-violet-400 to-fuchsia-500 px-4 py-2 text-sm font-bold text-slate-950 shadow-lg shadow-violet-500/40 transition-transform hover:-translate-y-0.5"
+            >
+              Update Profile →
+            </Link>
           </div>
         </div>
       </div>
-    </div>
+    </DashboardShell>
   );
 }
 
-function Card({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-gray-100">{children}</div>;
-}
-
-function CardHeader({
+function SectionHeader({
   title,
   right,
   accent,
@@ -437,8 +404,8 @@ function CardHeader({
   return (
     <div className="mb-5 flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <span className={`h-7 w-1.5 rounded-full ${accent}`} />
-        <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">{title}</h2>
+        <span className={`h-7 w-1.5 rounded-full bg-gradient-to-b ${accent}`} />
+        <h2 className="text-lg font-bold text-white">{title}</h2>
       </div>
       {right}
     </div>
@@ -448,16 +415,13 @@ function CardHeader({
 function EmptyState({ emoji, label, sub }: { emoji: string; label: string; sub?: string }) {
   return (
     <div className="py-10 text-center">
-      <div className="text-4xl">{emoji}</div>
-      <p className="mt-2 text-sm font-medium text-gray-500 dark:text-slate-400">{label}</p>
-      {sub && <p className="mt-1 text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">{sub}</p>}
+      <div className="text-4xl opacity-80">{emoji}</div>
+      <p className="mt-2 text-sm font-medium text-white/70">{label}</p>
+      {sub && <p className="mt-1 text-xs text-white/50">{sub}</p>}
     </div>
   );
 }
 
-// Maps the patient-facing consultation lifecycle to canonical
-// clinical-tones keys so this dashboard's status pills match every
-// other surface (reception, lab, vendor, …).
 function StatusPill({ status }: { status: string }) {
   const map: Record<string, import("@/lib/clinical-tones").ToneKey> = {
     completed: "completed",

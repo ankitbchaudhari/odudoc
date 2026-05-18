@@ -88,7 +88,7 @@ export default function PricingPage() {
       {/* Pricing Cards */}
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3 items-start">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 items-start">
             {pricingPlans.map((plan) => (
               <div
                 key={plan.id}
@@ -123,18 +123,26 @@ export default function PricingPage() {
                 </div>
 
                 <div className="mt-6 text-center">
-                  <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-4xl font-extrabold text-gray-900 dark:text-slate-100">
-                      ${annual ? plan.annualPrice : plan.monthlyPrice}
-                    </span>
-                    <span className="text-sm text-gray-500 dark:text-slate-400">
-                      /{annual ? "year" : "month"}
-                    </span>
-                  </div>
-                  {annual && (
-                    <p className="mt-1 text-xs text-green-600 font-medium">
-                      ${Math.round((plan.monthlyPrice * 12 - plan.annualPrice))} saved annually
-                    </p>
+                  {plan.monthlyPrice === 0 ? (
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className="text-3xl font-extrabold text-gray-900 dark:text-slate-100">Custom</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-4xl font-extrabold text-gray-900 dark:text-slate-100">
+                          ${annual ? plan.annualPrice : plan.monthlyPrice}
+                        </span>
+                        <span className="text-sm text-gray-500 dark:text-slate-400">
+                          /{annual ? "year" : "month"}
+                        </span>
+                      </div>
+                      {annual && (
+                        <p className="mt-1 text-xs text-green-600 font-medium">
+                          ${Math.round((plan.monthlyPrice * 12 - plan.annualPrice))} saved annually
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
 

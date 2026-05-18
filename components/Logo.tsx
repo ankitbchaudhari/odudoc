@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 interface LogoProps {
   /** "sm" = navbar, "md" = footer/cards, "lg" = login/hero, "xl" = splash */
@@ -78,5 +81,17 @@ export default function Logo({
     </svg>
   );
 
-  return link ? <Link href="/">{svg}</Link> : svg;
+  // Logo destination is conditional on auth: signed-out visitors land
+  // on the marketing home page, signed-in users land on their dashboard.
+  // Calling useSession() here costs nothing (it reads the SessionProvider
+  // context) and keeps the wordmark behavioural without each caller
+  // having to thread the auth state in.
+  return <LogoLink link={link}>{svg}</LogoLink>;
+}
+
+function LogoLink({ link, children }: { link: boolean; children: React.ReactNode }) {
+  const { status } = useSession();
+  if (!link) return <>{children}</>;
+  const href = status === "authenticated" ? "/dashboard" : "/";
+  return <Link href={href}>{children}</Link>;
 }

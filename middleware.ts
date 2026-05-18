@@ -110,10 +110,43 @@ function isSuperEmail(email: string | null | undefined): boolean {
   return SUPER_ADMIN_EMAILS.includes(e);
 }
 
+// Marketing surfaces a logged-in user should never see. Spec: Cowork
+// Build Handover Section 2 / v6.0 Section 2 — "logged-in users never
+// see the home page or any marketing page". Match is by exact path or
+// by direct prefix; we keep this list deliberately tight rather than
+// "anything not /dashboard or /admin" because reference content like
+// /doctors, /blog, /symptoms is legitimately useful post-login.
+const MARKETING_PATHS = [
+  "/",
+  "/pricing",
+  "/about",
+  "/security",
+  "/for-patients",
+  "/for-doctors",
+  "/for-corporates",
+  "/signup",
+  "/auth/login",
+  "/auth/register",
+];
+
+function isMarketingPath(pathname: string): boolean {
+  return MARKETING_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(p + "/"),
+  );
+}
+
 export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token;
     const pathname = req.nextUrl.pathname;
+
+    // Spec-locked routing rule: a logged-in user lands on /dashboard,
+    // never on the home page or any marketing page — not via direct
+    // URL, not via deep link, not via bookmark. Role-specific
+    // dashboard routing happens inside /dashboard itself.
+    if (token && isMarketingPath(pathname)) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
 
     // Staff should never see the patient dashboard — their home is the
     // e-commerce admin. Force them over even if a stale link lands them on
@@ -209,7 +242,15 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => !!token,
+      authorized: ({ token, req }) => {
+        // Marketing paths must reach the middleware function for
+        // unauthenticated visitors too — otherwise withAuth's gate
+        // here would 302 them to /auth/login and they'd never see
+        // the home page. The actual logged-in→/dashboard redirect
+        // is inside the middleware function above.
+        if (isMarketingPath(req.nextUrl.pathname)) return true;
+        return !!token;
+      },
     },
     pages: {
       signIn: "/auth/login",
@@ -218,5 +259,20 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/profile/:path*", "/admin/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/profile/:path*",
+    "/admin/:path*",
+    // Marketing paths included so the logged-in → /dashboard
+    // redirect runs before the page renders.
+    "/",
+    "/pricing/:path*",
+    "/about/:path*",
+    "/security/:path*",
+    "/for-patients/:path*",
+    "/for-doctors/:path*",
+    "/for-corporates/:path*",
+    "/signup/:path*",
+    "/auth/:path*",
+  ],
 };

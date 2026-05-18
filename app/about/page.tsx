@@ -144,6 +144,27 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      {/* Legal entity disclosure — links the OduDoc brand to its
+          operating company. Reviewed by WhatsApp, payment gateways,
+          and partner-onboarding teams when they verify brand
+          ownership. */}
+      <section className="border-t border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 py-12">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Legal entity</h2>
+          <p className="mt-3 text-sm leading-relaxed text-gray-600 dark:text-slate-300">
+            <strong>OduDoc</strong> is a brand and product of <strong>Sarjudas Digital
+            Trading and Escrow Services LLC</strong>. The Service is operated
+            exclusively by Sarjudas Digital Trading and Escrow Services LLC, a
+            verified Meta Business Partner. All consultations, payments,
+            communications, and patient records on this platform are processed
+            under this legal entity.
+          </p>
+          <p className="mt-3 text-xs text-gray-500 dark:text-slate-400">
+            For legal correspondence, see our <a href="/terms" className="text-primary-600 hover:underline">Terms of Service</a> and <a href="/privacy" className="text-primary-600 hover:underline">Privacy Policy</a>.
+          </p>
+        </div>
+      </section>
     </>
   );
 }

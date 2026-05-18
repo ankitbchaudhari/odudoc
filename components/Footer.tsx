@@ -261,18 +261,22 @@ export default function Footer() {
               ))}
             </div>
 
-            <p className="text-xs text-gray-500 dark:text-slate-400">
-              &copy; {new Date().getFullYear()} OduDoc.{" "}
-              <span className="text-gray-400 dark:text-slate-500">{t("footer.rights")}</span>
-              <span className="mx-2 text-gray-700 dark:text-slate-300">·</span>
-              <span className="inline-flex items-center gap-1.5">
+            <div className="text-center text-xs text-gray-500 dark:text-slate-400 md:text-right">
+              <p>
+                &copy; {new Date().getFullYear()} Sarjudas Digital Trading and Escrow Services LLC.{" "}
+                <span className="text-gray-400 dark:text-slate-500">{t("footer.rights")}</span>
+              </p>
+              <p className="mt-1 text-[11px] text-gray-500 dark:text-slate-500">
+                OduDoc is a brand operated by Sarjudas Digital Trading and Escrow Services LLC.
+              </p>
+              <p className="mt-2 inline-flex items-center gap-1.5">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/70" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
                 </span>
                 All systems operational
-              </span>
-            </p>
+              </p>
+            </div>
           </div>
         </div>
       </div>

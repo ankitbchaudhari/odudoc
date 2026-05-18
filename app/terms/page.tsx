@@ -6,9 +6,14 @@ const sections = [
     icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
     title: "Acceptance of Terms",
     content: (
-      <p>
-        By accessing or using OduDoc&apos;s website, mobile applications, and services (the &quot;Platform&quot;), you agree to be bound by these Terms &amp; Conditions. If you do not agree, please do not use the Platform.
-      </p>
+      <div className="space-y-3">
+        <p>
+          The Service is operated by <strong>Sarjudas Digital Trading and Escrow Services LLC</strong> (&quot;Sarjudas&quot;, &quot;we&quot;, &quot;us&quot;, &quot;our&quot;), trading as <strong>OduDoc</strong>. OduDoc is a brand and product of Sarjudas Digital Trading and Escrow Services LLC.
+        </p>
+        <p>
+          By accessing or using OduDoc&apos;s website, mobile applications, and services (the &quot;Platform&quot;), you agree to be bound by these Terms &amp; Conditions. If you do not agree, please do not use the Platform.
+        </p>
+      </div>
     ),
   },
   {

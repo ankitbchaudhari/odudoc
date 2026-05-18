@@ -5,8 +5,9 @@ import { listConsultations, reloadConsultations } from '@/lib/consultations-stor
 import { validateSlot } from '@/lib/slot-utils';
 import { notifyAppointmentBooked } from '@/lib/notifications';
 import { parseJson } from '@/lib/api-validate';
-import { findUserById } from '@/lib/users-store';
+import { findUserById, findUserByEmail } from '@/lib/users-store';
 import { getDoctorById } from '@/lib/doctors-store';
+import { resolveActiveProfile } from '@/lib/family-active';
 import { sendDoctorNewAppointmentViaSentDm } from '@/lib/sent-dm';
 import { log } from "@/lib/log";
 
@@ -130,6 +131,27 @@ export async function POST(request: NextRequest) {
     serverFee = doc?.fee ?? body.fee;
   }
 
+  // Family-account threading. If the booker is signed in and has
+  // an active dependent cookie set, stamp the dependentId + name on
+  // the booking. The patient_name on the row stays whatever the
+  // form submitted — the dependent name is just an annotation so
+  // the doctor's dashboard can show "for Aarav (age 7)".
+  let depMeta: { dependentId?: string; dependentName?: string } = {};
+  try {
+    const owner = body.patientEmail ? findUserByEmail(body.patientEmail) : undefined;
+    if (owner) {
+      const profile = await resolveActiveProfile(owner.id);
+      if (profile.kind === "dependent") {
+        depMeta = {
+          dependentId: profile.dependentId,
+          dependentName: profile.dependentName,
+        };
+      }
+    }
+  } catch {
+    /* family-active cookie missing or invalid → fall through as self */
+  }
+
   try {
     const booking = createBooking({
       doctorId: body.doctorId,
@@ -145,6 +167,7 @@ export async function POST(request: NextRequest) {
       date: body.date,
       appointmentType: clinicFields.clinicId ? 'in-person' : (body.appointmentType || 'in-person'),
       ...clinicFields,
+      ...depMeta,
     });
 
     const doctorEmail =

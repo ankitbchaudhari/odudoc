@@ -14,6 +14,7 @@ import { paymentsDisabled } from "@/lib/payments-config";
 import { validateSlot } from "@/lib/slot-utils";
 import { findDoctorByEmail, getDoctorById } from "@/lib/doctors-store";
 import { findUserByEmail } from "@/lib/users-store";
+import { resolveActiveProfile } from "@/lib/family-active";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { checkConsultationEligibility } from "@/lib/consultation-eligibility";
 
@@ -167,10 +168,31 @@ export async function POST(req: NextRequest) {
     ? `free_${Date.now()}`
     : (typeof body.paymentIntentId === "string" ? body.paymentIntentId : "");
 
+  // Family-account threading. If the booker has an active dependent
+  // profile cookie set, stamp dependentId + name on the consultation
+  // row so the doctor's dashboard / patient summary renders the
+  // right person (kid / parent), not the account holder.
+  let depMeta: { dependentId?: string; dependentName?: string } = {};
+  try {
+    const owner = findUserByEmail(patientEmail);
+    if (owner) {
+      const profile = await resolveActiveProfile(owner.id);
+      if (profile.kind === "dependent") {
+        depMeta = {
+          dependentId: profile.dependentId,
+          dependentName: profile.dependentName,
+        };
+      }
+    }
+  } catch {
+    /* missing/invalid cookie → fall through as self */
+  }
+
   const c = createConsultation({
     patientEmail,
     patientName,
     patientPhone: typeof body.patientPhone === "string" ? body.patientPhone : "",
+    ...depMeta,
     // Pool bookings keep doctorId empty until a doctor clicks Accept.
     // createConsultation() already tolerates "" (it just skips the
     // email-lookup path when doctorId is blank).

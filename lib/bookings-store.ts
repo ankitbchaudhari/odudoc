@@ -19,6 +19,14 @@ export interface Booking {
   // screen can scope to the current user and filter upcoming vs past.
   patientUserId?: string;      // users-store id; set for mobile bookings
   patientEmail?: string;        // lowercased
+  // Family-account threading. When the owner is acting on behalf of
+  // a dependent (kid / parent / spouse), the active-profile cookie
+  // resolves to a dependentId; we snapshot the id + display name on
+  // the booking so the doctor's dashboard and confirmation page can
+  // show "for Aarav (age 7)" instead of the owner's name. The owner's
+  // patientUserId still owns the row for billing + audit.
+  dependentId?: string;
+  dependentName?: string;
   date?: string;                // YYYY-MM-DD
   appointmentType?: 'video' | 'in-person';
   /** Scheduling lifecycle, distinct from paymentStatus. Default: 'scheduled'. */

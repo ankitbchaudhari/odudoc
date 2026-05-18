@@ -13,6 +13,8 @@ import { paymentsDisabled } from "@/lib/payments-config";
 import { consumeConsultToken } from "@/lib/consult-otp";
 import { sendPatientBookingReceived, sendDoctorNewRequest } from "@/lib/consultation-emails";
 import { claimPendingPayment, reloadPendingPayments } from "@/lib/cashfree-pending-buffer";
+import { findUserByEmail } from "@/lib/users-store";
+import { resolveActiveProfile } from "@/lib/family-active";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -164,12 +166,40 @@ export async function POST(req: NextRequest) {
     clinicFields.paymentMode = rawPaymentMode;
   }
 
+  // Resolve session + active profile up front so the same depMeta
+  // can stamp both the legacy booking row AND the consultation row.
+  const session = await getServerSession(authOptions);
+  const sessionUser = (session?.user as { email?: string } | undefined) || {};
+  const patientEmail =
+    sessionUser.email ||
+    `${name.toLowerCase().replace(/\s+/g, ".")}+${phoneDigits.slice(-4)}@guest.odudoc.com`;
+
+  // Family-account threading — if the signed-in owner has an active
+  // dependent profile cookie set, stamp dependentId + name onto both
+  // rows. Guest bookings (no session) always resolve as self.
+  let depMeta: { dependentId?: string; dependentName?: string } = {};
+  try {
+    const owner = sessionUser.email ? findUserByEmail(sessionUser.email) : undefined;
+    if (owner) {
+      const profile = await resolveActiveProfile(owner.id);
+      if (profile.kind === "dependent") {
+        depMeta = {
+          dependentId: profile.dependentId,
+          dependentName: profile.dependentName,
+        };
+      }
+    }
+  } catch {
+    /* missing/invalid cookie → fall through as self */
+  }
+
   // 1. Legacy booking record (admin / earnings views).
   const booking = createBooking({
     doctorId: String(doctorId),
     doctorName: String(doctorName),
     patientName: name,
     patientPhone: phone,
+    ...depMeta,
     timeSlot: String(timeSlot),
     fee: feeNum,
     paymentStatus: pendingPayment ? "pending" : "paid",
@@ -178,19 +208,11 @@ export async function POST(req: NextRequest) {
   });
 
   // 2. Consultation record so it shows in the new dashboards.
-  //    Use the logged-in patient's email when available; fall back to a
-  //    deterministic placeholder (based on name + phone) so the record still
-  //    lands somewhere consistent.
-  const session = await getServerSession(authOptions);
-  const sessionUser = (session?.user as { email?: string } | undefined) || {};
-  const patientEmail =
-    sessionUser.email ||
-    `${name.toLowerCase().replace(/\s+/g, ".")}+${phoneDigits.slice(-4)}@guest.odudoc.com`;
-
   const consultation = createConsultation({
     patientEmail,
     patientName: name,
     patientPhone: phone,
+    ...depMeta,
     doctorId: String(doctorId),
     doctorName: String(doctorName),
     specialty: String(specialty || "General"),

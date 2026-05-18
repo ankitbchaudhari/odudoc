@@ -79,6 +79,7 @@ export default function DoctorConsultationsPage() {
     !search.trim()
       ? true
       : c.patientName.toLowerCase().includes(search.trim().toLowerCase()) ||
+        (c.dependentName || "").toLowerCase().includes(search.trim().toLowerCase()) ||
         (c.medicalHistory?.chiefComplaint || "").toLowerCase().includes(search.trim().toLowerCase()),
   );
 
@@ -178,8 +179,13 @@ export default function DoctorConsultationsPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">
-                      {c.patientName}
+                      {c.dependentName || c.patientName}
                     </p>
+                    {c.dependentName && (
+                      <p className="truncate text-[11px] font-medium text-violet-600 dark:text-violet-400">
+                        Booked by {c.patientName}
+                      </p>
+                    )}
                     <p className="truncate text-xs text-slate-600 dark:text-slate-300">
                       {c.medicalHistory?.chiefComplaint || c.specialty}
                     </p>
@@ -265,7 +271,12 @@ export default function DoctorConsultationsPage() {
 
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-bold text-slate-900 dark:text-slate-100">{c.patientName}</p>
+                      <p className="font-bold text-slate-900 dark:text-slate-100">{c.dependentName || c.patientName}</p>
+                      {c.dependentName && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
+                          for · booked by {c.patientName}
+                        </span>
+                      )}
                       <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${meta.cls}`}>
                         <span className={`h-1.5 w-1.5 rounded-full ${meta.ringDot}`} />
                         {meta.label}

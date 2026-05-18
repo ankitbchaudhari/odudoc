@@ -18,6 +18,7 @@ import { listConsultations, reloadConsultations } from "@/lib/consultations-stor
 import { validateSlot } from "@/lib/slot-utils";
 import { getDoctorById } from "@/lib/doctors-store";
 import { findUserByEmail, reloadUsers } from "@/lib/users-store";
+import { resolveActiveProfile } from "@/lib/family-active";
 import { notifyAppointmentBooked } from "@/lib/notifications";
 import { requireMobileUser } from "@/lib/mobile-auth";
 import { sendToUser, sendToEmail } from "@/lib/fcm";
@@ -75,11 +76,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "slot_invalid", message: slotErr }, { status: 400 });
     }
 
+    // Family-account threading — owner may be booking on behalf of
+    // a dependent (kid / parent / spouse). The active-profile cookie
+    // is set on the mobile WebView session the same way it is on web,
+    // so the same resolver works.
+    let depMeta: { dependentId?: string; dependentName?: string } = {};
+    try {
+      const profile = await resolveActiveProfile(patient.id);
+      if (profile.kind === "dependent") {
+        depMeta = {
+          dependentId: profile.dependentId,
+          dependentName: profile.dependentName,
+        };
+      }
+    } catch {
+      /* missing/invalid cookie → fall through as self */
+    }
+
     const booking = createBooking({
       doctorId: doctor.id,
       doctorName: doctor.name,
       patientName: patient.name,
       patientPhone: patient.phone,
+      ...depMeta,
       timeSlot: body.timeSlot,
       fee: doctor.fee ?? 0,
       paymentStatus: body.paymentStatus || "pending",

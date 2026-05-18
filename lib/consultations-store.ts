@@ -83,6 +83,11 @@ export interface Consultation {
   patientEmail: string;
   patientName: string;
   patientPhone: string;
+  // Family-account threading — see Booking interface for rationale.
+  // The owning user is still patientEmail; dependentId names which
+  // family member the consult is for (or undefined for self).
+  dependentId?: string;
+  dependentName?: string;
   doctorId: string;
   doctorName: string;
   doctorEmail: string;
@@ -147,6 +152,9 @@ export interface CreateConsultationInput {
   patientEmail: string;
   patientName: string;
   patientPhone: string;
+  /** Family-account threading — see Consultation interface. */
+  dependentId?: string;
+  dependentName?: string;
   doctorId: string;
   doctorName: string;
   doctorEmail?: string;

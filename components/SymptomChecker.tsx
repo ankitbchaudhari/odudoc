@@ -108,23 +108,163 @@ function Stepper({ step }: { step: Step }) {
 }
 
 function Step1({ onPick }: { onPick: (r: SymptomOption) => void }) {
+  const [aiText, setAiText] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiResult, setAiResult] = useState<AiTriage | null>(null);
+  const [aiErr, setAiErr] = useState<string | null>(null);
+
+  const runAi = async () => {
+    if (aiText.trim().length < 8) {
+      setAiErr("Please describe your symptoms in at least a sentence.");
+      return;
+    }
+    setAiErr(null);
+    setAiBusy(true);
+    setAiResult(null);
+    try {
+      const r = await fetch("/api/ai/symptom-triage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: aiText.trim() }),
+      });
+      const d = await r.json();
+      if (!r.ok) {
+        setAiErr(d.message || d.error || "AI triage failed.");
+        return;
+      }
+      setAiResult(d as AiTriage);
+    } catch {
+      setAiErr("Network error. Try the visual checker below.");
+    } finally {
+      setAiBusy(false);
+    }
+  };
+
   return (
-    <div>
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
-        Step 1 · Where is it?
-      </p>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {REGIONS.map((r) => (
-          <button
-            key={r.id}
-            onClick={() => onPick(r)}
-            className="group flex flex-col items-center gap-1.5 rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 p-3 transition hover:border-indigo-400 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/30 hover:shadow-md"
-          >
-            <span className="text-3xl transition group-hover:scale-110">{r.emoji}</span>
-            <span className="text-xs font-semibold text-gray-700 dark:text-slate-300">{r.label}</span>
-          </button>
-        ))}
+    <div className="space-y-5">
+      {/* Free-text AI triage — leads the wizard because it covers
+          symptoms the 8-region grid can't (e.g. "I feel anxious AND
+          my hands tingle"). Falls back to the visual checker
+          gracefully when AI is unconfigured or rate-limited. */}
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-300">
+          ✨ Describe what you&apos;re feeling
+        </p>
+        <div className="rounded-2xl border-2 border-indigo-200 dark:border-indigo-900/60 bg-gradient-to-br from-indigo-50/60 via-violet-50/60 to-fuchsia-50/60 dark:from-indigo-950/30 dark:via-violet-950/30 dark:to-fuchsia-950/30 p-3">
+          <textarea
+            value={aiText}
+            onChange={(e) => setAiText(e.target.value)}
+            rows={3}
+            placeholder="e.g. I&apos;ve had a throbbing headache on the right side for 3 days, with some nausea when I move."
+            className="w-full resize-none rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+          />
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <p className="text-[11px] text-gray-500 dark:text-slate-400">
+              AI reads your description and routes you to the right specialist.
+            </p>
+            <button
+              onClick={runAi}
+              disabled={aiBusy}
+              className="rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-500/30 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              {aiBusy ? "Analyzing…" : "Analyze with AI →"}
+            </button>
+          </div>
+          {aiErr && (
+            <p className="mt-2 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 px-3 py-2 text-xs text-rose-700 dark:text-rose-300">
+              {aiErr}
+            </p>
+          )}
+          {aiResult && <AiResultCard r={aiResult} />}
+        </div>
       </div>
+
+      <div className="relative">
+        <div className="absolute inset-y-1/2 inset-x-0 h-px bg-gray-200 dark:bg-slate-800" />
+        <p className="relative mx-auto w-fit bg-white dark:bg-slate-900 px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-500">
+          Or pick visually
+        </p>
+      </div>
+
+      <div>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">
+          Step 1 · Where is it?
+        </p>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {REGIONS.map((r) => (
+            <button
+              key={r.id}
+              onClick={() => onPick(r)}
+              className="group flex flex-col items-center gap-1.5 rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 p-3 transition hover:border-indigo-400 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/30 hover:shadow-md"
+            >
+              <span className="text-3xl transition group-hover:scale-110">{r.emoji}</span>
+              <span className="text-xs font-semibold text-gray-700 dark:text-slate-300">{r.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface AiTriage {
+  specialty: string;
+  specialtyLabel: string;
+  urgency: "routine" | "soon" | "urgent" | "emergency";
+  reasoning: string;
+  redFlags: string[];
+  possibleConditions: string[];
+}
+
+function AiResultCard({ r }: { r: AiTriage }) {
+  const URGENCY_TONE = {
+    routine:   "from-emerald-500 to-teal-500",
+    soon:      "from-amber-500 to-orange-500",
+    urgent:    "from-rose-500 to-red-500",
+    emergency: "from-red-600 to-rose-700",
+  } as const;
+  const URGENCY_LABEL = {
+    routine: "Routine — book within the week",
+    soon: "Soon — book today or tomorrow",
+    urgent: "Urgent — try Consult Now",
+    emergency: "Emergency — go to the ER or call 911",
+  } as const;
+  return (
+    <div className="mt-3 space-y-2">
+      <div className={`rounded-2xl bg-gradient-to-br ${URGENCY_TONE[r.urgency]} px-4 py-3 text-white shadow-md`}>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-white/80">{URGENCY_LABEL[r.urgency]}</p>
+        <p className="mt-0.5 text-xl font-bold">{r.specialtyLabel}</p>
+        <p className="mt-1 text-xs text-white/90">{r.reasoning}</p>
+      </div>
+      {r.redFlags.length > 0 && (
+        <div className="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 px-3 py-2">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">⚠️ Red flags spotted</p>
+          <ul className="mt-1 ml-4 list-disc text-xs text-rose-700 dark:text-rose-300">
+            {r.redFlags.map((f, i) => <li key={i}>{f}</li>)}
+          </ul>
+        </div>
+      )}
+      {r.possibleConditions.length > 0 && (
+        <p className="text-[11px] text-gray-500 dark:text-slate-400">
+          <span className="font-semibold">Possibilities (not a diagnosis):</span>{" "}
+          {r.possibleConditions.join(", ")}
+        </p>
+      )}
+      {r.urgency === "emergency" ? (
+        <div className="flex flex-wrap gap-2">
+          <a href="tel:911" className="rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white shadow">📞 911</a>
+          <a href="tel:+13028992625" className="rounded-xl border-2 border-red-300 dark:border-red-900/60 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-bold text-red-700 dark:text-red-300">OduDoc helpline</a>
+        </div>
+      ) : (
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Link href={`/consult-now?specialty=${encodeURIComponent(r.specialty)}`} className="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2 text-center text-sm font-bold text-white shadow-md shadow-emerald-500/30">
+            ⚡ Consult now (live)
+          </Link>
+          <Link href={`/specialty/${r.specialty}`} className="rounded-xl border-2 border-indigo-500 bg-white dark:bg-slate-950 px-4 py-2 text-center text-sm font-bold text-indigo-700 dark:text-indigo-300">
+            Browse {r.specialtyLabel}s
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,20 +6,20 @@
 // localStorage. Any patient surface that wants translation imports
 // the dictionary, calls t("key"), done.
 //
-// Why minimal: shipping every Indian language now would freeze a
-// design that's still moving. We start with five locales the
-// patient base needs most (en, hi, ta, te, mr) and a sample of
-// surface keys covering the homepage hero + booking flow. Extend by
-// adding rows; missing keys fall back to English.
+// Coverage: en (master) + 5 Indic languages (hi/ta/te/mr/bn) that
+// together cover ~80% of Indian patients by L1. Each dictionary
+// holds all 40 keys; translate() falls back through English when a
+// new key lands before translation does.
 
-export type Locale = "en" | "hi" | "ta" | "te" | "mr";
+export type Locale = "en" | "hi" | "ta" | "te" | "mr" | "bn";
 
 export const LOCALES: Array<{ id: Locale; label: string; nativeLabel: string }> = [
-  { id: "en", label: "English", nativeLabel: "English" },
-  { id: "hi", label: "Hindi", nativeLabel: "हिन्दी" },
-  { id: "ta", label: "Tamil", nativeLabel: "தமிழ்" },
-  { id: "te", label: "Telugu", nativeLabel: "తెలుగు" },
-  { id: "mr", label: "Marathi", nativeLabel: "मराठी" },
+  { id: "en", label: "English",  nativeLabel: "English" },
+  { id: "hi", label: "Hindi",    nativeLabel: "हिन्दी" },
+  { id: "ta", label: "Tamil",    nativeLabel: "தமிழ்" },
+  { id: "te", label: "Telugu",   nativeLabel: "తెలుగు" },
+  { id: "mr", label: "Marathi",  nativeLabel: "मराठी" },
+  { id: "bn", label: "Bengali",  nativeLabel: "বাংলা" },
 ];
 
 export const DEFAULT_LOCALE: Locale = "en";
@@ -68,10 +68,6 @@ const en: Dict = {
   "common.loading": "Loading…",
   "common.try_again": "Try again",
 };
-
-// Translations are intentionally focused — homepage hero, navigation,
-// booking flow, wallet, labs, common UI. Other surfaces fall back
-// to English until translation lands.
 
 const hi: Dict = {
   "nav.find_doctors": "डॉक्टर खोजें",
@@ -127,13 +123,26 @@ const ta: Dict = {
   "hero.cta_pharmacy": "மருந்துகளை ஆர்டர் செய்யவும்",
   "homepage.search_placeholder": "அறிகுறி, மருத்துவர் அல்லது சிறப்பு",
   "homepage.search_button": "தேடு",
+  "specialty.cardiology": "இதயவியல்",
+  "specialty.dermatology": "தோல் மருத்துவம்",
+  "specialty.paediatrics": "குழந்தை மருத்துவம்",
+  "specialty.gynaecology": "மகப்பேறு மருத்துவம்",
+  "specialty.orthopaedics": "எலும்பியல்",
+  "specialty.ent": "காது மூக்கு தொண்டை",
+  "booking.start": "சந்திப்பு பதிவு செய்யவும்",
   "booking.video_consult": "வீடியோ ஆலோசனை",
   "booking.in_clinic": "மருத்துவமனைக்குச் செல்லவும்",
   "booking.confirm": "பதிவை உறுதிப்படுத்தவும்",
+  "booking.fee": "ஆலோசனை கட்டணம்",
+  "booking.you_pay": "நீங்கள் செலுத்துவது",
   "wallet.title": "OduDoc வாலட்",
   "wallet.balance": "கிடைக்கும் இருப்பு",
   "wallet.add_money": "பணம் சேர்க்கவும்",
+  "wallet.bonus": "5% போனஸ்",
   "labs.title": "ஆய்வக சோதனைகள்",
+  "labs.book_now": "இப்போது பதிவு செய்",
+  "labs.home_collection": "வீட்டிலிருந்து மாதிரி சேகரிப்பு",
+  "labs.in_lab": "ஆய்வகத்திற்குச் செல்லவும்",
   "common.next": "அடுத்தது",
   "common.back": "பின்",
   "common.cancel": "ரத்து செய்",
@@ -143,6 +152,7 @@ const ta: Dict = {
   "common.yes": "ஆம்",
   "common.no": "இல்லை",
   "common.loading": "ஏற்றுகிறது…",
+  "common.try_again": "மீண்டும் முயற்சி செய்",
 };
 
 const te: Dict = {
@@ -156,12 +166,26 @@ const te: Dict = {
   "hero.cta_pharmacy": "మందులు ఆర్డర్ చేయండి",
   "homepage.search_placeholder": "లక్షణాలు, డాక్టర్ లేదా స్పెషాలిటీ",
   "homepage.search_button": "శోధించు",
+  "specialty.cardiology": "హృదయవైద్యం",
+  "specialty.dermatology": "చర్మవైద్యం",
+  "specialty.paediatrics": "శిశువైద్యం",
+  "specialty.gynaecology": "స్త్రీవైద్యం",
+  "specialty.orthopaedics": "ఆర్థోపెడిక్స్",
+  "specialty.ent": "చెవి ముక్కు గొంతు",
+  "booking.start": "అపాయింట్‌మెంట్ బుక్ చేయండి",
   "booking.video_consult": "వీడియో సంప్రదింపు",
+  "booking.in_clinic": "క్లినిక్‌కు వెళ్ళండి",
   "booking.confirm": "బుకింగ్‌ను నిర్ధారించండి",
+  "booking.fee": "సంప్రదింపు రుసుము",
+  "booking.you_pay": "మీరు చెల్లించేది",
   "wallet.title": "OduDoc వాలెట్",
   "wallet.balance": "అందుబాటులో ఉన్న బ్యాలెన్స్",
   "wallet.add_money": "డబ్బు జోడించండి",
+  "wallet.bonus": "5% బోనస్",
   "labs.title": "ల్యాబ్ టెస్ట్‌లు",
+  "labs.book_now": "ఇప్పుడు బుక్ చేయండి",
+  "labs.home_collection": "ఇంటి వద్ద నమూనా సేకరణ",
+  "labs.in_lab": "ల్యాబ్‌ను సందర్శించండి",
   "common.next": "తదుపరి",
   "common.back": "వెనుకకు",
   "common.cancel": "రద్దు చేయి",
@@ -171,6 +195,7 @@ const te: Dict = {
   "common.yes": "అవును",
   "common.no": "కాదు",
   "common.loading": "లోడ్ అవుతోంది…",
+  "common.try_again": "మళ్లీ ప్రయత్నించండి",
 };
 
 const mr: Dict = {
@@ -184,12 +209,26 @@ const mr: Dict = {
   "hero.cta_pharmacy": "औषधे ऑर्डर करा",
   "homepage.search_placeholder": "लक्षणे, डॉक्टर, किंवा विशेषता",
   "homepage.search_button": "शोधा",
+  "specialty.cardiology": "हृदयरोग",
+  "specialty.dermatology": "त्वचारोग",
+  "specialty.paediatrics": "बालरोग",
+  "specialty.gynaecology": "स्त्रीरोग",
+  "specialty.orthopaedics": "अस्थिरोग",
+  "specialty.ent": "कान नाक घसा",
+  "booking.start": "अपॉइंटमेंट बुक करा",
   "booking.video_consult": "व्हिडिओ सल्ला",
+  "booking.in_clinic": "क्लिनिकला भेट द्या",
   "booking.confirm": "बुकिंगची पुष्टी करा",
+  "booking.fee": "सल्लामसलत शुल्क",
+  "booking.you_pay": "तुम्ही भरता",
   "wallet.title": "OduDoc वॉलेट",
   "wallet.balance": "उपलब्ध शिल्लक",
   "wallet.add_money": "पैसे जोडा",
+  "wallet.bonus": "5% बोनस",
   "labs.title": "लॅब चाचण्या",
+  "labs.book_now": "आता बुक करा",
+  "labs.home_collection": "घरी नमुना संकलन",
+  "labs.in_lab": "लॅबला भेट द्या",
   "common.next": "पुढे",
   "common.back": "मागे",
   "common.cancel": "रद्द करा",
@@ -199,9 +238,53 @@ const mr: Dict = {
   "common.yes": "होय",
   "common.no": "नाही",
   "common.loading": "लोड होत आहे…",
+  "common.try_again": "पुन्हा प्रयत्न करा",
 };
 
-const DICTIONARIES: Record<Locale, Dict> = { en, hi, ta, te, mr };
+const bn: Dict = {
+  "nav.find_doctors": "ডাক্তার খুঁজুন",
+  "nav.book_appointment": "অ্যাপয়েন্টমেন্ট বুক করুন",
+  "nav.my_records": "আমার রেকর্ড",
+  "nav.sign_in": "সাইন ইন করুন",
+  "hero.title": "যে স্বাস্থ্যসেবা সত্যিই কাজ করে",
+  "hero.subtitle": "ভেরিফায়েড ডাক্তার বুক করুন, ওষুধ অর্ডার করুন, বাড়িতে ল্যাব টেস্ট করান। একটাই অ্যাপ, পুরো পরিবারের জন্য।",
+  "hero.cta_book": "ডাক্তার বুক করুন",
+  "hero.cta_pharmacy": "ওষুধ অর্ডার করুন",
+  "homepage.search_placeholder": "উপসর্গ, ডাক্তার, বা বিশেষজ্ঞতা",
+  "homepage.search_button": "অনুসন্ধান",
+  "specialty.cardiology": "হৃদরোগ",
+  "specialty.dermatology": "চর্মরোগ",
+  "specialty.paediatrics": "শিশু রোগ",
+  "specialty.gynaecology": "স্ত্রীরোগ",
+  "specialty.orthopaedics": "অস্থি রোগ",
+  "specialty.ent": "নাক কান গলা",
+  "booking.start": "অ্যাপয়েন্টমেন্ট বুক করুন",
+  "booking.video_consult": "ভিডিও পরামর্শ",
+  "booking.in_clinic": "ক্লিনিকে যান",
+  "booking.confirm": "বুকিং নিশ্চিত করুন",
+  "booking.fee": "পরামর্শ ফি",
+  "booking.you_pay": "আপনি দিচ্ছেন",
+  "wallet.title": "OduDoc ওয়ালেট",
+  "wallet.balance": "উপলভ্য ব্যালেন্স",
+  "wallet.add_money": "টাকা যোগ করুন",
+  "wallet.bonus": "5% বোনাস",
+  "labs.title": "ল্যাব টেস্ট",
+  "labs.book_now": "এখনই বুক করুন",
+  "labs.home_collection": "বাড়ি থেকে নমুনা সংগ্রহ",
+  "labs.in_lab": "ল্যাবে যান",
+  "common.next": "পরবর্তী",
+  "common.back": "পেছনে",
+  "common.cancel": "বাতিল করুন",
+  "common.continue": "চালিয়ে যান",
+  "common.save": "সংরক্ষণ করুন",
+  "common.confirm": "নিশ্চিত করুন",
+  "common.yes": "হ্যাঁ",
+  "common.no": "না",
+  "common.loading": "লোড হচ্ছে…",
+  "common.try_again": "আবার চেষ্টা করুন",
+};
+
+const DICTIONARIES: Record<Locale, Dict> = { en, hi, ta, te, mr, bn };
 
 export function dict(locale: Locale): Dict {
   return DICTIONARIES[locale] || DICTIONARIES[DEFAULT_LOCALE];

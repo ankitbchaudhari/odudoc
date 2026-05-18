@@ -8,6 +8,7 @@ import type { Consultation } from "@/lib/consultations-store";
 import SharedBadge from "@/components/StatusBadge";
 import type { PrescriptionRecord } from "@/lib/prescriptions-store";
 import FamilySwitcher from "@/components/FamilySwitcher";
+import LocaleSwitcher from "@/components/LocaleSwitcher";
 import TempPasswordBanner from "@/components/TempPasswordBanner";
 
 function greeting(): string {
@@ -141,7 +142,10 @@ export default function DashboardPage() {
                 Here&apos;s a snapshot of your health journey. Book a consult,
                 review your prescriptions, or track your care history.
               </p>
-              <div className="mt-3"><FamilySwitcher /></div>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <FamilySwitcher />
+                <LocaleSwitcher />
+              </div>
             </div>
             <div className="flex flex-wrap gap-2">
               {/* Primary CTA — bright white card on the indigo→violet

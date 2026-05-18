@@ -77,6 +77,10 @@ export default function VerifyMedicinePage() {
             Type what&apos;s printed on the strip. We check it against the pharma company&apos;s registry on OduDoc.
             Free, no sign-up, no data captured.
           </p>
+          <p className="mt-2 text-sm text-emerald-700 dark:text-emerald-300">
+            <strong>QR on your packaging?</strong> Scan it with your phone camera — it links directly to the
+            per-unit verification page with the full anti-counterfeit history.
+          </p>
         </header>
 
         <section className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">

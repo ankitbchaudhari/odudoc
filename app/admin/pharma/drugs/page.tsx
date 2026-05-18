@@ -12,7 +12,7 @@ import { PageHero } from "@/components/admin/PageShell";
 type Form = "tablet" | "capsule" | "syrup" | "injection" | "topical" | "inhaler" | "drops" | "patch" | "other";
 type Schedule = "OTC" | "H" | "H1" | "X" | "G" | "K";
 
-interface Batch { batchNumber: string; manufacturedOn: string; expiresOn: string; notes?: string }
+interface Batch { batchNumber: string; manufacturedOn: string; expiresOn: string; notes?: string; recalledAt?: string; recallReason?: string; unitsMinted?: number }
 interface Attachment { kind: "regulatory_paper" | "batch_lab_report" | "packaging_photo" | "other"; title: string; data: string; mimeType: string; uploadedAt: string }
 interface Drug {
   id: string; organizationId: string;
@@ -204,17 +204,13 @@ function DrugDetail({ drug, onChange }: { drug: Drug; onChange: () => void }) {
 
   return (
     <div className="border-t border-slate-100 px-4 py-4 text-xs">
-      {/* Batches */}
+      {/* Batches — with anti-counterfeit controls per row. */}
       <div className="mb-4">
         <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Batches</p>
         {drug.batches.length === 0 ? <p className="text-slate-400">None registered.</p> : (
           <ul className="space-y-1">
             {drug.batches.map((b) => (
-              <li key={b.batchNumber} className="rounded bg-slate-50 px-2 py-1">
-                <b className="text-slate-900">#{b.batchNumber}</b>
-                {b.manufacturedOn && <span className="ml-2 text-slate-500">mfg {b.manufacturedOn}</span>}
-                {b.expiresOn && <span className="ml-2 text-slate-500">exp {b.expiresOn}</span>}
-              </li>
+              <BatchRow key={b.batchNumber} drug={drug} batch={b} onChange={onChange} />
             ))}
           </ul>
         )}
@@ -253,6 +249,112 @@ function DrugDetail({ drug, onChange }: { drug: Drug; onChange: () => void }) {
         <p className="mt-1 text-[10px] text-slate-400">Up to 256 KB per attachment. PDF or image.</p>
       </div>
     </div>
+  );
+}
+
+function BatchRow({ drug, batch, onChange }: { drug: Drug; batch: Batch; onChange: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const [mintCount, setMintCount] = useState("100");
+  const [serials, setSerials] = useState<string[] | null>(null);
+  const recalled = !!batch.recalledAt;
+
+  const mint = async () => {
+    const n = parseInt(mintCount, 10);
+    if (!n || n < 1) return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/pharma/units", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ drugId: drug.id, batchNumber: batch.batchNumber, count: n }),
+      });
+      const j = await r.json();
+      if (!r.ok) {
+        alert(j.error || "Failed to mint units");
+        return;
+      }
+      setSerials(j.serials);
+      onChange();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const recall = async () => {
+    const reason = prompt(`Recall batch #${batch.batchNumber}. What's the reason? (visible to patients on scan)`);
+    if (!reason || reason.trim().length < 4) return;
+    if (!confirm(`Confirm: recall batch #${batch.batchNumber}? This shows a red warning on every future scan and cannot be undone in this UI.`)) return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/pharma/recall", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ drugId: drug.id, batchNumber: batch.batchNumber, reason: reason.trim() }),
+      });
+      const j = await r.json();
+      if (!r.ok) {
+        alert(j.error || "Failed to recall");
+        return;
+      }
+      alert(`Recalled. ${j.impact.unitsMinted} units affected, ${j.impact.serialsScanned} already scanned by patients.`);
+      onChange();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <li className={`rounded px-2 py-1.5 ${recalled ? "bg-rose-50 ring-1 ring-rose-200" : "bg-slate-50"}`}>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <b className="text-slate-900">#{batch.batchNumber}</b>
+        {batch.manufacturedOn && <span className="text-slate-500">mfg {batch.manufacturedOn}</span>}
+        {batch.expiresOn && <span className="text-slate-500">exp {batch.expiresOn}</span>}
+        {batch.unitsMinted ? <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold text-indigo-700">{batch.unitsMinted} units minted</span> : null}
+        {recalled && <span className="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">RECALLED</span>}
+      </div>
+      {recalled && batch.recallReason && (
+        <p className="mt-1 text-[11px] text-rose-700">Reason: {batch.recallReason}</p>
+      )}
+      {!recalled && (
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+          <input
+            type="number"
+            min={1}
+            max={10000}
+            value={mintCount}
+            onChange={(e) => setMintCount(e.target.value)}
+            className="w-20 rounded border border-slate-300 bg-white px-2 py-0.5 text-xs"
+          />
+          <button
+            onClick={mint}
+            disabled={busy}
+            className="rounded bg-emerald-600 px-2 py-0.5 text-[11px] font-bold text-white disabled:opacity-50"
+          >
+            Mint units
+          </button>
+          <button
+            onClick={recall}
+            disabled={busy}
+            className="rounded bg-rose-600 px-2 py-0.5 text-[11px] font-bold text-white disabled:opacity-50"
+          >
+            Recall batch
+          </button>
+        </div>
+      )}
+      {serials && (
+        <details className="mt-2 rounded bg-white p-2 ring-1 ring-emerald-200" open>
+          <summary className="cursor-pointer text-[11px] font-bold text-emerald-700">
+            {serials.length} newly-minted serials — encode each as a QR pointing at /verify-medicine/scan?u=&lt;serial&gt;
+          </summary>
+          <textarea
+            readOnly
+            value={serials.join("\n")}
+            rows={Math.min(6, serials.length)}
+            className="mt-2 w-full rounded border border-slate-200 bg-slate-50 p-2 font-mono text-[10px]"
+          />
+        </details>
+      )}
+    </li>
   );
 }
 

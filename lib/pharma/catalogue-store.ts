@@ -55,6 +55,14 @@ export interface DrugRegistration {
     /** When the lab report attachment id covers this batch. */
     labReportAttachmentIndex?: number;
     notes?: string;
+    /** Anti-counterfeit chain — when set, the batch has been recalled
+     *  and every unit in it should show a recall warning on scan. */
+    recalledAt?: string;
+    recallReason?: string;
+    /** How many physical units (boxes / strips) have been minted for
+     *  this batch via /api/pharma/units. Mints a QR-encodable serial
+     *  for each. Surfaced on the admin batch row. */
+    unitsMinted?: number;
   }>;
   attachments: DrugAttachment[];
   /** Authorized distributor / retailer ids that may legally sell this. */
@@ -140,6 +148,31 @@ export function attachToDrug(id: string, attachment: Omit<DrugAttachment, "uploa
   d.updatedAt = new Date().toISOString();
   flush();
   return { ok: true, drug: d };
+}
+
+/** Recall an entire batch. Public scans of any unit in this batch
+ *  show a red "recalled — do not consume" warning. Idempotent. */
+export function recallBatch(drugId: string, batchNumber: string, reason: string): DrugRegistration | null {
+  const d = drugs.find((x) => x.id === drugId);
+  if (!d) return null;
+  const b = d.batches.find((x) => x.batchNumber.toLowerCase() === batchNumber.toLowerCase());
+  if (!b) return null;
+  b.recalledAt = new Date().toISOString();
+  b.recallReason = reason;
+  d.updatedAt = new Date().toISOString();
+  flush();
+  return d;
+}
+
+/** Track newly-minted unit count for a batch (for the admin UI). */
+export function incrementMintedUnits(drugId: string, batchNumber: string, by: number): void {
+  const d = drugs.find((x) => x.id === drugId);
+  if (!d) return;
+  const b = d.batches.find((x) => x.batchNumber.toLowerCase() === batchNumber.toLowerCase());
+  if (!b) return;
+  b.unitsMinted = (b.unitsMinted || 0) + by;
+  d.updatedAt = new Date().toISOString();
+  flush();
 }
 
 export function addBatch(id: string, batch: DrugRegistration["batches"][number]): DrugRegistration | null {

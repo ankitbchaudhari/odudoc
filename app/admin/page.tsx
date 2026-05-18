@@ -220,15 +220,20 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* ── Hero header ───────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 p-8 text-white shadow-xl">
-        {/* decorative blobs */}
-        <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-primary-400/25 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 left-1/3 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl" />
+      {/* ── Hero header — glass + amber/rose aurora signature ────── */}
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-950 p-8 text-white shadow-[0_8px_32px_rgba(0,0,0,0.45)]">
+        {/* Drifting aurora blobs — amber/rose/orange signature for
+            the corporate role. Three independent loops so the
+            composition never repeats. */}
+        <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 opacity-30 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 left-1/4 h-80 w-80 rounded-full bg-gradient-to-br from-rose-500 via-fuchsia-500 to-amber-500 opacity-25 blur-3xl" />
+        <div className="pointer-events-none absolute top-1/3 right-1/3 h-60 w-60 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 opacity-20 blur-3xl" />
+        {/* Hairline sheen on the top edge */}
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
         <div className="relative flex flex-wrap items-end justify-between gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur ring-1 ring-white/20">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-amber-100 backdrop-blur">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
@@ -236,9 +241,23 @@ export default function AdminDashboard() {
               Live · {today}
             </div>
             <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              {data?.scope === "org" && data.organizationName
-                ? `Welcome back, ${data.organizationName} 👋`
-                : "Welcome back, Admin 👋"}
+              {data?.scope === "org" && data.organizationName ? (
+                <>
+                  Welcome back,{" "}
+                  <span className="bg-gradient-to-r from-amber-300 via-orange-200 to-rose-300 bg-clip-text text-transparent">
+                    {data.organizationName}
+                  </span>{" "}
+                  👋
+                </>
+              ) : (
+                <>
+                  Welcome back,{" "}
+                  <span className="bg-gradient-to-r from-amber-300 via-orange-200 to-rose-300 bg-clip-text text-transparent">
+                    Admin
+                  </span>{" "}
+                  👋
+                </>
+              )}
             </h1>
             <p className="mt-2 max-w-xl text-sm text-white/70">
               {data?.scope === "org"
@@ -251,7 +270,7 @@ export default function AdminDashboard() {
             <button
               onClick={refresh}
               disabled={loading}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white backdrop-blur transition-colors hover:bg-white/20 disabled:cursor-wait disabled:opacity-70"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold text-white backdrop-blur transition-colors hover:bg-white/20 disabled:cursor-wait disabled:opacity-70"
             >
               <svg
                 className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
@@ -272,7 +291,7 @@ export default function AdminDashboard() {
               href="/"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-xs font-semibold text-slate-900 shadow-sm transition-colors hover:bg-slate-100"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-rose-500 px-4 py-2 text-xs font-bold text-slate-950 shadow-lg shadow-amber-500/40 transition-all hover:-translate-y-0.5"
               title="Opens the public site in a new tab"
             >
               View site
@@ -283,23 +302,25 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Top-level KPI strip (revenue / orders / bookings / forms) */}
+        {/* Top-level KPI strip — each tile gets its own gradient halo so
+            the strip reads as a colourful spectrum, not a slab of glass. */}
         <div className="relative mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { label: "Revenue", value: money(revenue, { compact: true }), hint: `Gross${currency ? ` (${currency.code})` : ""}` },
-            { label: "Orders", value: stats?.orders ?? 0, hint: "Across all vendors" },
-            { label: "Bookings", value: stats?.bookings ?? 0, hint: "Confirmed appointments" },
-            { label: "Form Responses", value: stats?.formResponses ?? 0, hint: "Contact + demo" },
+            { label: "Revenue", value: money(revenue, { compact: true }), hint: `Gross${currency ? ` (${currency.code})` : ""}`, grad: "from-emerald-400 to-teal-600" },
+            { label: "Orders", value: stats?.orders ?? 0, hint: "Across all vendors", grad: "from-sky-400 to-blue-600" },
+            { label: "Bookings", value: stats?.bookings ?? 0, hint: "Confirmed appointments", grad: "from-violet-400 to-fuchsia-600" },
+            { label: "Form Responses", value: stats?.formResponses ?? 0, hint: "Contact + demo", grad: "from-amber-400 to-rose-500" },
           ].map((k) => (
             <div
               key={k.label}
-              className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm"
+              className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] p-4 backdrop-blur-xl"
             >
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">
+              <div className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br ${k.grad} opacity-25 blur-2xl`} />
+              <p className="relative text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">
                 {k.label}
               </p>
-              <p className="mt-1 text-2xl font-bold">{k.value}</p>
-              <p className="mt-0.5 text-[11px] text-white/50">{k.hint}</p>
+              <p className="relative mt-1 text-2xl font-bold">{k.value}</p>
+              <p className="relative mt-0.5 text-[11px] text-white/50">{k.hint}</p>
             </div>
           ))}
         </div>

@@ -1,22 +1,14 @@
 "use client";
 
-// Clinic staff dashboard — landing page after sign-in. Used by all
-// roles (receptionist / assistant / manager). Receptionists see the
-// same operational view as everyone; manager-only widgets (staff
-// list, etc.) are gated client-side based on the session role.
-//
-// Navigation here:
-//   - 📋 Bookings → /clinic/<id>/reception (existing lookup + EMR page)
-//   - 🧾 Invoices → /clinic/<id>/invoices (TBD — falls through to
-//     dashboard for now)
-//   - 👥 Staff → /clinic/<id>/staff (manager-only, TBD)
-//
-// One unauthenticated request /api/clinic/dashboard gets every stat
-// + activity in one shot.
+// Clinic staff dashboard — landing page after sign-in. All roles
+// (receptionist / assistant / manager) share this view; the
+// manager-only widgets render based on session role.
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import DashboardShell from "@/components/ui/DashboardShell";
+import GlassCard from "@/components/ui/GlassCard";
 
 type Role = "receptionist" | "assistant" | "manager";
 
@@ -24,28 +16,11 @@ interface DashboardResp {
   clinic: { id: string; name: string; city: string; country: string };
   staff: { id: string; name: string; email: string; role: Role };
   staffList?: Array<{ id: string; name: string; email: string; role: Role; active: boolean; lastLoginAt?: string }>;
-  bookingStats: {
-    todayTotal: number;
-    todayArrived: number;
-    todayPending: number;
-    todayPaid: number;
-    upcoming: number;
-  };
-  invoiceStats: {
-    todayCount: number;
-    todayInvoiced: number;
-    todayCollected: number;
-    todayTaxDue: number;
-  };
+  bookingStats: { todayTotal: number; todayArrived: number; todayPending: number; todayPaid: number; upcoming: number };
+  invoiceStats: { todayCount: number; todayInvoiced: number; todayCollected: number; todayTaxDue: number };
   emrTodayCount: number;
   pendingReferrals?: number;
-  activity: Array<{
-    kind: "invoice" | "arrival" | "emr";
-    id: string;
-    label: string;
-    detail: string;
-    at: string;
-  }>;
+  activity: Array<{ kind: "invoice" | "arrival" | "emr"; id: string; label: string; detail: string; at: string }>;
 }
 
 export default function ClinicDashboardPage() {
@@ -65,12 +40,8 @@ export default function ClinicDashboardPage() {
         return;
       }
       const d = await r.json();
-      if (!r.ok) {
-        setErr(d.error || "Failed to load");
-      } else {
-        setData(d as DashboardResp);
-        setErr(null);
-      }
+      if (!r.ok) setErr(d.error || "Failed to load");
+      else { setData(d as DashboardResp); setErr(null); }
     } finally {
       setLoading(false);
     }
@@ -84,18 +55,22 @@ export default function ClinicDashboardPage() {
   };
 
   if (loading && !data) {
-    return <main className="p-8 text-center text-sm text-gray-500 dark:text-slate-400">Loading…</main>;
+    return (
+      <DashboardShell role="corporate">
+        <div className="flex min-h-[60vh] items-center justify-center text-sm text-white/60">Loading…</div>
+      </DashboardShell>
+    );
   }
   if (!data) {
     return (
-      <main className="mx-auto max-w-md px-4 py-10">
-        <p className="rounded-lg bg-rose-50 dark:bg-rose-950/40 px-4 py-3 text-sm text-rose-700 dark:text-rose-300">
-          {err || "Couldn't load the dashboard."}
-        </p>
-        <Link href={`/clinic/${clinicId}/login`} className="mt-4 inline-block text-sm text-indigo-600 hover:underline">
-          ← Sign in
-        </Link>
-      </main>
+      <DashboardShell role="corporate">
+        <GlassCard className="mx-auto max-w-md">
+          <p className="text-sm text-rose-200">{err || "Couldn't load the dashboard."}</p>
+          <Link href={`/clinic/${clinicId}/login`} className="mt-4 inline-block text-sm text-amber-300 hover:underline">
+            ← Sign in
+          </Link>
+        </GlassCard>
+      </DashboardShell>
     );
   }
 
@@ -103,10 +78,6 @@ export default function ClinicDashboardPage() {
   const isManager = staff.role === "manager";
   const isAssistant = staff.role === "assistant";
   const isReceptionist = staff.role === "receptionist";
-  // Role capability table — drives which stats / tiles / sections render.
-  // Receptionist: patient flow only (lookup + arrival).
-  // Assistant:    + save EMR notes / vitals.
-  // Manager:      + invoices, statements, staff snapshot.
   const canBill = isManager;
   const canEmr = isManager || isAssistant;
   const fmtINR = (n: number) =>
@@ -120,153 +91,119 @@ export default function ClinicDashboardPage() {
   const roleBadge = ROLE_BADGE[staff.role];
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6">
-      {/* Hero header */}
-      <header className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 px-6 py-5 text-white shadow-xl">
-        <div aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-48 w-48 rounded-full bg-white/15 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-12 -left-10 h-48 w-48 rounded-full bg-fuchsia-300/20 blur-3xl" />
+    <DashboardShell role="corporate">
+      {/* Hero */}
+      <GlassCard glow className="mb-6 overflow-hidden">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 opacity-30 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-gradient-to-br from-rose-500 via-orange-500 to-amber-500 opacity-20 blur-3xl" />
         <div className="relative flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/70">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-200/90">
               {clinic.name} · {clinic.city}
             </p>
-            <h1 className="mt-1 text-2xl font-bold leading-tight">
-              {greet()}, {firstName(staff.name)}
+            <h1 className="mt-1 text-2xl font-bold leading-tight md:text-3xl">
+              {greet()},{" "}
+              <span className="bg-gradient-to-r from-amber-300 via-orange-200 to-rose-300 bg-clip-text text-transparent">
+                {firstName(staff.name)}
+              </span>
             </h1>
             <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-white/85">
               <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${roleBadge.tone}`}>
                 <span>{roleBadge.emoji}</span> {roleBadge.label}
               </span>
-              <span className="text-white/70">{staff.email}</span>
+              <span className="text-white/60">{staff.email}</span>
             </div>
           </div>
           <button
             onClick={logout}
-            className="rounded-xl bg-white/15 px-4 py-2 text-xs font-semibold text-white backdrop-blur-sm hover:bg-white/25"
+            className="rounded-xl border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold text-white backdrop-blur-sm hover:bg-white/20"
           >
             Sign out
           </button>
         </div>
-      </header>
+      </GlassCard>
 
-      {/* Stats row — role-aware. Receptionist sees only the patient-
-          flow stats; assistant adds EMR count; manager sees money. */}
+      {/* Stats row */}
       <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
+        <StatTile
           label="Today's bookings"
           value={bookingStats.todayTotal}
           sub={`${bookingStats.todayArrived} arrived · ${bookingStats.todayPending} pending`}
-          tone="from-sky-900/40 to-sky-950/60 text-sky-200 border-sky-900/60"
+          gradient="from-sky-400 to-blue-600"
           icon="📋"
         />
-        <StatCard
+        <StatTile
           label={isReceptionist ? "Upcoming bookings" : "EMR entries today"}
           value={isReceptionist ? bookingStats.upcoming : emrTodayCount}
           sub={isReceptionist ? "Scheduled, not yet arrived" : `${bookingStats.upcoming} upcoming bookings`}
-          tone="from-rose-900/40 to-rose-950/60 text-rose-200 border-rose-900/60"
+          gradient="from-rose-400 to-pink-600"
           icon={isReceptionist ? "📅" : "🩺"}
         />
         {canBill && (
           <>
-            <StatCard
+            <StatTile
               label="Invoices today"
               value={invoiceStats.todayCount}
               sub={`Issued ${fmtINR(invoiceStats.todayInvoiced)}`}
-              tone="from-emerald-900/40 to-emerald-950/60 text-emerald-200 border-emerald-900/60"
+              gradient="from-emerald-400 to-teal-600"
               icon="🧾"
             />
-            <StatCard
+            <StatTile
               label="Collected today"
               value={fmtINR(invoiceStats.todayCollected)}
               sub={`Tax due ${fmtINR(invoiceStats.todayTaxDue)}`}
-              tone="from-violet-900/40 to-violet-950/60 text-violet-200 border-violet-900/60"
+              gradient="from-violet-400 to-fuchsia-600"
               icon="💰"
             />
           </>
         )}
-        {/* Receptionist + Assistant still get a 4-col row by padding
-            with a paid-today tile that's visible to anyone. */}
         {!canBill && (
-          <StatCard
+          <StatTile
             label="Paid at clinic today"
             value={bookingStats.todayPaid}
             sub={`${bookingStats.todayTotal - bookingStats.todayPaid} not yet`}
-            tone="from-emerald-900/40 to-emerald-950/60 text-emerald-200 border-emerald-900/60"
+            gradient="from-emerald-400 to-teal-600"
             icon="💳"
           />
         )}
         {!canBill && (
-          <StatCard
+          <StatTile
             label="Walk-up queue"
             value={bookingStats.todayPending}
             sub="Awaiting check-in"
-            tone="from-amber-900/40 to-amber-950/60 text-amber-200 border-amber-900/60"
+            gradient="from-amber-400 to-orange-600"
             icon="⏳"
           />
         )}
       </section>
 
-      {/* Quick actions — strictly limited to what this role can do.
-          Showing a "Generate invoice" tile to a receptionist would just
-          lead to a 403, so we hide it instead. */}
+      {/* Quick actions */}
       <section className="mb-6">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
-          Quick actions
-        </h2>
+        <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white/60">Quick actions</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <ActionTile
-            href={`/clinic/${clinicId}/reception`}
-            icon="🔍"
-            title="Look up booking"
-            body="Scan QR or type booking ID to pull up patient details."
-            accent="from-sky-500 to-blue-500"
-          />
-          <ActionTile
-            href={`/clinic/${clinicId}/reception`}
-            icon="✅"
-            title="Mark arrival"
-            body="Check patients in when they reach reception."
-            accent="from-emerald-500 to-teal-500"
-          />
-          <ActionTile
-            href={`/clinic/${clinicId}/referrals`}
-            icon="↗️"
+          <ActionTile href={`/clinic/${clinicId}/reception`} icon="🔍" title="Look up booking"
+            body="Scan QR or type booking ID to pull up patient details." accent="from-sky-400 to-blue-500" />
+          <ActionTile href={`/clinic/${clinicId}/reception`} icon="✅" title="Mark arrival"
+            body="Check patients in when they reach reception." accent="from-emerald-400 to-teal-500" />
+          <ActionTile href={`/clinic/${clinicId}/referrals`} icon="↗️"
             title={pendingReferrals && pendingReferrals > 0 ? `Referrals · ${pendingReferrals} pending` : "Referrals"}
-            body="Refer a patient to another clinic or hospital in the OduDoc network — or act on inbound referrals."
-            accent="from-fuchsia-500 to-pink-500"
-          />
+            body="Refer a patient to another clinic or hospital in the OduDoc network."
+            accent="from-fuchsia-400 to-pink-500" />
           {canEmr && (
-            <ActionTile
-              href={`/clinic/${clinicId}/reception`}
-              icon="🩺"
-              title="Save EMR note"
+            <ActionTile href={`/clinic/${clinicId}/reception`} icon="🩺" title="Save EMR note"
               body="Record vitals, diagnosis, prescription, and notes for this visit."
-              accent="from-violet-500 to-fuchsia-500"
-            />
+              accent="from-violet-400 to-fuchsia-500" />
           )}
           {canBill && (
             <>
-              <ActionTile
-                href={`/clinic/${clinicId}/reception`}
-                icon="🧾"
-                title="Generate invoice"
-                body="Issue a tax-compliant invoice for the visit's services."
-                accent="from-amber-500 to-orange-500"
-              />
-              <ActionTile
-                href="/dashboard/doctor/statements"
-                icon="📊"
-                title="Statements"
-                body="Monthly / quarterly / yearly clinic revenue + tax."
-                accent="from-indigo-500 to-violet-500"
-              />
-              <ActionTile
-                href="/dashboard/doctor/clinic"
-                icon="👥"
-                title="Manage staff"
-                body="See the full staff list and roles."
-                accent="from-rose-500 to-pink-500"
-              />
+              <ActionTile href={`/clinic/${clinicId}/reception`} icon="🧾" title="Generate invoice"
+                body="Issue a tax-compliant invoice for the visit's services." accent="from-amber-400 to-orange-500" />
+              <ActionTile href="/dashboard/doctor/statements" icon="📊" title="Statements"
+                body="Monthly / quarterly / yearly clinic revenue + tax." accent="from-indigo-400 to-violet-500" />
+              <ActionTile href="/dashboard/doctor/clinic" icon="👥" title="Manage staff"
+                body="See the full staff list and roles." accent="from-rose-400 to-pink-500" />
+              <ActionTile href={`/clinic/${clinicId}/insurance`} icon="🛡️" title="TPA empanelment"
+                body="Manage cashless insurance partners." accent="from-cyan-400 to-blue-500" />
             </>
           )}
         </div>
@@ -274,21 +211,19 @@ export default function ClinicDashboardPage() {
 
       {/* Manager-only staff snapshot */}
       {isManager && staffList && staffList.length > 0 && (
-        <section className="mb-6 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
-          <h2 className="text-sm font-bold text-gray-900 dark:text-slate-100">Staff ({staffList.length})</h2>
-          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">Manage staff via the doctor&apos;s clinic page.</p>
-          <ul className="mt-3 divide-y divide-gray-100 dark:divide-slate-800">
+        <GlassCard className="mb-6">
+          <h2 className="text-sm font-bold text-white">Staff ({staffList.length})</h2>
+          <p className="mt-1 text-xs text-white/60">Manage staff via the doctor&apos;s clinic page.</p>
+          <ul className="mt-3 divide-y divide-white/5">
             {staffList.map((s) => (
               <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
                 <div>
-                  <p className="font-semibold text-gray-900 dark:text-slate-100">{s.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-slate-400">{s.email} · {s.role}</p>
+                  <p className="font-semibold text-white">{s.name}</p>
+                  <p className="text-xs text-white/60">{s.email} · {s.role}</p>
                 </div>
                 <span
                   className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                    s.active
-                      ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
-                      : "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400"
+                    s.active ? "bg-emerald-500/20 text-emerald-200" : "bg-white/10 text-white/50"
                   }`}
                 >
                   {s.active ? "Active" : "Disabled"}
@@ -296,33 +231,31 @@ export default function ClinicDashboardPage() {
               </li>
             ))}
           </ul>
-        </section>
+        </GlassCard>
       )}
 
       {/* Recent activity */}
-      <section className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
-        <h2 className="text-sm font-bold text-gray-900 dark:text-slate-100">Recent activity</h2>
+      <GlassCard>
+        <h2 className="text-sm font-bold text-white">Recent activity</h2>
         {activity.length === 0 ? (
-          <p className="mt-3 text-sm text-gray-500 dark:text-slate-400">Nothing yet today.</p>
+          <p className="mt-3 text-sm text-white/60">Nothing yet today.</p>
         ) : (
-          <ul className="mt-3 divide-y divide-gray-100 dark:divide-slate-800">
+          <ul className="mt-3 divide-y divide-white/5">
             {activity.map((a, i) => (
               <li key={`${a.kind}-${a.id}-${i}`} className="flex items-center justify-between gap-3 py-2.5 text-sm">
                 <div className="min-w-0">
-                  <p className="font-medium text-gray-900 dark:text-slate-100 truncate">
-                    {iconFor(a.kind)} {a.label}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-slate-400">{a.detail}</p>
+                  <p className="font-medium text-white truncate">{iconFor(a.kind)} {a.label}</p>
+                  <p className="text-xs text-white/60">{a.detail}</p>
                 </div>
-                <span className="text-xs text-gray-400 dark:text-slate-500 whitespace-nowrap">
+                <span className="text-xs text-white/40 whitespace-nowrap">
                   {new Date(a.at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
                 </span>
               </li>
             ))}
           </ul>
         )}
-      </section>
-    </main>
+      </GlassCard>
+    </DashboardShell>
   );
 }
 
@@ -341,23 +274,26 @@ function iconFor(kind: "invoice" | "arrival" | "emr"): string {
   return kind === "invoice" ? "🧾" : kind === "arrival" ? "✅" : "🩺";
 }
 
-function StatCard({
-  label, value, sub, tone, icon,
+function StatTile({
+  label, value, sub, gradient, icon,
 }: {
   label: string;
   value: string | number;
   sub: string;
-  tone: string;
+  gradient: string;
   icon: string;
 }) {
   return (
-    <div className={`rounded-2xl border bg-gradient-to-br ${tone} p-5`}>
-      <div className="flex items-start justify-between">
-        <p className="text-[11px] font-bold uppercase tracking-wider opacity-80">{label}</p>
-        <span className="text-xl opacity-80" aria-hidden>{icon}</span>
+    <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.05] p-5 backdrop-blur-xl">
+      <div className={`pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gradient-to-br ${gradient} opacity-25 blur-2xl`} />
+      <div className="relative flex items-start justify-between">
+        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/60">{label}</p>
+        <span className={`flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-lg shadow-md`}>
+          {icon}
+        </span>
       </div>
-      <p className="mt-2 text-2xl font-extrabold">{value}</p>
-      <p className="mt-1 text-[11px] opacity-70">{sub}</p>
+      <p className="relative mt-2 text-3xl font-bold text-white">{value}</p>
+      <p className="relative mt-1 text-[11px] text-white/60">{sub}</p>
     </div>
   );
 }
@@ -374,14 +310,15 @@ function ActionTile({
   return (
     <Link
       href={href}
-      className="group flex items-start gap-3 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+      className="group relative flex items-start gap-3 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] p-4 backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.08]"
     >
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${accent} text-lg shadow-md`}>
+      <div className={`pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gradient-to-br ${accent} opacity-20 blur-2xl transition-opacity group-hover:opacity-50`} />
+      <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${accent} text-lg shadow-md`}>
         {icon}
       </div>
-      <div className="min-w-0">
-        <h3 className="text-sm font-bold text-gray-900 dark:text-slate-100">{title}</h3>
-        <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">{body}</p>
+      <div className="relative min-w-0">
+        <h3 className="text-sm font-bold text-white">{title}</h3>
+        <p className="mt-0.5 text-xs text-white/60">{body}</p>
       </div>
     </Link>
   );

@@ -8,6 +8,7 @@ import { SYMPTOMS } from "@/lib/seo/symptoms";
 import { CONDITIONS } from "@/lib/seo/conditions";
 import { COMPARES } from "@/lib/seo/compares";
 import { GLOSSARY } from "@/lib/seo/glossary";
+import { CORPORATE_TYPES } from "@/lib/corporate-types";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.odudoc.com";
 
@@ -49,6 +50,21 @@ const STATIC_ROUTES: Array<{
   { path: "/gallery", changeFrequency: "monthly", priority: 0.5 },
   { path: "/privacy", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms", changeFrequency: "yearly", priority: 0.3 },
+
+  // Spec-shipped surfaces from the Cowork batches. Slotted in
+  // alphabetically-ish; priorities reflect commercial weight.
+  { path: "/for-patients", changeFrequency: "weekly", priority: 0.9 },
+  { path: "/for-corporates", changeFrequency: "weekly", priority: 0.9 },
+  { path: "/foreign-studies", changeFrequency: "weekly", priority: 0.8 },
+  { path: "/medical-tourism", changeFrequency: "weekly", priority: 0.85 },
+  { path: "/security", changeFrequency: "monthly", priority: 0.6 },
+  { path: "/docs", changeFrequency: "monthly", priority: 0.55 },
+  { path: "/changelog", changeFrequency: "weekly", priority: 0.5 },
+  { path: "/press", changeFrequency: "monthly", priority: 0.5 },
+  { path: "/signup", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/signup/corporate", changeFrequency: "monthly", priority: 0.75 },
+  { path: "/legal/cookies", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/legal/dpa", changeFrequency: "yearly", priority: 0.3 },
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -196,6 +212,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Don't fail the sitemap if the doctor store can't be read.
   }
 
+  // 13 corporate sub-type landing pages (Cowork batch 3).
+  // High commercial weight — these are the corporate signup entry
+  // points for hospitals / clinics / labs / pharma / etc.
+  const corporateTypeEntries: MetadataRoute.Sitemap = CORPORATE_TYPES.map((t) => ({
+    url: `${SITE_URL}/signup/corporate/${t.slug}`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
+
   // Published blog posts.
   let blogEntries: MetadataRoute.Sitemap = [];
   try {
@@ -220,6 +246,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...compareEntries,
     ...matrixEntries,
     ...glossaryEntries,
+    ...corporateTypeEntries,
     ...doctorEntries,
     ...blogEntries,
   ];

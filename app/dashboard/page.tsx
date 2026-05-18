@@ -9,6 +9,7 @@ import SharedBadge from "@/components/StatusBadge";
 import type { PrescriptionRecord } from "@/lib/prescriptions-store";
 import FamilySwitcher from "@/components/FamilySwitcher";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
+import QuickActionsRow from "@/components/QuickActionsRow";
 import TempPasswordBanner from "@/components/TempPasswordBanner";
 
 function greeting(): string {
@@ -168,6 +169,14 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Quick actions — surface the patient's likely-next tap
+            (rebook last doctor, reorder last Rx, share referral code)
+            above the stat grid for retention + viral growth. */}
+        <QuickActionsRow
+          consultations={consultations}
+          prescriptions={prescriptions}
+        />
 
         {/* Colourful stat cards */}
         <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">

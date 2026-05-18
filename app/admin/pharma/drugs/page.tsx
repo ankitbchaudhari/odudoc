@@ -8,6 +8,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PageHero } from "@/components/admin/PageShell";
+import DrugScheduleBadge from "@/components/DrugScheduleBadge";
 
 type Form = "tablet" | "capsule" | "syrup" | "injection" | "topical" | "inhaler" | "drops" | "patch" | "other";
 type Schedule = "OTC" | "H" | "H1" | "X" | "G" | "K";
@@ -85,7 +86,7 @@ export default function DrugsAdminPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="text-sm font-bold text-slate-900">{d.brandName}</p>
                       <span className="text-xs text-slate-500">· {d.genericName}</span>
-                      <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold uppercase text-indigo-800">{d.scheduleClass}</span>
+                      <DrugScheduleBadge schedule={d.scheduleClass} />
                       <span className="text-[10px] text-slate-400">{d.form} · {d.strength}</span>
                     </div>
                     <p className="text-xs text-slate-500">{d.composition}</p>

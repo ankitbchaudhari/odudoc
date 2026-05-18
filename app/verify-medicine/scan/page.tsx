@@ -13,6 +13,8 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import DrugScheduleBadge from "@/components/DrugScheduleBadge";
+import { getScheduleInfo } from "@/lib/drug-schedules";
 
 interface ScanResponse {
   verdict: "verified" | "recalled" | "unknown";
@@ -127,16 +129,27 @@ function ScanInner() {
             {data.drug && (
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Drug</p>
-                <p className="mt-1 text-lg font-bold text-gray-900 dark:text-slate-100">
-                  {data.drug.brandName}{" "}
-                  <span className="text-gray-500 dark:text-slate-400 text-base font-normal">({data.drug.genericName})</span>
-                </p>
+                <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <p className="text-lg font-bold text-gray-900 dark:text-slate-100">
+                    {data.drug.brandName}{" "}
+                    <span className="text-gray-500 dark:text-slate-400 text-base font-normal">({data.drug.genericName})</span>
+                  </p>
+                  <DrugScheduleBadge schedule={data.drug.scheduleClass} size="full" />
+                </div>
                 <p className="text-sm text-gray-600 dark:text-slate-300">
                   {data.drug.composition} · {data.drug.strength} · {data.drug.form}
                 </p>
                 <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
-                  Schedule: <strong>{data.drug.scheduleClass}</strong> · License: {data.drug.manufacturerLicense}
+                  License: {data.drug.manufacturerLicense}
                 </p>
+                {(() => {
+                  const info = getScheduleInfo(data.drug.scheduleClass);
+                  return info ? (
+                    <p className="mt-2 rounded-lg bg-slate-50 p-3 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                      <strong>{info.longLabel}.</strong> {info.patientHint}
+                    </p>
+                  ) : null;
+                })()}
               </div>
             )}
 

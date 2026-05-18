@@ -116,6 +116,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.75,
   }));
 
+  // Reverse-lookup landing pages — specialty × city. Captures the
+  // biggest healthcare-search queries on Google ("cardiologist in
+  // mumbai", "dermatologist in los angeles"). Priority bumped above
+  // the parent specialty page because these typically have higher
+  // commercial intent.
+  const specialtyCityEntries: MetadataRoute.Sitemap = [];
+  for (const s of SPECIALTIES) {
+    for (const c of CITIES) {
+      specialtyCityEntries.push({
+        url: `${SITE_URL}/specialty/${s.slug}/${c.slug}`,
+        lastModified: now,
+        changeFrequency: "weekly" as const,
+        priority: 0.85,
+      });
+    }
+  }
+
   // Programmatic SEO — one URL per symptom.
   const symptomEntries: MetadataRoute.Sitemap = SYMPTOMS.map((s) => ({
     url: `${SITE_URL}/symptoms/${s.slug}`,
@@ -196,6 +213,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticEntries,
     ...specialtyEntries,
+    ...specialtyCityEntries,
     ...cityEntries,
     ...symptomEntries,
     ...conditionEntries,

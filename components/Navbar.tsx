@@ -10,6 +10,86 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Logo from "@/components/Logo";
 import NotificationBell from "@/components/NotificationBell";
 import ThemeToggle from "@/components/ThemeToggle";
+import NavDropdown, { type NavDropdownGroup } from "@/components/NavDropdown";
+
+// Header navigation menus. Spec: Cowork Build Handover Section 2 /
+// Header_Footer_Final Section 2. Three dropdowns + two plain links.
+// Items here are the source of truth — the mobile menu reads the same
+// arrays.
+const PATIENTS_GROUPS: NavDropdownGroup[] = [
+  {
+    label: "Book and consult",
+    items: [
+      { label: "Find doctors", href: "/doctors" },
+      { label: "Book consultation", href: "/booking" },
+      { label: "Video consult", href: "/consult" },
+    ],
+  },
+  {
+    label: "Your health",
+    items: [
+      { label: "Medical records", href: "/dashboard/timeline" },
+      { label: "Family accounts", href: "/dashboard/family" },
+      { label: "Pharmacy and labs", href: "/dashboard/rx-fulfillment" },
+      { label: "Vaccinations", href: "/dashboard/vaccinations" },
+      { label: "Medical tourism", href: "/medical-tourism" },
+      { label: "Insurance", href: "/dashboard/insurance" },
+    ],
+  },
+];
+
+const DOCTORS_GROUPS: NavDropdownGroup[] = [
+  {
+    label: "Practice",
+    items: [
+      { label: "Telemedicine", href: "/for-doctors/guide" },
+      { label: "AI prescription assist", href: "/dashboard/doctor/ai-prescription" },
+      { label: "Patient records", href: "/dashboard/doctor/emr" },
+      { label: "Referrals", href: "/dashboard/doctor/referrals" },
+    ],
+  },
+  {
+    label: "Growth",
+    items: [
+      { label: "CME courses", href: "/education" },
+      { label: "Earnings", href: "/dashboard/doctor/earnings" },
+      { label: "Doctor profile", href: "/dashboard/doctor/profile" },
+      { label: "OduDoc AI", href: "/features" },
+    ],
+  },
+];
+
+const ORGS_GROUPS: NavDropdownGroup[] = [
+  {
+    label: "Healthcare",
+    items: [
+      { label: "Hospitals", href: "/signup/corporate/hospital" },
+      { label: "Clinics", href: "/signup/corporate/clinic" },
+      { label: "Pathology labs", href: "/signup/corporate/pathology-lab" },
+      { label: "Diagnostic centres", href: "/signup/corporate/diagnostic-centre" },
+      { label: "Ambulance services", href: "/signup/corporate/ambulance" },
+      { label: "Home healthcare", href: "/signup/corporate/home-healthcare" },
+    ],
+  },
+  {
+    label: "Commerce",
+    items: [
+      { label: "Pharmacies", href: "/signup/corporate/pharmacy" },
+      { label: "Pharma companies", href: "/signup/corporate/pharma" },
+      { label: "Insurance companies", href: "/signup/corporate/insurance" },
+      { label: "Service-provider doctors", href: "/signup/corporate/service-provider" },
+    ],
+  },
+  {
+    label: "Education",
+    items: [
+      { label: "Medical institutes", href: "/signup/corporate/education" },
+      { label: "Education agencies", href: "/signup/corporate/education-agency" },
+      { label: "Foreign study programmes", href: "/foreign-studies", badge: "New" },
+      { label: "Students and interns", href: "/signup/corporate/student" },
+    ],
+  },
+];
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -20,21 +100,6 @@ export default function Navbar() {
   const { t } = useLanguage();
 
   const { totalItems } = useCart();
-
-  // Top-level public nav. We dropped the standalone Video Consult and
-  // Verify Medicine entries — both are surfaced as feature cards on
-  // /features anyway, and the bar was getting overcrowded. In their
-  // place we promote the two pages that actually drive partner
-  // signups: hospital pharmacies onboarding to OduDoc, and the
-  // doctor's onboarding guide. Each link carries an emoji so the bar
-  // skims like an app launcher rather than a wall of text.
-  const links: Array<{ href: string; label: string; emoji: string; emphasized?: boolean }> = [
-    { href: "/doctors", label: t("nav.doctors"), emoji: "🩺" },
-    { href: "/for-doctors/guide", label: "Doctor's Guide", emoji: "📘" },
-    { href: "/corporate", label: "For Hospitals", emoji: "🏥" },
-    { href: "/pharmacy-partners", label: "Your Pharmacy on OduDoc", emoji: "💊", emphasized: true },
-    { href: "/about", label: t("nav.about"), emoji: "💚" },
-  ];
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -104,28 +169,40 @@ export default function Navbar() {
           <Logo size="sm" />
         </div>
 
-        {/* Desktop Nav — pill-grouped links so the bar reads like a
-            modern shadcn/Vercel-style top-nav.
-            Only shown on xl: (1280px+) screens. Below that the right
-            block (logo+cart+theme+login) takes priority and the nav
-            links live in the mobile hamburger menu instead. Avoids
-            the "pill eats the right side" failure mode on tablets. */}
+        {/* Desktop Nav — three dropdowns + two plain links per spec.
+            xl: (1280px+) shows the full bar; below that the nav lives
+            in the hamburger menu. */}
         <div className="hidden flex-1 items-center justify-center xl:flex">
-          <div className="flex items-center gap-0.5 rounded-full border border-slate-200 dark:border-slate-800/70 bg-slate-50/70 dark:bg-slate-800/40 p-1 shadow-inner shadow-slate-200/40 dark:shadow-slate-900/40">
-            {links.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={
-                  l.emphasized
-                    ? "group relative inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary-600 via-primary-500 to-emerald-500 px-3.5 py-1.5 text-[13px] font-semibold text-white shadow-sm shadow-primary-500/30 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary-500/40"
-                    : "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium text-slate-600 dark:text-slate-300 transition-colors hover:bg-white dark:hover:bg-slate-800 hover:text-primary-700 hover:shadow-sm"
-                }
-              >
-                <span aria-hidden className="text-[15px] leading-none">{l.emoji}</span>
-                <span className="whitespace-nowrap">{l.label}</span>
-              </Link>
-            ))}
+          <div className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50/70 p-1 shadow-inner shadow-slate-200/40 dark:border-slate-800/70 dark:bg-slate-800/40 dark:shadow-slate-900/40">
+            <NavDropdown
+              label="For patients"
+              groups={PATIENTS_GROUPS}
+              viewAll={{ label: "View all patient features", href: "/for-patients" }}
+            />
+            <NavDropdown
+              label="For doctors"
+              groups={DOCTORS_GROUPS}
+              viewAll={{ label: "View all doctor features", href: "/for-doctors" }}
+            />
+            <NavDropdown
+              label="For organisations"
+              groups={ORGS_GROUPS}
+              viewAll={{ label: "View all organisation types", href: "/signup/corporate" }}
+              width="wide"
+              alignRight
+            />
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:bg-white hover:text-primary-700 hover:shadow-sm dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              Pricing
+            </Link>
+            <Link
+              href="/about"
+              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium text-slate-600 transition-colors hover:bg-white hover:text-primary-700 hover:shadow-sm dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              About
+            </Link>
           </div>
         </div>
 
@@ -288,21 +365,23 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {mobileOpen && (
         <div className="border-t border-gray-100 bg-white dark:bg-slate-900 px-4 pb-4 xl:hidden">
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              onClick={() => setMobileOpen(false)}
-              className={
-                l.emphasized
-                  ? "mt-1 flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary-600 via-primary-500 to-emerald-500 px-3 py-3 text-sm font-semibold text-white shadow-sm shadow-primary-500/30"
-                  : "flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-primary-600"
-              }
-            >
-              <span aria-hidden className="text-base leading-none">{l.emoji}</span>
-              <span>{l.label}</span>
-            </Link>
-          ))}
+          <MobileSection title="For patients" groups={PATIENTS_GROUPS} viewAll={{ label: "View all patient features", href: "/for-patients" }} onPick={() => setMobileOpen(false)} />
+          <MobileSection title="For doctors" groups={DOCTORS_GROUPS} viewAll={{ label: "View all doctor features", href: "/for-doctors" }} onPick={() => setMobileOpen(false)} />
+          <MobileSection title="For organisations" groups={ORGS_GROUPS} viewAll={{ label: "View all organisation types", href: "/signup/corporate" }} onPick={() => setMobileOpen(false)} />
+          <Link
+            href="/pricing"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            Pricing
+          </Link>
+          <Link
+            href="/about"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-600 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            About
+          </Link>
           <div className="mt-3 border-t border-gray-100 pt-3">
             {session ? (
               <div className="space-y-1">
@@ -376,5 +455,69 @@ export default function Navbar() {
       {/* Global Search Modal */}
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </nav>
+  );
+}
+
+// Mobile accordion section — one per dropdown. Tapping the header
+// toggles the items list. Keeps parity with the desktop menu while
+// staying touch-friendly on small viewports.
+function MobileSection({
+  title,
+  groups,
+  viewAll,
+  onPick,
+}: {
+  title: string;
+  groups: NavDropdownGroup[];
+  viewAll: { label: string; href: string };
+  onPick: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border-b border-gray-100 dark:border-slate-800">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between px-3 py-3 text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-slate-300"
+      >
+        <span>{title}</span>
+        <svg className={`h-4 w-4 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} viewBox="0 0 12 12" fill="none">
+          <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      {open && (
+        <div className="pb-2">
+          {groups.map((g) => (
+            <div key={g.label} className="px-2">
+              <p className="px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                {g.label}
+              </p>
+              {g.items.map((it) => (
+                <Link
+                  key={it.href}
+                  href={it.href}
+                  onClick={onPick}
+                  className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                  <span>{it.label}</span>
+                  {it.badge && (
+                    <span className="rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+                      {it.badge}
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </div>
+          ))}
+          <Link
+            href={viewAll.href}
+            onClick={onPick}
+            className="mx-3 mt-2 block rounded-lg bg-primary-50 px-3 py-2 text-sm font-semibold text-primary-700 dark:bg-slate-800 dark:text-primary-300"
+          >
+            {viewAll.label} →
+          </Link>
+        </div>
+      )}
+    </div>
   );
 }

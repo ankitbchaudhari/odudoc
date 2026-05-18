@@ -54,51 +54,42 @@ const SOCIALS = [
 export default function Footer() {
   const { t } = useLanguage();
 
+  // Spec: Header_Footer_Final Section 4 / Cowork_Complete Section 4.
+  // Three informational columns (Company, Resources, Legal). Feature
+  // navigation has moved into header dropdowns — the footer is brand
+  // + informational only. Zero auth buttons.
   const footerSections = [
     {
-      title: "OduDoc",
+      title: "Company",
       links: [
         { label: t("nav.about"), href: "/about" },
         { label: t("nav.blog"), href: "/blog" },
         { label: "Careers", href: "/careers" },
+        { label: "Press", href: "/press" },
         { label: t("nav.contact"), href: "/contact" },
       ],
     },
     {
-      title: t("footer.forPatients"),
+      title: "Resources",
       links: [
-        { label: t("footer.findDoctors"), href: "/doctors" },
-        { label: "Doctors A–Z", href: "/doctors-az" },
-        { label: t("footer.videoConsult"), href: "/consult" },
-        { label: "Symptoms A–Z", href: "/symptoms" },
-        { label: "Conditions A–Z", href: "/conditions" },
-        { label: "Medical Glossary", href: "/glossary" },
-        { label: "Compare", href: "/compare" },
-        { label: t("footer.surgeries"), href: "/surgeries" },
-        { label: t("footer.healthArticles"), href: "/blog" },
-        { label: t("nav.gallery"), href: "/gallery" },
+        { label: "Help centre", href: "/help" },
+        { label: "Documentation", href: "/docs" },
+        { label: "Health wiki", href: "/wiki" },
+        { label: "Healthcare directory", href: "/directory" },
+        { label: "OduDoc AI", href: "/features" },
+        { label: "Changelog", href: "/changelog" },
+        { label: "Status", href: "/status" },
       ],
     },
     {
-      title: t("footer.forDoctors"),
+      title: "Legal",
       links: [
-        { label: "OduDoc Profile", href: "/for-doctors" },
-        { label: "Doctor's guide", href: "/for-doctors/guide" },
-        { label: "For Corporates", href: "/corporate" },
-        { label: "Your Pharmacy on OduDoc", href: "/sell" },
-        { label: "OduDoc AI", href: "/ray" },
-      ],
-    },
-    {
-      title: t("footer.more"),
-      links: [
-        { label: t("footer.help"), href: "/help" },
-        { label: t("footer.privacy"), href: "/privacy" },
-        { label: t("footer.terms"), href: "/terms" },
-        { label: "Refund & Cancellation", href: "/refund-policy" },
-        { label: "Legal & Compliance", href: "/legal" },
-        { label: t("footer.directory"), href: "/directory" },
-        { label: t("footer.wiki"), href: "/wiki" },
+        { label: "Privacy policy", href: "/privacy" },
+        { label: "Terms of service", href: "/terms" },
+        { label: "Compliance", href: "/legal" },
+        { label: "Refund policy", href: "/refund-policy" },
+        { label: "Cookie settings", href: "/legal/cookies" },
+        { label: "Data processing", href: "/legal/dpa" },
       ],
     },
   ];
@@ -167,55 +158,39 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* CTA strip — a quick "talk to a doctor / list your practice" rail
-          that gives the dark band visual weight and a clear call-to-action
-          without dominating the footer. */}
-      <div className="border-b border-white/5">
-        <div className="mx-auto grid max-w-7xl gap-4 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:px-8">
-          <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-cyan-500/10 to-blue-500/5 p-6 transition hover:border-cyan-400/40">
-            <p className="text-xs font-semibold uppercase tracking-wider text-cyan-300">
-              For patients
-            </p>
-            <h4 className="mt-1 text-xl font-bold text-white">
-              Talk to a doctor in minutes
-            </h4>
-            <p className="mt-1 text-sm text-gray-400 dark:text-slate-500">
-              Verified specialists. Secure video. Prescriptions delivered.
-            </p>
-            <Link
-              href="/doctors"
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:shadow-cyan-500/30"
-            >
-              Find a doctor
-              <span aria-hidden="true">→</span>
-            </Link>
-          </div>
-          <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 p-6 transition hover:border-emerald-400/40">
-            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-300">
-              For doctors
-            </p>
-            <h4 className="mt-1 text-xl font-bold text-white">
-              Grow your practice on OduDoc
-            </h4>
-            <p className="mt-1 text-sm text-gray-400 dark:text-slate-500">
-              Free profile. Smart scheduling. Stripe payouts worldwide.
-            </p>
-            <Link
-              href="/for-doctors"
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 hover:shadow-emerald-500/30"
-            >
-              List your practice
-              <span aria-hidden="true">→</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Link columns. Tighter typography + accent dot on hover gives
-          the columns a "modern dashboard" rather than "wall of text"
-          feel. */}
+      {/* Link columns — spec layout: Brand (wider) + Company + Resources + Legal.
+          Feature navigation lives in header dropdowns now; footer is
+          informational only. */}
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-10 md:grid-cols-4 lg:grid-cols-[2fr_1fr_1fr_1fr]">
+          {/* Brand column — wider on lg+ per spec. */}
+          <div className="col-span-2 md:col-span-4 lg:col-span-1">
+            <Link href="/" className="inline-flex items-center gap-2">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 text-base font-bold text-slate-950 shadow-lg">
+                O
+              </span>
+              <span className="text-lg font-bold tracking-tight text-white">OduDoc</span>
+            </Link>
+            <p className="mt-4 max-w-xs text-sm text-gray-400">
+              The worldwide healthcare operating system. One patient record across
+              doctors, hospitals, labs, pharmacies, and insurance.
+            </p>
+            <div className="mt-5 flex gap-3">
+              {SOCIALS.map(({ name, url, Icon, brand }) => (
+                <a
+                  key={name}
+                  href={url}
+                  target={url === "#" ? undefined : "_blank"}
+                  rel={url === "#" ? undefined : "noopener noreferrer"}
+                  aria-label={name}
+                  className={`flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-gray-400 transition hover:-translate-y-0.5 hover:text-white ${brand}`}
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              ))}
+            </div>
+          </div>
+
           {footerSections.map((section) => (
             <div key={section.title}>
               <h3 className="mb-5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white">
@@ -227,7 +202,7 @@ export default function Footer() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="group inline-flex items-center gap-2 text-sm text-gray-400 dark:text-slate-500 transition-colors hover:text-white"
+                      className="group inline-flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-white"
                     >
                       <span className="h-px w-0 bg-cyan-400 transition-all group-hover:w-3" />
                       {link.label}
@@ -239,44 +214,33 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Bottom rail — socials + copyright with subtle gradient divider. */}
+        {/* Legal strip — copyright on the left, status pill on the right.
+            Socials moved into the Brand column above, per spec. */}
         <div className="relative mt-14 pt-8">
           <div
             aria-hidden="true"
             className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"
           />
-          <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-            <div className="flex gap-3">
-              {SOCIALS.map(({ name, url, Icon, brand }) => (
-                <a
-                  key={name}
-                  href={url}
-                  target={url === "#" ? undefined : "_blank"}
-                  rel={url === "#" ? undefined : "noopener noreferrer"}
-                  aria-label={name}
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-gray-400 dark:text-slate-500 transition hover:-translate-y-0.5 hover:text-white ${brand}`}
-                >
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
-            </div>
-
-            <div className="text-center text-xs text-gray-500 dark:text-slate-400 md:text-right">
+          <div className="flex flex-col items-center justify-between gap-3 text-xs text-gray-500 md:flex-row">
+            <div>
               <p>
                 &copy; {new Date().getFullYear()} Sarjudas Digital Trading and Escrow Services LLC.{" "}
-                <span className="text-gray-400 dark:text-slate-500">{t("footer.rights")}</span>
+                <span className="text-gray-400">{t("footer.rights")}</span>
               </p>
-              <p className="mt-1 text-[11px] text-gray-500 dark:text-slate-500">
+              <p className="mt-1 text-[11px] text-gray-500">
                 OduDoc is a brand operated by Sarjudas Digital Trading and Escrow Services LLC.
               </p>
-              <p className="mt-2 inline-flex items-center gap-1.5">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/70" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-                </span>
-                All systems operational
-              </p>
             </div>
+            <a
+              href="/status"
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] text-gray-300 transition hover:text-white"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/70" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+              </span>
+              All systems operational
+            </a>
           </div>
         </div>
       </div>

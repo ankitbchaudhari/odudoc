@@ -21,7 +21,7 @@ const PATHS = [
     body: "Book consultations, manage your record, order medicines, sync wearables. Always free.",
     gradient: "from-emerald-400 to-teal-600",
     cta: "Get started — free",
-    href: "/auth/register?path=patient",
+    href: "/signup/start?path=patient",
   },
   {
     slug: "doctor",
@@ -30,7 +30,7 @@ const PATHS = [
     body: "Independent practice on OduDoc — telemedicine, AI prescription, earnings. Verification in 24–48h.",
     gradient: "from-violet-500 to-fuchsia-600",
     cta: "Apply as a doctor",
-    href: "/auth/register?path=doctor",
+    href: "/signup/start?path=doctor",
   },
   {
     slug: "corporate",

@@ -55,7 +55,7 @@ export default function CorporateTypePage({ params }: { params: { type: string }
             {t.selfSignup ? (
               <>
                 <Link
-                  href={`/auth/register?path=corporate&type=${t.slug}`}
+                  href={`/signup/start?path=corporate&type=${t.slug}`}
                   className="inline-flex items-center gap-1 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-500 px-6 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-500/40 transition-transform hover:-translate-y-0.5"
                 >
                   Get started →
@@ -117,7 +117,7 @@ export default function CorporateTypePage({ params }: { params: { type: string }
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             {t.selfSignup && (
               <Link
-                href={`/auth/register?path=corporate&type=${t.slug}`}
+                href={`/signup/start?path=corporate&type=${t.slug}`}
                 className="inline-flex items-center gap-1 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/40 transition-transform hover:-translate-y-0.5"
               >
                 Get started →

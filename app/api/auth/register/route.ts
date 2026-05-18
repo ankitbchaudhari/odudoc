@@ -24,6 +24,11 @@ const RegisterSchema = z.object({
    *  immediately on signup so the referee's first-paid-consultation
    *  can later qualify both sides for the $10 + $10 credit. */
   referralCode: z.string().trim().min(4).max(16).optional(),
+  /** Wizard token from /api/auth/signup-otp/verify. When present,
+   *  the email + phone have already been verified out-of-band, so we
+   *  skip the email-verification-link round-trip and create the
+   *  account as already-verified. */
+  signupToken: z.string().trim().min(8).max(128).optional(),
 });
 
 export const runtime = "nodejs";
@@ -47,11 +52,35 @@ export async function POST(request: NextRequest) {
   try {
     const parsed = await parseJson(request, RegisterSchema);
     if (parsed instanceof NextResponse) return parsed;
-    const { name, email, phone, password, country, referralCode } = parsed;
+    const { name, email, phone, password, country, referralCode, signupToken } = parsed;
 
     // Public signup is for patients only. Doctors are onboarded by admin
     // after applying through /for-doctors/register.
     const role = "patient" as const;
+
+    // Wizard contract: if a signupToken is present, it must redeem to
+    // the same email + phone the caller submitted. We don't *require*
+    // the token (the legacy form still works), but if one is supplied
+    // and doesn't match, we reject — that's the only way to skip the
+    // email-verification link safely.
+    let preVerified = false;
+    if (signupToken) {
+      const { redeemSignupToken } = await import("@/lib/signup-otp-store");
+      const claim = redeemSignupToken(signupToken);
+      if (!claim) {
+        return NextResponse.json(
+          { error: "Verification expired. Please request a new code." },
+          { status: 401 },
+        );
+      }
+      if (claim.email !== email.toLowerCase().trim()) {
+        return NextResponse.json(
+          { error: "Verification doesn't match the email submitted." },
+          { status: 401 },
+        );
+      }
+      preVerified = true;
+    }
 
     // Check if user already exists
     const existingUser = findUserByEmail(email);
@@ -159,11 +188,25 @@ export async function POST(request: NextRequest) {
       log.error("register.verification_email_threw", err);
     }
 
+    // Wizard signups already proved email ownership via OTP. Auto-
+    // verify the account so they can sign in immediately — no need to
+    // bounce through the email-link verification flow.
+    if (preVerified) {
+      try {
+        const { markEmailVerified } = await import("@/lib/users-store");
+        markEmailVerified(user.email);
+        await awaitAllFlushesStrict();
+      } catch (err) {
+        log.error("register.preverify_mark_failed", err, { email: user.email });
+      }
+    }
+
     return NextResponse.json(
       {
-        message:
-          "Account created. Check your email for a verification link — it expires in 10 minutes.",
-        verificationRequired: true,
+        message: preVerified
+          ? "Account created. You're verified — sign in to continue."
+          : "Account created. Check your email for a verification link — it expires in 10 minutes.",
+        verificationRequired: !preVerified,
         user: {
           id: user.id,
           name: user.name,

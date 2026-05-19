@@ -39,14 +39,15 @@ const ASSET_LINKS = [
     relation: ["delegate_permission/common.handle_all_urls"],
     target: {
       namespace: "android_app",
-      package_name: "com.saluent.doctor",
+      package_name: "com.odudoc.doctor",
       sha256_cert_fingerprints: [
-        // EAS-managed upload keystore MXgiyiAy6g (default), generated
-        // 2026-05-02 specifically for the com.saluent.doctor package
-        // (EAS keys a keystore by [project, package_name], so the
-        // package rename triggered a fresh keystore rather than reusing
-        // the old com.odudoc.doctor one).
-        "1E:AE:1C:6A:E6:C6:DC:7A:29:5B:70:A6:BE:ED:13:03:42:B1:CD:9D:FA:DF:C1:90:FC:C0:30:54:4F:9F:94:EA",
+        // ⚠️ STALE PLACEHOLDER — this fingerprint was generated for
+        // an old com.saluent.doctor keystore before the brand pivoted
+        // back to OduDoc. After the developer's first EAS build of
+        // the renamed com.odudoc.doctor package, REPLACE this line
+        // with the new fingerprint shown in the EAS build output
+        // (or run: eas credentials → Android → production → keystore).
+        "REPLACE_AFTER_FIRST_EAS_BUILD",
         // TODO: After first Play Store upload, add the Play App Signing
         // fingerprint here too — find it in Play Console → Setup → App
         // integrity → "App signing key certificate" → SHA-256.
@@ -59,9 +60,12 @@ const ASSET_LINKS = [
       namespace: "android_app",
       package_name: "com.odudoc.patient",
       sha256_cert_fingerprints: [
-        // EAS-managed upload keystore zPRVramS3I (default), generated
-        // 2026-05-01 during the patient app's first preview build.
-        "E9:63:FF:A1:E5:29:10:20:D2:D7:B2:2A:B4:32:B8:5A:D5:96:DD:CF:1D:FE:A4:81:47:4F:22:74:6D:4A:90:DA",
+        // ⚠️ STALE PLACEHOLDER — this fingerprint was from an early
+        // preview keystore before the rebuild. Replace with the
+        // production keystore SHA-256 after the developer's first
+        // EAS production build (visible in the build output, or
+        // run: eas credentials → Android → production → keystore).
+        "REPLACE_AFTER_FIRST_EAS_BUILD",
         // TODO: Add Play App Signing fingerprint after first Play Store
         // upload — Play Console → Setup → App integrity → SHA-256.
       ],

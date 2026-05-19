@@ -41,6 +41,86 @@ const sections = [
     ),
   },
   {
+    id: "mobile-apps",
+    icon: "M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z",
+    title: "Mobile applications",
+    content: (
+      <div className="space-y-3">
+        <p>
+          We publish two iOS and Android apps: <strong>OduDoc Patient</strong>{" "}
+          (bundle ID <code>com.odudoc.patient</code>) and{" "}
+          <strong>OduDoc Doctor</strong> (<code>com.odudoc.doctor</code>). Both
+          are operated by Sarjudas Digital Trading and Escrow Services LLC and
+          communicate exclusively with <code>www.odudoc.com</code> servers over
+          HTTPS.
+        </p>
+        <h4 className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
+          Device permissions we request
+        </h4>
+        <ul className="ml-5 list-disc space-y-1 text-sm">
+          <li>
+            <strong>Camera</strong> — for video consultations and uploading
+            photos of prescriptions, lab reports, or wounds. Off by default;
+            you grant access the first time you start a video call or photo
+            upload.
+          </li>
+          <li>
+            <strong>Photo library</strong> — to attach existing reports to a
+            consultation. We never read photos in the background.
+          </li>
+          <li>
+            <strong>Microphone</strong> — for video and voice consultations.
+          </li>
+          <li>
+            <strong>Notifications</strong> — appointment reminders, doctor
+            messages, lab-result alerts. You can disable any category in
+            <em> Settings → Notifications</em>.
+          </li>
+          <li>
+            <strong>HealthKit (iOS) / Health Connect (Android)</strong> —{" "}
+            <em>only if you opt in</em>. Used to import heart rate, sleep,
+            steps, and BP readings for your doctor. Revocable at any time
+            from the OS settings.
+          </li>
+          <li>
+            <strong>Location (Doctor app only)</strong> — when responding to a
+            home-visit request. Not used for tracking.
+          </li>
+        </ul>
+        <h4 className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
+          What we do NOT collect
+        </h4>
+        <ul className="ml-5 list-disc space-y-1 text-sm">
+          <li>Contacts list, SMS, call history, browser history.</li>
+          <li>Advertising identifiers — we do not run ads.</li>
+          <li>Background location — location is foreground-only, request-scoped.</li>
+        </ul>
+        <h4 className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
+          Deleting your account from a mobile app
+        </h4>
+        <p>
+          Open the app → <em>Profile → Delete account</em>. Or use the web
+          page at{" "}
+          <a className="font-semibold text-primary-600 hover:underline" href="/account/delete">
+            odudoc.com/account/delete
+          </a>
+          . Either route immediately tombstones your login. Clinical records
+          may be retained for the period required by healthcare law (typically
+          7 years) in pseudonymised form — see the Data Retention section
+          below.
+        </p>
+        <h4 className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
+          Children and the apps
+        </h4>
+        <p>
+          Neither app is targeted at children under 13. For pediatric care, a
+          parent or guardian must create the account and add the child as a
+          family member.
+        </p>
+      </div>
+    ),
+  },
+  {
     id: "how-use",
     icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z",
     title: "How We Use Your Information",

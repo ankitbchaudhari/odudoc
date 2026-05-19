@@ -1,0 +1,14 @@
+node_modules/
+.expo/
+.expo-shared/
+dist/
+web-build/
+*.jks
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+play-service-account.json
+AuthKey_*.p8
+.DS_Store
+*.log

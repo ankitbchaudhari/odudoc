@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "OduDoc for Doctors",
+    "slug": "odudoc-doctor",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "odudocdoctor",
+    "splash": {
+      "image": "./src/assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#020617"
+    },
+    "ios": {
+      "bundleIdentifier": "com.odudoc.doctor",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Dictate prescriptions and clinical notes.",
+        "NSCameraUsageDescription": "Capture wound images and patient documents.",
+        "NSLocationWhenInUseUsageDescription": "Verify your serving area when you go available for instant consults.",
+        "UIBackgroundModes": ["voip", "audio", "fetch"]
+      }
+    },
+    "android": {
+      "package": "com.odudoc.doctor",
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/adaptive-icon.png",
+        "backgroundColor": "#020617"
+      },
+      "permissions": ["CAMERA", "RECORD_AUDIO", "ACCESS_FINE_LOCATION", "FOREGROUND_SERVICE", "POST_NOTIFICATIONS"]
+    },
+    "plugins": ["expo-secure-store"],
+    "extra": {
+      "eas": {
+        "projectId": "REPLACE_WITH_YOUR_EAS_PROJECT_ID"
+      }
+    }
+  }
+}

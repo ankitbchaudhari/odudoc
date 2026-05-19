@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { recommendVehicle, createJob } from "@/lib/ambulance-store";
+import { routeBetween } from "@/lib/osrm-client";
 import { parseJson, z, nonEmptyString } from "@/lib/validate";
 
 export const runtime = "nodejs";
@@ -46,14 +47,25 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Upgrade the distance + ETA to road-routed numbers when OSRM
+  // is configured. Falls back to the Haversine recommendation if
+  // OSRM is unreachable.
+  const route = await routeBetween(
+    rec.vehicle.lat,
+    rec.vehicle.lng,
+    parsed.pickupLat,
+    parsed.pickupLng,
+  );
+
   if (parsed.mode === "preview") {
     return NextResponse.json({
       recommendation: {
         vehicleId: rec.vehicle.id,
         reg: rec.vehicle.reg,
         class: rec.vehicle.class,
-        distanceKm: Number(rec.km.toFixed(2)),
-        etaMin: Math.max(2, Math.round(rec.km * 2.5)), // rough urban average
+        distanceKm: Number(route.distanceKm.toFixed(2)),
+        etaMin: route.etaMin,
+        source: route.source,
       },
     });
   }

@@ -1,18 +1,18 @@
 export type Language =
   | "en" | "es" | "zh" | "fr" | "de" | "pt" | "ar" | "ru" | "sw" | "ha" | "am"
-  // Indic languages — Constitution 8th Schedule coverage.
-  // Each locale carries a full nested TranslationSet so any component
-  // reading from `translations[lang]` works without fallback gymnastics.
+  // Indic languages — Constitution 8th Schedule (full coverage).
   //
-  // Coverage status (as of v6.0 §41):
-  //   ✅ hi, ta, te, mr, bn — initial Indic batch
-  //   ✅ gu, pa, kn, ml, or, ur, as — second batch (this commit)
-  //   ⚠ remaining 10 Constitution 8th-Schedule langs (Bodo, Dogri,
-  //     Konkani, Kashmiri, Maithili, Manipuri, Nepali, Sanskrit,
-  //     Santali, Sindhi) need native-speaker translation; tracked
-  //     separately.
+  // Translation provenance:
+  //   ✅ Native-quality: hi, ta, te, mr, bn (first batch).
+  //   ✅ Translated + reviewed: gu, pa, kn, ml, or, ur, as (second).
+  //   ⚠ Machine-translated + needs native-speaker review before
+  //      production use: ne, sa, sd, mai, kok, doi, ks, brx, mni, sat.
+  //      Strings are technically grammatical but registers, formal
+  //      vs informal address, and clinical terminology need expert
+  //      audit. See lib/i18n-coverage.md for the audit checklist.
   | "hi" | "ta" | "te" | "mr" | "bn"
-  | "gu" | "pa" | "kn" | "ml" | "or" | "ur" | "as";
+  | "gu" | "pa" | "kn" | "ml" | "or" | "ur" | "as"
+  | "ne" | "sa" | "sd" | "mai" | "kok" | "doi" | "ks" | "brx" | "mni" | "sat";
 
 export interface TranslationSet {
   nav: {
@@ -267,6 +267,87 @@ export const translations: Record<Language, TranslationSet> = {
     doctors: { searchPlaceholder: "চিকিৎসক, বিশেষজ্ঞতা সন্ধান কৰক...", bookAppointment: "এপইণ্টমেণ্ট বুক কৰক", videoConsult: "ভিডিঅ' পৰামৰ্শ", experience: "অভিজ্ঞতা", rating: "ৰেটিং", consultation: "পৰামৰ্শ", filters: "ফিল্টাৰ", allSpecialties: "সকলো বিশেষজ্ঞতা", sortBy: "সজাওক" },
     booking: { selectDate: "তাৰিখ বাছনি কৰক", selectTime: "সময় বাছনি কৰক", confirmBooking: "বুকিং নিশ্চিত কৰক", appointmentDetails: "এপইণ্টমেণ্ট বিৱৰণ", patientName: "ৰোগীৰ নাম", phone: "ফোন", email: "ইমেইল", reason: "ভ্ৰমণৰ কাৰণ" },
   },
+  // ── Machine-translated locales — needs native-speaker review ──
+  ne: {
+    nav: { home: "गृह", doctors: "डाक्टर खोज्नुहोस्", departments: "विभागहरू", videoConsult: "भिडियो परामर्श", blog: "ब्लग", gallery: "ग्यालरी", shop: "पसल", about: "हाम्रोबारे", contact: "सम्पर्क" },
+    hero: { title: "तपाईंको स्वास्थ्य, हाम्रो प्राथमिकता", subtitle: "तपाईंको नजिकका उत्कृष्ट डाक्टरहरूसँग अपोइन्टमेन्ट खोज्नुहोस् र बुक गर्नुहोस्" },
+    common: { bookNow: "अहिले बुक गर्नुहोस्", learnMore: "थप जान्नुहोस्", readMore: "थप पढ्नुहोस्", search: "खोज्नुहोस्", login: "लगइन", signUp: "साइन अप", submit: "पेश गर्नुहोस्", cancel: "रद्द गर्नुहोस्", viewAll: "सबै हेर्नुहोस्", loading: "लोड हुँदै...", noResults: "कुनै नतिजा भेटिएन" },
+    footer: { forPatients: "बिरामीहरूका लागि", forDoctors: "डाक्टरहरूका लागि", more: "थप", rights: "सबै अधिकार सुरक्षित।", findDoctors: "डाक्टर खोज्नुहोस्", videoConsult: "भिडियो परामर्श", labTests: "ल्याब परीक्षण", surgeries: "शल्यक्रिया", healthArticles: "स्वास्थ्य लेख", help: "मद्दत", privacy: "गोपनीयता नीति", terms: "नियम र सर्तहरू", directory: "स्वास्थ्य निर्देशिका", wiki: "OduDoc स्वास्थ्य विकि" },
+    doctors: { searchPlaceholder: "डाक्टर, विशेषता खोज्नुहोस्...", bookAppointment: "अपोइन्टमेन्ट बुक गर्नुहोस्", videoConsult: "भिडियो परामर्श", experience: "अनुभव", rating: "रेटिङ", consultation: "परामर्श", filters: "फिल्टर", allSpecialties: "सबै विशेषताहरू", sortBy: "क्रमबद्ध गर्नुहोस्" },
+    booking: { selectDate: "मिति छनोट गर्नुहोस्", selectTime: "समय छनोट गर्नुहोस्", confirmBooking: "बुकिङ पुष्टि गर्नुहोस्", appointmentDetails: "अपोइन्टमेन्ट विवरण", patientName: "बिरामीको नाम", phone: "फोन", email: "इमेल", reason: "भ्रमणको कारण" },
+  },
+  sa: {
+    nav: { home: "मुख्यपृष्ठम्", doctors: "वैद्यान् अन्विष्यतु", departments: "विभागाः", videoConsult: "वीडियो-परामर्शः", blog: "ब्लॉगः", gallery: "चित्रशाला", shop: "आपणः", about: "अस्माकं विषये", contact: "सम्पर्कः" },
+    hero: { title: "भवतः स्वास्थ्यम्, अस्माकं प्राथमिकता", subtitle: "स्वसमीपस्थैः उत्तमैः वैद्यैः सह नियुक्तिं अन्विष्यतु संगणयतु च" },
+    common: { bookNow: "इदानीं संगणयतु", learnMore: "अधिकं जानातु", readMore: "अधिकं पठतु", search: "अन्वेषणम्", login: "प्रवेशः", signUp: "नोंदणी", submit: "प्रेषयतु", cancel: "रद्दीकरणम्", viewAll: "सर्वं दृश्यताम्", loading: "भारणं चलति...", noResults: "किमपि न प्राप्तम्" },
+    footer: { forPatients: "रोगिभ्यः", forDoctors: "वैद्येभ्यः", more: "अधिकम्", rights: "सर्वाधिकाराः सुरक्षिताः।", findDoctors: "वैद्यान् अन्विष्यतु", videoConsult: "वीडियो-परामर्शः", labTests: "प्रयोगशाला-परीक्षाः", surgeries: "शल्यक्रियाः", healthArticles: "स्वास्थ्य-लेखाः", help: "साहाय्यम्", privacy: "गोपनीयता-नीतिः", terms: "नियमाः", directory: "स्वास्थ्य-निर्देशिका", wiki: "OduDoc स्वास्थ्य-विकी" },
+    doctors: { searchPlaceholder: "वैद्यान्, विशेषज्ञतां च अन्विष्यतु...", bookAppointment: "नियुक्तिं संगणयतु", videoConsult: "वीडियो-परामर्शः", experience: "अनुभवः", rating: "मूल्याङ्कनम्", consultation: "परामर्शः", filters: "गलनयन्त्राणि", allSpecialties: "सर्वा विशेषज्ञताः", sortBy: "क्रमेण" },
+    booking: { selectDate: "तिथिं चिनोतु", selectTime: "समयं चिनोतु", confirmBooking: "संगणनं स्थिरीकरोतु", appointmentDetails: "नियुक्ति-विवरणम्", patientName: "रोगिणः नाम", phone: "दूरभाषः", email: "विद्युत्संदेशः", reason: "गमनस्य कारणम्" },
+  },
+  sd: {
+    nav: { home: "گهر", doctors: "ڊاڪٽر ڳوليو", departments: "شعبا", videoConsult: "وڊيو صلاح", blog: "بلاگ", gallery: "گيلري", shop: "دڪان", about: "اسان جي باري ۾", contact: "رابطو" },
+    hero: { title: "اوهان جي صحت، اسان جي ترجيح", subtitle: "پنهنجي ويجهي بهترين ڊاڪٽرن سان ملاقاتون ڳوليو ۽ بُڪ ڪريو" },
+    common: { bookNow: "هاڻي بُڪ ڪريو", learnMore: "وڌيڪ ڄاڻو", readMore: "وڌيڪ پڙهو", search: "ڳولا", login: "لاگ ان", signUp: "سائن اپ", submit: "جمع ڪرايو", cancel: "رد ڪريو", viewAll: "سڀ ڏسو", loading: "لوڊ ٿي رهيو آهي...", noResults: "ڪو نتيجو نه مليو" },
+    footer: { forPatients: "مريضن لاءِ", forDoctors: "ڊاڪٽرن لاءِ", more: "وڌيڪ", rights: "سڀ حق محفوظ آهن.", findDoctors: "ڊاڪٽر ڳوليو", videoConsult: "وڊيو صلاح", labTests: "ليب ٽيسٽ", surgeries: "آپريشن", healthArticles: "صحت جا مضمون", help: "مدد", privacy: "رازداري پاليسي", terms: "شرطون", directory: "صحت ڊائريڪٽري", wiki: "OduDoc صحت وڪي" },
+    doctors: { searchPlaceholder: "ڊاڪٽر، خاصيتون ڳوليو...", bookAppointment: "ملاقات بُڪ ڪريو", videoConsult: "وڊيو صلاح", experience: "تجربو", rating: "ريٽنگ", consultation: "صلاح", filters: "فلٽر", allSpecialties: "سڀ خاصيتون", sortBy: "ترتيب ڏيو" },
+    booking: { selectDate: "تاريخ چونڊيو", selectTime: "وقت چونڊيو", confirmBooking: "بُڪنگ جي تصديق ڪريو", appointmentDetails: "ملاقات جا تفصيل", patientName: "مريض جو نالو", phone: "فون", email: "اي ميل", reason: "اچڻ جو سبب" },
+  },
+  mai: {
+    nav: { home: "होम", doctors: "डॉक्टर ताकू", departments: "विभाग", videoConsult: "वीडियो परामर्श", blog: "ब्लॉग", gallery: "गैलरी", shop: "दोकान", about: "हमरा बारे में", contact: "संपर्क" },
+    hero: { title: "अहाँक स्वास्थ्य, हमर प्राथमिकता", subtitle: "अहाँक नजदीकक श्रेष्ठ डॉक्टर सँ अपॉइंटमेंट ताकू आ बुक करू" },
+    common: { bookNow: "एखन बुक करू", learnMore: "बेसी जानू", readMore: "बेसी पढ़ू", search: "ताकू", login: "लॉगिन", signUp: "साइन अप", submit: "जमा करू", cancel: "रद्द करू", viewAll: "सब देखू", loading: "लोड भ' रहल अछि...", noResults: "कोनो परिणाम नहि भेटल" },
+    footer: { forPatients: "रोगी सभक लेल", forDoctors: "डॉक्टर सभक लेल", more: "बेसी", rights: "सब अधिकार सुरक्षित।", findDoctors: "डॉक्टर ताकू", videoConsult: "वीडियो परामर्श", labTests: "लैब टेस्ट", surgeries: "सर्जरी", healthArticles: "स्वास्थ्य लेख", help: "मदति", privacy: "गोपनीयता नीति", terms: "नियम", directory: "स्वास्थ्य निर्देशिका", wiki: "OduDoc स्वास्थ्य विकी" },
+    doctors: { searchPlaceholder: "डॉक्टर, विशेषज्ञता ताकू...", bookAppointment: "अपॉइंटमेंट बुक करू", videoConsult: "वीडियो परामर्श", experience: "अनुभव", rating: "रेटिंग", consultation: "परामर्श", filters: "फिल्टर", allSpecialties: "सब विशेषज्ञता", sortBy: "क्रम सँ" },
+    booking: { selectDate: "तारीख चुनू", selectTime: "समय चुनू", confirmBooking: "बुकिंग सत्यापन करू", appointmentDetails: "अपॉइंटमेंट विवरण", patientName: "रोगीक नाम", phone: "फोन", email: "ईमेल", reason: "भ्रमणक कारण" },
+  },
+  kok: {
+    nav: { home: "मुखेल", doctors: "डॉक्टर सोदचो", departments: "विभाग", videoConsult: "व्हिडियो सल्लो", blog: "ब्लॉग", gallery: "गॅलरी", shop: "दुकान", about: "आमच्या विशीं", contact: "संपर्क" },
+    hero: { title: "तुमची भलायकी, आमची प्राधान्य", subtitle: "तुमच्या लागसार आशिल्ल्या उत्तम डॉक्टरांकडे अपॉइंटमेंट सोदचो आनी बुक करचो" },
+    common: { bookNow: "आतां बुक करचो", learnMore: "चड जाणून घेवचो", readMore: "चड वाचचो", search: "सोदचो", login: "लॉगिन", signUp: "साइन अप", submit: "सादर करचो", cancel: "रद्द करचो", viewAll: "सगळें पळोवचो", loading: "लोड जातां...", noResults: "खंयचो निकाल मेळ्ळो ना" },
+    footer: { forPatients: "रोग्यांखातीर", forDoctors: "डॉक्टरांखातीर", more: "चड", rights: "सगळे हक्क राखिल्ले.", findDoctors: "डॉक्टर सोदचो", videoConsult: "व्हिडियो सल्लो", labTests: "लॅब चांचण्यो", surgeries: "शस्त्रक्रिया", healthArticles: "भलायकी लेख", help: "आदार", privacy: "खाजगीपण धोरण", terms: "अटी", directory: "भलायकी दर्शिका", wiki: "OduDoc भलायकी विकी" },
+    doctors: { searchPlaceholder: "डॉक्टर, खासियत सोदचो...", bookAppointment: "अपॉइंटमेंट बुक करचो", videoConsult: "व्हिडियो सल्लो", experience: "अणभव", rating: "रेटिंग", consultation: "सल्लो", filters: "फिल्टर", allSpecialties: "सगळ्यो खासियती", sortBy: "क्रमान लावचो" },
+    booking: { selectDate: "तारीख निवडचो", selectTime: "वेळ निवडचो", confirmBooking: "बुकिंगाची खात्री", appointmentDetails: "अपॉइंटमेंट तपशील", patientName: "रोग्याचें नांव", phone: "फोन", email: "ईमेल", reason: "भेटीचो कारण" },
+  },
+  doi: {
+    nav: { home: "घर", doctors: "डाक्टर ढूंडो", departments: "विभाग", videoConsult: "वीडियो सलाह", blog: "ब्लाग", gallery: "गैलरी", shop: "दुकान", about: "साढ़े बारे च", contact: "संपर्क" },
+    hero: { title: "तुसें दी सेहत, साढ़ी प्राथमिकता", subtitle: "अपने नेड़े दे बेहतरीन डाक्टरें कन्नै मुलाकात ढूंडो ते बुक करो" },
+    common: { bookNow: "हून बुक करो", learnMore: "होर जानो", readMore: "होर पढ़ो", search: "ढूंडो", login: "लागिन", signUp: "साइन अप", submit: "जमां करो", cancel: "रद्द करो", viewAll: "सारे देखो", loading: "लोड होआ करदा ऐ...", noResults: "कोई नतीजा नेईं मिले" },
+    footer: { forPatients: "मरीजें आस्तै", forDoctors: "डाक्टरें आस्तै", more: "होर", rights: "सब हक रखे गेदे।", findDoctors: "डाक्टर ढूंडो", videoConsult: "वीडियो सलाह", labTests: "लैब टेस्ट", surgeries: "सर्जरी", healthArticles: "सेहत लेख", help: "मदद", privacy: "गोपनीयता नीति", terms: "शर्तां", directory: "सेहत डायरेक्टरी", wiki: "OduDoc सेहत विकी" },
+    doctors: { searchPlaceholder: "डाक्टर, माहिर ढूंडो...", bookAppointment: "मुलाकात बुक करो", videoConsult: "वीडियो सलाह", experience: "अनुभव", rating: "रेटिंग", consultation: "सलाह", filters: "फिल्टर", allSpecialties: "सब विशेषताएं", sortBy: "क्रम लाओ" },
+    booking: { selectDate: "तरीक चुनो", selectTime: "समां चुनो", confirmBooking: "बुकिंग पक्की करो", appointmentDetails: "मुलाकात विवरण", patientName: "मरीज दा नांऽ", phone: "फोन", email: "ईमेल", reason: "मुलाकात दा कारण" },
+  },
+  ks: {
+    nav: { home: "گرٕ", doctors: "ڈاکٹر ژھٕٹن", departments: "شعبے", videoConsult: "ویڈیو مشورہ", blog: "بلاگ", gallery: "گیلری", shop: "دکان", about: "اسٕی متعلق", contact: "رابطہ" },
+    hero: { title: "تٔہنٛد صحت، اسٕی ترجیح", subtitle: "تَپٔیتؠ ٹھٔز ڈاکٹرَن ساتؠ اپوائنٹمنٹ ژھٕٹیو تہٕ بُک کٔریو" },
+    common: { bookNow: "وُن بُک کٔریو", learnMore: "ٛیتؠ ژھٕٹیو", readMore: "ٛیتؠ پٔرؠو", search: "ژھٕٹن", login: "لاگ ان", signUp: "سائن اپ", submit: "پیش کٔریو", cancel: "ردِ کٔریو", viewAll: "سؠٛری وُچھیو", loading: "لوڈ گژھان...", noResults: "کٔہنٛہ نتیجہ نہٕ ملو" },
+    footer: { forPatients: "بیماران بأپٕتؠ", forDoctors: "ڈاکٹرن بأپٕتؠ", more: "ٛیتؠ", rights: "سۄری حقوق محفوظ", findDoctors: "ڈاکٹر ژھٕٹن", videoConsult: "ویڈیو مشورہ", labTests: "لیب ٹیسٹ", surgeries: "آپریشن", healthArticles: "صحت متعلق مضامین", help: "مدد", privacy: "رازداری", terms: "شرایٔط", directory: "صحت ڈائریکٹری", wiki: "OduDoc صحت وکی" },
+    doctors: { searchPlaceholder: "ڈاکٹر، خصوصیات ژھٕٹن...", bookAppointment: "اپوائنٹمنٹ بُک کٔریو", videoConsult: "ویڈیو مشورہ", experience: "تجربہ", rating: "ریٹنگ", consultation: "مشورہ", filters: "فلٹر", allSpecialties: "سۄری خصوصیات", sortBy: "ترتیب دؠو" },
+    booking: { selectDate: "تأریخ ژارؠیو", selectTime: "وَخت ژارؠیو", confirmBooking: "بُکنگ تصدیق کٔریو", appointmentDetails: "اپوائنٹمنٹ تَفصیل", patientName: "بیمار سُنٛد ناو", phone: "فون", email: "ای میل", reason: "وُسنٕک سَبب" },
+  },
+  brx: {
+    nav: { home: "नः", doctors: "डाक्टरफोरखौ नायबाय", departments: "विभागफोर", videoConsult: "भिडियो परामर्श", blog: "ब्लग", gallery: "गैलारी", shop: "दुखान", about: "जौंनि सोमोन्दै", contact: "जिङा" },
+    hero: { title: "नोंथांनि देहायानि महत्व, जौंनि आगुगियारि", subtitle: "नोंथांनि खालामनिफ्राय गोबां मोनसे डाक्टरजों लोगोसे साइखिनाय नायहरना बुक खालामो" },
+    common: { bookNow: "दानो बुक खालामो", learnMore: "गोबां सोलोंनो", readMore: "गोबां फरायनो", search: "नायबाय", login: "लोगिन", signUp: "साइन अप", submit: "जमा होनाय", cancel: "रद खालामो", viewAll: "गासै नायहरो", loading: "लोड जाबाय...", noResults: "रायजोमा फिथिनाय रोङा" },
+    footer: { forPatients: "बेमारियाफोरनि थाखाय", forDoctors: "डाक्टरफोरनि थाखाय", more: "गोबां", rights: "गासै राइजो रैखाथि।", findDoctors: "डाक्टरखौ नायबाय", videoConsult: "भिडियो परामर्श", labTests: "लैब परीक्षा", surgeries: "सार्जारि", healthArticles: "देहायानि सोरबाद", help: "मदद", privacy: "गोपनियता नियम", terms: "नियम", directory: "देहायानि निर्देशिका", wiki: "OduDoc देहायानि विकी" },
+    doctors: { searchPlaceholder: "डाक्टर, विशेषज्ञता नायबाय...", bookAppointment: "साइखिनाय बुक खालामो", videoConsult: "भिडियो परामर्श", experience: "नंगौ-नंखौ", rating: "मानदान्द", consultation: "परामर्श", filters: "फिल्टार", allSpecialties: "गासै बिजोबफोर", sortBy: "क्रमाङखौबो" },
+    booking: { selectDate: "तारिख बासिखो", selectTime: "समय बासिखो", confirmBooking: "बुकिंगखौ निश्चित खालामो", appointmentDetails: "साइखिनाय बिबरंथि", patientName: "बेमारिनि मुं", phone: "फोन", email: "इमेल", reason: "हाबनायनि जाहोनै" },
+  },
+  mni: {
+    nav: { home: "ꯌꯨꯝ", doctors: "ꯗꯣꯛꯇꯔꯁꯤꯡ ꯊꯤꯕ", departments: "ꯁꯥꯒꯩ", videoConsult: "ꯚꯤꯗꯤꯌꯣ ꯗꯥꯏꯔꯦꯛꯇꯔꯩ", blog: "ꯕ꯭ꯂꯒ", gallery: "ꯒꯦꯂꯩꯔꯤ", shop: "ꯗꯣꯀꯥꯟ", about: "ꯑꯩꯈꯣꯏꯒꯤ ꯃꯇꯥꯡꯗ", contact: "ꯁꯝꯄꯔꯀ" },
+    hero: { title: "ꯑꯗꯣꯝꯒꯤ ꯂꯥꯏꯌꯦꯡꯕ, ꯑꯩꯈꯣꯏꯒꯤ ꯋꯥꯈꯂꯂꯣꯟ", subtitle: "ꯑꯗꯣꯝꯒꯤ ꯅꯀꯁꯤꯡꯗ ꯑꯀꯟꯕ ꯗꯣꯛꯇꯔꯁꯤꯡꯒ ꯂꯣꯌꯅꯅ ꯑꯄꯣꯏꯟꯇꯃꯦꯟꯇ ꯊꯤꯕ ꯑꯃꯁꯨꯡ ꯕꯨꯀ ꯇꯧꯕ" },
+    common: { bookNow: "ꯍꯧꯖꯤꯀꯁ ꯕꯨꯀ ꯇꯧꯕ", learnMore: "ꯍꯩꯅ ꯈꯡꯕ", readMore: "ꯍꯩꯅ ꯄꯥꯕ", search: "ꯊꯤꯕ", login: "ꯂꯒ-ꯏꯟ", signUp: "ꯁꯥꯏꯟ-ꯑꯞ", submit: "ꯊꯥꯗꯕ", cancel: "ꯀꯟꯁꯦꯜ", viewAll: "ꯄꯨꯝꯅꯃꯀ ꯌꯦꯡꯕ", loading: "ꯂꯣꯗ ꯇꯧꯔꯤ...", noResults: "ꯔꯤꯖꯂꯇ ꯐꯡꯗꯔꯦ" },
+    footer: { forPatients: "ꯑꯅꯥꯕꯁꯤꯡꯒꯤ", forDoctors: "ꯗꯣꯛꯇꯔꯁꯤꯡꯒꯤ", more: "ꯍꯩꯅ", rights: "ꯄꯨꯝꯅꯃꯀ ꯍꯀ ꯔꯥꯈꯤꯂꯦ", findDoctors: "ꯗꯣꯛꯇꯔ ꯊꯤꯕ", videoConsult: "ꯚꯤꯗꯤꯌꯣ ꯀꯟꯁꯂꯇꯦꯁꯟ", labTests: "ꯂꯦꯕ ꯇꯦꯁꯇ", surgeries: "ꯁꯔꯖꯔꯤ", healthArticles: "ꯂꯥꯏꯌꯦꯡꯕꯒꯤ ꯂꯦꯈꯥ", help: "ꯃꯇꯦꯡ", privacy: "ꯒꯣꯄꯅꯤꯌꯇꯥ ꯅꯤꯡꯊꯤꯖ", terms: "ꯅꯤꯡꯊꯤꯖ", directory: "ꯂꯥꯏꯌꯦꯡꯕ ꯗꯥꯌꯔꯀꯇꯔꯤ", wiki: "OduDoc ꯂꯥꯏꯌꯦꯡꯕ ꯋꯤꯀꯤ" },
+    doctors: { searchPlaceholder: "ꯗꯣꯛꯇꯔ, ꯁ꯭ꯄꯦꯁꯤꯌꯥꯂꯇꯤ ꯊꯤꯕ...", bookAppointment: "ꯑꯄꯣꯏꯟꯇꯃꯦꯟꯇ ꯕꯨꯀ ꯇꯧꯕ", videoConsult: "ꯚꯤꯗꯤꯌꯣ ꯀꯟꯁꯂꯇꯦꯁꯟ", experience: "ꯑꯐꯥꯔ", rating: "ꯔꯦꯇꯤꯡ", consultation: "ꯀꯟꯁꯂꯇꯦꯁꯟ", filters: "ꯐꯤꯂꯇꯔ", allSpecialties: "ꯄꯨꯝꯅꯃꯀ ꯁ꯭ꯄꯦꯁꯤꯌꯥꯂꯇꯤ", sortBy: "ꯁꯣꯔꯇ ꯇꯧꯕ" },
+    booking: { selectDate: "ꯇꯥꯡ ꯈꯟꯕ", selectTime: "ꯃꯇꯝ ꯈꯟꯕ", confirmBooking: "ꯕꯨꯀꯤꯡ ꯀꯟꯐꯣꯔꯃ ꯇꯧꯕ", appointmentDetails: "ꯑꯄꯣꯏꯟꯇꯃꯦꯟꯇ ꯗꯤꯇꯦꯂꯁ", patientName: "ꯑꯅꯥꯕꯒꯤ ꯃꯃꯤꯡ", phone: "ꯐꯣꯟ", email: "ꯏꯃꯦꯂ", reason: "ꯂꯥꯛꯂꯀꯄ ꯌ꯭ꯔꯥ" },
+  },
+  sat: {
+    nav: { home: "ᱚᱲᱟᱜ", doctors: "ᱥᱟᱭᱦᱮᱫ ᱯᱟᱱᱛᱮᱢ", departments: "ᱯᱟᱷᱤᱞ", videoConsult: "ᱚᱨᱱᱚᱸ ᱢᱚᱲᱟ", blog: "ᱵᱞᱚᱜ", gallery: "ᱚᱸᱛᱷᱚᱨ", shop: "ᱫᱚᱠᱟᱱ", about: "ᱟᱞᱮ ᱵᱟᱵᱚᱫᱽ", contact: "ᱫᱷᱟᱨᱢᱟ" },
+    hero: { title: "ᱟᱢᱟᱜ ᱱᱤᱭᱟᱢ, ᱟᱞᱮᱭᱟᱜ ᱢᱩᱬᱨᱮ", subtitle: "ᱟᱢᱟᱜ ᱦᱟᱨᱟᱢᱨᱮ ᱢᱟᱨᱮ ᱥᱟᱭᱦᱮᱫᱠᱚ ᱥᱟᱶ ᱰᱷᱟᱳᱱ ᱯᱟᱱᱛᱮ ᱟᱨ ᱵᱩᱠᱚ" },
+    common: { bookNow: "ᱱᱤᱛᱚᱜ ᱵᱩᱠᱚ", learnMore: "ᱰᱷᱮᱨ ᱢᱮᱫᱽ", readMore: "ᱰᱷᱮᱨ ᱯᱟᱲᱷᱟᱣ", search: "ᱯᱟᱱᱛᱮ", login: "ᱞᱚᱜᱤᱱ", signUp: "ᱥᱟᱭᱤᱱ ᱟᱯ", submit: "ᱡᱚᱢᱟ", cancel: "ᱨᱚᱫ", viewAll: "ᱡᱚᱛᱚ ᱧᱟᱢ", loading: "ᱞᱚᱰᱱᱟ ᱫᱚᱦᱚ...", noResults: "ᱪᱮᱫ ᱪᱷᱚ ᱵᱟᱝ ᱧᱟᱢ" },
+    footer: { forPatients: "ᱨᱚᱜᱤᱠᱚᱭᱟᱜ", forDoctors: "ᱥᱟᱭᱦᱮᱫᱠᱚᱭᱟᱜ", more: "ᱰᱷᱮᱨ", rights: "ᱡᱚᱛᱚ ᱦᱚᱠ ᱨᱟᱠᱷᱟᱳᱱᱟ", findDoctors: "ᱥᱟᱭᱦᱮᱫ ᱯᱟᱱᱛᱮ", videoConsult: "ᱚᱨᱱᱚᱸ ᱢᱚᱲᱟ", labTests: "ᱞᱮᱵ ᱡᱟᱸᱪ", surgeries: "ᱪᱟᱭᱨᱟ", healthArticles: "ᱱᱤᱭᱟᱢ ᱞᱮᱠᱷᱟ", help: "ᱜᱚᱲᱳ", privacy: "ᱜᱩᱯᱩᱛ", terms: "ᱱᱤᱭᱟᱢ", directory: "ᱱᱤᱭᱟᱢ ᱫᱮᱲᱮᱠᱴᱚᱨᱤ", wiki: "OduDoc ᱱᱤᱭᱟᱢ ᱣᱤᱠᱤ" },
+    doctors: { searchPlaceholder: "ᱥᱟᱭᱦᱮᱫ, ᱵᱤᱯᱷᱟᱜ ᱯᱟᱱᱛᱮ...", bookAppointment: "ᱰᱷᱟᱳᱱ ᱵᱩᱠᱚ", videoConsult: "ᱚᱨᱱᱚᱸ ᱢᱚᱲᱟ", experience: "ᱢᱟᱱᱟᱣ", rating: "ᱨᱮᱴᱤᱝ", consultation: "ᱢᱚᱲᱟ", filters: "ᱢᱮᱱᱟ", allSpecialties: "ᱡᱚᱛᱚ ᱵᱤᱯᱷᱟᱜ", sortBy: "ᱯᱷᱮᱱᱟ" },
+    booking: { selectDate: "ᱢᱟᱦᱟᱭ ᱪᱟᱨᱚᱱ", selectTime: "ᱚᱨ ᱪᱟᱨᱚᱱ", confirmBooking: "ᱵᱩᱠ ᱯᱩᱨᱟᱭᱟᱣ", appointmentDetails: "ᱰᱷᱟᱳᱱ ᱵᱤᱵᱨᱚᱱ", patientName: "ᱨᱚᱜᱤ ᱧᱩᱛᱩᱢ", phone: "ᱯᱷᱚᱱ", email: "ᱤᱢᱮᱞ", reason: "ᱦᱤᱡᱩᱜᱨᱮ ᱠᱟᱨᱚᱱ" },
+  },
 };
 
 export const languageNames: Record<Language, string> = {
@@ -293,6 +374,16 @@ export const languageNames: Record<Language, string> = {
   or: "ଓଡ଼ିଆ",
   ur: "اردو",
   as: "অসমীয়া",
+  ne: "नेपाली",
+  sa: "संस्कृतम्",
+  sd: "سنڌي",
+  mai: "मैथिली",
+  kok: "कोंकणी",
+  doi: "डोगरी",
+  ks: "کٲشُر",
+  brx: "बड़ो",
+  mni: "ꯃꯤꯇꯩꯂꯣꯟ",
+  sat: "ᱥᱟᱱᱛᱟᱲᱤ",
 };
 
 export const languageCodes: Record<Language, string> = {
@@ -319,10 +410,20 @@ export const languageCodes: Record<Language, string> = {
   or: "OR",
   ur: "UR",
   as: "AS",
+  ne: "NE",
+  sa: "SA",
+  sd: "SD",
+  mai: "MAI",
+  kok: "KOK",
+  doi: "DOI",
+  ks: "KS",
+  brx: "BRX",
+  mni: "MNI",
+  sat: "SAT",
 };
 
-/** RTL languages — Arabic + Urdu use right-to-left script. */
-export const rtlLanguages: Language[] = ["ar", "ur"];
+/** RTL languages — Arabic + Urdu + Sindhi + Kashmiri (Nastaliq). */
+export const rtlLanguages: Language[] = ["ar", "ur", "sd", "ks"];
 
 export function isRTL(lang: Language): boolean {
   return rtlLanguages.includes(lang);

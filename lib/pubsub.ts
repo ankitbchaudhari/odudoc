@@ -75,8 +75,12 @@ function createInMemory(): PubSubAdapter {
 // can't be used for other commands).
 async function createRedis(url: string): Promise<PubSubAdapter | null> {
   try {
+    // webpackIgnore tells the bundler not to statically resolve this
+    // import — ioredis is an optional peer dep that's only present at
+    // runtime when REDIS_URL is set. Without the comment, `next build`
+    // fails with "Module not found: Can't resolve 'ioredis'".
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const ioredis = await import("ioredis" as any).catch(() => null);
+    const ioredis = await import(/* webpackIgnore: true */ "ioredis" as any).catch(() => null);
     if (!ioredis) return null;
     const Redis = ioredis.default || ioredis.Redis || ioredis;
     const pub = new Redis(url);

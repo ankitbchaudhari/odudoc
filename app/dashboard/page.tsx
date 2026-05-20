@@ -145,6 +145,7 @@ export default function DashboardPage() {
     { label: "Order Meds", href: "/dashboard/rx-fulfillment", icon: "💊", grad: "from-rose-400 to-pink-600" },
     { label: "Book Labs", href: "/dashboard/labs", icon: "🧪", grad: "from-teal-400 to-emerald-600" },
     { label: "Wallet", href: "/dashboard/wallet", icon: "💰", grad: "from-indigo-400 to-purple-600" },
+    { label: "Financial account", href: "/dashboard/finance", icon: "📊", grad: "from-[#0F6E56] to-[#1D9E75]" },
     { label: "Wearables", href: "/dashboard/wearables", icon: "⌚", grad: "from-cyan-400 to-sky-600" },
     { label: "Import Rx", href: "/dashboard/rx-import", icon: "📷", grad: "from-orange-400 to-amber-600" },
     { label: "ABHA / ABDM", href: "/dashboard/abha", icon: "🇮🇳", grad: "from-yellow-400 to-orange-600" },

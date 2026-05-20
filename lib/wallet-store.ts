@@ -28,6 +28,7 @@
 
 import { bindPersistentArray, awaitAllFlushes } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
+import { recordEvent } from "@/lib/accountability-store";
 
 export type EntityKind =
   | "patient" | "doctor" | "hospital" | "pharmacy" | "lab"
@@ -258,6 +259,25 @@ export async function transfer(input: TransferInput): Promise<WalletTx> {
   walletsHandle.flush();
   txnsHandle.flush();
   await awaitAllFlushes().catch((e) => log.warn("wallet flush warn", e));
+
+  // V13 accountability: every value movement is an auditable event.
+  // Best-effort — wallet correctness must not depend on the audit log
+  // succeeding. The auto-detector inside recordEvent flags suspicious
+  // patterns (e.g. negative-balance attempt) automatically.
+  try {
+    await recordEvent({
+      category: "financial",
+      action: `wallet.transfer.${input.kind}`,
+      actorEmail: input.actorEmail || "system",
+      actorRole: input.actorRole,
+      subjectKind: "wallet",
+      subjectId: input.toWalletId || input.fromWalletId || "",
+      summary: `${input.kind} · ${(input.amountCents / 100).toFixed(2)} ${currency}` + (input.note ? ` · ${input.note}` : ""),
+      after: { txId: tx.id, amountCents: input.amountCents, currency },
+    });
+  } catch (e) {
+    log.warn("wallet accountability log warn", e);
+  }
 
   return tx;
 }

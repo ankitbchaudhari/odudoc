@@ -120,3 +120,21 @@ export async function fetchMyPrescriptions(): Promise<PrescriptionRecord[]> {
   const r = await api<{ prescriptions: PrescriptionRecord[] }>("/api/prescriptions");
   return (r.data as { prescriptions?: PrescriptionRecord[] }).prescriptions || [];
 }
+
+// Account deletion — required by Apple rule 5.1.1(v) and Google Play
+// User Data policy. The Profile screens of both apps call this. Password
+// is re-asked at the UI layer so a stolen device can't nuke the account
+// from the lock screen.
+export interface DeleteAccountResp {
+  ok?: boolean;
+  message?: string;
+  error?: string;
+}
+
+export async function deleteAccount(password: string): Promise<DeleteAccountResp> {
+  const r = await api<DeleteAccountResp>("/api/account/delete", {
+    method: "POST",
+    body: { password, confirm: "DELETE" },
+  });
+  return r.data as DeleteAccountResp;
+}

@@ -13,6 +13,12 @@ import { listSubscribers } from "./subscribers-store";
 import { sendEmail } from "./email";
 import { sql, ensureSchema } from "./db";
 import { log } from "./log";
+import {
+  BRAND_COLORS,
+  emailHeaderHtml,
+  emailFooterHtml,
+  emailCtaButton,
+} from "./email-brand";
 
 const SITE_URL = process.env.NEXTAUTH_URL?.trim().replace(/\/$/, "") || "https://www.odudoc.com";
 
@@ -65,28 +71,32 @@ function postEmailHtml(post: NotifiablePost): string {
   const cover = post.imageUrl
     ? `<img src="${escape(post.imageUrl)}" alt="" style="width:100%;height:auto;display:block;border-radius:10px;margin:0 0 16px 0;" />`
     : "";
+  // Header + footer come from lib/email-brand so the blog newsletter
+  // looks identical to consultation / verification / referral emails —
+  // emerald-to-teal gradient + white cross icon + OduDoc wordmark.
+  // Migrated off the bespoke blue-600 (#2563eb) header so the brand
+  // doesn't shift between message types.
   return `<!doctype html>
-<html><body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827;">
+<html><body style="margin:0;padding:0;background:${BRAND_COLORS.page};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:${BRAND_COLORS.ink};">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px;">
     <tr><td align="center">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden;">
-        <tr><td style="background:#2563eb;padding:18px 24px;color:#ffffff;font-weight:700;font-size:18px;">OduDoc</td></tr>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:${BRAND_COLORS.card};border-radius:12px;overflow:hidden;">
+        ${emailHeaderHtml()}
         <tr><td style="padding:28px 28px 8px 28px;">
-          <p style="margin:0 0 6px 0;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#6b7280;">New on the OduDoc blog &middot; ${escape(post.category)}</p>
+          <p style="margin:0 0 6px 0;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:${BRAND_COLORS.footerInk};">New on the OduDoc blog &middot; ${escape(post.category)}</p>
           <h1 style="margin:0 0 12px 0;font-size:22px;line-height:1.3;">${escape(post.title)}</h1>
           ${cover}
-          <p style="margin:0 0 18px 0;color:#374151;font-size:15px;line-height:1.6;">${escape(post.excerpt)}</p>
-          <p style="margin:0 0 18px 0;">
-            <a href="${escape(url)}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:11px 20px;border-radius:8px;font-weight:600;font-size:14px;">Read the full post</a>
-          </p>
-          <p style="margin:18px 0 0 0;font-size:13px;color:#6b7280;">By ${escape(post.author)} &middot; <a href="${escape(url)}" style="color:#2563eb;text-decoration:none;">${escape(url)}</a></p>
+          <p style="margin:0 0 18px 0;color:${BRAND_COLORS.inkMuted};font-size:15px;line-height:1.6;">${escape(post.excerpt)}</p>
+          <p style="margin:0 0 18px 0;">${emailCtaButton("Read the full post", url)}</p>
+          <p style="margin:18px 0 0 0;font-size:13px;color:${BRAND_COLORS.footerInk};">By ${escape(post.author)} &middot; <a href="${escape(url)}" style="color:${BRAND_COLORS.teal};text-decoration:none;">${escape(url)}</a></p>
         </td></tr>
-        <tr><td style="padding:18px 28px 24px 28px;border-top:1px solid #f3f4f6;">
+        <tr><td style="padding:18px 28px 24px 28px;border-top:1px solid ${BRAND_COLORS.border};">
           <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.5;">
             You're receiving this because you signed up for OduDoc.
             <a href="${escape(unsubUrl)}" style="color:#9ca3af;">Unsubscribe</a>
           </p>
         </td></tr>
+        ${emailFooterHtml()}
       </table>
     </td></tr>
   </table>

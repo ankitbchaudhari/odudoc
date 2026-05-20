@@ -6,6 +6,12 @@
 
 import { sendEmail } from "./email";
 import type { Consultation } from "./consultations-store";
+import {
+  BRAND_COLORS,
+  emailHeaderHtml,
+  emailFooterHtml,
+  emailCtaButton,
+} from "./email-brand";
 
 const SITE_URL = "https://www.odudoc.com";
 
@@ -16,20 +22,23 @@ function escape(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+// Shared shell — emerald-to-teal brand header + cross-icon mark, body
+// card, gray footer. Migrated off the bespoke cyan-700 (#0E7490) shell
+// so consultation emails match the rest of the brand. See lib/email-brand.ts.
 function shell(heading: string, innerHtml: string, ctaLabel?: string, ctaUrl?: string): string {
   const cta = ctaLabel && ctaUrl
-    ? `<p style="margin:24px 0 0 0;"><a href="${ctaUrl}" style="display:inline-block;background:#0E7490;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px;">${escape(ctaLabel)}</a></p>`
+    ? `<p style="margin:24px 0 0 0;">${emailCtaButton(escape(ctaLabel), ctaUrl)}</p>`
     : "";
-  return `<!doctype html><html><body style="margin:0;padding:32px 16px;background:#f3f4f6;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111827;">
+  return `<!doctype html><html><body style="margin:0;padding:32px 16px;background:${BRAND_COLORS.page};font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:${BRAND_COLORS.ink};">
   <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-    <table width="100%" style="max-width:560px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05);" cellpadding="0" cellspacing="0">
-      <tr><td style="background:#0E7490;padding:18px 24px;"><a href="${SITE_URL}" style="color:#fff;text-decoration:none;font-weight:700;font-size:18px;">OduDoc</a></td></tr>
+    <table width="100%" style="max-width:560px;background:${BRAND_COLORS.card};border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05);" cellpadding="0" cellspacing="0">
+      ${emailHeaderHtml()}
       <tr><td style="padding:28px;">
-        <h1 style="margin:0 0 16px 0;font-size:20px;color:#111827;">${escape(heading)}</h1>
-        <div style="font-size:15px;line-height:1.6;color:#374151;">${innerHtml}</div>
+        <h1 style="margin:0 0 16px 0;font-size:20px;color:${BRAND_COLORS.ink};">${escape(heading)}</h1>
+        <div style="font-size:15px;line-height:1.6;color:${BRAND_COLORS.inkMuted};">${innerHtml}</div>
         ${cta}
       </td></tr>
-      <tr><td style="background:#f9fafb;padding:16px 28px;font-size:12px;color:#6b7280;">OduDoc — Your health, our priority.</td></tr>
+      ${emailFooterHtml()}
     </table>
   </td></tr></table></body></html>`;
 }

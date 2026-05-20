@@ -13,6 +13,13 @@
 // internal fetch intermittently fails on Vercel with "Unable to fetch data.
 // The request could not be resolved." A plain fetch against the public REST
 // endpoint works reliably from Vercel functions.
+import {
+  BRAND_COLORS,
+  emailHeaderHtml,
+  emailFooterHtml,
+  emailCtaButton,
+} from "./email-brand";
+
 const API_KEY = process.env.RESEND_API_KEY?.trim();
 
 const DOMAIN = "odudoc.com";
@@ -169,6 +176,10 @@ interface ShellOptions {
   footerNote?: string;
 }
 
+// Migrated off bespoke blue-600 (#2563eb) header and CTA so every
+// OduDoc email shares the same emerald-to-teal brand identity. The
+// header + footer markup lives in lib/email-brand.ts so changing the
+// brand once changes every email at the same time.
 function renderShell(opts: ShellOptions): string {
   const preheader = opts.preheader
     ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(opts.preheader)}</div>`
@@ -179,41 +190,35 @@ function renderShell(opts: ShellOptions): string {
       ? `
         <tr>
           <td style="padding:24px 0 8px 0;">
-            <a href="${opts.ctaUrl}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:14px;">
-              ${escapeHtml(opts.ctaLabel)}
-            </a>
+            ${emailCtaButton(escapeHtml(opts.ctaLabel), opts.ctaUrl)}
           </td>
         </tr>`
       : "";
 
   const footerNote = opts.footerNote
-    ? `<p style="margin:16px 0 0 0;font-size:12px;color:#6b7280;">${opts.footerNote}</p>`
+    ? `<p style="margin:16px 0 0 0;font-size:12px;color:${BRAND_COLORS.footerInk};">${opts.footerNote}</p>`
     : "";
 
   return `<!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(opts.heading)}</title></head>
-<body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827;">
+<body style="margin:0;padding:0;background:${BRAND_COLORS.page};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:${BRAND_COLORS.ink};">
 ${preheader}
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND_COLORS.page};padding:32px 16px;">
   <tr><td align="center">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-      <tr>
-        <td style="background:#2563eb;padding:20px 24px;">
-          <a href="${SITE_URL}" style="color:#ffffff;text-decoration:none;font-weight:700;font-size:18px;letter-spacing:-0.01em;">${BRAND}</a>
-        </td>
-      </tr>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:${BRAND_COLORS.card};border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+      ${emailHeaderHtml()}
       <tr>
         <td style="padding:28px 28px 24px 28px;">
-          <h1 style="margin:0 0 16px 0;font-size:20px;font-weight:700;color:#111827;">${escapeHtml(opts.heading)}</h1>
-          <div style="font-size:15px;line-height:1.6;color:#374151;">${opts.bodyHtml}</div>
+          <h1 style="margin:0 0 16px 0;font-size:20px;font-weight:700;color:${BRAND_COLORS.ink};">${escapeHtml(opts.heading)}</h1>
+          <div style="font-size:15px;line-height:1.6;color:${BRAND_COLORS.inkMuted};">${opts.bodyHtml}</div>
           <table role="presentation" cellpadding="0" cellspacing="0">${cta}</table>
           ${footerNote}
         </td>
       </tr>
+      ${emailFooterHtml()}
       <tr>
-        <td style="padding:16px 28px;background:#f9fafb;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;">
-          <p style="margin:0;">© ${new Date().getFullYear()} ${BRAND}. Trusted online healthcare.</p>
-          <p style="margin:4px 0 0 0;"><a href="${SITE_URL}" style="color:#2563eb;text-decoration:none;">${SITE_URL.replace("https://", "")}</a></p>
+        <td style="padding:12px 28px;background:${BRAND_COLORS.footerBg};border-top:1px solid ${BRAND_COLORS.border};font-size:11px;color:${BRAND_COLORS.footerInk};">
+          <p style="margin:0;">© ${new Date().getFullYear()} ${BRAND}. <a href="${SITE_URL}" style="color:${BRAND_COLORS.teal};text-decoration:none;">${SITE_URL.replace("https://", "")}</a></p>
         </td>
       </tr>
     </table>

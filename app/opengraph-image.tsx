@@ -3,6 +3,12 @@
 // opengraph-image.tsx to override.
 //
 // Returns a 1200×630 PNG at request time. No static asset needed.
+//
+// Brand alignment: this used to render a plain "O" letter on a sky-blue /
+// indigo / violet gradient — none of which matched the canonical OduDoc
+// brand. Now uses the emerald → teal gradient from components/Logo.tsx
+// and renders the actual medical-cross icon, so the share-card visual
+// matches every other OduDoc surface.
 
 import { ImageResponse } from "next/og";
 
@@ -23,8 +29,10 @@ export default function OgImage() {
           alignItems: "flex-start",
           justifyContent: "center",
           padding: "80px",
+          // Canonical OduDoc gradient — matches components/Logo.tsx,
+          // public/images/logo.svg, and the dashboard hero glow.
           background:
-            "linear-gradient(135deg, #0ea5e9 0%, #6366f1 55%, #8b5cf6 100%)",
+            "linear-gradient(135deg, #22C98A 0%, #0EA5A0 50%, #0F3570 100%)",
           color: "white",
           fontFamily: "system-ui, sans-serif",
         }}
@@ -37,22 +45,44 @@ export default function OgImage() {
             marginBottom: "40px",
           }}
         >
+          {/* Brand mark — rounded white-tint square containing the
+              white medical cross. Same proportions as the canonical
+              Logo (12:40 cross over a 64-unit square, scaled up). */}
           <div
             style={{
-              width: "72px",
-              height: "72px",
-              borderRadius: "18px",
-              background: "rgba(255,255,255,0.15)",
+              position: "relative",
+              width: "84px",
+              height: "84px",
+              borderRadius: "20px",
+              background: "rgba(255,255,255,0.18)",
+              border: "2px solid rgba(255,255,255,0.35)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "40px",
-              fontWeight: 700,
             }}
           >
-            O
+            {/* Vertical bar of the cross */}
+            <div
+              style={{
+                position: "absolute",
+                width: "18px",
+                height: "52px",
+                background: "#ffffff",
+                borderRadius: "5px",
+              }}
+            />
+            {/* Horizontal bar of the cross */}
+            <div
+              style={{
+                position: "absolute",
+                width: "52px",
+                height: "18px",
+                background: "#ffffff",
+                borderRadius: "5px",
+              }}
+            />
           </div>
-          <div style={{ fontSize: "40px", fontWeight: 700, letterSpacing: "-0.02em" }}>
+          <div style={{ fontSize: "44px", fontWeight: 800, letterSpacing: "-0.03em" }}>
             OduDoc
           </div>
         </div>

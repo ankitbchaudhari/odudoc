@@ -29,21 +29,23 @@ const SITE_URL =
 
 export const BRAND = "OduDoc";
 
+// V4 §1.2 brand palette. Email header is a SOLID teal (V4 §1.4 says
+// "White on Teal" — no gradient on email headers). We keep the named
+// emerald / teal keys for backwards-compatible imports, but both
+// resolve to the V4 primaryTeal.
 export const BRAND_COLORS = {
-  // Canonical brand gradient — must match components/Logo.tsx and the
-  // CSS gradient in public/images/logo.svg.
-  emerald: "#22C98A",
-  teal: "#0EA5A0",
-  // Single solid fallback for clients that strip CSS gradients (most
-  // Outlook builds, older Yahoo). Splits the difference visually.
-  headerSolid: "#13B193",
-  ctaSolid: "#10B981",     // Tailwind emerald-500 — the CTA button
-  ctaHover: "#059669",     // emerald-600
+  emerald: "#0F6E56",      // V4 primaryTeal — kept name for back-compat
+  teal: "#0F6E56",
+  headerSolid: "#0F6E56",  // Email header bar
+  navy: "#042C53",         // V4 secondaryNavy — secondary headings
+  accentGreen: "#1D9E75",  // V4 success indicator
+  ctaSolid: "#0F6E56",     // CTA button — same teal for consistency
+  ctaHover: "#0A5942",     // 10% darker for hover (clients ignore but documented)
   // Neutral support palette used by surface chrome.
-  page: "#F3F4F6",         // gray-100
+  page: "#F5F5F5",         // V4 background light
   card: "#FFFFFF",
   ink: "#111827",          // gray-900 — primary text
-  inkMuted: "#374151",     // gray-700 — body text
+  inkMuted: "#444444",     // V4 neutralGrey — body text
   border: "#E5E7EB",       // gray-200
   footerInk: "#6B7280",    // gray-500 — disclaimer text
   footerBg: "#F9FAFB",     // gray-50
@@ -77,8 +79,11 @@ function logoMark(): string {
  * background-color so it falls back to the solid teal.
  */
 export function emailHeaderHtml(): string {
+  // V4 §1.4: email header is "White on Teal" — solid #0F6E56, no
+  // gradient. Outlook + most older Yahoo strip gradients anyway, so
+  // solid is the only choice that renders identically everywhere.
   return `
-<tr><td style="background:linear-gradient(135deg,${BRAND_COLORS.emerald} 0%,${BRAND_COLORS.teal} 100%);background-color:${BRAND_COLORS.headerSolid};padding:18px 24px;">
+<tr><td style="background-color:${BRAND_COLORS.headerSolid};padding:18px 24px;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0">
     <tr>
       <td valign="middle" style="padding-right:12px;">

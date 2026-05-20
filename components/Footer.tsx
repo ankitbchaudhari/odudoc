@@ -170,7 +170,7 @@ export default function Footer() {
                 background so we force the "dark" variant (white
                 wordmark) — auto-mode would pick light because the
                 document root may still be in light mode. */}
-            <Logo size="md" variant="dark" />
+            <Logo size="md" variant="reverse" />
             <p className="mt-4 max-w-xs text-sm text-gray-400">
               The worldwide healthcare operating system. One patient record across
               doctors, hospitals, labs, pharmacies, and insurance.

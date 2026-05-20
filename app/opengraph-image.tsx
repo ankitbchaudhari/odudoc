@@ -29,10 +29,12 @@ export default function OgImage() {
           alignItems: "flex-start",
           justifyContent: "center",
           padding: "80px",
-          // Canonical OduDoc gradient — matches components/Logo.tsx,
-          // public/images/logo.svg, and the dashboard hero glow.
+          // V4 §1.2 palette — primary teal to secondary navy. Solid
+          // anchor points; the gradient stays purely as a background
+          // accent and the brand wordmark + cross are crisp solids on
+          // top per V4 §1.3 (no recolouring outside the variants).
           background:
-            "linear-gradient(135deg, #22C98A 0%, #0EA5A0 50%, #0F3570 100%)",
+            "linear-gradient(135deg, #0F6E56 0%, #042C53 100%)",
           color: "white",
           fontFamily: "system-ui, sans-serif",
         }}
@@ -107,6 +109,18 @@ export default function OgImage() {
           }}
         >
           Verified specialists. Secure video visits. One platform for patients, clinics, and hospitals.
+        </div>
+        {/* V4 tagline — "Every Patient. Every Provider. Everywhere." */}
+        <div
+          style={{
+            marginTop: "28px",
+            fontSize: "22px",
+            opacity: 0.85,
+            fontWeight: 600,
+            letterSpacing: "0.02em",
+          }}
+        >
+          Every Patient. Every Provider. Everywhere.
         </div>
         <div
           style={{

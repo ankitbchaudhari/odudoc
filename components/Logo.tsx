@@ -2,21 +2,27 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { BRAND, COLORS, LOGO_MIN_SIZE_PX } from "@/lib/brand";
+
+// V4 §1.1 — five logo variants, used per surface:
+//   primary    : teal on white/light bg (panel headers, login, PDFs)
+//   reverse    : white on teal bg (email headers, splash, dark hero)
+//   monochrome : dark navy on a coloured (non-white) light bg
+//   icon       : icon-only at favicon / app-icon sizes
+//   tagline    : primary + tagline (login screens, marketing only)
+//
+// V4 §1.3 — minimum size 120px on screen. We expose four named sizes
+// and refuse to render below the floor by clamping `w` server-side.
 
 interface LogoProps {
-  /** "sm" = navbar, "md" = footer/cards, "lg" = login/hero, "xl" = splash */
   size?: "sm" | "md" | "lg" | "xl";
+  variant?: "primary" | "reverse" | "monochrome" | "icon" | "tagline";
   link?: boolean;
   className?: string;
-  /** Force a specific wordmark color regardless of theme. Useful inside
-   *  fixed dark surfaces (e.g. always-dark hero) where the auto-swap is
-   *  wrong. */
-  variant?: "auto" | "light" | "dark";
 }
 
-// Each size sets BOTH width and height in pixels so the SVG can't render
-// at 0×0. The viewBox aspect ratio is 338:64 (~5.28:1), so width is
-// height × 5.28 rounded.
+// Each size sets BOTH width and height — viewBox aspect is 338:64
+// (~5.28:1) for wordmark variants and 64:64 for the icon-only variant.
 const sizePx: Record<NonNullable<LogoProps["size"]>, { w: number; h: number }> = {
   sm: { w: 190, h: 36 },
   md: { w: 232, h: 44 },
@@ -24,68 +30,104 @@ const sizePx: Record<NonNullable<LogoProps["size"]>, { w: number; h: number }> =
   xl: { w: 507, h: 96 },
 };
 
-// Inlining the SVG (not <img src>) so the wordmark's `fill="currentColor"`
-// inherits from the parent's text color — which lets Tailwind's `dark:`
-// variants drive the swap with a single asset instead of two.
-//
-// Light mode parent: text-[#0F3570] → dark navy wordmark.
-// Dark  mode parent: text-white     → white wordmark.
-// The gradient icon (rounded square + cross) stays the same in both.
+const iconSizePx: Record<NonNullable<LogoProps["size"]>, number> = {
+  sm: 32, md: 40, lg: 56, xl: 80,
+};
+
 export default function Logo({
   size = "sm",
+  variant = "primary",
   link = true,
   className = "",
-  variant = "auto",
 }: LogoProps) {
-  const { w, h } = sizePx[size];
+  // Resolve the wordmark colour from the variant.
+  const wordmarkColor =
+    variant === "reverse" ? "#ffffff"
+    : variant === "monochrome" ? COLORS.secondaryNavy
+    : COLORS.primaryTeal;
 
-  // Pick a color class. "auto" honours the theme via Tailwind dark:.
-  // "light" / "dark" force one regardless of theme.
-  const colorClass =
-    variant === "light"
-      ? "text-[#0F3570]"
-      : variant === "dark"
-        ? "text-white"
-        : "text-[#0F3570] dark:text-white";
+  // The icon's rounded square is teal in normal variants and white
+  // (with teal cross) in the reverse variant. V4 explicitly forbids
+  // teal-on-dark, so reverse swaps the colours.
+  const iconBg = variant === "reverse" ? COLORS.white : COLORS.primaryTeal;
+  const iconCross = variant === "reverse" ? COLORS.primaryTeal : COLORS.white;
+
+  // Icon-only at small contexts (favicons, app icons, notification
+  // chrome) — no wordmark, no tagline.
+  if (variant === "icon") {
+    const s = iconSizePx[size];
+    const svg = (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 64 64"
+        width={s}
+        height={s}
+        role="img"
+        aria-label={BRAND.name}
+        className={className}
+      >
+        <rect x="0" y="0" width="64" height="64" rx="18" fill={iconBg} />
+        <rect x="25" y="12" width="14" height="40" rx="5" fill={iconCross} />
+        <rect x="12" y="25" width="40" height="14" rx="5" fill={iconCross} />
+      </svg>
+    );
+    return <LogoLink link={link}>{svg}</LogoLink>;
+  }
+
+  // Wordmark variants. Floor at V4 minimum 120px.
+  const { w: rawW, h } = sizePx[size];
+  const w = Math.max(rawW, LOGO_MIN_SIZE_PX);
+
+  const showTagline = variant === "tagline";
+  // viewBox stretches to 80 height if we include the tagline below.
+  const viewBoxH = showTagline ? 88 : 64;
 
   const svg = (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 338 64"
+      viewBox={`0 0 338 ${viewBoxH}`}
       width={w}
-      height={h}
+      height={showTagline ? Math.round(h * (viewBoxH / 64)) : h}
       role="img"
-      aria-label="OduDoc"
-      className={`block ${colorClass} ${className}`}
+      aria-label={`${BRAND.name}${showTagline ? ` — ${BRAND.tagline}` : ""}`}
+      className={`block ${className}`}
     >
-      <defs>
-        <linearGradient id="odudoc-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#22C98A" />
-          <stop offset="100%" stopColor="#0EA5A0" />
-        </linearGradient>
-      </defs>
-      <rect x="0" y="0" width="64" height="64" rx="18" fill="url(#odudoc-logo-gradient)" />
-      <rect x="25" y="12" width="14" height="40" rx="5" fill="white" />
-      <rect x="12" y="25" width="40" height="14" rx="5" fill="white" />
+      {/* Icon — rounded square + medical cross */}
+      <rect x="0" y="0" width="64" height="64" rx="18" fill={iconBg} />
+      <rect x="25" y="12" width="14" height="40" rx="5" fill={iconCross} />
+      <rect x="12" y="25" width="40" height="14" rx="5" fill={iconCross} />
+
+      {/* Wordmark */}
       <text
-        x="70"
+        x="76"
         y="46"
-        fontFamily="'Nunito','Poppins','Comfortaa','Arial Rounded MT Bold',Arial,sans-serif"
-        fontSize="52"
+        fontFamily="'Inter','Nunito','Poppins','Arial Rounded MT Bold',Arial,sans-serif"
+        fontSize="46"
         fontWeight="800"
         letterSpacing="-1"
-        fill="currentColor"
+        fill={wordmarkColor}
       >
-        OduDoc
+        {BRAND.name}
       </text>
+
+      {/* Tagline — only in tagline variant, per V4 §1.4 */}
+      {showTagline && (
+        <text
+          x="76"
+          y="78"
+          fontFamily="'Inter','Nunito',Arial,sans-serif"
+          fontSize="13"
+          fontWeight="500"
+          letterSpacing="0.4"
+          fill={wordmarkColor}
+          opacity="0.85"
+        >
+          {BRAND.tagline}
+        </text>
+      )}
     </svg>
   );
 
-  // Logo destination is conditional on auth: signed-out visitors land
-  // on the marketing home page, signed-in users land on their dashboard.
-  // Calling useSession() here costs nothing (it reads the SessionProvider
-  // context) and keeps the wordmark behavioural without each caller
-  // having to thread the auth state in.
   return <LogoLink link={link}>{svg}</LogoLink>;
 }
 

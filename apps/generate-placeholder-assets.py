@@ -183,13 +183,13 @@ def write_favicon(path, gradient_colors, monogram):
     print(f"  wrote {path}")
 
 
-# Both apps use the canonical OduDoc gradient — emerald → teal → deep
-# navy, matching components/Logo.tsx, public/images/logo.svg, and the
-# new opengraph-image.tsx. Brand identity > role colour on store icons;
-# the role-themed UI lives inside the app via apps/_shared/theme.ts.
-# The Doctor variant gets a "Dr" badge so it's still distinguishable on
-# the user's home screen.
-BRAND_GRADIENT = ["#22C98A", "#0EA5A0", "#0F3570"]
+# V4 §1.2 palette — primary teal #0F6E56 to secondary navy #042C53.
+# Solid teal is the brand identity; the navy is only used as a subtle
+# gradient anchor so the icon doesn't look flat at 1024×1024. Both
+# apps share the same palette per V4 §1.4 (mobile-app icon uses the
+# primary variant); the Doctor app is differentiated by the "Pro" /
+# "Dr" badge per V5 §1.2 rather than a different colour.
+BRAND_GRADIENT = ["#0F6E56", "#0A5942", "#042C53"]
 
 # ── Patient app ────────────────────────────────────────────────────
 patient_dir = os.path.join(HERE, "patient", "src", "assets")
@@ -208,18 +208,20 @@ doctor_dir = os.path.join(HERE, "doctor", "src", "assets")
 os.makedirs(doctor_dir, exist_ok=True)
 
 print("Doctor app:")
+# V5 §1.2 renames the doctor app from "OduDoc for Doctors" to "OduDoc Pro".
+# The corner badge changes from "Dr" to "Pro" to match.
 write_icon(
     os.path.join(doctor_dir, "icon.png"),
     BRAND_GRADIENT,
     "Od",
-    badge="Dr",
-    badge_color="#0EA5A0",
+    badge="Pro",
+    badge_color="#0F6E56",
 )
 write_adaptive_icon(
     os.path.join(doctor_dir, "adaptive-icon.png"), BRAND_GRADIENT, "Od"
 )
-write_splash(os.path.join(doctor_dir, "splash.png"), BRAND_GRADIENT, "OduDoc Dr")
-write_favicon(os.path.join(doctor_dir, "favicon.png"), BRAND_GRADIENT, "D")
+write_splash(os.path.join(doctor_dir, "splash.png"), BRAND_GRADIENT, "OduDoc Pro")
+write_favicon(os.path.join(doctor_dir, "favicon.png"), BRAND_GRADIENT, "P")
 
 print("\nDone. These are PLACEHOLDERS — replace with designer artwork")
 print("before App Store / Play Store submission.")

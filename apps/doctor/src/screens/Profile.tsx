@@ -133,7 +133,7 @@ export default function DoctorProfileScreen() {
           </Pressable>
 
           <Caption style={{ textAlign: "center", marginTop: SPACING.lg, opacity: 0.5 }}>
-            OduDoc for Doctors · operated by Sarjudas Digital Trading and Escrow Services LLC.
+            OduDoc Pro · operated by Sarjudas Digital Trading and Escrow Services LLC.
           </Caption>
 
           <View style={{ height: SPACING.xl }} />

@@ -656,7 +656,7 @@ export default async function ForDoctorsPage() {
         </div>
       </section>
 
-      {/* OduDoc for Doctors — mobile app */}
+      {/* OduDoc Pro — mobile app for clinicians (V5 §1.2 rename) */}
       <section className="bg-white dark:bg-slate-900 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AppDownloadBadges variant="doctor" tone="indigo" />

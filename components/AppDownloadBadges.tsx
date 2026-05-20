@@ -68,7 +68,7 @@ const DEFAULT_TITLES: Record<Variant, { title: string; subtitle: string }> = {
       "Book consultations, video-call your doctor, and read prescriptions on the go.",
   },
   doctor: {
-    title: "Practice on the go with OduDoc for Doctors",
+    title: "Practice on the go with OduDoc Pro",
     subtitle:
       "Run consultations, write prescriptions with AI, and manage your schedule from your phone.",
   },

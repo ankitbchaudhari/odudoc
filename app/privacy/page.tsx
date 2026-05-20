@@ -47,9 +47,11 @@ const sections = [
     content: (
       <div className="space-y-3">
         <p>
-          We publish two iOS and Android apps: <strong>OduDoc Patient</strong>{" "}
-          (bundle ID <code>com.odudoc.patient</code>) and{" "}
-          <strong>OduDoc Doctor</strong> (<code>com.odudoc.doctor</code>). Both
+          We publish two iOS and Android apps: <strong>OduDoc</strong>{" "}
+          (the patient app, bundle ID <code>com.odudoc.patient</code>) and{" "}
+          <strong>OduDoc Pro</strong> (the professional app for doctors,
+          nurses, pharmacists, lab techs and other clinical staff —
+          bundle ID <code>com.odudoc.doctor</code>). Both
           are operated by Sarjudas Digital Trading and Escrow Services LLC and
           communicate exclusively with <code>www.odudoc.com</code> servers over
           HTTPS.

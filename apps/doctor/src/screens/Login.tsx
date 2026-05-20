@@ -33,7 +33,7 @@ export default function LoginScreen() {
       // up on the doctor app by accident.
       const data = r.data as { user?: { role?: string } };
       if (data.user?.role && data.user.role !== "doctor" && data.user.role !== "admin") {
-        setError("This app is for doctors only. Use the OduDoc patient app instead.");
+        setError("OduDoc Pro is for clinicians only. Use the OduDoc patient app instead.");
         return;
       }
       nav.reset({ index: 0, routes: [{ name: "Main" }] });
@@ -45,7 +45,7 @@ export default function LoginScreen() {
       <AuroraBackground theme={theme} />
       <SafeAreaView style={styles.container}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, justifyContent: "center" }}>
-          <Caption style={{ color: theme.primaryTint }}>ODUDOC FOR DOCTORS</Caption>
+          <Caption style={{ color: theme.primaryTint }}>ODUDOC PRO</Caption>
           <H1 style={{ marginTop: 4 }}>Welcome, Doctor.</H1>
           <Body style={{ opacity: 0.75, marginTop: 4, marginBottom: SPACING.lg }}>
             Sign in to your verified clinician account.

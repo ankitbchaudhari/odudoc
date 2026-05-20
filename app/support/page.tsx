@@ -12,7 +12,7 @@ import Link from "next/link";
 export const metadata = {
   title: "Support — OduDoc",
   description:
-    "Get help with the OduDoc Patient and Doctor apps, billing, account issues, and clinical questions.",
+    "Get help with the OduDoc patient app and OduDoc Pro (clinician app), billing, account issues, and clinical questions.",
 };
 
 const channels = [
@@ -23,7 +23,7 @@ const channels = [
     hours: "Mon–Sat, 8 AM – 10 PM IST. Replies within 24 hours.",
   },
   {
-    label: "Doctor app help",
+    label: "OduDoc Pro help (clinicians)",
     email: "doctors@odudoc.com",
     desc: "Onboarding, KYC, queue / consult issues, payouts, schedule changes.",
     hours: "Mon–Fri, 9 AM – 8 PM IST. Replies within one business day.",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import ExportButtons from "@/components/ExportButtons";
 
 type DoctorTier = "Bronze" | "Silver" | "Gold" | "Platinum";
 type DoctorStatus = "Active" | "Inactive";
@@ -445,15 +446,19 @@ export default function AdminDoctors() {
               {doctors.length.toLocaleString()} {doctors.length === 1 ? "doctor" : "doctors"} registered across {specialties.length} specialties
             </p>
           </div>
-          <button
-            onClick={openNew}
-            className="inline-flex items-center gap-2 rounded-xl bg-white/95 px-5 py-3 text-sm font-semibold text-primary-700 shadow-lg ring-1 ring-white/30 transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-xl"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Add New Doctor
-          </button>
+          <div className="flex items-start gap-3">
+            {/* V4 §2: every grid carries PDF + Excel export. */}
+            <ExportButtons type="doctors" className="text-white" />
+            <button
+              onClick={openNew}
+              className="inline-flex items-center gap-2 rounded-xl bg-white/95 px-5 py-3 text-sm font-semibold text-primary-700 shadow-lg ring-1 ring-white/30 transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-xl"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add New Doctor
+            </button>
+          </div>
         </div>
       </div>
 

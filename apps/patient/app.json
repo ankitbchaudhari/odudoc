@@ -28,15 +28,20 @@
         "foregroundImage": "./src/assets/adaptive-icon.png",
         "backgroundColor": "#020617"
       },
-      "permissions": ["CAMERA", "ACCESS_FINE_LOCATION", "POST_NOTIFICATIONS"]
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "POST_NOTIFICATIONS"
+      ]
     },
     "plugins": [
       "expo-secure-store"
     ],
     "extra": {
       "eas": {
-        "projectId": "REPLACE_WITH_YOUR_EAS_PROJECT_ID"
+        "projectId": "de67b5c9-3614-4696-ac32-dc369ddae742"
       }
-    }
+    },
+    "owner": "ankit2909"
   }
 }

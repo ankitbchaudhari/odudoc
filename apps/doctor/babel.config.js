@@ -3,7 +3,10 @@ module.exports = function (api) {
   return {
     presets: ["babel-preset-expo"],
     plugins: [
-      ["module-resolver", { alias: { "@shared": "../_shared" } }],
+      // Inlined shared folder — EAS Build only uploads the project
+      // folder, so importing from a sibling apps/_shared failed in
+      // the cloud. Each app keeps its own copy under src/shared.
+      ["module-resolver", { alias: { "@shared": "./src/shared" } }],
     ],
   };
 };

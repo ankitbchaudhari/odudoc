@@ -134,6 +134,7 @@ export default function DashboardPage() {
     { label: "Today's Meds", href: "/dashboard/adherence", icon: "💊", grad: "from-emerald-400 to-teal-600" },
     { label: "Vaccinations", href: "/dashboard/vaccinations", icon: "💉", grad: "from-cyan-400 to-sky-600" },
     { label: "Care Plans", href: "/dashboard/care-plan", icon: "📋", grad: "from-teal-400 to-cyan-600" },
+    { label: "Diet Plan", href: "/dashboard/diet", icon: "🥗", grad: "from-lime-400 to-green-600" },
     { label: "Symptom Log", href: "/dashboard/symptoms", icon: "🩺", grad: "from-rose-400 to-fuchsia-600" },
     { label: "Notifications", href: "/dashboard/notifications", icon: "🔔", grad: "from-fuchsia-400 to-purple-600" },
     { label: "Health Passport", href: "/dashboard/health-passport", icon: "🪪", grad: "from-emerald-400 to-teal-600" },

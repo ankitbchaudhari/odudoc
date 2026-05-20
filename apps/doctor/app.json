@@ -19,7 +19,11 @@
         "NSMicrophoneUsageDescription": "Dictate prescriptions and clinical notes.",
         "NSCameraUsageDescription": "Capture wound images and patient documents.",
         "NSLocationWhenInUseUsageDescription": "Verify your serving area when you go available for instant consults.",
-        "UIBackgroundModes": ["voip", "audio", "fetch"]
+        "UIBackgroundModes": [
+          "voip",
+          "audio",
+          "fetch"
+        ]
       }
     },
     "android": {
@@ -28,11 +32,22 @@
         "foregroundImage": "./src/assets/adaptive-icon.png",
         "backgroundColor": "#020617"
       },
-      "permissions": ["CAMERA", "RECORD_AUDIO", "ACCESS_FINE_LOCATION", "FOREGROUND_SERVICE", "POST_NOTIFICATIONS"]
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "ACCESS_FINE_LOCATION",
+        "FOREGROUND_SERVICE",
+        "POST_NOTIFICATIONS"
+      ]
     },
-    "plugins": ["expo-secure-store"],
+    "plugins": [
+      "expo-secure-store"
+    ],
     "extra": {
-      "eas": {}
-    }
+      "eas": {
+        "projectId": "ebc22833-9e60-45e8-8853-ee484b9ed6b5"
+      }
+    },
+    "owner": "ankit2909"
   }
 }

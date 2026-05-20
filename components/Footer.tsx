@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Logo from "@/components/Logo";
 import { useLanguage } from "@/lib/language-context";
 import { SPECIALTIES } from "@/lib/seo/specialties";
 import { CITIES } from "@/lib/seo/cities";
@@ -165,12 +166,11 @@ export default function Footer() {
         <div className="grid grid-cols-2 gap-10 md:grid-cols-4 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           {/* Brand column — wider on lg+ per spec. */}
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
-            <Link href="/" className="inline-flex items-center gap-2">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 text-base font-bold text-slate-950 shadow-lg">
-                O
-              </span>
-              <span className="text-lg font-bold tracking-tight text-white">OduDoc</span>
-            </Link>
+            {/* Canonical logo component. Footer sits on a dark slate
+                background so we force the "dark" variant (white
+                wordmark) — auto-mode would pick light because the
+                document root may still be in light mode. */}
+            <Logo size="md" variant="dark" />
             <p className="mt-4 max-w-xs text-sm text-gray-400">
               The worldwide healthcare operating system. One patient record across
               doctors, hospitals, labs, pharmacies, and insurance.

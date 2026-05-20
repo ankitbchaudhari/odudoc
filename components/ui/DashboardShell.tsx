@@ -42,11 +42,22 @@ export default function DashboardShell({
           user has scrolled deep into a long list. */}
       <header className="sticky top-0 z-30 border-b border-white/5 bg-slate-950/60 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+          {/* Dashboard mini-logo — matches the canonical Logo
+              component (rounded square with the white medical cross
+              inside) but tints the square with the role gradient
+              (patient=emerald, doctor=violet, corporate=amber) so a
+              signed-in user always sees their role context. The
+              wordmark beside it is the same OduDoc text used in the
+              navbar / footer to keep brand identity consistent. */}
           <Link href="/" className="flex items-center gap-2">
             <span
-              className={`flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br ${theme.primary} text-base font-bold text-slate-950 shadow-lg`}
+              className={`relative flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br ${theme.primary} shadow-lg`}
+              aria-hidden
             >
-              O
+              {/* White cross — same proportions as the canonical Logo's
+                  cross (12×40 + 40×12 over a 64-unit square). */}
+              <span className="absolute h-[60%] w-[22%] rounded-sm bg-white" />
+              <span className="absolute h-[22%] w-[60%] rounded-sm bg-white" />
             </span>
             <span className="text-sm font-bold tracking-tight text-white">
               OduDoc{" "}

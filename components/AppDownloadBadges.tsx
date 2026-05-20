@@ -51,9 +51,10 @@ const PACKAGES: Record<
     iosLive: false,
   },
   doctor: {
-    // Package renamed from com.odudoc.doctor → com.saluent.doctor when
-    // the original ID hit an Android Developer Verification collision.
-    android: "https://play.google.com/store/apps/details?id=com.saluent.doctor",
+    // Package is com.odudoc.doctor (the earlier rename to com.saluent.doctor
+    // during the verification dispute was reverted once OduDoc became the
+    // public brand again).
+    android: "https://play.google.com/store/apps/details?id=com.odudoc.doctor",
     androidLive: false, // closed testing → in review
     ios: null,
     iosLive: false,

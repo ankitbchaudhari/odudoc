@@ -237,6 +237,20 @@ export async function placeOrder(input: PlaceOrderInput): Promise<{ ok: boolean;
     after: { manufacturerId: p.manufacturerId, isWholesale, totalCents, currency: p.currency },
   }).catch(() => {/* never block on audit */});
 
+  // V6 §5.21 — fan out warranty registration + manufacturer notification
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const xc = require("@/lib/cross-connections") as typeof import("@/lib/cross-connections");
+    xc.emit("equipment.ordered", {
+      orderId: order.id,
+      productId: p.id,
+      manufacturerId: p.manufacturerId,
+      buyerId: input.buyer.id,
+      totalCents,
+      isWholesale,
+    });
+  } catch {/* ignore */}
+
   return { ok: true, order };
 }
 

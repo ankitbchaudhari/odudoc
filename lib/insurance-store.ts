@@ -284,6 +284,20 @@ export async function submitClaim(input: Omit<Claim, "id" | "status" | "submitte
   };
   claims.push(c);
   claimsHandle.flush();
+  // V6 §5.17 — claim submitted fan-out (tenant notify + bundle assembly)
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const xc = require("@/lib/cross-connections") as typeof import("@/lib/cross-connections");
+    xc.emit("insurance.claim.submitted", {
+      claimId: c.id,
+      insurerId: c.insurerId,
+      hospitalId: c.hospitalId,
+      patientName: c.patientName,
+      billedCents: c.billedCents,
+      currency: c.currency,
+      actorEmail: undefined,
+    });
+  } catch {/* ignore */}
   return c;
 }
 

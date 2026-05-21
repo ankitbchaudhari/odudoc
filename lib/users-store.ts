@@ -448,6 +448,38 @@ export function createUser(
   };
   users.push(newUser);
   flush();
+
+  // V6 cross-connections — fan out side-effects asynchronously so the
+  // caller (registration route) returns immediately. Patient signups
+  // fire §5.2; staff/doctor signups fire §5.3. Bus dispatches to
+  // wallet seed, accountability log, family-graph check, ABHA lookup,
+  // and manager notification per V6 §5.2-§5.3.
+  try {
+    // Late require to dodge the circular dep that would otherwise form
+    // between cross-connections → wallet-store → accountability-store
+    // → cross-connections (the accountability log will eventually emit
+    // QMS metric events, closing the loop).
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const xc = require("@/lib/cross-connections") as typeof import("@/lib/cross-connections");
+    if (newUser.role === "patient") {
+      xc.emit("patient.registered", {
+        userId: newUser.id,
+        email: newUser.email,
+        phone: newUser.phone,
+        country: newUser.country,
+        source: "web",
+      });
+    } else {
+      xc.emit("staff.account.created", {
+        userId: newUser.id,
+        email: newUser.email,
+        role: newUser.role,
+        createdByEmail: undefined,
+        createdByRole: undefined,
+      });
+    }
+  } catch {/* never let xc bus break user creation */}
+
   return newUser;
 }
 

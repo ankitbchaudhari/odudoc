@@ -325,6 +325,20 @@ export async function submitPpme(
     after: { reportHash: r.reportHash, tier: r.tier, feeCents: r.feeCents, currency: r.currency },
   }).catch(() => {/* ignore */});
 
+  // V6 §5.20 — PPME submit fan-out point
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const xc = require("@/lib/cross-connections") as typeof import("@/lib/cross-connections");
+    xc.emit("ppme.submitted", {
+      ppmeId: r.id,
+      insurerId: r.insurerId,
+      facilityId: r.facilityId,
+      tier: r.tier,
+      feeCents: r.feeCents,
+      currency: r.currency,
+    });
+  } catch {/* ignore */}
+
   return r;
 }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createBooking, getBookings, reloadBookings } from '@/lib/bookings-store';
+import { emit as xcEmit } from '@/lib/cross-connections';
 import { listConsultations, reloadConsultations } from '@/lib/consultations-store';
 import { validateSlot } from '@/lib/slot-utils';
 import { notifyAppointmentBooked } from '@/lib/notifications';
@@ -175,6 +176,18 @@ export async function POST(request: NextRequest) {
       `${body.doctorName.toLowerCase().replace(/\s+/g, '.')}@odudoc.com`;
     const appointmentType = body.appointmentType || 'in-person';
     const appointmentDate = body.date || new Date().toLocaleDateString();
+
+    // V6 §5.6 — fan out (audit log, doctor notif, V13 event, future
+    // wallet-hold). Bus dispatches; this returns immediately.
+    xcEmit("appointment.booked", {
+      bookingId: booking.id,
+      doctorId: body.doctorId,
+      doctorName: body.doctorName,
+      patientEmail: body.patientEmail,
+      patientName: body.patientName,
+      timeSlot: body.timeSlot,
+      fee: serverFee,
+    });
 
     notifyAppointmentBooked({
       patientName: body.patientName,

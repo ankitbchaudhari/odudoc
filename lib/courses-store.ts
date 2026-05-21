@@ -179,6 +179,17 @@ export async function enrol(courseId: string, student: { email: string; name: st
   };
   enrollments.push(e);
   enrollHandle.flush();
+  // V6 §5.22 — CME tracker stub + future blockchain-cert queue
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const xc = require("@/lib/cross-connections") as typeof import("@/lib/cross-connections");
+    xc.emit("course.enrolled", {
+      courseId: course.id,
+      studentEmail: student.email,
+      studentName: student.name,
+      cmeCredits: course.cmeCredits,
+    });
+  } catch {/* ignore */}
   return { ok: true, enrolment: e };
 }
 

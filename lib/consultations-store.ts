@@ -391,8 +391,26 @@ export function setRoom(id: string, roomId: string): Consultation | null {
 export function setStatus(id: string, status: ConsultationStatus): Consultation | null {
   const c = consultations.find((x) => x.id === id);
   if (!c) return null;
+  const wasNotCompleted = c.status !== "completed";
   c.status = status;
   touch(c);
+  // V6 §5.7 — fan out only on the open→completed transition, not on
+  // every status touch. Late require to dodge the wallet→accountability
+  // cycle that would form if this module imported xc at module level.
+  if (status === "completed" && wasNotCompleted) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const xc = require("@/lib/cross-connections") as typeof import("@/lib/cross-connections");
+      xc.emit("consultation.completed", {
+        consultationId: c.id,
+        doctorEmail: c.doctorEmail,
+        doctorName: c.doctorName,
+        patientEmail: c.patientEmail,
+        patientName: c.patientName,
+        fee: c.fee,
+      });
+    } catch {/* never break the status update */}
+  }
   return c;
 }
 

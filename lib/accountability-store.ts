@@ -153,7 +153,7 @@ export async function recordEvent(input: RecordInput): Promise<AccountabilityEve
       await mod.appendAuditEnvelope("accountability", ev);
     }
   } catch (e) {
-    log.warn("accountability-envelope-warn", e);
+    log.warn("accountability.envelope_warn", { error: String(e) });
   }
 
   return ev;

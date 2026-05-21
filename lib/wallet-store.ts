@@ -258,7 +258,7 @@ export async function transfer(input: TransferInput): Promise<WalletTx> {
   // and absorbs Postgres hiccups so we don't block on the network.
   walletsHandle.flush();
   txnsHandle.flush();
-  await awaitAllFlushes().catch((e) => log.warn("wallet flush warn", e));
+  await awaitAllFlushes().catch((e) => log.warn("wallet.flush_warn", { error: String(e) }));
 
   // V13 accountability: every value movement is an auditable event.
   // Best-effort — wallet correctness must not depend on the audit log
@@ -276,7 +276,7 @@ export async function transfer(input: TransferInput): Promise<WalletTx> {
       after: { txId: tx.id, amountCents: input.amountCents, currency },
     });
   } catch (e) {
-    log.warn("wallet accountability log warn", e);
+    log.warn("wallet.accountability_warn", { error: String(e) });
   }
 
   return tx;

@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
         after: { url: result.url, pathname: result.pathname, contentType, size: file.size },
       });
     } catch (e) {
-      log.warn("photo accountability warn", e);
+      log.warn("photo.accountability_warn", { error: String(e) });
     }
 
     return NextResponse.json({ url: result.url, pathname: result.pathname, contentType, size: file.size });

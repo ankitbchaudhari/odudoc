@@ -11,7 +11,6 @@ import Logo from "@/components/Logo";
 import NotificationBell from "@/components/NotificationBell";
 import ThemeToggle from "@/components/ThemeToggle";
 import NavDropdown, { type NavDropdownGroup } from "@/components/NavDropdown";
-import LoginModal from "@/components/LoginModal";
 
 // Header navigation menus. Spec: Cowork Build Handover Section 2 /
 // Header_Footer_Final Section 2. Three dropdowns + two plain links.
@@ -96,7 +95,6 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { data: session, status } = useSession();
   const { t } = useLanguage();
@@ -319,13 +317,12 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <button
-                type="button"
-                onClick={() => setLoginOpen(true)}
+              <Link
+                href="/login"
                 className="rounded-lg px-4 py-2 text-sm font-medium text-primary-600 transition-colors hover:bg-primary-50 dark:text-primary-300 dark:hover:bg-slate-800"
               >
                 {t("common.login")}
-              </button>
+              </Link>
               <Link
                 href="/signup"
                 className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary-700 hover:shadow-md dark:bg-primary-500 dark:hover:bg-primary-400"
@@ -436,16 +433,13 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileOpen(false);
-                    setLoginOpen(true);
-                  }}
+                <Link
+                  href="/login"
+                  onClick={() => setMobileOpen(false)}
                   className="flex-1 rounded-lg border border-primary-600 py-2 text-center text-sm font-medium text-primary-600"
                 >
                   {t("common.login")}
-                </button>
+                </Link>
                 <Link
                   href="/signup"
                   onClick={() => setMobileOpen(false)}
@@ -461,7 +455,6 @@ export default function Navbar() {
       {/* Global Search Modal */}
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
       {/* Two-door login modal — opens from the "Log in" button. */}
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </nav>
   );
 }

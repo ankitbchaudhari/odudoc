@@ -11,6 +11,7 @@ import {
   changeUserRole,
 } from "./users-store";
 import { findDoctorByEmail, reloadDoctors } from "./doctors-store";
+import { verifyMobileToken } from "./mobile-auth";
 import { getMembershipsForUser } from "./memberships-store";
 import { getOrganizationById } from "./organizations-store";
 import { getServerSession } from "next-auth";
@@ -73,9 +74,30 @@ const providers = [
       // otherwise miss the new record and 401 them with "No account found".
       await reloadUsers();
 
+      // Patient OTP login path: the /login/patient page verifies the OTP
+      // via /api/auth/patient/verify-otp, which mints a short-lived mobile
+      // JWT and hands it back. The client then submits it here, prefixed
+      // with "OTP:", as the password. We verify the JWT and skip the
+      // password check.
+      const isOtpToken = typeof credentials.password === "string" && credentials.password.startsWith("OTP:");
+      let otpClaims: Awaited<ReturnType<typeof verifyMobileToken>> = null;
+      if (isOtpToken) {
+        const token = credentials.password.slice(4);
+        otpClaims = await verifyMobileToken(token);
+        if (!otpClaims) {
+          throw new Error("Invalid or expired login token");
+        }
+      }
+
       const user = findUserByEmail(credentials.email);
       if (!user) {
         throw new Error("No account found with this email");
+      }
+
+      // If the OTP token doesn't match the submitted identifier, refuse —
+      // the token is scoped to a single account.
+      if (otpClaims && otpClaims.email.toLowerCase() !== user.email.toLowerCase()) {
+        throw new Error("Login token does not match this account");
       }
 
       if (user.status === "banned") {
@@ -104,15 +126,18 @@ const providers = [
         }
       }
 
-      const isValid = validatePassword(credentials.password, user.password);
-      if (!isValid) {
-        throw new Error("Invalid password");
+      if (!isOtpToken) {
+        const isValid = validatePassword(credentials.password, user.password);
+        if (!isValid) {
+          throw new Error("Invalid password");
+        }
       }
 
       // Admin-issued temporary passwords expire after 7 days. After that
       // the login is blocked until an admin re-issues a new one — we refuse
       // the sign-in here so the old hash can't be used indefinitely.
-      if (user.mustChangePassword && user.tempPasswordExpiresAt) {
+      // OTP-token logins bypass this check (no password involved).
+      if (!isOtpToken && user.mustChangePassword && user.tempPasswordExpiresAt) {
         const expiry = new Date(user.tempPasswordExpiresAt).getTime();
         if (!Number.isNaN(expiry) && expiry < Date.now()) {
           throw new Error(

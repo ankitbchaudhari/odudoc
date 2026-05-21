@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import ExportButtons from "@/components/ExportButtons";
 
 interface LabTest {
   id: string;
@@ -240,6 +241,7 @@ export default function AdminLabTests() {
             <p className="mt-1 text-sm text-violet-50/90">
               {tests.length} total · {tests.filter((t) => t.active).length} active · {tests.filter((t) => t.popular).length} popular
             </p>
+            <div className="mt-3"><ExportButtons type="lab-tests" className="text-white" /></div>
           </div>
           <button
             onClick={() => {

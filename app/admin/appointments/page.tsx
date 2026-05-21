@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import ExportButtons from "@/components/ExportButtons";
 
 export const dynamic = "force-dynamic";
 
@@ -300,6 +301,7 @@ export default function AppointmentsPage() {
               Live clinic schedule with provider conflict detection · {stats.total} booked today
             </p>
           </div>
+          <ExportButtons type="appointments" className="text-white" />
           <button
             onClick={() => {
               resetForm();

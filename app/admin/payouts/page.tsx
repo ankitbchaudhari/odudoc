@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ExportButtons from "@/components/ExportButtons";
 
 interface Payout {
   id: string;
@@ -128,6 +129,7 @@ export default function AdminPayoutsPage() {
             </div>
             <h1 className="text-2xl font-bold">Vendor payouts</h1>
             <p className="mt-1 text-sm text-orange-50/90">Ledger of amounts owed to vendors after platform commission.</p>
+            <div className="mt-3"><ExportButtons type="payouts" className="text-white" /></div>
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import ExportButtons from "@/components/ExportButtons";
 
 interface Coupon {
   id: string;
@@ -103,6 +104,7 @@ export default function AdminCoupons() {
             </div>
             <h1 className="text-2xl font-bold">Coupons</h1>
             <p className="mt-1 text-sm text-pink-50/90">Create and manage discount codes for your shop.</p>
+            <div className="mt-3"><ExportButtons type="coupons" className="text-white" /></div>
           </div>
           <button
             onClick={() => {

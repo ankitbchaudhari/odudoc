@@ -5,6 +5,7 @@
 // actions → verification of effectiveness.
 
 import { useCallback, useEffect, useState } from "react";
+import ExportButtons from "@/components/ExportButtons";
 
 type Status = "open" | "investigating" | "actions_pending" | "verifying" | "closed" | "reopened";
 type Source = "incident" | "mortality_review" | "infection_control" | "audit_finding" | "patient_complaint" | "medication_error" | "other";
@@ -128,6 +129,7 @@ export default function CapaAdminPage() {
             Open → investigating → actions pending → verifying → closed. VoE 30 days after action completion;
             reopens if the issue recurred.
           </p>
+          <div className="mt-3"><ExportButtons type="capa" /></div>
         </div>
         <select
           value={filter}

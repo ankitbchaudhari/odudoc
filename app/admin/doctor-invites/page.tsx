@@ -9,6 +9,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import ExportButtons from "@/components/ExportButtons";
 
 interface Invite {
   id: string;
@@ -157,9 +158,12 @@ export default function DoctorInvitesPage() {
         <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-700">
           Outreach · Doctor invites
         </p>
-        <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">
-          Invite doctors by email or WhatsApp
-        </h1>
+        <div className="mt-1 flex items-start justify-between gap-3">
+          <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+            Invite doctors by email or WhatsApp
+          </h1>
+          <ExportButtons type="doctor-invites" />
+        </div>
         <p className="mt-1 text-sm text-slate-600">
           Paste email addresses (one or many) <b>or</b> drop a single WhatsApp
           number — both work. Each recipient gets an OduDoc invitation linking

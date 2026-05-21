@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ExportButtons from "@/components/ExportButtons";
 
 interface Vendor {
   id: string;
@@ -165,6 +166,7 @@ export default function AdminVendorsPage() {
               </div>
               <h1 className="text-2xl font-bold">Vendor applications</h1>
               <p className="mt-1 text-sm text-teal-50/90">Approve or reject pharmacy signups for the multivendor shop.</p>
+              <div className="mt-3"><ExportButtons type="vendors" className="text-white" /></div>
             </div>
             <button
               onClick={() => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import ExportButtons from "@/components/ExportButtons";
 
 interface AdminBlogPost {
   id: string;
@@ -265,6 +266,7 @@ export default function AdminBlog() {
                 ? "Loading…"
                 : `${posts.length} posts · ${posts.filter((p) => p.status === "Published").length} live · ${posts.filter((p) => p.featured).length} featured`}
             </p>
+            <div className="mt-3"><ExportButtons type="blog" className="text-white" /></div>
           </div>
           <button
             onClick={openNew}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ExportButtons from "@/components/ExportButtons";
 
 interface Department {
   id: string;
@@ -153,6 +154,7 @@ export default function AdminDepartments() {
             <p className="mt-2 text-sm text-white/80">
               {departments.length} departments · {activeCount} active
             </p>
+            <div className="mt-3"><ExportButtons type="departments" className="text-white" /></div>
           </div>
           <button
             onClick={() => {

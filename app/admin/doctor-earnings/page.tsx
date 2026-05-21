@@ -8,6 +8,7 @@
 // checkbox-select + "Mark selected paid" for batch settlement.
 
 import { useEffect, useMemo, useState } from "react";
+import ExportButtons from "@/components/ExportButtons";
 import type { DoctorEarning } from "@/lib/doctor-earnings-store";
 
 interface Summary {
@@ -131,6 +132,7 @@ export default function AdminDoctorEarningsPage() {
             Per-consultation ledger with a 70/30 split. Use this to reconcile with
             withdrawal requests before marking them paid.
           </p>
+          <div className="mt-3"><ExportButtons type="doctor-earnings" className="text-white" /></div>
         </div>
       </div>
 

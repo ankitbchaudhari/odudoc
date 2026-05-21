@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import ExportButtons from "@/components/ExportButtons";
 
 interface OrderItem {
   name: string;
@@ -136,6 +137,7 @@ export default function AdminOrders() {
           </div>
           <h1 className="text-2xl font-bold">Order Management</h1>
           <p className="mt-1 text-sm text-blue-50/90">Track, update and fulfil customer orders.</p>
+          <div className="mt-3"><ExportButtons type="orders" className="text-white" /></div>
         </div>
       </div>
 

@@ -8,7 +8,7 @@
 // /dashboard.
 
 import { NextRequest, NextResponse } from "next/server";
-import { findUserByEmail, touchLastLogin, reloadUsers, markEmailVerified } from "@/lib/users-store";
+import { findUserByEmail, findUserByPhone, touchLastLogin, reloadUsers, markEmailVerified } from "@/lib/users-store";
 import { verifyMobileOtp } from "@/lib/mobile-otp-store";
 import { signMobileToken } from "@/lib/mobile-auth";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
@@ -33,7 +33,10 @@ export async function POST(request: NextRequest) {
   if (parsed instanceof NextResponse) return parsed;
 
   await reloadUsers();
-  const user = findUserByEmail(parsed.identifier);
+  const looksLikePhone = !parsed.identifier.includes("@");
+  const user = looksLikePhone
+    ? findUserByPhone(parsed.identifier)
+    : findUserByEmail(parsed.identifier);
   if (!user) {
     return NextResponse.json({ error: "invalid_credentials" }, { status: 401 });
   }

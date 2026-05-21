@@ -6,6 +6,7 @@ import { addAdminNotification } from "@/lib/admin-notifications-store";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 import { parseJson, z, nonEmptyString, emailSchema, phoneSchema } from "@/lib/validate";
 import { awaitAllFlushesStrict, PersistenceError } from "@/lib/persistent-array";
+import { assertPasswordNotPwned } from "@/lib/hibp";
 
 import { log } from "@/lib/log";
 const RegisterSchema = z.object({
@@ -57,6 +58,16 @@ export async function POST(request: NextRequest) {
     // Public signup is for patients only. Doctors are onboarded by admin
     // after applying through /for-doctors/register.
     const role = "patient" as const;
+
+    // HaveIBeenPwned k-anonymity check — refuse to create accounts with
+    // catastrophically-leaked passwords. Fails open on HIBP outages.
+    const pwned = await assertPasswordNotPwned(password);
+    if (!pwned.ok) {
+      return NextResponse.json(
+        { error: pwned.reason, code: "pwned_password", count: pwned.count },
+        { status: 400 },
+      );
+    }
 
     // Wizard contract: if a signupToken is present, it must redeem to
     // the same email + phone the caller submitted. We don't *require*

@@ -14,7 +14,7 @@
 //    minimal. PgBouncer multiplexes across Lambdas, so one client-side
 //    connection per Lambda is plenty.
 
-import postgres from "postgres";
+import postgres, { type TransactionSql } from "postgres";
 
 const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 
@@ -60,4 +60,66 @@ export function ensureSchema(init: () => Promise<void>): Promise<void> {
     schemaReadyMap.set(init, promise);
   }
   return promise;
+}
+
+// ────────────────────────────── V12 RLS GUC setter ─────────────────────
+//
+// Master Spec V12 §5.1 requires that every query carrying patient data
+// runs inside a transaction with custom GUCs (`odudoc.tenant_id`,
+// `odudoc.patient_id`, `odudoc.role`) set via SET LOCAL. Postgres RLS
+// policies then read these values via current_setting('odudoc.tenant_id',
+// true) to scope rows to the caller.
+//
+// Wrap the per-request DB work in withRlsContext to get the guarantees:
+//
+//   await withRlsContext({ tenantId, patientId, role }, async (tx) => {
+//     return tx`SELECT * FROM appointments WHERE patient_id = ${pid}`;
+//   });
+//
+// SET LOCAL is automatically released at commit/rollback, so the next
+// caller on the same pooled connection (PgBouncer transaction mode is
+// fine — SET LOCAL is the supported way) starts with a clean slate.
+// If RLS policies aren't enabled on a table yet, the GUC is harmless.
+
+export interface RlsContext {
+  /** Hospital / clinic / "platform". */
+  tenantId?: string;
+  /** Patient id when the query touches a specific patient's record. */
+  patientId?: string;
+  /** Caller's role — used by policies that whitelist e.g. doctor/admin. */
+  role?: string;
+}
+
+/**
+ * Run `fn` inside a transaction that has the V12 RLS GUCs set. The
+ * tagged-template `tx` passed in is the same postgres.js client scoped
+ * to the transaction. SET LOCAL is reverted automatically on commit.
+ */
+export async function withRlsContext<T>(
+  ctx: RlsContext,
+  fn: (tx: TransactionSql) => Promise<T>,
+): Promise<T> {
+  return client.begin(async (tx) => {
+    if (ctx.tenantId) await tx`SELECT set_config('odudoc.tenant_id', ${ctx.tenantId}, true)`;
+    if (ctx.patientId) await tx`SELECT set_config('odudoc.patient_id', ${ctx.patientId}, true)`;
+    if (ctx.role) await tx`SELECT set_config('odudoc.role', ${ctx.role}, true)`;
+    return fn(tx);
+  }) as Promise<T>;
+}
+
+/** Read the GUC values currently set on a transaction — diagnostics only. */
+export async function readRlsContext(
+  tx: TransactionSql,
+): Promise<RlsContext> {
+  const rows = await tx<
+    { tenant_id: string | null; patient_id: string | null; role: string | null }[]
+  >`SELECT current_setting('odudoc.tenant_id', true) AS tenant_id,
+           current_setting('odudoc.patient_id', true) AS patient_id,
+           current_setting('odudoc.role', true) AS role`;
+  const r = rows[0];
+  return {
+    tenantId: r?.tenant_id || undefined,
+    patientId: r?.patient_id || undefined,
+    role: r?.role || undefined,
+  };
 }

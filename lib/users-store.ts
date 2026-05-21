@@ -103,6 +103,17 @@ export interface User {
    *  qualify (referee's first paid consultation). Spent at booking
    *  time as a discount on the consultation fee. */
   referralCreditCents?: number;
+
+  // ------------------------------------------------------------------
+  // 2FA / TOTP
+  //
+  // RFC 6238 TOTP secret in base32. Only set on doctors + admins +
+  // hospital staff who chose to enable 2FA. The credentials authorize()
+  // path enforces the second factor when both totpEnabled and
+  // totpSecret are present.
+  totpSecret?: string;
+  totpEnabled?: boolean;
+  totpEnabledAt?: string;
 }
 
 export interface UserIdentity {
@@ -313,6 +324,16 @@ const DEMO_ACCOUNTS: {
 
 export async function reloadUsers(): Promise<void> {
   await reload();
+}
+
+/** Match by E.164 or local-format phone. Strips non-digits on both
+ *  sides so "+91 90000 12345" matches "+919000012345". Returns the
+ *  first hit — phones are not guaranteed unique in our schema. */
+export function findUserByPhone(phone: string): User | undefined {
+  const norm = (p: string) => p.replace(/\D/g, "");
+  const q = norm(phone);
+  if (!q) return undefined;
+  return users.find((u) => norm(u.phone || "") === q);
 }
 
 export function findUserByEmail(email: string): User | undefined {
@@ -903,4 +924,48 @@ export function resetUserPassword(id: string): { user: User; tempPassword: strin
   u.password = bcrypt.hashSync(temp, 10);
   flush();
   return { user: u, tempPassword: temp };
+}
+
+// ─────────────────────────────────── 2FA / TOTP helpers ────────────
+
+export function setUserTotpSecret(userId: string, secretBase32: string): User | null {
+  const u = findUserById(userId);
+  if (!u) return null;
+  u.totpSecret = secretBase32;
+  u.totpEnabled = false; // pending — flips to true after first verify
+  flush();
+  return u;
+}
+
+export function enableUserTotp(userId: string): User | null {
+  const u = findUserById(userId);
+  if (!u || !u.totpSecret) return null;
+  u.totpEnabled = true;
+  u.totpEnabledAt = new Date().toISOString();
+  flush();
+  return u;
+}
+
+export function disableUserTotp(userId: string): User | null {
+  const u = findUserById(userId);
+  if (!u) return null;
+  u.totpEnabled = false;
+  u.totpSecret = undefined;
+  u.totpEnabledAt = undefined;
+  flush();
+  return u;
+}
+
+/** Find the user owning a given employee code, by:
+ *  1. Looking up the hospital staff record by employeeCode.
+ *  2. Resolving its email back to a User row.
+ *  Returns null when the code doesn't exist or the staff row has no email. */
+export function findUserByEmployeeCode(code: string): User | undefined {
+  // Late-require breaks the import cycle (staff-store doesn't depend on
+  // users-store today, but this hop is the canonical place for the linkage).
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { findStaffByEmployeeCode } = require("./hospital/staff-store") as typeof import("./hospital/staff-store");
+  const staff = findStaffByEmployeeCode(code);
+  if (!staff?.email) return undefined;
+  return findUserByEmail(staff.email);
 }

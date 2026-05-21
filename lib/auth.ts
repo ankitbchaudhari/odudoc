@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import {
   findUserByEmail,
+  findUserByEmployeeCode,
   validatePassword,
   touchLastLogin,
   createUser,
@@ -12,6 +13,9 @@ import {
 } from "./users-store";
 import { findDoctorByEmail, reloadDoctors } from "./doctors-store";
 import { verifyMobileToken } from "./mobile-auth";
+import { verifyTotp } from "./totp";
+import { recordLoginSession, isLoginLocked } from "./login-sessions-store";
+import { recordEvent } from "./accountability-store";
 import { getMembershipsForUser } from "./memberships-store";
 import { getOrganizationById } from "./organizations-store";
 import { getServerSession } from "next-auth";
@@ -62,6 +66,7 @@ const providers = [
       email: { label: "Email", type: "email" },
       password: { label: "Password", type: "password" },
       otpToken: { label: "OTP Token", type: "text" },
+      totp: { label: "2FA code", type: "text" },
     },
     async authorize(credentials) {
       if (!credentials?.email || !credentials?.password) {
@@ -89,9 +94,25 @@ const providers = [
         }
       }
 
-      const user = findUserByEmail(credentials.email);
+      // Corporate staff-ID fallback. /login/corporate forwards the
+      // staff ID via the email field. If the identifier matches an
+      // employee-code pattern (EMP-XXXX-NNNN or legacy STF-NNNNN) and
+      // we can't resolve it as an email, look it up via the hospital
+      // staff store and translate to the linked email.
+      let user = findUserByEmail(credentials.email);
+      const looksLikeEmployeeCode = /^(EMP|STF)-/i.test(credentials.email.trim());
+      if (!user && looksLikeEmployeeCode) {
+        user = findUserByEmployeeCode(credentials.email);
+      }
       if (!user) {
         throw new Error("No account found with this email");
+      }
+
+      // Concurrent-session lockout. Triggered when the same user signs
+      // in from > 3 distinct IPs inside an hour — see login-sessions-store.
+      // Surfaces as a clear error so support can clear it on request.
+      if (isLoginLocked(user.email)) {
+        throw new Error("Account temporarily locked — too many concurrent sessions. Contact support.");
       }
 
       // If the OTP token doesn't match the submitted identifier, refuse —
@@ -152,6 +173,21 @@ const providers = [
       // so downstream code that checks emailVerified still behaves.
       if (!user.emailVerified) {
         markEmailVerified(user.email);
+      }
+
+      // 2FA TOTP gate. Doctors + admins + corporate staff who have
+      // enabled TOTP must include a current 6-digit code. OTP-token
+      // logins are exempt — the email OTP already proved possession
+      // of the inbox, so layering a TOTP on top would be friction for
+      // patient flows that don't need it.
+      if (!isOtpToken && user.totpEnabled && user.totpSecret) {
+        const code = (credentials as { totp?: string }).totp;
+        if (!code) {
+          throw new Error("2fa_required");
+        }
+        if (!verifyTotp(user.totpSecret, code)) {
+          throw new Error("Invalid 2FA code");
+        }
       }
 
       // Bump lastLoginAt so subsequent logins today don't re-trigger the
@@ -285,6 +321,55 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role;
       }
       return session;
+    },
+  },
+  events: {
+    // V13 §1 accountability — every successful sign-in / sign-out is
+    // recorded as a system-category event. The recordLoginSession side
+    // effect also drives the concurrent-session lockout (V14 security).
+    async signIn({ user, account }) {
+      try {
+        if (!user?.email) return;
+        const sessionResult = recordLoginSession({
+          userEmail: user.email,
+          ip: "server", // NextAuth event doesn't carry req — see middleware for richer IP capture
+          userAgent: "server",
+        });
+        await recordEvent({
+          category: "system",
+          action: "auth.login.success",
+          severity: sessionResult.lockedNow ? "high" : "info",
+          actorEmail: user.email,
+          actorRole: (user as { role?: string }).role,
+          actorId: user.id,
+          subjectKind: "user",
+          subjectId: user.id,
+          summary: sessionResult.lockedNow
+            ? `Signed in via ${account?.provider || "credentials"} — auto-locked after ${sessionResult.distinctIps} distinct IPs in 1h`
+            : `Signed in via ${account?.provider || "credentials"}`,
+        });
+      } catch {
+        /* logging failures must never block sign-in */
+      }
+    },
+    async signOut({ token }) {
+      try {
+        const email = (token as { email?: string })?.email;
+        if (!email) return;
+        await recordEvent({
+          category: "system",
+          action: "auth.logout",
+          severity: "info",
+          actorEmail: email,
+          actorRole: (token as { role?: string })?.role,
+          actorId: (token as { id?: string })?.id,
+          subjectKind: "user",
+          subjectId: (token as { id?: string })?.id,
+          summary: "Signed out",
+        });
+      } catch {
+        /* never block */
+      }
     },
   },
   secret: process.env.NEXTAUTH_SECRET,

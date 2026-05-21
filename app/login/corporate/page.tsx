@@ -19,6 +19,8 @@ export default function CorporateLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [need2fa, setNeed2fa] = useState(false);
+  const [totp, setTotp] = useState("");
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,13 +28,21 @@ export default function CorporateLoginPage() {
     setError(null);
     // The credentials provider takes "email" — we forward the staff
     // ID via that same field; the auth callback in lib/auth.ts
-    // accepts either format (email or STF-NNNNN).
-    const result = await signIn("credentials", { email: identifier, password, redirect: false });
+    // resolves either format (email or EMP-XXXX-NNNN / STF-NNNNN)
+    // via findUserByEmployeeCode.
+    const result = await signIn("credentials", { email: identifier, password, totp, redirect: false });
     setBusy(false);
     if (result?.error) {
+      if (result.error.includes("2fa_required")) {
+        setNeed2fa(true);
+        setError(null);
+        return;
+      }
       setError(
         result.error.includes("banned") ? "Account deactivated. Contact your Hospital Admin."
-        : result.error.includes("tenant_suspended") ? "Your hospital's OduDoc subscription is inactive."
+        : result.error.includes("locked") ? "Account temporarily locked — too many concurrent sessions. Contact your Hospital Admin."
+        : result.error.includes("tenant_suspended") || result.error.includes("suspended") ? "Your hospital's OduDoc subscription is inactive."
+        : result.error.includes("2FA") ? "Incorrect 2FA code. Check your authenticator app."
         : "Incorrect Staff ID/email or password."
       );
       return;
@@ -98,10 +108,29 @@ export default function CorporateLoginPage() {
               </button>
             </div>
           </label>
+          {need2fa && (
+            <label className="block">
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-600">
+                Authenticator code
+              </span>
+              <input
+                inputMode="numeric"
+                pattern="\d{6}"
+                maxLength={6}
+                required
+                value={totp}
+                onChange={(e) => setTotp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                placeholder="123456"
+                autoFocus
+                autoComplete="one-time-code"
+                className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2.5 text-center text-lg font-mono tracking-widest focus:border-[#854D0E] focus:outline-none focus:ring-2 focus:ring-[#854D0E]/20"
+              />
+            </label>
+          )}
           {error && <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800">{error}</div>}
           <button
             type="submit"
-            disabled={busy || !identifier || !password}
+            disabled={busy || !identifier || !password || (need2fa && totp.length !== 6)}
             className="w-full rounded-xl bg-[#854D0E] px-4 py-3 text-sm font-bold text-white hover:bg-[#5C3209] disabled:opacity-60"
           >
             {busy ? "Signing in…" : "Log in"}

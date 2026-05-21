@@ -21,17 +21,30 @@ export default function DoctorLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [need2fa, setNeed2fa] = useState(false);
+  const [totp, setTotp] = useState("");
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const result = await signIn("credentials", { email, password, redirect: false });
+    const result = await signIn("credentials", { email, password, totp, redirect: false });
     setBusy(false);
     if (result?.error) {
+      // The credentials provider throws "2fa_required" the first time
+      // it sees a 2FA-enabled user without a code. We treat that as a
+      // step-up rather than a failure — reveal the TOTP field and let
+      // the user retry without retyping their password.
+      if (result.error.includes("2fa_required")) {
+        setNeed2fa(true);
+        setError(null);
+        return;
+      }
       setError(
         result.error.includes("banned") ? "Account deactivated. Email support@odudoc.com."
+        : result.error.includes("locked") ? "Account temporarily locked — too many concurrent sessions. Contact support."
         : result.error.includes("unverified") ? "Your account is pending verification. Check your email for updates."
+        : result.error.includes("2FA") ? "Incorrect 2FA code. Check your authenticator app."
         : "Incorrect email or password."
       );
       return;
@@ -100,10 +113,32 @@ export default function DoctorLoginPage() {
               </button>
             </div>
           </label>
+          {need2fa && (
+            <label className="block">
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-600">
+                Authenticator code
+              </span>
+              <input
+                inputMode="numeric"
+                pattern="\d{6}"
+                maxLength={6}
+                required
+                value={totp}
+                onChange={(e) => setTotp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                placeholder="123456"
+                autoFocus
+                autoComplete="one-time-code"
+                className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2.5 text-center text-lg font-mono tracking-widest focus:border-[#1E40AF] focus:outline-none focus:ring-2 focus:ring-[#1E40AF]/20"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Open your authenticator app (Google Authenticator, Authy, 1Password) and enter the current 6-digit code.
+              </p>
+            </label>
+          )}
           {error && <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800">{error}</div>}
           <button
             type="submit"
-            disabled={busy || !email || !password}
+            disabled={busy || !email || !password || (need2fa && totp.length !== 6)}
             className="w-full rounded-xl bg-[#1E40AF] px-4 py-3 text-sm font-bold text-white hover:bg-[#0A1F3B] disabled:opacity-60"
           >
             {busy ? "Signing in…" : "Log in"}

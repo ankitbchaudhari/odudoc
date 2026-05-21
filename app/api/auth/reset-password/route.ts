@@ -10,6 +10,7 @@ import {
 } from "@/lib/password-reset-store";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 import { parseJson, z, nonEmptyString } from "@/lib/validate";
+import { assertPasswordNotPwned } from "@/lib/hibp";
 
 const ResetSchema = z.object({
   token: nonEmptyString,
@@ -35,6 +36,14 @@ export async function POST(req: NextRequest) {
   const parsed = await parseJson(req, ResetSchema);
   if (parsed instanceof NextResponse) return parsed;
   const { token, password } = parsed;
+
+  const pwned = await assertPasswordNotPwned(password);
+  if (!pwned.ok) {
+    return NextResponse.json(
+      { error: pwned.reason, count: pwned.count },
+      { status: 400 },
+    );
+  }
 
   const rec = await consumeResetToken(token);
   if (!rec) {

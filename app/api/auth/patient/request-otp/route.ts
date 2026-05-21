@@ -12,9 +12,10 @@
 // Rate limit: 5 requests per IP per hour (V14 §security spec).
 
 import { NextRequest, NextResponse } from "next/server";
-import { findUserByEmail, reloadUsers } from "@/lib/users-store";
+import { findUserByEmail, findUserByPhone, reloadUsers } from "@/lib/users-store";
 import { issueMobileOtp } from "@/lib/mobile-otp-store";
 import { sendEmail } from "@/lib/email";
+import { sendWhatsAppTemplate } from "@/lib/sms";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
 import { parseJson, z } from "@/lib/validate";
 import { recordEvent } from "@/lib/accountability-store";
@@ -51,24 +52,17 @@ export async function POST(request: NextRequest) {
 
   const idType = parsed.identifier_type || detectType(parsed.identifier);
 
-  // We only support email today for the actual OTP send (phone OTP
-  // arrives via the WhatsApp / Sent-DM channel; that path lives in
-  // lib/whatsapp-* and is owned by the mobile signup flow).
-  if (idType !== "email") {
-    return NextResponse.json({
-      error: "phone_otp_not_yet_supported",
-      message: "Phone-OTP login lands in the next release. Use your registered email for now.",
-    }, { status: 400 });
-  }
-
   await reloadUsers();
-  const user = findUserByEmail(parsed.identifier);
+  const user = idType === "phone"
+    ? findUserByPhone(parsed.identifier)
+    : findUserByEmail(parsed.identifier);
   if (!user) {
     // Don't disclose whether the account exists — fixed-shape response.
     // V14 §security spec calls this "user-enumeration resistance".
     return NextResponse.json({
       ok: true,
-      maskedIdentifier: maskIdentifier(parsed.identifier, "email"),
+      maskedIdentifier: maskIdentifier(parsed.identifier, idType),
+      channel: idType === "phone" ? "whatsapp" : "email",
       message: "If an account exists with that identifier, a 6-digit code is on its way.",
     });
   }
@@ -93,19 +87,40 @@ export async function POST(request: NextRequest) {
     }, { status: 429 });
   }
 
-  // Send via email. WhatsApp wiring is the follow-up commit.
-  await sendEmail({
-    from: "no-reply",
-    to: user.email,
-    subject: "Your OduDoc login code",
-    html: `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#111;padding:24px;">
-      <h2 style="margin:0 0 12px;">Your OduDoc login code</h2>
-      <p style="font-size:14px;color:#444;">Use this code to finish signing in. It expires in 10 minutes.</p>
-      <p style="font-size:32px;letter-spacing:8px;font-weight:bold;background:#f5f5f5;padding:16px 20px;border-radius:8px;display:inline-block;">${issued.code}</p>
-      <p style="font-size:12px;color:#666;margin-top:16px;">If you didn't request this, ignore this email — your account is safe.</p>
-    </body></html>`,
-    bulk: false,
-  }).catch(() => {/* delivery failures fall back to the masked-identifier response */});
+  // Deliver via the channel matching the identifier. WhatsApp uses an
+  // approved Meta template (configured via sent.dm or Twilio ContentSid)
+  // — we can't send freeform cold-contact OTPs outside the 24h CS window.
+  // Both delivery paths fail open: the fixed-shape success response is
+  // already in flight; we just won't have a code to send.
+  if (idType === "phone" && user.phone) {
+    const tplSid = process.env.TWILIO_WA_OTP_CONTENT_SID;
+    const sentDmTpl = process.env.SENTDM_TEMPLATE_LOGIN_OTP;
+    if (tplSid || sentDmTpl) {
+      await sendWhatsAppTemplate(
+        user.phone,
+        tplSid,
+        { var_1: issued.code, "1": issued.code, code: issued.code },
+        { sentDmTemplate: sentDmTpl },
+      ).catch(() => {});
+    }
+  } else {
+    await sendEmail({
+      from: "no-reply",
+      to: user.email,
+      subject: "Your OduDoc login code",
+      html: `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#111;padding:24px;">
+        <h2 style="margin:0 0 12px;">Your OduDoc login code</h2>
+        <p style="font-size:14px;color:#444;">Use this code to finish signing in. It expires in 10 minutes.</p>
+        <p style="font-size:32px;letter-spacing:8px;font-weight:bold;background:#f5f5f5;padding:16px 20px;border-radius:8px;display:inline-block;">${issued.code}</p>
+        <p style="font-size:12px;color:#666;margin-top:16px;">If you didn't request this, ignore this email — your account is safe.</p>
+      </body></html>`,
+      bulk: false,
+    }).catch(() => {});
+  }
+
+  const maskedTarget = idType === "phone"
+    ? maskIdentifier(user.phone || parsed.identifier, "phone")
+    : maskIdentifier(user.email, "email");
 
   await recordEvent({
     category: "system",
@@ -113,12 +128,13 @@ export async function POST(request: NextRequest) {
     actorEmail: user.email,
     subjectKind: "user",
     subjectId: user.id,
-    summary: `Patient OTP login requested (${maskIdentifier(user.email, "email")})`,
+    summary: `Patient OTP login requested via ${idType} (${maskedTarget})`,
   }).catch(() => {});
 
   return NextResponse.json({
     ok: true,
-    maskedIdentifier: maskIdentifier(user.email, "email"),
-    message: `Code sent to ${maskIdentifier(user.email, "email")}. Expires in 10 minutes.`,
+    maskedIdentifier: maskedTarget,
+    channel: idType === "phone" ? "whatsapp" : "email",
+    message: `Code sent to ${maskedTarget}. Expires in 10 minutes.`,
   });
 }

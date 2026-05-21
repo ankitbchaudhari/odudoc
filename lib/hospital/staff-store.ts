@@ -153,6 +153,17 @@ export function getStaffById(
   return s;
 }
 
+/** Cross-tenant lookup by employee code (e.g. "EMP-ABCD-0001" or legacy
+ *  "STF-NNNNN"). Used by the corporate login flow so a staff member can
+ *  sign in with their printed staff ID instead of their email. Returns
+ *  the staff row regardless of tenant — the auth layer is responsible
+ *  for downstream org-status checks. */
+export function findStaffByEmployeeCode(code: string): StaffMember | null {
+  const c = code.trim().toUpperCase();
+  if (!c) return null;
+  return staff.find((s) => s.employeeCode.toUpperCase() === c) || null;
+}
+
 export interface StaffInput {
   firstName: string;
   lastName: string;

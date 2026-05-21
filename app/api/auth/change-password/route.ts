@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { changeUserPassword } from "@/lib/users-store";
+import { assertPasswordNotPwned } from "@/lib/hibp";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,6 +41,15 @@ export async function POST(req: NextRequest) {
   if (current === next) {
     return NextResponse.json(
       { error: "same_password", message: "New password must differ from the temporary one." },
+      { status: 400 },
+    );
+  }
+  // HaveIBeenPwned k-anonymity check. Fail-open on network issues so
+  // a HIBP outage doesn't lock everyone out of password change.
+  const pwned = await assertPasswordNotPwned(next);
+  if (!pwned.ok) {
+    return NextResponse.json(
+      { error: "pwned_password", message: pwned.reason, count: pwned.count },
       { status: 400 },
     );
   }

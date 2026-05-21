@@ -13,7 +13,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/db-migrate.ts",
     "db:studio": "drizzle-kit studio",
-    "db:v12:policies": "tsx scripts/v12-apply-policies.ts"
+    "db:v12:policies": "tsx scripts/v12-apply-policies.ts",
+    "v14:audit": "tsx scripts/v14-audit.ts"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.49.0",

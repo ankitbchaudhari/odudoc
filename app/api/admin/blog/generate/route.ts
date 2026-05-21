@@ -4,8 +4,14 @@
 //
 // Accepts optional JSON body { topic?, category?, strategy? } to override
 // the auto-picked topic — handy when you want an article on a specific theme.
+//
+// Auth (V14 audit fix): admin / support only. Without this gate the
+// endpoint was anonymously callable — anyone could burn LLM tokens
+// + spawn draft posts.
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { generateBlogArticle, type GenerateOptions } from "@/lib/ai-blog-generator";
 import { createPost } from "@/lib/blog-store";
 
@@ -20,7 +26,16 @@ function initials(name: string): string {
     .toUpperCase();
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return NextResponse.json({ ok: false, error: "unauthenticated" }, { status: 401 });
+  }
+  const role = (session.user as { role?: string }).role;
+  if (!["admin", "support"].includes(role || "")) {
+    return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
+  }
+
   let body: GenerateOptions = {};
   try {
     body = (await req.json()) as GenerateOptions;

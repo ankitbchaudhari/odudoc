@@ -67,6 +67,113 @@ registerExport("consultations", {
   },
 });
 
+// ── users (all roles) ─────────────────────────────────────────
+registerExport("users", {
+  allowedRoles: ["admin", "hr", "support"],
+  async fetch(ctx) {
+    const { listUsersAdmin } = await import("@/lib/users-store");
+    let rows = listUsersAdmin();
+    const role = ctx.filters.role;
+    if (role) rows = rows.filter((u) => u.role === role);
+    return {
+      title: "Users directory",
+      hospitalName: "OduDoc Platform",
+      filterSummary: role ? `Role: ${role}` : "All users",
+      pdfColumns: [
+        { header: "Name",  width: 0.26, render: (r) => String(r.name || "") },
+        { header: "Email", width: 0.32, render: (r) => String(r.email || "") },
+        { header: "Phone", width: 0.18, render: (r) => String(r.phone || "") },
+        { header: "Role",  width: 0.14, render: (r) => String(r.role || ""), align: "center" },
+        { header: "Status",width: 0.10, render: (r) => String(r.status || "active"), align: "center" },
+      ],
+      excelColumns: [
+        { header: "Name",  width: 26, value: (r) => String(r.name || "") },
+        { header: "Email", width: 32, value: (r) => String(r.email || "") },
+        { header: "Phone", width: 16, value: (r) => String(r.phone || "") },
+        { header: "Role",  width: 14, value: (r) => String(r.role || "") },
+        { header: "Status",width: 10, value: (r) => String(r.status || "active") },
+        { header: "Created", width: 18, value: (r) => r.createdAt ? new Date(r.createdAt as string) : "", numFmt: "yyyy-mm-dd" },
+      ],
+      rows: rows as unknown as Record<string, unknown>[],
+    };
+  },
+});
+
+// ── withdrawals ───────────────────────────────────────────────
+registerExport("withdrawals", {
+  allowedRoles: ["admin", "support"],
+  async fetch(ctx) {
+    const { listWithdrawals } = await import("@/lib/withdrawals-store");
+    let rows = listWithdrawals();
+    const status = ctx.filters.status;
+    if (status) rows = rows.filter((w) => w.status === status);
+    return {
+      title: "Doctor withdrawals",
+      hospitalName: "OduDoc Platform",
+      filterSummary: status ? `Status: ${status}` : "All withdrawals",
+      pdfColumns: [
+        { header: "Requested",  width: 0.18, render: (r) => r.requestedAt ? new Date(r.requestedAt as string).toLocaleDateString() : "" },
+        { header: "Doctor",     width: 0.24, render: (r) => String(r.doctorName || r.doctorEmail || "") },
+        { header: "Amount",     width: 0.16, render: (r) => `₹${((r.amount as number) ?? 0).toLocaleString()}`, align: "right" },
+        { header: "Method",     width: 0.16, render: (r) => String(r.method || ""), align: "center" },
+        { header: "Status",     width: 0.14, render: (r) => String(r.status || ""), align: "center" },
+        { header: "Decided by", width: 0.12, render: (r) => String(r.decidedBy || ""), align: "right" },
+      ],
+      excelColumns: [
+        { header: "Requested",  width: 18, value: (r) => r.requestedAt ? new Date(r.requestedAt as string) : "", numFmt: "yyyy-mm-dd hh:mm" },
+        { header: "Doctor",     width: 24, value: (r) => String(r.doctorName || r.doctorEmail || "") },
+        { header: "Doctor email", width: 24, value: (r) => String(r.doctorEmail || "") },
+        { header: "Amount",     width: 14, value: (r) => Number(r.amount ?? 0), numFmt: "₹#,##0", align: "right" },
+        { header: "Method",     width: 14, value: (r) => String(r.method || "") },
+        { header: "Status",     width: 14, value: (r) => String(r.status || "") },
+        { header: "Decided by", width: 24, value: (r) => String(r.decidedBy || "") },
+        { header: "Decided at", width: 18, value: (r) => r.decidedAt ? new Date(r.decidedAt as string) : "", numFmt: "yyyy-mm-dd hh:mm" },
+      ],
+      rows: rows as unknown as Record<string, unknown>[],
+    };
+  },
+});
+
+// ── PPME reports ──────────────────────────────────────────────
+registerExport("ppme", {
+  allowedRoles: ["admin", "support"],
+  async fetch(ctx) {
+    const { listPpme } = await import("@/lib/ppme-store");
+    const status = ctx.filters.status as
+      | "scheduled" | "in_progress" | "submitted" | "approved" | "rejected" | "cancelled"
+      | undefined;
+    const rows = await listPpme({ status, limit: 5000 });
+    return {
+      title: "Pre-Policy Medical Examinations",
+      hospitalName: "OduDoc Platform",
+      filterSummary: status ? `Status: ${status}` : "All PPME reports",
+      pdfColumns: [
+        { header: "Created",  width: 0.14, render: (r) => new Date(r.createdAt as string).toLocaleDateString() },
+        { header: "Patient",  width: 0.20, render: (r) => String(r.patientName || "") },
+        { header: "Insurer",  width: 0.18, render: (r) => String(r.insurerName || "") },
+        { header: "Ref",      width: 0.10, render: (r) => String(r.insurerRef || "") },
+        { header: "Tier",     width: 0.10, render: (r) => String(r.tier || ""), align: "center" },
+        { header: "Status",   width: 0.12, render: (r) => String(r.status || ""), align: "center" },
+        { header: "Fee",      width: 0.16, render: (r) => `${(r.currency as string) === "INR" ? "₹" : "$"}${(((r.feeCents as number) ?? 0) / 100).toLocaleString()}`, align: "right" },
+      ],
+      excelColumns: [
+        { header: "Created",     width: 18, value: (r) => new Date(r.createdAt as string), numFmt: "yyyy-mm-dd hh:mm" },
+        { header: "Patient",     width: 22, value: (r) => String(r.patientName || "") },
+        { header: "Insurer",     width: 20, value: (r) => String(r.insurerName || "") },
+        { header: "Insurer ref", width: 12, value: (r) => String(r.insurerRef || "") },
+        { header: "Policy type", width: 16, value: (r) => String(r.policyType || "") },
+        { header: "Tier",        width: 14, value: (r) => String(r.tier || "") },
+        { header: "Fee (cents)", width: 14, value: (r) => Number(r.feeCents ?? 0), numFmt: "#,##0", align: "right" },
+        { header: "Currency",    width: 10, value: (r) => String(r.currency || "INR") },
+        { header: "Status",      width: 14, value: (r) => String(r.status || "") },
+        { header: "Submitted",   width: 18, value: (r) => r.completedAt ? new Date(r.completedAt as string) : "", numFmt: "yyyy-mm-dd hh:mm" },
+        { header: "Report hash", width: 50, value: (r) => String(r.reportHash || "") },
+      ],
+      rows: rows as unknown as Record<string, unknown>[],
+    };
+  },
+});
+
 // ── doctors ───────────────────────────────────────────────────
 registerExport("doctors", {
   allowedRoles: ["admin", "hr", "support"],

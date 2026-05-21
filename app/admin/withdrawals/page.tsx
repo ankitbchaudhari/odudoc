@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { WithdrawalRequest, WithdrawalStatus } from "@/lib/withdrawals-store";
+import ExportButtons from "@/components/ExportButtons";
 
 const STATUS_STYLES: Record<WithdrawalStatus, { pill: string; dot: string }> = {
   pending: { pill: "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 ring-amber-200", dot: "bg-amber-500" },
@@ -118,6 +119,8 @@ export default function AdminWithdrawalsPage() {
             Review and approve doctor payout requests. Approved requests should be marked as Paid once the transfer has been sent.
           </p>
         </div>
+        {/* V4 §2 export */}
+        <ExportButtons type="withdrawals" className="text-white" />
       </div>
 
       <div className="mb-4 flex flex-wrap gap-2">

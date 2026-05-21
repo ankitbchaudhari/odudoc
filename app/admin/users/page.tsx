@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import ExportButtons from "@/components/ExportButtons";
 
 // Mirrors AdminUserView in lib/users-store.ts (kept in sync manually — the
 // admin page only renders the fields it needs, so drift here is low-risk).
@@ -347,6 +348,8 @@ export default function AdminUsersPage() {
             {loading ? "Loading…" : `${users.length} total users · ${stats.banned} banned`}
           </p>
         </div>
+        {/* V4 §2 export */}
+        <ExportButtons type="users" className="text-white" />
       </div>
 
       {error && (

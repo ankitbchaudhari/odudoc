@@ -1,5 +1,7 @@
 "use client";
 
+import ExportButtons from "@/components/ExportButtons";
+
 // V9 §3 PPME admin board.
 //
 // List view + per-report detail with the V9 §3.5 test grid.
@@ -123,12 +125,15 @@ export default function PpmePage() {
             → performing facility (85%).
           </p>
         </div>
-        <button
-          onClick={() => setShowSchedule(true)}
-          className="rounded-xl bg-[#0F6E56] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0A5942]"
-        >
-          + Schedule PPME
-        </button>
+        <div className="flex items-center gap-2">
+          <ExportButtons type="ppme" />
+          <button
+            onClick={() => setShowSchedule(true)}
+            className="rounded-xl bg-[#0F6E56] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0A5942]"
+          >
+            + Schedule PPME
+          </button>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[2fr_3fr]">

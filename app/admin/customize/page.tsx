@@ -502,6 +502,18 @@ function SeoTab({ theme, setTheme }: { theme: Theme; setTheme: (t: Theme) => voi
       <TextField label="Google Analytics ID" value={s.googleAnalyticsId} onChange={(v) => upd({ googleAnalyticsId: v })} placeholder="G-XXXXXX" />
       <TextField label="Google Tag Manager ID" value={s.googleTagManagerId} onChange={(v) => upd({ googleTagManagerId: v })} placeholder="GTM-XXXX" />
       <TextField label="Facebook Pixel ID" value={s.facebookPixelId} onChange={(v) => upd({ facebookPixelId: v })} />
+      <div className="md:col-span-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+        <strong>⚠ Marketing tracker compliance:</strong> These IDs are
+        currently <em>not</em> auto-injected into the site. OduDoc is a
+        healthcare platform — running Meta Pixel, Google Tag Manager,
+        or Analytics on patient-facing routes (dashboards, booking,
+        doctor profiles, pharmacy, labs) risks transmitting inferred
+        health data to ad networks under DPDP/GDPR/HIPAA. If you wire
+        any tracker, gate it via <code>lib/marketing-routes.ts</code>
+        and <code>components/MetaPixel.tsx</code> (fail-closed
+        allowlist). Confirm Meta's "Automatic event enrichment" is
+        OFF in Events Manager before going live.
+      </div>
       <div className="md:col-span-2">
         <Toggle label="Allow search engines to index this site" checked={s.robotsIndex} onChange={(v) => upd({ robotsIndex: v })} hint="Off = robots.txt will disallow indexing." />
       </div>

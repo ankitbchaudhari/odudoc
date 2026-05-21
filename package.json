@@ -12,7 +12,8 @@
     "test:coverage": "vitest run --coverage",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/db-migrate.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:v12:policies": "tsx scripts/v12-apply-policies.ts"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.49.0",

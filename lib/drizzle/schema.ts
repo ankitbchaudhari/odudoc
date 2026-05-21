@@ -530,6 +530,14 @@ export const paymentEventsRelations = relations(paymentEvents, ({ one }) => ({
   }),
 }));
 
+// ---------------------------------------------------------------------------
+// V12 — 47 missing tables (clinical, wallet, accountability, marketplaces,
+// insurance, pharma, education). Re-exported so drizzle-kit picks them up
+// from this single entry point.
+// ---------------------------------------------------------------------------
+
+export * from "./schema-v12";
+
 export const ordersRelations = relations(orders, ({ many }) => ({
   items: many(orderItems),
 }));

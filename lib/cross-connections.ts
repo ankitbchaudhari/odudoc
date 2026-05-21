@@ -219,6 +219,29 @@ const HANDLERS: Record<CrossConnection, Handler[]> = {
       // without re-touching the booking route.
       log.info("xc.doctor_appointment_notif_dispatched", { bookingId: ctx.bookingId, doctorId: ctx.doctorId });
     },
+    async (ctx) => {
+      // V16 §2.1 — auto-issue an appointment QR. Valid 30 min before
+      // slot until 2h after. Patient sees it in their My QR codes
+      // dashboard immediately + show it at reception to check in.
+      if (!ctx.bookingId || !ctx.patientEmail || !ctx.timeSlot) return;
+      try {
+        // Late require — qr-store imports accountability + persistent
+        // array, both of which sit deep in the dep tree.
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const qr = require("@/lib/qr-store") as typeof import("@/lib/qr-store");
+        await qr.issueAppointmentQr({
+          bookingId: String(ctx.bookingId),
+          patientId: String(ctx.patientEmail),
+          patientEmail: String(ctx.patientEmail),
+          // timeSlot in V6 §5.6 ctx is the slot string like "10:30 AM"
+          // — if a full ISO is available downstream this gets refined.
+          // For demo we treat it as "now + 1h" to give a usable window.
+          timeSlotStartAt: ctx.timeSlotStartAt ? String(ctx.timeSlotStartAt) : new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        });
+      } catch (e) {
+        log.warn("xc.appointment_qr_issue_warn", { error: String(e) });
+      }
+    },
   ],
 
   // §5.7 consultation.completed

@@ -150,6 +150,7 @@ export default function DashboardPage() {
     { label: "Report near-miss", href: "/dashboard/near-miss", icon: "🛡️", grad: "from-[#1D9E75] to-[#0F6E56]" },
     { label: "My Learning", href: "/dashboard/courses", icon: "🎓", grad: "from-[#0F6E56] to-[#042C53]" },
     { label: "Equipment marketplace", href: "/equipment", icon: "🩺", grad: "from-[#042C53] to-[#1E40AF]" },
+    { label: "My QR codes", href: "/dashboard/qr", icon: "🪪", grad: "from-[#0F6E56] to-[#1D9E75]" },
     { label: "Wearables", href: "/dashboard/wearables", icon: "⌚", grad: "from-cyan-400 to-sky-600" },
     { label: "Import Rx", href: "/dashboard/rx-import", icon: "📷", grad: "from-orange-400 to-amber-600" },
     { label: "ABHA / ABDM", href: "/dashboard/abha", icon: "🇮🇳", grad: "from-yellow-400 to-orange-600" },

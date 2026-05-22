@@ -12,7 +12,6 @@
 // /pro/dashboard (clinical / corporate roles).
 
 import Link from "next/link";
-import Logo from "@/components/Logo";
 
 export const metadata = {
   title: "Log in — OduDoc",
@@ -53,16 +52,6 @@ const DOORS = [
 export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Top bar — matches signup chrome */}
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-          <Logo size="sm" />
-          <Link href="/signup" className="text-sm font-semibold text-[#0F6E56] hover:underline">
-            Sign up →
-          </Link>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-xl px-4 py-12 sm:px-6">
         <p className="text-xs font-bold uppercase tracking-widest text-[#0F6E56]">Welcome back</p>
         <h1 className="mt-1 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">Log in to OduDoc</h1>

@@ -107,11 +107,15 @@ export default function ClinicPricing() {
   return (
     <section className="bg-gradient-to-br from-slate-50 via-white to-violet-50/40 py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-3">
+        {/* pt-6 leaves headroom for the absolutely-positioned "Most
+            popular" badge (positioned at -top-4) so it isn't clipped
+            by the section above. overflow-hidden was removed from the
+            card itself for the same reason — it cropped the badge. */}
+        <div className="grid grid-cols-1 items-stretch gap-6 pt-6 lg:grid-cols-3">
           {TIERS.map((t) => (
             <div
               key={t.id}
-              className={`relative flex flex-col overflow-hidden rounded-3xl border bg-white p-7 shadow-sm transition-all hover:shadow-xl ${
+              className={`relative flex flex-col rounded-3xl border bg-white p-7 shadow-sm transition-all hover:shadow-xl ${
                 t.popular
                   ? "border-violet-500 ring-2 ring-violet-500/30 shadow-lg lg:scale-[1.03]"
                   : "border-slate-200"

@@ -125,6 +125,20 @@ export interface EmergencyNumberEntry {
   helpline: string;
 }
 
+// One row of the regional-pricing override table. See
+// lib/regional-pricing.ts for the full semantics — admins set per-
+// country prices for any product in PRICING_PRODUCTS via this list,
+// and the resolver falls back to FX-converted USD when no row matches.
+export interface RegionalPricingEntry {
+  productKey: string;
+  country: string;
+  currency: string;
+  monthlyMinor?: number;
+  annualMinor?: number;
+  oneTimeMinor?: number;
+  footnote?: string;
+}
+
 export interface SiteSettings {
   common: CommonSettings;
   captcha: CaptchaSettings;
@@ -144,6 +158,7 @@ export interface SiteSettings {
   invoice: InvoiceSettings;
   socialProviders: SocialProvider[];
   emergencyNumbers: EmergencyNumberEntry[];
+  regionalPricing: RegionalPricingEntry[];
   updatedAt: string;
 }
 
@@ -277,6 +292,12 @@ const defaults: SiteSettings = {
     { country: "BR", localEmergency: "192", helpline: "+1 (302) 899-2625" },
     { country: "MX", localEmergency: "911", helpline: "+1 (302) 899-2625" },
   ],
+  // Empty by default — the regional-pricing resolver falls back to
+  // live FX conversion of the base USD price defined in
+  // PRICING_PRODUCTS. Admins add rows here via /admin/regional-pricing
+  // when they want to deviate from FX (PPP discounts for low-income
+  // markets, round-number marketing prices, etc.).
+  regionalPricing: [],
   updatedAt: new Date().toISOString(),
 };
 
@@ -322,6 +343,8 @@ async function hydrate(): Promise<void> {
             stored.emergencyNumbers && stored.emergencyNumbers.length > 0
               ? stored.emergencyNumbers
               : defaults.emergencyNumbers,
+          // Older blobs predate regional pricing → start empty.
+          regionalPricing: stored.regionalPricing || [],
         };
       }
       hydrated = true;

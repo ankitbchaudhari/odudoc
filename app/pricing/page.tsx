@@ -1,11 +1,38 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { pricingPlans, pricingFAQs } from "@/lib/data";
 import ClinicPricing from "@/components/pricing/ClinicPricing";
+import CountrySwitcher from "@/components/CountrySwitcher";
 
 type Audience = "patients" | "clinics";
+
+interface ResolvedPrice {
+  productKey: string;
+  monthly: string | null;
+  annual: string | null;
+  monthlyMinor: number | null;
+  annualMinor: number | null;
+  source: "override" | "fx" | "base";
+  isCustom: boolean;
+}
+
+interface PricingPayload {
+  country: string;
+  currency: { code: string; symbol: string } | null;
+  products: Record<string, ResolvedPrice>;
+}
+
+// Maps the existing pricingPlans[].id → productKey used by the
+// regional-pricing engine. Keeping the mapping local to the page so
+// the data layer in lib/data.ts stays unchanged.
+const PLAN_KEY_MAP: Record<string, string> = {
+  starter: "plan:starter",
+  "clinic-pro": "plan:clinic-pro",
+  hospital: "plan:hospital",
+  enterprise: "plan:enterprise",
+};
 
 export default function PricingPage() {
   const [annual, setAnnual] = useState(false);
@@ -13,6 +40,33 @@ export default function PricingPage() {
   // Default to clinics — most pricing-page traffic from /for-doctors
   // and /corporate is shopping for the clinic SaaS, not patient plans.
   const [audience, setAudience] = useState<Audience>("clinics");
+  const [pricing, setPricing] = useState<PricingPayload | null>(null);
+
+  // Load localized prices once on mount. The endpoint reads the
+  // odudoc-country cookie (set by CountrySwitcher) > Vercel geo
+  // header > US default, so the first paint is already in the right
+  // currency for IP-detected visitors.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/pricing", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled && d) setPricing(d);
+      })
+      .catch(() => {
+        /* fall back to USD strings below */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Switcher writes the cookie + calls router.refresh; we additionally
+  // refetch so the client state updates without a full reload.
+  const handleCountryChange = async () => {
+    const r = await fetch("/api/pricing", { cache: "no-store" });
+    if (r.ok) setPricing(await r.json());
+  };
 
   return (
     <>
@@ -28,6 +82,17 @@ export default function PricingPage() {
           <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-500 dark:text-slate-400">
             One platform, two audiences. Pick yours.
           </p>
+
+          {/* Country switcher — overrides IP-detected location for the
+              whole pricing surface. Cookie persists across reloads. */}
+          {pricing && (
+            <div className="mt-5 flex justify-center">
+              <CountrySwitcher
+                current={pricing.country}
+                onChange={handleCountryChange}
+              />
+            </div>
+          )}
 
           {/* Audience tabs */}
           <div className="mt-8 inline-flex items-center gap-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1 shadow-sm">
@@ -123,27 +188,55 @@ export default function PricingPage() {
                 </div>
 
                 <div className="mt-6 text-center">
-                  {plan.monthlyPrice === 0 ? (
-                    <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-3xl font-extrabold text-gray-900 dark:text-slate-100">Custom</span>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-4xl font-extrabold text-gray-900 dark:text-slate-100">
-                          ${annual ? plan.annualPrice : plan.monthlyPrice}
-                        </span>
-                        <span className="text-sm text-gray-500 dark:text-slate-400">
-                          /{annual ? "year" : "month"}
-                        </span>
-                      </div>
-                      {annual && (
-                        <p className="mt-1 text-xs text-green-600 font-medium">
-                          ${Math.round((plan.monthlyPrice * 12 - plan.annualPrice))} saved annually
-                        </p>
-                      )}
-                    </>
-                  )}
+                  {(() => {
+                    // Pull the localized price for this plan. Falls back
+                    // to the hard-coded USD value while the API call is
+                    // in flight, so the first paint isn't blank.
+                    const resolved = pricing?.products[PLAN_KEY_MAP[plan.id]];
+                    const isCustom = plan.monthlyPrice === 0;
+                    if (isCustom) {
+                      return (
+                        <div className="flex items-baseline justify-center gap-1">
+                          <span className="text-3xl font-extrabold text-gray-900 dark:text-slate-100">Custom</span>
+                        </div>
+                      );
+                    }
+                    const display = annual
+                      ? resolved?.annual ?? `$${plan.annualPrice}`
+                      : resolved?.monthly ?? `$${plan.monthlyPrice}`;
+                    const savedMinor =
+                      resolved &&
+                      resolved.monthlyMinor !== null &&
+                      resolved.annualMinor !== null
+                        ? resolved.monthlyMinor * 12 - resolved.annualMinor
+                        : null;
+                    const savedDisplay =
+                      savedMinor !== null && savedMinor > 0 && pricing?.currency
+                        ? `${pricing.currency.symbol}${Math.round(savedMinor / Math.pow(10, 2)).toLocaleString()}`
+                        : `$${Math.round(plan.monthlyPrice * 12 - plan.annualPrice)}`;
+                    return (
+                      <>
+                        <div className="flex items-baseline justify-center gap-1">
+                          <span className="text-4xl font-extrabold text-gray-900 dark:text-slate-100">
+                            {display}
+                          </span>
+                          <span className="text-sm text-gray-500 dark:text-slate-400">
+                            /{annual ? "year" : "month"}
+                          </span>
+                        </div>
+                        {annual && (
+                          <p className="mt-1 text-xs text-green-600 font-medium">
+                            {savedDisplay} saved annually
+                          </p>
+                        )}
+                        {resolved?.source === "fx" && (
+                          <p className="mt-1 text-[10px] text-gray-400 dark:text-slate-500">
+                            Auto-converted from USD
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
 
                 <ul className="mt-8 space-y-3">

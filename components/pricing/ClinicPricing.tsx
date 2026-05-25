@@ -5,8 +5,16 @@
 // tier (50 patients/month cap); Practice unlocks the cap to 250 +
 // extra staff seats for a flat $50/mo; Enterprise is "talk to us"
 // for hospitals.
+//
+// Numeric prices come from /api/pricing so they're localized per the
+// visitor's country (cookie-overridden or IP-detected). The catalogue
+// below still defines features + CTAs + tier ordering; only the
+// formatted price string is swapped out at render time.
+
+"use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface Tier {
   id: "free" | "practice" | "enterprise";
@@ -103,7 +111,39 @@ function formatPrice(p: Tier["priceUsd"]): string {
   return `$${p}`;
 }
 
+// Tier id → productKey in lib/regional-pricing.ts. Kept local because
+// the IDs above predate the regional-pricing engine.
+const TIER_KEY_MAP: Record<Tier["id"], string> = {
+  free: "clinic:free",
+  practice: "clinic:practice",
+  enterprise: "clinic:enterprise",
+};
+
+interface ResolvedPrice {
+  productKey: string;
+  monthly: string | null;
+  source: "override" | "fx" | "base";
+  isCustom: boolean;
+  footnote: string | null;
+}
+
 export default function ClinicPricing() {
+  const [resolved, setResolved] = useState<Record<string, ResolvedPrice>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/pricing", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled || !d?.products) return;
+        setResolved(d.products);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <section className="bg-gradient-to-br from-slate-50 via-white to-violet-50/40 py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -134,14 +174,31 @@ export default function ClinicPricing() {
                 <p className="mt-1 min-h-[40px] text-sm text-slate-500">{t.blurb}</p>
                 <div className="mt-5 flex items-baseline gap-1">
                   <span className="text-4xl font-extrabold text-slate-900">
-                    {formatPrice(t.priceUsd)}
+                    {(() => {
+                      const r = resolved[TIER_KEY_MAP[t.id]];
+                      if (t.priceUsd === "custom") return "Custom";
+                      // Show localized string when we have it; fall back
+                      // to the static USD value until the API resolves.
+                      return r?.monthly ?? formatPrice(t.priceUsd);
+                    })()}
                   </span>
                   {typeof t.priceUsd === "number" && t.priceUsd > 0 && (
                     <span className="text-sm text-slate-500">/clinic/mo</span>
                   )}
                 </div>
-                {t.footnote && (
-                  <p className="mt-1 text-[11px] text-slate-500">{t.footnote}</p>
+                {(() => {
+                  const r = resolved[TIER_KEY_MAP[t.id]];
+                  // Admin-supplied per-country footnote wins; otherwise
+                  // fall back to the static catalogue text.
+                  const note = r?.footnote || t.footnote;
+                  return note ? (
+                    <p className="mt-1 text-[11px] text-slate-500">{note}</p>
+                  ) : null;
+                })()}
+                {resolved[TIER_KEY_MAP[t.id]]?.source === "fx" && (
+                  <p className="mt-0.5 text-[10px] text-slate-400">
+                    Auto-converted from USD
+                  </p>
                 )}
               </div>
 

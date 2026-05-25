@@ -24,6 +24,7 @@ const SECTIONS: (keyof SiteSettings)[] = [
   "invoice",
   "socialProviders",
   "emergencyNumbers",
+  "regionalPricing",
 ];
 
 export async function GET() {

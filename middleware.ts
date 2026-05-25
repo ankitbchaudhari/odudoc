@@ -92,6 +92,7 @@ const SUPER_ONLY_PREFIXES = [
   "/admin/settings",
   "/admin/emergency-numbers",
   "/admin/regional-pricing",
+  "/admin/fx-rates",
   "/admin/abdm",
   "/admin/doctor-invites",
 ];

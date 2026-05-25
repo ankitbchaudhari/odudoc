@@ -139,6 +139,14 @@ export interface RegionalPricingEntry {
   footnote?: string;
 }
 
+// FX provider configuration — see lib/currency-convert.ts for the
+// provider catalogue + fallback semantics. Admin picks primary/
+// secondary in /admin/fx-rates.
+export interface FxSettings {
+  primaryProvider: string;   // e.g. "open-er-api"
+  secondaryProvider: string; // e.g. "exchangerate-host"
+}
+
 export interface SiteSettings {
   common: CommonSettings;
   captcha: CaptchaSettings;
@@ -159,6 +167,7 @@ export interface SiteSettings {
   socialProviders: SocialProvider[];
   emergencyNumbers: EmergencyNumberEntry[];
   regionalPricing: RegionalPricingEntry[];
+  fx: FxSettings;
   updatedAt: string;
 }
 
@@ -298,6 +307,13 @@ const defaults: SiteSettings = {
   // when they want to deviate from FX (PPP discounts for low-income
   // markets, round-number marketing prices, etc.).
   regionalPricing: [],
+  // FX provider preferences — see /admin/fx-rates. Defaults to the
+  // pair this codebase has shipped with: open.er-api as primary,
+  // exchangerate.host as fallback.
+  fx: {
+    primaryProvider: "open-er-api",
+    secondaryProvider: "exchangerate-host",
+  },
   updatedAt: new Date().toISOString(),
 };
 
@@ -345,6 +361,8 @@ async function hydrate(): Promise<void> {
               : defaults.emergencyNumbers,
           // Older blobs predate regional pricing → start empty.
           regionalPricing: stored.regionalPricing || [],
+          // Older blobs predate FX settings → use defaults.
+          fx: { ...defaults.fx, ...(stored.fx || {}) },
         };
       }
       hydrated = true;

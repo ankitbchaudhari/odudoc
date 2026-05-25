@@ -1,72 +1,237 @@
 // Currency conversion.
 //
-// Two upstream FX providers, tried in order, both free and key-less:
-//   1. https://open.er-api.com   (ECB-backed daily rates, primary)
-//   2. https://api.exchangerate.host (CurrencyLayer-backed, fallback)
-// We rotate to the fallback if the primary errors or returns a malformed
-// payload, so a single provider's bad day doesn't break checkout.
+// Multiple free, keyless providers — admin picks the primary +
+// secondary in /admin/fx-rates, and the engine falls back from one to
+// the next on error. Provider list is intentionally short and curated
+// to ones that have been reliable in production:
 //
-// One module-level Map<base, RateTable> caches each base for an hour
-// so concurrent callers and back-to-back page renders reuse the same
-// fetch — matches the in-memory pattern used elsewhere in the codebase.
-// On total failure (both providers down), getRates() returns the most
-// recent cached entry if any, then empty object as last resort.
+//   open-er-api      https://open.er-api.com         ECB-backed daily
+//   exchangerate-host https://api.exchangerate.host  CurrencyLayer-backed
+//   frankfurter      https://api.frankfurter.app     ECB-only, free
+//   fawazahmed0      https://cdn.jsdelivr.net/gh/fawazahmed0/...
+//                                                    Daily GH-published table
+//
+// Module-level Map<base, RateTable> caches each base for an hour so
+// concurrent callers and back-to-back page renders reuse the same
+// fetch. On total provider failure we surface stale cache if any, then
+// an empty rates map as last resort — callers already handle empty by
+// passing the source amount through unconverted.
+
+import { getSettings, ensureHydrated } from "./settings-store";
+
+export type FxProviderId =
+  | "open-er-api"
+  | "exchangerate-host"
+  | "frankfurter"
+  | "fawazahmed0";
+
+export interface FxProvider {
+  id: FxProviderId;
+  name: string;
+  url: string;        // Marketing URL — shown in the admin UI
+  description: string;
+}
+
+// Public catalogue for the admin picker. Order is the default
+// preference order if the admin hasn't picked anything explicitly.
+export const FX_PROVIDERS: FxProvider[] = [
+  {
+    id: "open-er-api",
+    name: "Open Exchange Rates API",
+    url: "https://open.er-api.com",
+    description: "ECB-backed daily rates. Free, no key. Updates ~once/day.",
+  },
+  {
+    id: "exchangerate-host",
+    name: "exchangerate.host",
+    url: "https://exchangerate.host",
+    description: "CurrencyLayer-backed. Free, no key. Includes historical endpoints.",
+  },
+  {
+    id: "frankfurter",
+    name: "Frankfurter",
+    url: "https://www.frankfurter.app",
+    description: "ECB-only. Free, no key, no rate limit. Limited to ECB-tracked currencies.",
+  },
+  {
+    id: "fawazahmed0",
+    name: "Currency-API (fawazahmed0)",
+    url: "https://github.com/fawazahmed0/currency-api",
+    description: "Daily-updated table on jsDelivr CDN. Free, no key, ~150 currencies.",
+  },
+];
 
 export interface RateTable {
   base: string;
   rates: Record<string, number>;
   fetchedAt: number;
+  // Which provider actually answered this fetch — useful for the
+  // admin UI when the primary fails and we silently rotated to the
+  // secondary.
+  providerId: FxProviderId;
 }
 
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 const cache: Map<string, RateTable> = new Map();
 const inflight: Map<string, Promise<RateTable>> = new Map();
 
-async function fetchPrimary(base: string): Promise<RateTable> {
+// Track last-attempt status per provider for the admin status panel.
+interface ProviderStatus {
+  providerId: FxProviderId;
+  lastAttemptAt: number | null;
+  ok: boolean | null;
+  error?: string;
+  lastBase?: string;
+}
+const providerStatus: Map<FxProviderId, ProviderStatus> = new Map();
+
+// ─────────────────────────────────────────────────────────────────────
+// Per-provider fetchers. All normalize to RateTable shape.
+// ─────────────────────────────────────────────────────────────────────
+
+async function fetchOpenErApi(base: string): Promise<Record<string, number>> {
   const url = `https://open.er-api.com/v6/latest/${encodeURIComponent(base)}`;
   const r = await fetch(url, { cache: "no-store" });
-  if (!r.ok) throw new Error(`FX-primary HTTP ${r.status}`);
-  const j = (await r.json()) as { result?: string; rates?: Record<string, number> };
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const j = (await r.json()) as {
+    result?: string;
+    rates?: Record<string, number>;
+  };
   if (j.result !== "success" || !j.rates || typeof j.rates !== "object") {
-    throw new Error("FX-primary bad payload");
+    throw new Error("bad payload");
   }
-  return { base, rates: j.rates, fetchedAt: Date.now() };
+  return j.rates;
 }
 
-async function fetchFallback(base: string): Promise<RateTable> {
+async function fetchExchangeRateHost(
+  base: string,
+): Promise<Record<string, number>> {
   const url = `https://api.exchangerate.host/latest?base=${encodeURIComponent(base)}`;
   const r = await fetch(url, { cache: "no-store" });
-  if (!r.ok) throw new Error(`FX-fallback HTTP ${r.status}`);
-  const j = (await r.json()) as { success?: boolean; rates?: Record<string, number> };
-  // exchangerate.host returns `success` as boolean OR omits it entirely
-  // depending on the build — accept anything with a non-empty rates map.
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const j = (await r.json()) as { rates?: Record<string, number> };
   if (!j.rates || typeof j.rates !== "object" || Object.keys(j.rates).length === 0) {
-    throw new Error("FX-fallback bad payload");
+    throw new Error("bad payload");
   }
-  return { base, rates: j.rates, fetchedAt: Date.now() };
+  return j.rates;
+}
+
+async function fetchFrankfurter(
+  base: string,
+): Promise<Record<string, number>> {
+  const url = `https://api.frankfurter.app/latest?from=${encodeURIComponent(base)}`;
+  const r = await fetch(url, { cache: "no-store" });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const j = (await r.json()) as { rates?: Record<string, number> };
+  if (!j.rates || typeof j.rates !== "object" || Object.keys(j.rates).length === 0) {
+    throw new Error("bad payload");
+  }
+  // Frankfurter omits the base from the rates table — add it back as
+  // 1:1 so callers can do same-currency lookups without a branch.
+  return { ...j.rates, [base.toUpperCase()]: 1 };
+}
+
+async function fetchFawazahmed0(
+  base: string,
+): Promise<Record<string, number>> {
+  const lower = base.toLowerCase();
+  const url = `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${encodeURIComponent(lower)}.json`;
+  const r = await fetch(url, { cache: "no-store" });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const j = (await r.json()) as Record<string, unknown>;
+  const tableLower = j[lower] as Record<string, number> | undefined;
+  if (!tableLower || typeof tableLower !== "object") {
+    throw new Error("bad payload");
+  }
+  // Normalize keys to uppercase ISO codes (project-wide convention).
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(tableLower)) {
+    if (typeof v === "number") out[k.toUpperCase()] = v;
+  }
+  return out;
+}
+
+const FETCHERS: Record<
+  FxProviderId,
+  (base: string) => Promise<Record<string, number>>
+> = {
+  "open-er-api": fetchOpenErApi,
+  "exchangerate-host": fetchExchangeRateHost,
+  frankfurter: fetchFrankfurter,
+  fawazahmed0: fetchFawazahmed0,
+};
+
+async function tryProvider(
+  id: FxProviderId,
+  base: string,
+): Promise<Record<string, number>> {
+  const fetcher = FETCHERS[id];
+  if (!fetcher) throw new Error(`unknown provider ${id}`);
+  try {
+    const rates = await fetcher(base);
+    providerStatus.set(id, {
+      providerId: id,
+      lastAttemptAt: Date.now(),
+      ok: true,
+      lastBase: base,
+    });
+    return rates;
+  } catch (e) {
+    providerStatus.set(id, {
+      providerId: id,
+      lastAttemptAt: Date.now(),
+      ok: false,
+      error: (e as Error).message,
+      lastBase: base,
+    });
+    throw e;
+  }
+}
+
+// Resolve the configured provider preference. Reads settings without
+// awaiting hydration — if settings haven't loaded yet, fall back to the
+// hard-coded order. (The hot path is the cache, not this lookup, so
+// the brief "first lambda" race is harmless.)
+function resolveProviderOrder(): FxProviderId[] {
+  const settings = getSettings() as unknown as {
+    fx?: { primaryProvider?: FxProviderId; secondaryProvider?: FxProviderId };
+  };
+  const primary = settings.fx?.primaryProvider || "open-er-api";
+  const secondary = settings.fx?.secondaryProvider || "exchangerate-host";
+  // Build a list with the admin's choices first, then any leftover
+  // providers as further fallbacks. Dedupe to avoid trying the same
+  // provider twice.
+  const order = [primary, secondary];
+  for (const p of FX_PROVIDERS) {
+    if (!order.includes(p.id)) order.push(p.id);
+  }
+  return order;
 }
 
 async function fetchRates(base: string): Promise<RateTable> {
-  try {
-    return await fetchPrimary(base);
-  } catch (err) {
-    // Surface the primary failure so it shows up in observability, then
-    // try the fallback before giving up.
+  await ensureHydrated();
+  const order = resolveProviderOrder();
+  let lastErr: Error | null = null;
+  for (const id of order) {
     try {
-      return await fetchFallback(base);
-    } catch {
-      throw err;
+      const rates = await tryProvider(id, base);
+      return { base, rates, fetchedAt: Date.now(), providerId: id };
+    } catch (e) {
+      lastErr = e as Error;
+      // Try the next provider.
     }
   }
+  throw lastErr || new Error("all FX providers failed");
 }
 
-export async function getRates(base: string): Promise<Record<string, number>> {
+export async function getRates(
+  base: string,
+): Promise<Record<string, number>> {
   const key = base.toUpperCase();
   const cached = cache.get(key);
   if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
     return cached.rates;
   }
-  // Coalesce concurrent requests for the same base.
   let pending = inflight.get(key);
   if (!pending) {
     pending = fetchRates(key)
@@ -83,7 +248,6 @@ export async function getRates(base: string): Promise<Record<string, number>> {
     const tbl = await pending;
     return tbl.rates;
   } catch {
-    // On failure, surface stale cache if we have one — better than nothing.
     const stale = cache.get(key);
     return stale ? stale.rates : {};
   }
@@ -118,4 +282,64 @@ export function convertSync(
   const r = rates[T];
   if (typeof r !== "number" || !isFinite(r) || r <= 0) return null;
   return amount * r;
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Admin status surface — drives /admin/fx-rates.
+// ─────────────────────────────────────────────────────────────────────
+
+export interface FxStatus {
+  primaryProvider: FxProviderId;
+  secondaryProvider: FxProviderId;
+  // The provider that actually served the last successful USD fetch,
+  // i.e. what the public site is currently relying on.
+  activeProvider: FxProviderId | null;
+  // RateTable for USD (the most-used base) if we have one cached.
+  usdRates: Record<string, number> | null;
+  usdFetchedAt: number | null;
+  // Per-provider attempt log so the admin can see which providers
+  // succeeded / failed and why.
+  providers: ProviderStatus[];
+  cacheTtlMs: number;
+}
+
+export function getFxStatus(): FxStatus {
+  const settings = getSettings() as unknown as {
+    fx?: { primaryProvider?: FxProviderId; secondaryProvider?: FxProviderId };
+  };
+  const primaryProvider = settings.fx?.primaryProvider || "open-er-api";
+  const secondaryProvider = settings.fx?.secondaryProvider || "exchangerate-host";
+  const usd = cache.get("USD");
+  return {
+    primaryProvider,
+    secondaryProvider,
+    activeProvider: usd?.providerId ?? null,
+    usdRates: usd?.rates ?? null,
+    usdFetchedAt: usd?.fetchedAt ?? null,
+    providers: FX_PROVIDERS.map(
+      (p) =>
+        providerStatus.get(p.id) || {
+          providerId: p.id,
+          lastAttemptAt: null,
+          ok: null,
+        },
+    ),
+    cacheTtlMs: CACHE_TTL_MS,
+  };
+}
+
+// Force a fresh fetch of the USD table, bypassing the 1-hour cache.
+// Surfaces success/failure to the admin in the same status shape so
+// they can see immediately whether their provider change is healthy.
+export async function refreshFxRates(
+  base = "USD",
+): Promise<{ ok: boolean; status: FxStatus; error?: string }> {
+  cache.delete(base.toUpperCase());
+  inflight.delete(base.toUpperCase());
+  try {
+    await getRates(base);
+    return { ok: true, status: getFxStatus() };
+  } catch (e) {
+    return { ok: false, status: getFxStatus(), error: (e as Error).message };
+  }
 }

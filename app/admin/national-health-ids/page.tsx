@@ -171,11 +171,15 @@ export default function AdminNationalHealthIds() {
         country: draft.country.toUpperCase(),
         systemId: draft.systemId,
       };
+      // Double-cast through `unknown` because the union type for
+      // NationalHealthIdOverride doesn't structurally overlap with
+      // `Record<string, unknown>` per TS's strict rules.
+      const target = cleaned as unknown as Record<string, unknown>;
       const copyIfSet = (k: keyof NationalHealthIdOverride, val: unknown) => {
         if (typeof val === "string" && val.trim()) {
-          (cleaned as Record<string, unknown>)[k] = val.trim();
+          target[k] = val.trim();
         } else if (typeof val === "boolean") {
-          (cleaned as Record<string, unknown>)[k] = val;
+          target[k] = val;
         }
       };
       copyIfSet("systemName", draft.systemName);

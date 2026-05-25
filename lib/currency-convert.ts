@@ -16,8 +16,12 @@
 // fetch. On total provider failure we surface stale cache if any, then
 // an empty rates map as last resort — callers already handle empty by
 // passing the source amount through unconverted.
-
-import { getSettings, ensureHydrated } from "./settings-store";
+//
+// IMPORTANT: this file is imported by client components (BookingModal,
+// CurrencySwitcher, etc) for its `convertSync` helper, so it MUST NOT
+// import anything Node-only (settings-store, postgres, fs). The
+// provider preference is therefore held in a module-level mutable that
+// the server-only settings hydrator pushes into via setActiveProviders.
 
 export type FxProviderId =
   | "open-er-api"
@@ -188,20 +192,33 @@ async function tryProvider(
   }
 }
 
-// Resolve the configured provider preference. Reads settings without
-// awaiting hydration — if settings haven't loaded yet, fall back to the
-// hard-coded order. (The hot path is the cache, not this lookup, so
-// the brief "first lambda" race is harmless.)
+// Mutable provider preference. Defaults to the catalogue order; the
+// server-only settings-store hydrator overwrites this via
+// setActiveProviders() once it reads the admin's saved preference.
+// Holding the order as a plain module variable (rather than reading
+// settings here) keeps this file safe to bundle into client code.
+let activePrimary: FxProviderId = "open-er-api";
+let activeSecondary: FxProviderId = "exchangerate-host";
+
+export function setActiveProviders(
+  primary: FxProviderId,
+  secondary: FxProviderId,
+): void {
+  activePrimary = primary;
+  activeSecondary = secondary;
+}
+
+export function getActiveProviders(): {
+  primary: FxProviderId;
+  secondary: FxProviderId;
+} {
+  return { primary: activePrimary, secondary: activeSecondary };
+}
+
 function resolveProviderOrder(): FxProviderId[] {
-  const settings = getSettings() as unknown as {
-    fx?: { primaryProvider?: FxProviderId; secondaryProvider?: FxProviderId };
-  };
-  const primary = settings.fx?.primaryProvider || "open-er-api";
-  const secondary = settings.fx?.secondaryProvider || "exchangerate-host";
-  // Build a list with the admin's choices first, then any leftover
-  // providers as further fallbacks. Dedupe to avoid trying the same
-  // provider twice.
-  const order = [primary, secondary];
+  // Admin's choices first, then any leftover providers as further
+  // fallbacks. Dedupe to avoid trying the same provider twice.
+  const order: FxProviderId[] = [activePrimary, activeSecondary];
   for (const p of FX_PROVIDERS) {
     if (!order.includes(p.id)) order.push(p.id);
   }
@@ -209,7 +226,6 @@ function resolveProviderOrder(): FxProviderId[] {
 }
 
 async function fetchRates(base: string): Promise<RateTable> {
-  await ensureHydrated();
   const order = resolveProviderOrder();
   let lastErr: Error | null = null;
   for (const id of order) {
@@ -304,15 +320,10 @@ export interface FxStatus {
 }
 
 export function getFxStatus(): FxStatus {
-  const settings = getSettings() as unknown as {
-    fx?: { primaryProvider?: FxProviderId; secondaryProvider?: FxProviderId };
-  };
-  const primaryProvider = settings.fx?.primaryProvider || "open-er-api";
-  const secondaryProvider = settings.fx?.secondaryProvider || "exchangerate-host";
   const usd = cache.get("USD");
   return {
-    primaryProvider,
-    secondaryProvider,
+    primaryProvider: activePrimary,
+    secondaryProvider: activeSecondary,
     activeProvider: usd?.providerId ?? null,
     usdRates: usd?.rates ?? null,
     usdFetchedAt: usd?.fetchedAt ?? null,

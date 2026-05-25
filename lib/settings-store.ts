@@ -10,6 +10,10 @@
 
 import { loadJson, saveJson } from "./persistent-array";
 import { log } from "./log";
+import {
+  setActiveProviders,
+  type FxProviderId,
+} from "./currency-convert";
 
 export interface CommonSettings {
   siteName: string;
@@ -365,12 +369,28 @@ async function hydrate(): Promise<void> {
           fx: { ...defaults.fx, ...(stored.fx || {}) },
         };
       }
+      // Push the persisted FX provider preference into the FX engine.
+      // currency-convert.ts intentionally doesn't read settings itself
+      // (it's bundled into client code), so this side-channel is how
+      // the admin's saved choice reaches the resolver.
+      syncFxProviders();
       hydrated = true;
     } catch (err) {
       log.error("settings_store.hydrate_failed", err);
     }
   })();
   return hydrating;
+}
+
+function syncFxProviders(): void {
+  try {
+    setActiveProviders(
+      (settings.fx?.primaryProvider as FxProviderId) || "open-er-api",
+      (settings.fx?.secondaryProvider as FxProviderId) || "exchangerate-host",
+    );
+  } catch {
+    // Never let a malformed FX setting block the rest of hydration.
+  }
 }
 
 // Kick off hydration eagerly. Routes that need to be sure they read
@@ -405,6 +425,9 @@ export function updateSettings(patch: Partial<SiteSettings>): SiteSettings {
     ...patch,
     updatedAt: new Date().toISOString(),
   };
+  // FX preference may have changed → push the new order into the FX
+  // engine immediately so the next /api/pricing call uses it.
+  if (patch.fx) syncFxProviders();
   persist();
   return settings;
 }

@@ -19,6 +19,7 @@ import { createStripeWalletCheckout, isStripeConfigured } from "@/lib/stripe-wal
 import { createRazorpayOrder, isRazorpayConfigured, razorpayPublicKey } from "@/lib/razorpay";
 import { applyTopUp, getWallet, reloadWallet } from "@/lib/wallet/store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
+import { computeVerificationStatus } from "@/lib/verification-gate";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -58,6 +59,27 @@ export async function POST(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
   const user = findUserById(userId);
   if (!user) return NextResponse.json({ error: "user_not_found" }, { status: 404 });
+
+  // Verification gate: email + phone + an attached ID must all be
+  // verified before money flows in. Returns the structured status so
+  // the client UI can render the checklist instead of a generic
+  // error. Doctors / admin / staff bypass this — they fund their own
+  // accounts via internal flows that go through a different path.
+  if (user.role === "patient") {
+    const status = computeVerificationStatus(user);
+    if (!status.allOk) {
+      return NextResponse.json(
+        {
+          error: "verification_required",
+          message:
+            "Verify your email, phone, and an ID before adding money. Open the verification page from your dashboard.",
+          status,
+        },
+        { status: 403 },
+      );
+    }
+  }
+
   const body = await req.json();
   const amount = Math.floor(Number(body.amountRupees));
   if (!Number.isFinite(amount) || amount < 100 || amount > 50000) {

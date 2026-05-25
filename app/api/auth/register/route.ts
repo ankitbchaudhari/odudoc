@@ -204,8 +204,15 @@ export async function POST(request: NextRequest) {
     // bounce through the email-link verification flow.
     if (preVerified) {
       try {
-        const { markEmailVerified } = await import("@/lib/users-store");
+        const { markEmailVerified, markPhoneVerifiedByEmail } = await import(
+          "@/lib/users-store"
+        );
         markEmailVerified(user.email);
+        // The signup-OTP flow also proves ownership of the phone the
+        // user typed (when they picked the phone channel), so stamp
+        // phoneVerifiedAt at the same time. The verification-gate
+        // counts both signals.
+        if (user.phone) markPhoneVerifiedByEmail(user.email);
         await awaitAllFlushesStrict();
       } catch (err) {
         log.error("register.preverify_mark_failed", err, { email: user.email });

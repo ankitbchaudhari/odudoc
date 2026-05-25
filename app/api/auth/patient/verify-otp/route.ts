@@ -8,7 +8,7 @@
 // /dashboard.
 
 import { NextRequest, NextResponse } from "next/server";
-import { findUserByEmail, findUserByPhone, touchLastLogin, reloadUsers, markEmailVerified } from "@/lib/users-store";
+import { findUserByEmail, findUserByPhone, touchLastLogin, reloadUsers, markEmailVerified, markPhoneVerified } from "@/lib/users-store";
 import { verifyMobileOtp } from "@/lib/mobile-otp-store";
 import { signMobileToken } from "@/lib/mobile-auth";
 import { enforceRateLimit } from "@/lib/rate-limit-helpers";
@@ -69,6 +69,10 @@ export async function POST(request: NextRequest) {
   // Promote any unverified email — surviving an OTP loop on a
   // previously-unverified account confirms ownership.
   if (!user.emailVerified) markEmailVerified(user.email);
+  // If the OTP went via SMS/WhatsApp (caller typed a phone), the
+  // round-trip proves they hold this number — stamp phoneVerifiedAt
+  // so the verification-gate unlocks wallet/booking actions for them.
+  if (looksLikePhone && user.phone) markPhoneVerified(user.phone);
   touchLastLogin(user.email);
 
   const { token, expiresAt } = await signMobileToken({

@@ -48,7 +48,19 @@ export interface Patient {
   // ID + a passport, etc.). Searched by /api/admin/patients/search.
   // Stored as a flat list of { country, type, number } so the same
   // search field can scan across IDs from any country.
-  governmentIds?: Array<{ country: string; type: string; number: string }>;
+  //
+  // verifiedAt + verifiedBy track whether a staff member confirmed the
+  // ID against an external source (passport scan, ABHA OTP, NHS
+  // lookup, etc.). The verification-gate counts an ID as "verified"
+  // only when verifiedAt is set. Unverified entries are still searchable
+  // but don't unlock wallet top-up / appointment booking.
+  governmentIds?: Array<{
+    country: string;
+    type: string;
+    number: string;
+    verifiedAt?: string;
+    verifiedBy?: string;
+  }>;
   // Ops
   notes?: string;
   status: "active" | "discharged" | "deceased";

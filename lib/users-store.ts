@@ -36,6 +36,12 @@ export interface User {
 
   // Email verification + inactivity tracking.
   emailVerified: boolean;
+  // Phone verification timestamp. Set when an OTP login or signup
+  // OTP-verify step successfully challenges this number. The
+  // verification-gate (lib/verification-gate.ts) checks both
+  // emailVerified AND phoneVerifiedAt before allowing wallet top-ups
+  // and appointment bookings.
+  phoneVerifiedAt?: string | null;
   lastLoginAt: string | null;
 
   // Admin moderation fields.
@@ -67,6 +73,19 @@ export interface User {
    *  `DR-NNN-NNNNN-NNNNN-NNN`. Issued at signup (or backfilled on
    *  cold boot) by lib/medical-id.ts/generateDoctorId. */
   doctorId?: string;
+  /** Government-issued / national-health IDs the user has attached to
+   *  their OduDoc account. Stored at the User level (in addition to
+   *  any per-clinic copies on Patient.governmentIds) so the
+   *  verification gate has a single platform-wide source of truth.
+   *  Each entry can be marked verified by an admin / via a national
+   *  health API once that integration ships. */
+  governmentIds?: Array<{
+    country: string;
+    type: string;
+    number: string;
+    verifiedAt?: string;
+    verifiedBy?: string;
+  }>;
   identity?: UserIdentity;
 
   /** ISO 3166-1 alpha-2 country code (e.g. "IN", "US"). Captured at
@@ -750,6 +769,35 @@ export function markEmailVerified(email: string): User | null {
   u.emailVerified = true;
   u.lastLoginAt = new Date().toISOString();
   flush();
+  return u;
+}
+
+/** Stamp the user's phoneVerifiedAt when an OTP login or signup-OTP
+ *  successfully challenges this phone. Idempotent — re-running on an
+ *  already-verified number is a no-op. The verification-gate
+ *  (lib/verification-gate.ts) gates wallet top-ups + bookings on
+ *  this stamp being present. */
+export function markPhoneVerified(phone: string): User | null {
+  const u = findUserByPhone(phone);
+  if (!u) return null;
+  if (!u.phoneVerifiedAt) {
+    u.phoneVerifiedAt = new Date().toISOString();
+    flush();
+  }
+  return u;
+}
+
+/** Same as above but keyed by email — used by the signup-OTP verify
+ *  step where the OTP challenge ran against the user's email but we
+ *  also want to credit the phone they registered with (signup form
+ *  collects both in one shot). */
+export function markPhoneVerifiedByEmail(email: string): User | null {
+  const u = findUserByEmail(email);
+  if (!u) return null;
+  if (!u.phoneVerifiedAt) {
+    u.phoneVerifiedAt = new Date().toISOString();
+    flush();
+  }
   return u;
 }
 

@@ -7,6 +7,9 @@ import { validateSlot } from '@/lib/slot-utils';
 import { notifyAppointmentBooked } from '@/lib/notifications';
 import { parseJson } from '@/lib/api-validate';
 import { findUserById, findUserByEmail } from '@/lib/users-store';
+import { computeVerificationStatus } from '@/lib/verification-gate';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { getDoctorById } from '@/lib/doctors-store';
 import { resolveActiveProfile } from '@/lib/family-active';
 import { sendDoctorNewAppointmentViaSentDm } from '@/lib/sent-dm';
@@ -58,6 +61,34 @@ export async function POST(request: NextRequest) {
   const parsed = await parseJson(request, BookingSchema);
   if (!parsed.ok) return parsed.response;
   const body = parsed.data;
+
+  // Verification gate: a patient booking an appointment must have
+  // verified their email + phone + at least one attached ID. Looked
+  // up by email (the booking body carries patientEmail). Unsigned-in
+  // callers (free-tier guest flow at /api/bookings/free) skip this
+  // route entirely. Doctor / admin / staff bookings (from a dashboard)
+  // bypass the gate — they're identified via session, not the form.
+  const session = await getServerSession(authOptions);
+  const sessionUser = session?.user
+    ? findUserById((session.user as { id?: string }).id || '')
+    : null;
+  if (!sessionUser || sessionUser.role === 'patient') {
+    const candidate = sessionUser || findUserByEmail(body.patientEmail);
+    if (candidate && candidate.role === 'patient') {
+      const status = computeVerificationStatus(candidate);
+      if (!status.allOk) {
+        return NextResponse.json(
+          {
+            error: 'verification_required',
+            message:
+              'Verify your email, phone, and an ID before booking. Open the verification page from your dashboard.',
+            status,
+          },
+          { status: 403 },
+        );
+      }
+    }
+  }
 
   // Guard against an unauthenticated POST that just claims to be paid.
   // A real "paid" booking must carry the upstream gateway's intent id;

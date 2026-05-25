@@ -17,6 +17,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import PhoneInput from "@/components/PhoneInput";
+import GoogleAuthButton, { AuthDivider } from "@/components/GoogleAuthButton";
 import { getCorporateType } from "@/lib/corporate-types";
 
 type Path = "patient" | "doctor" | "corporate";
@@ -245,7 +246,23 @@ function WizardInner() {
               </h1>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{meta.subtitle}</p>
 
-              <div className="mt-6 space-y-4">
+              {/* Patients can complete signup with just Google — the
+                  signIn callback creates the user as already-verified.
+                  Doctor + organisation paths intentionally keep only the
+                  OTP+wizard flow because they need credentialing /
+                  org-verification fields that don't exist in a Google
+                  profile. */}
+              {path === "patient" && (
+                <div className="mt-6">
+                  <GoogleAuthButton
+                    callbackUrl="/dashboard"
+                    label="Sign up with Google"
+                  />
+                  <AuthDivider text="or use email + phone" />
+                </div>
+              )}
+
+              <div className={path === "patient" ? "space-y-4" : "mt-6 space-y-4"}>
                 <Field label="Email">
                   <input
                     type="email"

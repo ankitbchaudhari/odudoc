@@ -12,6 +12,7 @@
 // /pro/dashboard (clinical / corporate roles).
 
 import Link from "next/link";
+import GoogleAuthButton, { AuthDivider } from "@/components/GoogleAuthButton";
 
 export const metadata = {
   title: "Log in — OduDoc",
@@ -57,7 +58,16 @@ export default function LoginPage() {
         <h1 className="mt-1 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">Log in to OduDoc</h1>
         <p className="mt-2 text-sm text-gray-600">Pick the account type you signed up with.</p>
 
-        <div className="mt-8 space-y-3">
+        {/* One-tap shortcut for anyone whose account is linked to Google
+            — works for every role because the signIn callback in
+            lib/auth.ts looks up the user record by email and routes by
+            role automatically. */}
+        <div className="mt-6">
+          <GoogleAuthButton callbackUrl="/dashboard" />
+          <AuthDivider text="or pick an account type" />
+        </div>
+
+        <div className="space-y-3">
           {DOORS.map((d) => (
             <div key={d.href}>
               {d.badge && (

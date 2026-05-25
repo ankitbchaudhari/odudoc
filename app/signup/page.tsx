@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import GoogleAuthButton, { AuthDivider } from "@/components/GoogleAuthButton";
 
 export const metadata: Metadata = {
   title: "Get started on OduDoc",
@@ -57,7 +58,19 @@ export default function SignupGatewayPage() {
           </p>
         </div>
 
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
+        {/* Quick path: patients can sign up entirely via Google in one
+            tap. Doctor + organisation paths still need credentialing /
+            org-verification, so those visitors keep using the path
+            cards below. */}
+        <div className="mx-auto mt-10 max-w-md">
+          <GoogleAuthButton
+            callbackUrl="/dashboard"
+            label="Sign up with Google (patient account)"
+          />
+          <AuthDivider text="or pick a different path" />
+        </div>
+
+        <div className="mt-4 grid gap-5 md:grid-cols-3">
           {PATHS.map((p) => (
             <Link
               key={p.slug}

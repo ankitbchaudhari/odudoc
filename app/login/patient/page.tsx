@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import GoogleAuthButton, { AuthDivider } from "@/components/GoogleAuthButton";
 
 export default function PatientLoginPage() {
   const router = useRouter();
@@ -139,10 +140,17 @@ export default function PatientLoginPage() {
           }
         </p>
 
+        {step === 1 && (
+          <div className="mt-6">
+            <GoogleAuthButton callbackUrl="/dashboard" />
+            <AuthDivider text="or continue with email" />
+          </div>
+        )}
+
         {step === 1 ? (
           <form
             onSubmit={(e) => { e.preventDefault(); void requestOtp(); }}
-            className="mt-6 space-y-4"
+            className="space-y-4"
           >
             <label className="block">
               <span className="text-xs font-semibold uppercase tracking-wider text-gray-600">Email</span>

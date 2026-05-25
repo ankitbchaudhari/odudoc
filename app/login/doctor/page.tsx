@@ -12,6 +12,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import GoogleAuthButton, { AuthDivider } from "@/components/GoogleAuthButton";
 
 export default function DoctorLoginPage() {
   const router = useRouter();
@@ -67,7 +68,12 @@ export default function DoctorLoginPage() {
           Hospital staff on OduDoc Pro use this door too.
         </p>
 
-        <form onSubmit={submit} className="mt-6 space-y-4">
+        <div className="mt-6">
+          <GoogleAuthButton callbackUrl="/dashboard/doctor" />
+          <AuthDivider text="or continue with email" />
+        </div>
+
+        <form onSubmit={submit} className="space-y-4">
           <label className="block">
             <span className="text-xs font-semibold uppercase tracking-wider text-gray-600">Email</span>
             <input

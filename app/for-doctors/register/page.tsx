@@ -1140,12 +1140,11 @@ function DropZone({
 }) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  // Keep the raw File around so a failed upload can be retried without
+  // making the user pick the file again.
+  const [lastPicked, setLastPicked] = useState<File | null>(null);
 
-  async function handlePick(f: File) {
-    if (f.size > 4 * 1024 * 1024) {
-      setUploadError("File exceeds 4MB");
-      return;
-    }
+  async function uploadFile(f: File) {
     setUploadError(null);
     setUploading(true);
     onChange({ name: f.name, size: f.size, url: "" });
@@ -1156,19 +1155,67 @@ function DropZone({
         method: "POST",
         body: fd,
       });
-      const data = (await res.json()) as { url?: string; error?: string };
+      const data = (await res.json().catch(() => ({}))) as {
+        url?: string;
+        error?: string;
+      };
       if (!res.ok || !data.url) {
+        // 413 = Vercel/server rejected for size; surface that specifically
+        // since the user can act on it (compress / pick another file).
+        if (res.status === 413) {
+          throw new Error("File is too large — please pick one under 4 MB.");
+        }
+        // 504 = our route timed out waiting for the upload server.
+        // 502 = upload server returned an error / wasn't reachable.
+        // Both are transient on the user's end — tell them to retry.
+        if (res.status === 504 || res.status === 502) {
+          throw new Error(
+            data.error ||
+              "Upload server is unreachable. Please try again in a moment."
+          );
+        }
         throw new Error(data.error || `Upload failed (${res.status})`);
       }
       onChange({ name: f.name, size: f.size, url: data.url });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Upload failed";
+      const raw = err instanceof Error ? err.message : "Upload failed";
+      // Browsers throw a TypeError with "Failed to fetch" / "NetworkError"
+      // when the connection drops or the server function times out before
+      // responding — common on flaky mobile uplinks. Translate it to
+      // something a user can actually act on.
+      const isNetwork =
+        raw === "Failed to fetch" ||
+        raw.toLowerCase().includes("networkerror") ||
+        raw.toLowerCase().includes("network request failed") ||
+        raw.toLowerCase().includes("load failed");
+      const msg = isNetwork
+        ? "Couldn't reach the server. Check your connection and tap Retry."
+        : raw;
       setUploadError(msg);
-      onChange(null);
+      // Keep the placeholder so the Retry button stays in the file row
+      // instead of dropping back to the empty dropzone.
+      onChange({ name: f.name, size: f.size, url: "" });
     } finally {
       setUploading(false);
     }
   }
+
+  async function handlePick(f: File) {
+    if (f.size > 4 * 1024 * 1024) {
+      setLastPicked(null);
+      setUploadError("File exceeds 4MB");
+      return;
+    }
+    setLastPicked(f);
+    await uploadFile(f);
+  }
+
+  function handleRetry() {
+    if (lastPicked) void uploadFile(lastPicked);
+  }
+
+  // Upload finished but produced no URL → failed state; show retry affordance.
+  const failed = !uploading && !!file && !file.url;
 
   return (
     <div>
@@ -1193,12 +1240,28 @@ function DropZone({
           />
         </label>
       ) : (
-        <div className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 p-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded bg-primary-100 text-primary-700">
+        <div
+          className={`flex items-center gap-3 rounded-lg border p-3 ${
+            failed
+              ? "border-red-200 bg-red-50/60 dark:border-red-900/60 dark:bg-red-950/20"
+              : "border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900"
+          }`}
+        >
+          <div
+            className={`flex h-10 w-10 items-center justify-center rounded ${
+              failed
+                ? "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300"
+                : "bg-primary-100 text-primary-700"
+            }`}
+          >
             {uploading ? (
               <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4} />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              </svg>
+            ) : failed ? (
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
               </svg>
             ) : file.url ? (
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1216,11 +1279,28 @@ function DropZone({
               {(file.size / 1024).toFixed(1)} KB
               {uploading && <span className="ml-2 text-primary-600">· uploading…</span>}
               {!uploading && file.url && <span className="ml-2 text-emerald-600">· uploaded ✓</span>}
+              {failed && <span className="ml-2 text-red-600">· upload failed</span>}
             </p>
           </div>
+          {failed && lastPicked && (
+            <button
+              type="button"
+              onClick={handleRetry}
+              className="inline-flex items-center gap-1 rounded-lg border border-red-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-red-700 shadow-sm hover:bg-red-50 dark:border-red-800 dark:bg-slate-900 dark:text-red-300 dark:hover:bg-red-950/40"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Retry
+            </button>
+          )}
           <button
             type="button"
-            onClick={() => onChange(null)}
+            onClick={() => {
+              setLastPicked(null);
+              setUploadError(null);
+              onChange(null);
+            }}
             className="rounded-lg p-1.5 text-gray-400 dark:text-slate-500 hover:bg-red-50 hover:text-red-600"
             aria-label="Remove file"
           >

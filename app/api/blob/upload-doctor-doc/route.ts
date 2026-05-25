@@ -54,16 +54,26 @@ export async function POST(request: Request): Promise<NextResponse> {
     const rand = Math.random().toString(36).slice(2, 8);
     const pathname = `doctor-applications/${Date.now()}-${rand}/${safeName}`;
 
+    // Vercel kills the function at maxDuration (60s). Cap the upstream
+    // call well below that so a slow VPS produces a structured 504 here
+    // instead of letting the platform terminate us mid-response — which
+    // the browser sees as a generic "Failed to fetch".
     const result = await uploadBlob(pathname, file, {
       access: "public",
       contentType: file.type,
       addRandomSuffix: false,
+      timeoutMs: 45_000,
     });
 
     if (!result.ok || !result.url) {
+      const timedOut = result.error === "upload timed out";
       return NextResponse.json(
-        { error: result.error || "Upload failed" },
-        { status: 500 }
+        {
+          error: timedOut
+            ? "Upload server didn't respond in time. Please try again."
+            : result.error || "Upload failed",
+        },
+        { status: timedOut ? 504 : 502 }
       );
     }
     return NextResponse.json({ url: result.url, pathname: result.pathname });

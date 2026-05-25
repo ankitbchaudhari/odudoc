@@ -65,6 +65,12 @@ export async function uploadBlob(
     contentType?: string;
     access?: "public";
     addRandomSuffix?: boolean;
+    // Abort the upstream call after this many ms. Callers should set this
+    // so a hung VPS doesn't hold the Vercel function until Vercel itself
+    // kills the connection — which surfaces as a cryptic "Failed to fetch"
+    // on the browser instead of a structured error.
+    timeoutMs?: number;
+    signal?: AbortSignal;
   }
 ): Promise<UploadResult> {
   if (!SECRET) {
@@ -75,6 +81,18 @@ export async function uploadBlob(
       pathname,
     };
   }
+
+  // Compose the caller's signal (if any) with a timeout signal, so either
+  // an external cancel or the timeout aborts the fetch.
+  const timeoutSignal =
+    typeof opts?.timeoutMs === "number"
+      ? AbortSignal.timeout(opts.timeoutMs)
+      : undefined;
+  const signal: AbortSignal | undefined =
+    opts?.signal && timeoutSignal
+      ? // AbortSignal.any (Node 20+) is available in Next.js 14's nodejs runtime.
+        AbortSignal.any([opts.signal, timeoutSignal])
+      : opts?.signal || timeoutSignal;
 
   try {
     const finalPath =
@@ -88,6 +106,7 @@ export async function uploadBlob(
       method: "POST",
       headers: { "x-upload-secret": SECRET },
       body: form,
+      signal,
     });
 
     const json = (await res.json().catch(() => ({}))) as {
@@ -110,6 +129,14 @@ export async function uploadBlob(
       size: json.size,
     };
   } catch (e) {
+    // AbortError → either the caller cancelled or our own timeout fired.
+    // Distinguish "timeout" from "cancelled" by checking which signal aborted.
+    if (e instanceof Error && e.name === "AbortError") {
+      if (timeoutSignal?.aborted) {
+        return { ok: false, error: "upload timed out" };
+      }
+      return { ok: false, error: "upload cancelled" };
+    }
     return { ok: false, error: (e as Error).message };
   }
 }

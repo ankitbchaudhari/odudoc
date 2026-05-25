@@ -12,7 +12,7 @@
 // /pro/dashboard (clinical / corporate roles).
 
 import Link from "next/link";
-import GoogleAuthButton, { AuthDivider } from "@/components/GoogleAuthButton";
+import { GoogleQuickLink } from "@/components/GoogleAuthButton";
 
 export const metadata = {
   title: "Log in — OduDoc",
@@ -56,18 +56,9 @@ export default function LoginPage() {
       <main className="mx-auto max-w-xl px-4 py-12 sm:px-6">
         <p className="text-xs font-bold uppercase tracking-widest text-[#0F6E56]">Welcome back</p>
         <h1 className="mt-1 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">Log in to OduDoc</h1>
-        <p className="mt-2 text-sm text-gray-600">Pick the account type you signed up with.</p>
+        <p className="mt-2 text-sm text-gray-600">Pick the account type you signed up with. The full Google sign-in option appears on the next step.</p>
 
-        {/* One-tap shortcut for anyone whose account is linked to Google
-            — works for every role because the signIn callback in
-            lib/auth.ts looks up the user record by email and routes by
-            role automatically. */}
-        <div className="mt-6">
-          <GoogleAuthButton callbackUrl="/dashboard" />
-          <AuthDivider text="or pick an account type" />
-        </div>
-
-        <div className="space-y-3">
+        <div className="mt-8 space-y-3">
           {DOORS.map((d) => (
             <div key={d.href}>
               {d.badge && (
@@ -92,6 +83,13 @@ export default function LoginPage() {
               </Link>
             </div>
           ))}
+        </div>
+
+        {/* Returning users whose account is already Google-linked can
+            skip the role picker entirely — the signIn callback in
+            lib/auth.ts looks up their stored role and routes them. */}
+        <div className="mt-6 text-center">
+          <GoogleQuickLink callbackUrl="/dashboard" />
         </div>
 
         <p className="mt-8 text-center text-sm text-gray-600">

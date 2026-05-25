@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import GoogleAuthButton, { AuthDivider } from "@/components/GoogleAuthButton";
+import { GoogleQuickLink } from "@/components/GoogleAuthButton";
 
 export const metadata: Metadata = {
   title: "Get started on OduDoc",
@@ -54,23 +54,11 @@ export default function SignupGatewayPage() {
             How will you use OduDoc?
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-lg text-gray-600 dark:text-slate-300">
-            Pick the path that fits you. You can always change scope later — patient accounts can become doctor accounts after credentialing.
+            Pick the path that fits you. You can always change scope later — patient accounts can become doctor accounts after credentialing. The full Google sign-up option appears on the next step.
           </p>
         </div>
 
-        {/* Quick path: patients can sign up entirely via Google in one
-            tap. Doctor + organisation paths still need credentialing /
-            org-verification, so those visitors keep using the path
-            cards below. */}
-        <div className="mx-auto mt-10 max-w-md">
-          <GoogleAuthButton
-            callbackUrl="/dashboard"
-            label="Sign up with Google (patient account)"
-          />
-          <AuthDivider text="or pick a different path" />
-        </div>
-
-        <div className="mt-4 grid gap-5 md:grid-cols-3">
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
           {PATHS.map((p) => (
             <Link
               key={p.slug}
@@ -90,7 +78,15 @@ export default function SignupGatewayPage() {
           ))}
         </div>
 
-        <p className="mt-12 text-center text-sm text-gray-500 dark:text-slate-400">
+        {/* Returning visitor whose Google email is already on file —
+            tap to sign in directly without re-picking a path. The
+            signIn callback in lib/auth.ts looks up their stored role
+            and routes to the matching dashboard. */}
+        <div className="mt-10 text-center">
+          <GoogleQuickLink callbackUrl="/dashboard" />
+        </div>
+
+        <p className="mt-6 text-center text-sm text-gray-500 dark:text-slate-400">
           Already have an account?{" "}
           <Link href="/auth/login" className="font-semibold text-emerald-600 hover:underline">
             Log in

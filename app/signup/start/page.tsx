@@ -99,6 +99,27 @@ function WizardInner() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Channel the OTP goes to. Auto-resolves below when only one of
+  // (email, phone) is filled; the UI surfaces the picker only when
+  // both are present so the user always knows what to type next.
+  const [otpChannel, setOtpChannel] = useState<"email" | "phone">("email");
+
+  // Derived form helpers — kept inline because the deps are trivial
+  // and a separate useMemo would just be noise here.
+  const hasEmail = email.trim().length > 0 && /.+@.+\..+/.test(email);
+  const hasPhone = phone.trim().length >= 7;
+  // If exactly one identifier is filled, force the channel to it so
+  // the user can't accidentally submit a phone-only form with the
+  // email radio still selected (or vice versa).
+  useEffect(() => {
+    if (hasEmail && !hasPhone) setOtpChannel("email");
+    else if (hasPhone && !hasEmail) setOtpChannel("phone");
+  }, [hasEmail, hasPhone]);
+  // The submit button needs at least one valid identifier AND the
+  // picked channel to be the one that's filled.
+  const canSubmit =
+    (otpChannel === "email" && hasEmail) ||
+    (otpChannel === "phone" && hasPhone);
 
   // Resend cooldown ticker
   useEffect(() => {
@@ -112,6 +133,8 @@ function WizardInner() {
   const meta = PATH_META[path];
 
   // ── Step 1: send the OTP ─────────────────────────────────────────
+  // Only the selected channel gets a message. Saves the SMS bill in
+  // half — most signups use email anyway.
   const sendOtp = async () => {
     setError(null);
     setBusy(true);
@@ -119,10 +142,17 @@ function WizardInner() {
       const r = await fetch("/api/auth/signup-otp/send", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, phone }),
+        body: JSON.stringify({
+          // Only include the value matching the picked channel — the
+          // other field stays out of the body so the schema's refine
+          // doesn't reject when it's blank.
+          email: otpChannel === "email" ? email : undefined,
+          phone: otpChannel === "phone" ? phone : undefined,
+          channel: otpChannel,
+        }),
       });
       const j = await r.json();
-      if (!r.ok) throw new Error(j.error || "Failed to send code");
+      if (!r.ok) throw new Error(j.error || j.message || "Failed to send code");
       if (j.alreadyRegistered) {
         setError("An account already exists for this email. Try signing in.");
         return;
@@ -246,49 +276,92 @@ function WizardInner() {
               </h1>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{meta.subtitle}</p>
 
-              {/* Patients can complete signup with just Google — the
-                  signIn callback creates the user as already-verified.
-                  Doctor + organisation paths intentionally keep only the
-                  OTP+wizard flow because they need credentialing /
-                  org-verification fields that don't exist in a Google
-                  profile. */}
-              {path === "patient" && (
-                <div className="mt-6">
-                  <GoogleAuthButton
-                    callbackUrl="/dashboard"
-                    label="Sign up with Google"
-                  />
-                  <AuthDivider text="or use email + phone" />
-                </div>
-              )}
+              {/* Google sign-up — available on every path. For doctors
+                  and organisations the role still defaults to patient
+                  on first Google login; credentialing / org-verify is
+                  picked up afterwards via /for-doctors/register or the
+                  org onboarding flow. Faster path for anyone who
+                  already has a Google account. */}
+              <div className="mt-6">
+                <GoogleAuthButton
+                  callbackUrl={
+                    path === "doctor"
+                      ? "/for-doctors/register"
+                      : path === "corporate"
+                        ? "/signup/corporate"
+                        : "/dashboard"
+                  }
+                  label={
+                    path === "doctor"
+                      ? "Continue with Google (then add credentials)"
+                      : path === "corporate"
+                        ? "Continue with Google (then add org details)"
+                        : "Sign up with Google"
+                  }
+                />
+                <AuthDivider text="or use email or phone" />
+              </div>
 
-              <div className={path === "patient" ? "space-y-4" : "mt-6 space-y-4"}>
-                <Field label="Email">
+              <div className="space-y-4">
+                <Field label="Email (optional if you provide phone)">
                   <input
                     type="email"
-                    required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
                     className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                   />
                 </Field>
-                <Field label="Phone">
+                <Field label="Phone (optional if you provide email)">
                   <PhoneInput value={phone} onChange={setPhone} />
                 </Field>
+
+                {/* Channel picker — only relevant when BOTH fields are
+                    filled. With just one identifier we save the user a
+                    tap and route the OTP to whichever they provided.
+                    Sending to a single channel cuts the SMS bill in
+                    half versus the old send-to-both behaviour. */}
+                {hasEmail && hasPhone && (
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                      Where should we send the code?
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <ChannelOption
+                        active={otpChannel === "email"}
+                        onClick={() => setOtpChannel("email")}
+                        title="Email"
+                        sub={email || "—"}
+                      />
+                      <ChannelOption
+                        active={otpChannel === "phone"}
+                        onClick={() => setOtpChannel("phone")}
+                        title="SMS"
+                        sub={phone || "—"}
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {error && <Err msg={error} />}
 
                 <button
                   type="button"
                   onClick={sendOtp}
-                  disabled={busy || !email || phone.length < 7}
+                  disabled={busy || !canSubmit}
                   className={`flex w-full items-center justify-center gap-1 rounded-xl bg-gradient-to-r ${meta.primaryGradient} px-4 py-3 text-sm font-bold text-white shadow-lg transition-transform hover:-translate-y-0.5 disabled:opacity-60`}
                 >
                   {busy ? "Sending code…" : "Send verification code →"}
                 </button>
                 <p className="text-center text-xs text-slate-500 dark:text-slate-400">
-                  We&apos;ll send a 6-digit code to your email and phone.
+                  We&apos;ll send a 6-digit code to your{" "}
+                  {hasEmail && hasPhone
+                    ? "chosen channel only — not both."
+                    : hasEmail
+                      ? "email."
+                      : hasPhone
+                        ? "phone."
+                        : "email or phone."}
                 </p>
               </div>
             </>
@@ -299,7 +372,11 @@ function WizardInner() {
             <>
               <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Verify your contact</h1>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                We sent a 6-digit code to <strong>{emailHint}</strong> and <strong>{phoneHint}</strong>. Enter it below.
+                We sent a 6-digit code to{" "}
+                <strong>
+                  {otpChannel === "email" ? emailHint : phoneHint}
+                </strong>
+                . Enter it below.
               </p>
 
               <div className="mt-6 space-y-4">
@@ -494,6 +571,45 @@ function Err({ msg }: { msg: string }) {
     <div className="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
       {msg}
     </div>
+  );
+}
+
+// One pill in the "where to send the OTP" picker. Renders the channel
+// label + the value preview so the user can confirm at a glance.
+function ChannelOption({
+  active,
+  onClick,
+  title,
+  sub,
+}: {
+  active: boolean;
+  onClick: () => void;
+  title: string;
+  sub: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-xl border-2 px-3 py-2.5 text-left transition-all ${
+        active
+          ? "border-emerald-500 bg-emerald-50 dark:border-emerald-400 dark:bg-emerald-950/40"
+          : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900"
+      }`}
+    >
+      <p
+        className={`text-xs font-bold uppercase tracking-wider ${
+          active
+            ? "text-emerald-700 dark:text-emerald-300"
+            : "text-slate-700 dark:text-slate-300"
+        }`}
+      >
+        {title}
+      </p>
+      <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
+        {sub}
+      </p>
+    </button>
   );
 }
 

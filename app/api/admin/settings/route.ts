@@ -26,6 +26,7 @@ const SECTIONS: (keyof SiteSettings)[] = [
   "emergencyNumbers",
   "regionalPricing",
   "fx",
+  "nationalHealthIdsOverrides",
 ];
 
 export async function GET() {

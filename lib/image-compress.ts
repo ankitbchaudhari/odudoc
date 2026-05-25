@@ -47,9 +47,11 @@ async function loadImage(file: File): Promise<HTMLImageElement> {
       URL.revokeObjectURL(url);
       resolve(img);
     };
-    img.onerror = (e) => {
+    // onerror signature is `string | Event` per the DOM lib types, so
+    // don't try to forward it directly — just produce a fresh Error.
+    img.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(e instanceof Event ? new Error("Image decode failed") : (e as Error));
+      reject(new Error("Image decode failed"));
     };
     img.src = url;
   });

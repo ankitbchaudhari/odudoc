@@ -151,6 +151,30 @@ export interface FxSettings {
   secondaryProvider: string; // e.g. "exchangerate-host"
 }
 
+// Admin-managed overrides on top of the static national-health-ID
+// catalogue in lib/national-health-ids.ts. One row per
+// (country, systemId). Fields below are partial — when set they
+// replace the same-named field on the base entry. `patternStr` is
+// stored as a regex source string (RegExp doesn't survive JSON);
+// the merge step recompiles it. Set `disabled: true` to hide a base
+// entry from the catalogue entirely (e.g. country opted out).
+// systemIds not present in the base catalogue ADD a brand-new entry
+// — that's how the admin extends global coverage without a code push.
+export interface NationalHealthIdOverride {
+  country: string;        // ISO-2 uppercase
+  systemId: string;       // stable key — matches base or new
+  systemName?: string;
+  nativeName?: string;
+  agency?: string;
+  digitalHealthNetwork?: string;
+  patternStr?: string;
+  placeholder?: string;
+  helpText?: string;
+  learnMoreUrl?: string;
+  coverage?: "national" | "subnational" | "voluntary";
+  disabled?: boolean;
+}
+
 export interface SiteSettings {
   common: CommonSettings;
   captcha: CaptchaSettings;
@@ -172,6 +196,7 @@ export interface SiteSettings {
   emergencyNumbers: EmergencyNumberEntry[];
   regionalPricing: RegionalPricingEntry[];
   fx: FxSettings;
+  nationalHealthIdsOverrides: NationalHealthIdOverride[];
   updatedAt: string;
 }
 
@@ -318,6 +343,10 @@ const defaults: SiteSettings = {
     primaryProvider: "open-er-api",
     secondaryProvider: "exchangerate-host",
   },
+  // Empty by default — the catalogue in lib/national-health-ids.ts
+  // ships with ~50 countries already, admins layer changes on top
+  // via /admin/national-health-ids.
+  nationalHealthIdsOverrides: [],
   updatedAt: new Date().toISOString(),
 };
 
@@ -367,6 +396,8 @@ async function hydrate(): Promise<void> {
           regionalPricing: stored.regionalPricing || [],
           // Older blobs predate FX settings → use defaults.
           fx: { ...defaults.fx, ...(stored.fx || {}) },
+          // Older blobs predate health-id overrides → empty list.
+          nationalHealthIdsOverrides: stored.nationalHealthIdsOverrides || [],
         };
       }
       // Push the persisted FX provider preference into the FX engine.

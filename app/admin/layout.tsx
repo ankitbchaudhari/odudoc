@@ -533,6 +533,7 @@ const navSections: NavSection[] = [
       { href: "/admin/emergency-numbers", label: "Emergency numbers", requires: "super", icon: I.phone },
       { href: "/admin/regional-pricing", label: "Regional pricing", requires: "super", icon: I.cash },
       { href: "/admin/fx-rates", label: "FX rates", requires: "super", icon: I.fx },
+      { href: "/admin/national-health-ids", label: "Health ID catalogue", requires: "super", icon: I.shield },
       { href: "/admin/customize", label: "Theme", requires: "super", icon: I.paint },
       { href: "/admin/careers", label: "Careers", requires: "super", icon: I.briefcase },
     ],

@@ -276,6 +276,7 @@ const navSections: NavSection[] = [
       { href: "/admin/handover", label: "Duty handover", requires: "dutyHandover", icon: I.send },
       { href: "/admin/employee-health", label: "Employee health", requires: "core", icon: I.heart },
       { href: "/admin/departments", label: "Departments", requires: "super", icon: I.building },
+      { href: "/admin/branches", label: "Branches", requires: "core", icon: I.building },
     ],
   },
 

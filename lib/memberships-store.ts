@@ -7,7 +7,9 @@ import { bindPersistentArray } from "./persistent-array";
 
 export type OrgRole =
   | "owner" // Full control, billing, can delete org
-  | "admin" // Manages staff, modules, settings
+  | "admin" // Manages staff, modules, settings (org-wide)
+  | "branch_admin" // Same admin scope but locked to membership.branchId
+  | "hr" // HR ops only (careers, applications, staff, employee-health)
   | "doctor" // Clinical role
   | "nurse"
   | "receptionist"
@@ -21,6 +23,12 @@ export interface Membership {
   userId: string;
   organizationId: string;
   role: OrgRole;
+  /** Optional branch the member belongs to. null/undefined = org-wide
+   *  membership (owner, admin, hr typically). Set for branch_admin
+   *  and any branch-pinned staff (a receptionist at the Bandra
+   *  clinic). When set, branch-aware data filters scope the user's
+   *  reads/writes to that branch. */
+  branchId?: string | null;
   title?: string;
   createdAt: string;
 }

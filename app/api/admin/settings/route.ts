@@ -27,6 +27,7 @@ const SECTIONS: (keyof SiteSettings)[] = [
   "regionalPricing",
   "fx",
   "nationalHealthIdsOverrides",
+  "appointmentPenaltyPolicies",
 ];
 
 export async function GET() {

@@ -284,6 +284,7 @@ const navSections: NavSection[] = [
     title: "Clinical · OPD",
     items: [
       { href: "/admin/appointments", label: "Appointments", requires: "appointments", icon: I.cal },
+      { href: "/admin/appointment-policy", label: "Penalty & refund policy", requires: "appointments", icon: I.cash },
       { href: "/admin/queue", label: "OPD queue", requires: "opdQueue", icon: I.list },
       { href: "/admin/encounters", label: "Encounters", requires: "encounters", icon: I.doc },
       { href: "/admin/hospital-rx", label: "Hospital Rx", requires: "hospitalRx", icon: I.pill },

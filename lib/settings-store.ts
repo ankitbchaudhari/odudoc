@@ -197,6 +197,12 @@ export interface SiteSettings {
   regionalPricing: RegionalPricingEntry[];
   fx: FxSettings;
   nationalHealthIdsOverrides: NationalHealthIdOverride[];
+  // Appointment penalty / refund policies — see
+  // lib/appointment-penalty-engine.ts for shape + semantics. One row
+  // per (scope, scopeId). Platform default (scope="platform",
+  // scopeId=null) is the bottom of the cascade; doctor / clinic / org
+  // overrides win in that order.
+  appointmentPenaltyPolicies?: import("./appointment-penalty-engine").PenaltyPolicy[];
   updatedAt: string;
 }
 

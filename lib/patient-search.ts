@@ -23,7 +23,8 @@ export type PatientSearchType =
   | "name"
   | "patient-id"
   | "insurance"
-  | "govt-id";
+  | "govt-id"
+  | "national-health-id";
 
 export interface PatientSearchQuery {
   type: PatientSearchType;
@@ -34,6 +35,11 @@ export interface PatientSearchQuery {
    *  match so an Aadhaar query doesn't accidentally collide with a
    *  similarly-shaped Voter ID from another country. */
   govtIdCountry?: string;
+  /** For "national-health-id" — the systemId from
+   *  lib/national-health-ids.ts (e.g. "abha-number", "nhs-number").
+   *  When supplied, only matches a governmentIds entry with that
+   *  exact `type`. */
+  healthSystemId?: string;
 }
 
 /** Strip every non-digit + non-plus from a phone-shaped string so
@@ -109,6 +115,27 @@ function matchesGovtId(
   });
 }
 
+// National-health-ID matcher. Stored alongside other government IDs
+// on the patient (Patient.governmentIds[].type === systemId), so we
+// reuse the same array but require the entry's `type` to match the
+// caller's `healthSystemId` — that way an "NHS-style 10 digits"
+// query doesn't false-positive against a similar-shaped insurance
+// number stored as a generic govt-id.
+function matchesHealthId(
+  patient: Patient,
+  raw: string,
+  systemId: string | undefined,
+): boolean {
+  const ids = patient.governmentIds || [];
+  if (ids.length === 0) return false;
+  const needle = normalizeIdValue(raw);
+  if (!needle) return false;
+  return ids.some((entry) => {
+    if (systemId && entry.type !== systemId) return false;
+    return normalizeIdValue(entry.number) === needle;
+  });
+}
+
 export function matchesQuery(
   patient: Patient,
   q: PatientSearchQuery,
@@ -124,6 +151,8 @@ export function matchesQuery(
       return matchesInsurance(patient, q.value);
     case "govt-id":
       return matchesGovtId(patient, q.value, q.govtIdCountry);
+    case "national-health-id":
+      return matchesHealthId(patient, q.value, q.healthSystemId);
     default:
       return false;
   }

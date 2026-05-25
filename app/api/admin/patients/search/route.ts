@@ -30,6 +30,7 @@ const VALID_TYPES: PatientSearchType[] = [
   "patient-id",
   "insurance",
   "govt-id",
+  "national-health-id",
 ];
 
 interface Body {
@@ -37,6 +38,7 @@ interface Body {
   value?: string;
   phoneCountryCode?: string;
   govtIdCountry?: string;
+  healthSystemId?: string;
   currentVisitId?: string;
   orgId?: string; // super-admin override
 }
@@ -87,6 +89,7 @@ export async function POST(req: NextRequest) {
     value: body.value,
     phoneCountryCode: body.phoneCountryCode,
     govtIdCountry: body.govtIdCountry,
+    healthSystemId: body.healthSystemId,
   });
 
   // Redact each match for the caller's role. The redactor operates on

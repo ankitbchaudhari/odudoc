@@ -24,6 +24,10 @@ import {
   govtIdTypesForCountry,
   normalizeIdValue,
 } from "@/lib/govt-id-types";
+import {
+  NATIONAL_HEALTH_IDS,
+  healthIdForCountry,
+} from "@/lib/national-health-ids";
 import { COUNTRY_DIAL_CODES } from "@/lib/country-dial-codes";
 
 type SearchType =
@@ -31,7 +35,8 @@ type SearchType =
   | "name"
   | "patient-id"
   | "insurance"
-  | "govt-id";
+  | "govt-id"
+  | "national-health-id";
 
 interface SearchTypeMeta {
   id: SearchType;
@@ -45,6 +50,11 @@ const SEARCH_TYPES: SearchTypeMeta[] = [
   { id: "patient-id", label: "OduDoc ID / MRN", hint: "Platform-wide ID or per-clinic MRN." },
   { id: "insurance", label: "Insurance policy", hint: "Policy number as printed on the card." },
   { id: "govt-id", label: "Government ID", hint: "Pick country, then ID type, then number." },
+  {
+    id: "national-health-id",
+    label: "National health ID",
+    hint: "Pick country to see the right health-system ID (ABHA, NHS, Medicare, etc.).",
+  },
 ];
 
 // Result shape returned by /api/admin/patients/search — keep loose so
@@ -100,6 +110,11 @@ export default function PatientSearch({
   const [govtCountry, setGovtCountry] = useState("IN");
   const [govtIdType, setGovtIdType] = useState("aadhaar");
   const [govtNumber, setGovtNumber] = useState("");
+  // National-health-ID specific. Country picks the health system
+  // (ABHA for IN, NHS for GB, Medicare for AU, etc.) automatically;
+  // user just types the number.
+  const [healthCountry, setHealthCountry] = useState("IN");
+  const [healthNumber, setHealthNumber] = useState("");
 
   const [busy, setBusy] = useState(false);
   const [response, setResponse] = useState<ApiResponse | null>(null);
@@ -139,6 +154,14 @@ export default function PatientSearch({
         if (!govtNumber.trim()) throw new Error("Type the ID number.");
         body.value = govtNumber;
         body.govtIdCountry = govtCountry;
+      } else if (type === "national-health-id") {
+        if (!healthNumber.trim())
+          throw new Error("Type the health ID number.");
+        const sys = healthIdForCountry(healthCountry);
+        if (!sys)
+          throw new Error("No national health ID is catalogued for that country yet.");
+        body.value = healthNumber;
+        body.healthSystemId = sys.systemId;
       } else {
         if (!text.trim()) throw new Error("Type something to search for.");
         body.value = text;
@@ -324,6 +347,76 @@ export default function PatientSearch({
                     ? "Format looks right."
                     : `Doesn't match the expected ${t.label} format yet.`}
                 </p>
+              );
+            })()}
+          </div>
+        )}
+
+        {type === "national-health-id" && (
+          <div className="space-y-2">
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
+                Country
+              </span>
+              <select
+                className={`mt-1 ${inputCls}`}
+                value={healthCountry}
+                onChange={(e) => setHealthCountry(e.target.value)}
+              >
+                {NATIONAL_HEALTH_IDS.map((h) => (
+                  <option key={h.country} value={h.country}>
+                    {h.countryName} — {h.systemName}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {(() => {
+              const sys = healthIdForCountry(healthCountry);
+              if (!sys) return null;
+              return (
+                <>
+                  <input
+                    className={`${inputCls} font-mono`}
+                    placeholder={sys.format.placeholder}
+                    value={healthNumber}
+                    onChange={(e) =>
+                      setHealthNumber(
+                        e.target.value.replace(/[^A-Za-z0-9@.\s\-+]/g, ""),
+                      )
+                    }
+                  />
+                  <p className="text-[11px] text-gray-500 dark:text-slate-400">
+                    Issued by <strong>{sys.agency}</strong>.
+                    {sys.digitalHealthNetwork && (
+                      <>
+                        {" "}
+                        Linked to <strong>{sys.digitalHealthNetwork}</strong>.
+                      </>
+                    )}
+                    {sys.format.helpText && (
+                      <>
+                        <br />
+                        {sys.format.helpText}
+                      </>
+                    )}
+                  </p>
+                  {sys.format.pattern && healthNumber && (() => {
+                    const ok = sys.format.pattern.test(
+                      normalizeIdValue(healthNumber),
+                    );
+                    return (
+                      <p
+                        className={`text-[11px] ${
+                          ok ? "text-emerald-600" : "text-amber-600"
+                        }`}
+                      >
+                        {ok
+                          ? "Format looks right."
+                          : `Doesn't match the expected ${sys.systemName} format yet.`}
+                      </p>
+                    );
+                  })()}
+                </>
               );
             })()}
           </div>

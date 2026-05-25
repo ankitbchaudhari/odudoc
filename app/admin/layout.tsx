@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import OrgSwitcher from "@/components/admin/OrgSwitcher";
+import PatientSearchLauncher from "@/components/admin/PatientSearchLauncher";
 import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
 import RequestModulesCard from "@/components/admin/RequestModulesCard";
 import TempPasswordBanner from "@/components/TempPasswordBanner";
@@ -336,6 +337,12 @@ const navSections: NavSection[] = [
         label: "Patients",
         requires: "patient",
         icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z",
+      },
+      {
+        href: "/admin/patient-lookup",
+        label: "Find a patient",
+        requires: "core",
+        icon: "M21 21l-4.35-4.35M11 19a8 8 0 110-16 8 8 0 010 16z",
       },
       {
         href: "/admin/appointments",
@@ -1445,6 +1452,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Org switcher only for super-admin — tenant admins are
                 scoped to their single membership; auto-select handles it. */}
             {ctx?.isSuperAdmin && <OrgSwitcher />}
+            {/* Global patient lookup — every admin role can open this;
+                visible fields are governed per-role server-side. */}
+            <PatientSearchLauncher />
             {/* Search */}
             <div className="relative hidden md:block">
               <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

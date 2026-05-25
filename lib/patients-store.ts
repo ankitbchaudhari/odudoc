@@ -42,6 +42,13 @@ export interface Patient {
   // Insurance
   insuranceProvider?: string;
   insurancePolicyNumber?: string;
+  // Government-issued IDs the patient has consented to share with the
+  // clinic — e.g. Aadhaar / SSN / passport / driving licence. Multiple
+  // entries supported because patients often carry several (national
+  // ID + a passport, etc.). Searched by /api/admin/patients/search.
+  // Stored as a flat list of { country, type, number } so the same
+  // search field can scan across IDs from any country.
+  governmentIds?: Array<{ country: string; type: string; number: string }>;
   // Ops
   notes?: string;
   status: "active" | "discharged" | "deceased";
@@ -124,6 +131,7 @@ export interface PatientInput {
   emergencyContactRelation?: string;
   insuranceProvider?: string;
   insurancePolicyNumber?: string;
+  governmentIds?: Array<{ country: string; type: string; number: string }>;
   notes?: string;
 }
 
@@ -154,6 +162,13 @@ export function createPatient(organizationId: string, input: PatientInput): Pati
     emergencyContactRelation: input.emergencyContactRelation?.trim() || undefined,
     insuranceProvider: input.insuranceProvider?.trim() || undefined,
     insurancePolicyNumber: input.insurancePolicyNumber?.trim() || undefined,
+    governmentIds: (input.governmentIds || [])
+      .map((g) => ({
+        country: (g.country || "").trim().toUpperCase(),
+        type: (g.type || "").trim(),
+        number: (g.number || "").trim(),
+      }))
+      .filter((g) => g.country && g.type && g.number),
     notes: input.notes?.trim() || undefined,
     status: "active",
     createdAt: now,
@@ -192,6 +207,15 @@ export function updatePatient(
   if (patch.emergencyContactRelation !== undefined) p.emergencyContactRelation = patch.emergencyContactRelation?.trim() || undefined;
   if (patch.insuranceProvider !== undefined) p.insuranceProvider = patch.insuranceProvider?.trim() || undefined;
   if (patch.insurancePolicyNumber !== undefined) p.insurancePolicyNumber = patch.insurancePolicyNumber?.trim() || undefined;
+  if (patch.governmentIds !== undefined) {
+    p.governmentIds = (patch.governmentIds || [])
+      .map((g) => ({
+        country: (g.country || "").trim().toUpperCase(),
+        type: (g.type || "").trim(),
+        number: (g.number || "").trim(),
+      }))
+      .filter((g) => g.country && g.type && g.number);
+  }
   if (patch.notes !== undefined) p.notes = patch.notes?.trim() || undefined;
   if (patch.status !== undefined) p.status = patch.status;
   p.updatedAt = new Date().toISOString();

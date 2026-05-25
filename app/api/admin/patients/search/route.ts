@@ -83,14 +83,28 @@ export async function POST(req: NextRequest) {
   }
 
   // Pull the org's full patient list, then run the typed query.
+  // Branch scope: if the caller is a branch_admin, narrow to that
+  // branch's patients. Org-level admins / owners / super-admins see
+  // all branches.
+  const memberBranchId =
+    (ctx.membership as { branchId?: string | null } | null | undefined)
+      ?.branchId || null;
+  const isBranchAdmin = ctx.membership?.role === "branch_admin";
+  const branchScope = isBranchAdmin && memberBranchId ? memberBranchId : null;
+
   const all = listPatients({ organizationId: targetOrgId });
-  const matches = runPatientSearch(all, {
-    type,
-    value: body.value,
-    phoneCountryCode: body.phoneCountryCode,
-    govtIdCountry: body.govtIdCountry,
-    healthSystemId: body.healthSystemId,
-  });
+  const matches = runPatientSearch(
+    all,
+    {
+      type,
+      value: body.value,
+      phoneCountryCode: body.phoneCountryCode,
+      govtIdCountry: body.govtIdCountry,
+      healthSystemId: body.healthSystemId,
+    },
+    50,
+    branchScope,
+  );
 
   // Redact each match for the caller's role. The redactor operates on
   // a "RedactablePatient" shape — we map the store Patient onto it

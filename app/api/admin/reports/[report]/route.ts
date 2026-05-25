@@ -108,14 +108,27 @@ async function patientsReport(
   const orgIds = ctx.isSuperAdmin
     ? listOrganizations().map((o) => o.id)
     : [orgId!];
+  // Branch scoping: a branch_admin's CSV only includes their branch's
+  // patients. Org-level admins / owners / super-admins get the whole
+  // org. Patients without a branchId remain visible (cross-branch).
+  const memberBranchId =
+    (ctx.membership as { branchId?: string | null } | null | undefined)
+      ?.branchId || null;
+  const isBranchAdmin = ctx.membership?.role === "branch_admin";
+  const branchScope = isBranchAdmin && memberBranchId ? memberBranchId : null;
+
   const rows = orgIds
     .flatMap((id) => listPatients({ organizationId: id }))
-    .filter((p) => !from && !to ? true : inRange(p.updatedAt, from, to));
+    .filter((p) =>
+      branchScope && p.branchId && p.branchId !== branchScope ? false : true,
+    )
+    .filter((p) => (!from && !to ? true : inRange(p.updatedAt, from, to)));
 
   const columns: CsvColumn<(typeof rows)[number]>[] = [
     { key: "id", label: "OduDoc ID" },
     { key: "mrn", label: "MRN" },
     { key: "organizationId", label: "Organisation" },
+    { key: "branchId", label: "Branch" },
     { key: "firstName", label: "First name" },
     { key: "lastName", label: "Last name" },
     { key: "gender", label: "Gender" },

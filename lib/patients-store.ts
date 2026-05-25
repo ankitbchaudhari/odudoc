@@ -16,6 +16,11 @@ export type BloodGroup =
 export interface Patient {
   id: string;
   organizationId: string; // tenant scope
+  /** Optional branch within the org. When set, branch_admin staff only
+   *  see this patient if their membership.branchId matches. Null /
+   *  undefined = visible org-wide (default for patients registered
+   *  before branches existed, or central / cross-branch patients). */
+  branchId?: string | null;
   mrn: string; // "Medical Record Number" — unique per org
   // Demographics
   firstName: string;

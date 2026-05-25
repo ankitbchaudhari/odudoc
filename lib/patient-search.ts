@@ -159,15 +159,20 @@ export function matchesQuery(
 }
 
 /** Run the query against an already-org-scoped patient list. The
- *  caller (the API route) is responsible for the org filter. */
+ *  caller (the API route) is responsible for the org filter.
+ *  Optional `branchScope` further narrows results — used when the
+ *  caller is a branch_admin who should only see their location's
+ *  patients. Patients without a branchId stay visible (cross-branch). */
 export function runPatientSearch(
   patients: Patient[],
   query: PatientSearchQuery,
   limit = 50,
+  branchScope: string | null = null,
 ): Patient[] {
   if (!query.value || !query.value.trim()) return [];
   const out: Patient[] = [];
   for (const p of patients) {
+    if (branchScope && p.branchId && p.branchId !== branchScope) continue;
     if (matchesQuery(p, query)) {
       out.push(p);
       if (out.length >= limit) break;

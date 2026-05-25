@@ -90,6 +90,7 @@ const SUPER_ONLY_PREFIXES = [
   "/admin/careers",
   "/admin/customize",
   "/admin/settings",
+  "/admin/emergency-numbers",
   "/admin/abdm",
   "/admin/doctor-invites",
 ];

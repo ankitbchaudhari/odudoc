@@ -2,14 +2,53 @@
 
 import { useState, useEffect } from "react";
 
+interface EmergencyNumbers {
+  localEmergency: string;
+  helpline: string;
+}
+
+// Fallback used if the lookup endpoint can't be reached (offline,
+// first paint before fetch resolves, etc.). Matches the seed "*" row
+// in lib/settings-store.ts so the banner never goes blank.
+const FALLBACK: EmergencyNumbers = {
+  localEmergency: "911",
+  helpline: "+1 (302) 899-2625",
+};
+
+// Strip everything except `+` and digits so we can build a clean tel:
+// URI no matter what the admin typed (spaces / parens / dashes are all
+// fine in the display string but break the dialer if passed through).
+function toTelHref(raw: string): string {
+  const cleaned = raw.replace(/[^\d+]/g, "");
+  return `tel:${cleaned}`;
+}
+
 export default function EmergencyBanner() {
   const [dismissed, setDismissed] = useState(true);
+  const [numbers, setNumbers] = useState<EmergencyNumbers | null>(null);
 
   useEffect(() => {
     const wasDismissed = sessionStorage.getItem("emergencyBannerDismissed");
-    if (!wasDismissed) {
-      setDismissed(false);
-    }
+    // Fetch first, then reveal — avoids a flash of the wrong number for
+    // visitors whose detected country differs from the fallback "*" row.
+    let cancelled = false;
+    fetch("/api/emergency-numbers", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: EmergencyNumbers | null) => {
+        if (cancelled) return;
+        setNumbers(
+          data && data.localEmergency && data.helpline ? data : FALLBACK
+        );
+        if (!wasDismissed) setDismissed(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setNumbers(FALLBACK);
+        if (!wasDismissed) setDismissed(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handleDismiss = () => {
@@ -17,7 +56,7 @@ export default function EmergencyBanner() {
     sessionStorage.setItem("emergencyBannerDismissed", "true");
   };
 
-  if (dismissed) return null;
+  if (dismissed || !numbers) return null;
 
   return (
     <div className="relative z-[60] bg-gradient-to-r from-red-600 via-orange-500 to-red-600 px-4 py-2.5 text-white">
@@ -25,15 +64,18 @@ export default function EmergencyBanner() {
         <span className="animate-pulse text-lg">&#128680;</span>
         <span>
           Emergency? Call{" "}
-          <a href="tel:911" className="font-bold underline">
-            911
+          <a
+            href={toTelHref(numbers.localEmergency)}
+            className="font-bold underline"
+          >
+            {numbers.localEmergency}
           </a>{" "}
           or our 24/7 helpline:{" "}
           <a
-            href="tel:+13028992625"
+            href={toTelHref(numbers.helpline)}
             className="inline-block animate-pulse font-bold underline"
           >
-            +1 (302) 899-2625
+            {numbers.helpline}
           </a>
         </span>
       </div>

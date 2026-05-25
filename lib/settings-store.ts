@@ -113,6 +113,18 @@ export interface SocialProvider {
   clientSecret: string;
 }
 
+// One row of the emergency-banner lookup table. The banner picks the row
+// whose `country` matches the visitor's ISO-3166-1 alpha-2 code (resolved
+// by Vercel from the request IP), falling back to the row where
+// `country === "*"`. `localEmergency` is the dial-on-the-phone short
+// code (911 / 112 / 999 / 000); `helpline` is OduDoc's own 24/7 line for
+// that region — both are clickable tel: links in the banner.
+export interface EmergencyNumberEntry {
+  country: string;
+  localEmergency: string;
+  helpline: string;
+}
+
 export interface SiteSettings {
   common: CommonSettings;
   captcha: CaptchaSettings;
@@ -131,6 +143,7 @@ export interface SiteSettings {
   translations: TranslationEntry[];
   invoice: InvoiceSettings;
   socialProviders: SocialProvider[];
+  emergencyNumbers: EmergencyNumberEntry[];
   updatedAt: string;
 }
 
@@ -234,6 +247,36 @@ const defaults: SiteSettings = {
     { id: "apple", name: "Apple", enabled: false, clientId: "", clientSecret: "" },
     { id: "github", name: "GitHub", enabled: false, clientId: "", clientSecret: "" },
   ],
+  // Region-specific emergency numbers shown in the top-of-page banner.
+  // Resolved against the visitor's country via x-vercel-ip-country in
+  // /api/emergency-numbers. "*" is the fallback when no row matches.
+  // Admins manage this list at /admin/emergency-numbers.
+  emergencyNumbers: [
+    { country: "*",  localEmergency: "911", helpline: "+1 (302) 899-2625" },
+    { country: "US", localEmergency: "911", helpline: "+1 (302) 899-2625" },
+    { country: "CA", localEmergency: "911", helpline: "+1 (302) 899-2625" },
+    { country: "GB", localEmergency: "999", helpline: "+1 (302) 899-2625" },
+    { country: "IE", localEmergency: "112", helpline: "+1 (302) 899-2625" },
+    { country: "AU", localEmergency: "000", helpline: "+1 (302) 899-2625" },
+    { country: "NZ", localEmergency: "111", helpline: "+1 (302) 899-2625" },
+    { country: "IN", localEmergency: "112", helpline: "+1 (302) 899-2625" },
+    { country: "AE", localEmergency: "999", helpline: "+1 (302) 899-2625" },
+    { country: "SA", localEmergency: "997", helpline: "+1 (302) 899-2625" },
+    { country: "SG", localEmergency: "995", helpline: "+1 (302) 899-2625" },
+    { country: "ZA", localEmergency: "10177", helpline: "+1 (302) 899-2625" },
+    { country: "NG", localEmergency: "112", helpline: "+1 (302) 899-2625" },
+    { country: "KE", localEmergency: "999", helpline: "+1 (302) 899-2625" },
+    { country: "DE", localEmergency: "112", helpline: "+1 (302) 899-2625" },
+    { country: "FR", localEmergency: "112", helpline: "+1 (302) 899-2625" },
+    { country: "ES", localEmergency: "112", helpline: "+1 (302) 899-2625" },
+    { country: "IT", localEmergency: "112", helpline: "+1 (302) 899-2625" },
+    { country: "NL", localEmergency: "112", helpline: "+1 (302) 899-2625" },
+    { country: "JP", localEmergency: "119", helpline: "+1 (302) 899-2625" },
+    { country: "KR", localEmergency: "119", helpline: "+1 (302) 899-2625" },
+    { country: "CN", localEmergency: "120", helpline: "+1 (302) 899-2625" },
+    { country: "BR", localEmergency: "192", helpline: "+1 (302) 899-2625" },
+    { country: "MX", localEmergency: "911", helpline: "+1 (302) 899-2625" },
+  ],
   updatedAt: new Date().toISOString(),
 };
 
@@ -272,6 +315,13 @@ async function hydrate(): Promise<void> {
           page: { ...defaults.page, ...(stored.page || {}) },
           currency: { ...defaults.currency, ...(stored.currency || {}) },
           invoice: { ...defaults.invoice, ...(stored.invoice || {}) },
+          // Backfill the seed list for blobs persisted before this section
+          // existed — without this, the banner endpoint would return the
+          // hard fallback and the admin page would render an empty table.
+          emergencyNumbers:
+            stored.emergencyNumbers && stored.emergencyNumbers.length > 0
+              ? stored.emergencyNumbers
+              : defaults.emergencyNumbers,
         };
       }
       hydrated = true;

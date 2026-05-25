@@ -23,6 +23,7 @@ const SECTIONS: (keyof SiteSettings)[] = [
   "translations",
   "invoice",
   "socialProviders",
+  "emergencyNumbers",
 ];
 
 export async function GET() {

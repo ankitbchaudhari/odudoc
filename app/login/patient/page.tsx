@@ -143,7 +143,7 @@ export default function PatientLoginPage() {
         {step === 1 && (
           <div className="mt-6">
             <GoogleAuthButton callbackUrl="/dashboard" />
-            <AuthDivider text="or continue with email" />
+            <AuthDivider text="or continue with email or phone" />
           </div>
         )}
 
@@ -153,19 +153,29 @@ export default function PatientLoginPage() {
             className="space-y-4"
           >
             <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-wider text-gray-600">Email</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-600">
+                Email or phone
+              </span>
               <input
-                type="email"
+                // type="text" not "email" because the field also accepts
+                // phone numbers — browsers' built-in email validation
+                // would reject "+91 98765 43210" otherwise.
+                type="text"
+                inputMode="email"
                 required
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="you@example.com or +91 98765 43210"
                 autoFocus
                 className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm focus:border-[#0F6E56] focus:outline-none focus:ring-2 focus:ring-[#0F6E56]/20"
               />
             </label>
             <p className="text-[11px] text-gray-500">
-              Phone-OTP login is on its way. For now, use your registered email.
+              {identifier.includes("@")
+                ? "We'll email you a 6-digit code."
+                : identifier.trim().length > 0
+                  ? "We'll send a 6-digit code via WhatsApp to this number."
+                  : "Use the email or phone you signed up with. We send a 6-digit code to one channel only."}
             </p>
             {error && (
               <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800">{error}</div>

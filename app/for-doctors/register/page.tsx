@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { COUNTRIES } from "@/lib/countries";
 import { listLicenseCountries, licenseMetaFor } from "@/lib/medical-licenses";
 import PhoneInput from "@/components/PhoneInput";
+import { compressImageFile } from "@/lib/image-compress";
 
 const SPECIALTIES = [
   "Cardiology",
@@ -1200,10 +1201,32 @@ function DropZone({
     }
   }
 
-  async function handlePick(f: File) {
+  async function handlePick(raw: File) {
+    // Big phone-camera JPEGs (often 5–10 MB) used to be rejected
+    // outright. We now try to compress images client-side first; PDFs
+    // and other non-image types fall through to the original size
+    // check. compressImageFile is a no-op for files already small
+    // enough or for non-image MIMEs, so it's safe to call always.
+    let f = raw;
+    if (raw.type.startsWith("image/")) {
+      try {
+        f = await compressImageFile(raw, { maxDimension: 1920, quality: 0.82 });
+      } catch {
+        // Compression failure → carry on with the original; the size
+        // gate below will catch it if it's still too big.
+        f = raw;
+      }
+    }
+    // Server accepts up to 10 MB, but Vercel's serverless body cap is
+    // ~4.5 MB so we still need a client-side gate. After compression
+    // most photos land well under this.
     if (f.size > 4 * 1024 * 1024) {
       setLastPicked(null);
-      setUploadError("File exceeds 4MB");
+      setUploadError(
+        raw.type.startsWith("image/")
+          ? "Photo is too detailed to compress under 4 MB. Try cropping or lowering resolution."
+          : "File exceeds 4 MB — please pick a smaller one.",
+      );
       return;
     }
     setLastPicked(f);
@@ -1228,7 +1251,9 @@ function DropZone({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
           </svg>
           <p className="mt-2 text-sm text-gray-600 dark:text-slate-300"><span className="font-semibold text-primary-600">Click to upload</span> or drag and drop</p>
-          <p className="text-xs text-gray-400 dark:text-slate-500">PDF, PNG, JPG (max 4MB)</p>
+          <p className="text-xs text-gray-400 dark:text-slate-500">
+            PDF, PNG, JPG · photos auto-compressed
+          </p>
           <input
             type="file"
             className="hidden"

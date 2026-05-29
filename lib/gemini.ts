@@ -18,6 +18,10 @@ function apiUrl(model: string) {
   return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 }
 
+function streamApiUrl(model: string) {
+  return `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse`;
+}
+
 function stripJsonFence(text: string): string {
   return text
     .replace(/^\s*```(?:json)?\s*/i, "")
@@ -263,4 +267,116 @@ export async function generateJson<T = unknown>(
       `Model output was not JSON (finishReason: ${finishReason || "unknown"})`
     );
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Streaming variant.
+//
+// generateJsonStream yields raw text fragments as Gemini emits them.
+// The route handler accumulates them and forwards each as an SSE event
+// to the browser; the browser parses partial JSON to update fields
+// (specialty, urgency, reasoning, …) the moment each value lands.
+//
+// No model fallback / retry here — for an interactive UI a single
+// stream from gemini-flash is the right tradeoff. Falls back to the
+// non-streaming generateJson() if the caller wants resilience.
+// ─────────────────────────────────────────────────────────────────────
+
+export interface JsonStreamChunk {
+  /** Cumulative text emitted so far. Lets the consumer re-parse
+   *  without buffering on their side. */
+  text: string;
+  /** Just-arrived delta — the tokens emitted in this chunk. */
+  delta: string;
+  /** True on the final chunk. */
+  done: boolean;
+}
+
+export async function* generateJsonStream(
+  opts: GenerateJsonOptions,
+): AsyncGenerator<JsonStreamChunk, void, unknown> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY environment variable is not set");
+  }
+
+  const requestBody = JSON.stringify({
+    ...(opts.systemPrompt
+      ? { systemInstruction: { parts: [{ text: opts.systemPrompt }] } }
+      : {}),
+    contents: [{ role: "user", parts: [{ text: opts.userPrompt }] }],
+    generationConfig: {
+      temperature: opts.temperature ?? 0.6,
+      maxOutputTokens: opts.maxOutputTokens ?? 4096,
+      responseMimeType: "application/json",
+      responseSchema: opts.schema,
+    },
+  });
+
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), 22_000);
+  let res: Response;
+  try {
+    res = await fetch(
+      `${streamApiUrl(GEMINI_MODEL)}&key=${encodeURIComponent(apiKey)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: requestBody,
+        signal: ctrl.signal,
+      },
+    );
+  } catch (e) {
+    clearTimeout(timeout);
+    throw e;
+  }
+  if (!res.ok || !res.body) {
+    clearTimeout(timeout);
+    const body = await res.text().catch(() => "");
+    throw new Error(`Gemini stream HTTP ${res.status}: ${body.slice(0, 200)}`);
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let accumulated = "";
+
+  try {
+    // Gemini's SSE response is `data: {json}\n\n` lines.
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      // Process complete SSE events terminated by blank line.
+      let sep;
+      while ((sep = buffer.indexOf("\n\n")) >= 0) {
+        const eventBlock = buffer.slice(0, sep);
+        buffer = buffer.slice(sep + 2);
+        for (const line of eventBlock.split("\n")) {
+          if (!line.startsWith("data:")) continue;
+          const payload = line.slice(5).trim();
+          if (!payload || payload === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(payload) as {
+              candidates?: Array<{
+                content?: { parts?: Array<{ text?: string }> };
+              }>;
+            };
+            const part = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (part) {
+              accumulated += part;
+              yield { text: accumulated, delta: part, done: false };
+            }
+          } catch {
+            // Ignore malformed SSE payloads — the next one usually
+            // parses fine.
+          }
+        }
+      }
+    }
+  } finally {
+    clearTimeout(timeout);
+    reader.releaseLock();
+  }
+  yield { text: accumulated, delta: "", done: true };
 }

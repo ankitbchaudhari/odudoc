@@ -107,6 +107,63 @@ function Stepper({ step }: { step: Step }) {
   );
 }
 
+// Pull whatever fields we can from a partial / in-flight Gemini JSON
+// string. Gemini emits keys roughly in schema order, so once
+// "specialty" has its closing quote we know it for sure; same for
+// urgency / specialtyLabel / reasoning. Arrays are read partially —
+// every completed string element is included.
+//
+// Hand-rolled regex extractor instead of pulling a partial-JSON
+// library, because the schema is fixed and the surface this needs to
+// cover is tiny. Returns null when nothing has landed yet.
+function parsePartialTriage(text: string): Partial<{
+  specialty: string;
+  specialtyLabel: string;
+  urgency: "routine" | "soon" | "urgent" | "emergency";
+  reasoning: string;
+  redFlags: string[];
+  possibleConditions: string[];
+}> | null {
+  if (!text) return null;
+  const out: Record<string, unknown> = {};
+  const m = (re: RegExp) => text.match(re)?.[1];
+  const sp = m(/"specialty"\s*:\s*"([^"]+)"/);
+  if (sp) out.specialty = sp;
+  const lab = m(/"specialtyLabel"\s*:\s*"([^"]+)"/);
+  if (lab) out.specialtyLabel = lab;
+  const urg = m(/"urgency"\s*:\s*"([^"]+)"/);
+  if (urg) out.urgency = urg;
+  // Reasoning may contain escaped quotes — grab text up to an
+  // unescaped closing quote.
+  const rs = text.match(/"reasoning"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  if (rs) out.reasoning = rs[1].replace(/\\"/g, '"').replace(/\\n/g, "\n");
+  // Pull completed string entries out of in-progress arrays.
+  const pullArray = (key: string): string[] | undefined => {
+    const start = text.indexOf(`"${key}"`);
+    if (start < 0) return undefined;
+    const arrStart = text.indexOf("[", start);
+    if (arrStart < 0) return undefined;
+    const slice = text.slice(arrStart);
+    const re = /"((?:[^"\\]|\\.)*)"/g;
+    const items: string[] = [];
+    let mm: RegExpExecArray | null;
+    while ((mm = re.exec(slice))) items.push(mm[1]);
+    return items;
+  };
+  const rf = pullArray("redFlags");
+  if (rf) out.redFlags = rf;
+  const pc = pullArray("possibleConditions");
+  if (pc) out.possibleConditions = pc;
+  return Object.keys(out).length === 0 ? null : (out as Partial<{
+    specialty: string;
+    specialtyLabel: string;
+    urgency: "routine" | "soon" | "urgent" | "emergency";
+    reasoning: string;
+    redFlags: string[];
+    possibleConditions: string[];
+  }>);
+}
+
 // Rotating status messages shown while the AI call is in flight.
 // A silent multi-second wait feels twice as long as one with motion —
 // these change every ~900ms so the user always sees something
@@ -151,12 +208,63 @@ function Step1({ onPick }: { onPick: (r: SymptomOption) => void }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: aiText.trim() }),
       });
-      const d = await r.json();
-      if (!r.ok) {
+      if (!r.ok || !r.body) {
+        // Non-stream error path — server may have returned a JSON
+        // error body before the stream started.
+        const d = await r.json().catch(() => ({}));
         setAiErr(d.message || d.error || "AI triage failed.");
         return;
       }
-      setAiResult(d as AiTriage);
+
+      // Read the SSE stream from the server. Each `event: chunk` carries
+      // the cumulative JSON-in-progress; we feed it through a tolerant
+      // partial-JSON parser and patch fields onto state the moment they
+      // land. By the time Gemini finishes, the user usually already
+      // sees the specialty + urgency badge.
+      const reader = r.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let finalResult: AiTriage | null = null;
+      let sawError = false;
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let sep;
+        while ((sep = buffer.indexOf("\n\n")) >= 0) {
+          const block = buffer.slice(0, sep);
+          buffer = buffer.slice(sep + 2);
+          // Pull `event:` and `data:` out of the SSE block.
+          let event = "message";
+          let dataLine = "";
+          for (const line of block.split("\n")) {
+            if (line.startsWith("event:")) event = line.slice(6).trim();
+            else if (line.startsWith("data:")) dataLine += line.slice(5).trim();
+          }
+          if (!dataLine) continue;
+          try {
+            const payload = JSON.parse(dataLine) as Record<string, unknown>;
+            if (event === "chunk" && typeof payload.text === "string") {
+              const partial = parsePartialTriage(payload.text);
+              if (partial) setAiResult((prev) => ({ ...prev, ...partial } as AiTriage));
+            } else if (event === "result") {
+              finalResult = payload as unknown as AiTriage;
+              setAiResult(finalResult);
+            } else if (event === "error") {
+              sawError = true;
+              setAiErr(
+                (payload.message as string) || "AI triage failed.",
+              );
+            }
+          } catch {
+            // Ignore malformed SSE — next event usually parses.
+          }
+        }
+      }
+      if (!finalResult && !sawError) {
+        setAiErr("Stream ended without a final result. Try again.");
+      }
     } catch {
       setAiErr("Network error. Try the visual checker below.");
     } finally {
@@ -220,7 +328,7 @@ function Step1({ onPick }: { onPick: (r: SymptomOption) => void }) {
               {aiErr}
             </p>
           )}
-          {aiResult && <AiResultCard r={aiResult} />}
+          {aiResult && <AiResultCard r={aiResult} streaming={aiBusy} />}
         </div>
       </div>
 
@@ -252,16 +360,19 @@ function Step1({ onPick }: { onPick: (r: SymptomOption) => void }) {
   );
 }
 
+// Looser shape than the server contract — every field is optional so
+// the card renders progressively as Gemini streams values in. The
+// final committed shape is identical to the server's TriageResult.
 interface AiTriage {
-  specialty: string;
-  specialtyLabel: string;
-  urgency: "routine" | "soon" | "urgent" | "emergency";
-  reasoning: string;
-  redFlags: string[];
-  possibleConditions: string[];
+  specialty?: string;
+  specialtyLabel?: string;
+  urgency?: "routine" | "soon" | "urgent" | "emergency";
+  reasoning?: string;
+  redFlags?: string[];
+  possibleConditions?: string[];
 }
 
-function AiResultCard({ r }: { r: AiTriage }) {
+function AiResultCard({ r, streaming }: { r: AiTriage; streaming?: boolean }) {
   const URGENCY_TONE = {
     routine:   "from-emerald-500 to-teal-500",
     soon:      "from-amber-500 to-orange-500",
@@ -274,42 +385,60 @@ function AiResultCard({ r }: { r: AiTriage }) {
     urgent: "Urgent — try Consult Now",
     emergency: "Emergency — go to the ER or call 911",
   } as const;
+  // Default tone while urgency is in-flight — keeps the card calm
+  // until Gemini commits a level.
+  const tone = r.urgency ? URGENCY_TONE[r.urgency] : "from-indigo-500 to-violet-500";
+  const urgencyLabel = r.urgency ? URGENCY_LABEL[r.urgency] : "Analysing…";
+  const redFlags = r.redFlags || [];
   return (
     <div className="mt-3 space-y-2">
-      <div className={`rounded-2xl bg-gradient-to-br ${URGENCY_TONE[r.urgency]} px-4 py-3 text-white shadow-md`}>
-        <p className="text-[10px] font-bold uppercase tracking-wider text-white/80">{URGENCY_LABEL[r.urgency]}</p>
-        <p className="mt-0.5 text-xl font-bold">{r.specialtyLabel}</p>
-        <p className="mt-1 text-xs text-white/90">{r.reasoning}</p>
+      <div className={`rounded-2xl bg-gradient-to-br ${tone} px-4 py-3 text-white shadow-md`}>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-white/80">{urgencyLabel}</p>
+        <p className="mt-0.5 text-xl font-bold">
+          {r.specialtyLabel || (streaming ? "Routing…" : "")}
+          {streaming && !r.specialtyLabel && (
+            <span className="ml-1 inline-block h-4 w-2 animate-pulse bg-white/60 align-middle" />
+          )}
+        </p>
+        <p className="mt-1 text-xs text-white/90">
+          {r.reasoning || (streaming ? "Generating reasoning…" : "")}
+          {streaming && r.reasoning && (
+            <span className="ml-0.5 inline-block h-3 w-1 animate-pulse bg-white/60 align-middle" />
+          )}
+        </p>
       </div>
-      {r.redFlags.length > 0 && (
+      {redFlags.length > 0 && (
         <div className="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 px-3 py-2">
           <p className="text-[10px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">⚠️ Red flags spotted</p>
           <ul className="mt-1 ml-4 list-disc text-xs text-rose-700 dark:text-rose-300">
-            {r.redFlags.map((f, i) => <li key={i}>{f}</li>)}
+            {redFlags.map((f, i) => <li key={i}>{f}</li>)}
           </ul>
         </div>
       )}
-      {r.possibleConditions.length > 0 && (
+      {(r.possibleConditions || []).length > 0 && (
         <p className="text-[11px] text-gray-500 dark:text-slate-400">
           <span className="font-semibold">Possibilities (not a diagnosis):</span>{" "}
-          {r.possibleConditions.join(", ")}
+          {(r.possibleConditions || []).join(", ")}
         </p>
       )}
-      {r.urgency === "emergency" ? (
-        <div className="flex flex-wrap gap-2">
-          <a href="tel:911" className="rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white shadow">📞 911</a>
-          <a href="tel:+13028992625" className="rounded-xl border-2 border-red-300 dark:border-red-900/60 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-bold text-red-700 dark:text-red-300">OduDoc helpline</a>
-        </div>
-      ) : (
-        <div className="grid gap-2 sm:grid-cols-2">
-          <Link href={`/consult-now?specialty=${encodeURIComponent(r.specialty)}`} className="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2 text-center text-sm font-bold text-white shadow-md shadow-emerald-500/30">
-            ⚡ Consult now (live)
-          </Link>
-          <Link href={`/specialty/${r.specialty}`} className="rounded-xl border-2 border-indigo-500 bg-white dark:bg-slate-950 px-4 py-2 text-center text-sm font-bold text-indigo-700 dark:text-indigo-300">
-            Browse {r.specialtyLabel}s
-          </Link>
-        </div>
-      )}
+      {/* CTAs only render once the specialty has landed — partial
+          streaming state would otherwise route to /specialty/undefined. */}
+      {r.specialty && !streaming &&
+        (r.urgency === "emergency" ? (
+          <div className="flex flex-wrap gap-2">
+            <a href="tel:911" className="rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white shadow">📞 911</a>
+            <a href="tel:+13028992625" className="rounded-xl border-2 border-red-300 dark:border-red-900/60 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-bold text-red-700 dark:text-red-300">OduDoc helpline</a>
+          </div>
+        ) : (
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Link href={`/consult-now?specialty=${encodeURIComponent(r.specialty)}`} className="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2 text-center text-sm font-bold text-white shadow-md shadow-emerald-500/30">
+              ⚡ Consult now (live)
+            </Link>
+            <Link href={`/specialty/${r.specialty}`} className="rounded-xl border-2 border-indigo-500 bg-white dark:bg-slate-950 px-4 py-2 text-center text-sm font-bold text-indigo-700 dark:text-indigo-300">
+              Browse {r.specialtyLabel}s
+            </Link>
+          </div>
+        ))}
     </div>
   );
 }

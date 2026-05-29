@@ -71,22 +71,23 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Tight prompts + smaller output budget = faster Gemini call.
+    // The response fields are short by design (specialty word + 1-2
+    // sentence reasoning + ~3 bullets). 350 tokens leaves headroom;
+    // 600 was leaving 2x slack on every call and Gemini's response
+    // time scales with token budget.
     const result = await generateJson<TriageResult>({
       tag: "ai-symptom-triage",
       systemPrompt:
-        "You are a careful medical triage assistant on a telemedicine platform. " +
-        "You DO NOT diagnose. You route patients to the right specialty and " +
-        "flag emergencies. When uncertain, prefer General Physician. " +
-        "Severe chest pain, sudden vision loss, loss of consciousness, " +
-        "shortness of breath at rest, stroke symptoms, severe head injury, " +
-        "or signs of anaphylaxis are ALWAYS 'emergency' regardless of " +
-        "duration. Be concise: 1-2 sentences of reasoning.",
+        "Medical triage assistant on a telemedicine platform. Do NOT diagnose. " +
+        "Route patients to the right specialty; flag emergencies. Prefer General Physician when uncertain. " +
+        "Always 'emergency': severe chest pain, sudden vision loss, loss of consciousness, " +
+        "shortness of breath at rest, stroke symptoms, severe head injury, anaphylaxis. " +
+        "Be concise: 1-2 sentences of reasoning.",
       userPrompt:
-        `A patient describes their symptoms in their own words:\n\n"${parsed.data.text}"\n\n` +
-        "Classify them into the most appropriate specialty and urgency. " +
-        "List any red flags you detected (concise bullets, empty list if none). " +
-        "List up to 3 possible conditions, framed as possibilities not diagnoses (empty list if uncertain). " +
-        "Keep reasoning conservative and patient-friendly.",
+        `Patient symptoms:\n"${parsed.data.text}"\n\n` +
+        "Pick specialty + urgency. List red flags (empty array if none). " +
+        "List up to 3 possibilities (empty if uncertain). Keep it patient-friendly.",
       schema: {
         type: "object",
         required: ["specialty", "specialtyLabel", "urgency", "reasoning", "redFlags", "possibleConditions"],
@@ -100,7 +101,7 @@ export async function POST(req: NextRequest) {
         },
       },
       temperature: 0.2,
-      maxOutputTokens: 600,
+      maxOutputTokens: 350,
     });
     return NextResponse.json(result);
   } catch (err) {

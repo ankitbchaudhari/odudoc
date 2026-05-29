@@ -9,7 +9,7 @@
 // Pre-signup — drives Google traffic ("headache doctor", etc.)
 // straight into the booking funnel without forcing an account.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { REGIONS, recommend, type Duration, type Severity, type Recommendation, type SymptomOption } from "@/lib/symptom-router";
 
@@ -107,11 +107,35 @@ function Stepper({ step }: { step: Step }) {
   );
 }
 
+// Rotating status messages shown while the AI call is in flight.
+// A silent multi-second wait feels twice as long as one with motion —
+// these change every ~900ms so the user always sees something
+// progressing. Keep them generic so even a slow call doesn't look
+// like the UI lied.
+const AI_PROGRESS_STAGES = [
+  "Reading your description…",
+  "Identifying symptoms…",
+  "Checking for red flags…",
+  "Routing to the right specialist…",
+];
+
 function Step1({ onPick }: { onPick: (r: SymptomOption) => void }) {
   const [aiText, setAiText] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
+  const [aiStage, setAiStage] = useState(0);
   const [aiResult, setAiResult] = useState<AiTriage | null>(null);
   const [aiErr, setAiErr] = useState<string | null>(null);
+
+  // Cycle progress messages while busy. Stops at the last stage so
+  // we don't loop forever if the API genuinely hangs.
+  useEffect(() => {
+    if (!aiBusy) return;
+    setAiStage(0);
+    const id = setInterval(() => {
+      setAiStage((s) => Math.min(s + 1, AI_PROGRESS_STAGES.length - 1));
+    }, 900);
+    return () => clearInterval(id);
+  }, [aiBusy]);
 
   const runAi = async () => {
     if (aiText.trim().length < 8) {
@@ -165,11 +189,32 @@ function Step1({ onPick }: { onPick: (r: SymptomOption) => void }) {
             <button
               onClick={runAi}
               disabled={aiBusy}
-              className="rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-500/30 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-500/30 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
-              {aiBusy ? "Analyzing…" : "Analyze with AI →"}
+              {aiBusy && (
+                <svg className="h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+              )}
+              {aiBusy ? AI_PROGRESS_STAGES[aiStage] : "Analyze with AI →"}
             </button>
           </div>
+          {/* Inline progress row under the textarea — gives the user
+              something to look at during the multi-second Gemini call.
+              Hidden when not busy so the layout doesn't shift. */}
+          {aiBusy && (
+            <div className="mt-2 flex items-center gap-2 rounded-lg bg-indigo-50/80 dark:bg-indigo-950/40 px-3 py-2 text-[11px] text-indigo-700 dark:text-indigo-300">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-500" />
+              </span>
+              <span>{AI_PROGRESS_STAGES[aiStage]}</span>
+              <span className="ml-auto text-[10px] opacity-70">
+                usually 3-5s
+              </span>
+            </div>
+          )}
           {aiErr && (
             <p className="mt-2 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 px-3 py-2 text-xs text-rose-700 dark:text-rose-300">
               {aiErr}

@@ -134,3 +134,45 @@ export async function getRazorpayPayment(paymentId: string): Promise<Record<stri
   if (!res.ok) throw new Error(`razorpay_payment_fetch_${res.status}`);
   return res.json();
 }
+
+/** Fetch an order record from Razorpay — used by webhook + verify
+ *  paths so we can read `notes` (which carry our typing + userId
+ *  fields the client cannot forge) directly from the authoritative
+ *  source instead of trusting what the webhook payload claims. */
+export async function getRazorpayOrder(orderId: string): Promise<Record<string, unknown>> {
+  const res = await fetch(`${ENDPOINT}/orders/${encodeURIComponent(orderId)}`, {
+    headers: { Authorization: authHeader() },
+  });
+  if (!res.ok) throw new Error(`razorpay_order_fetch_${res.status}`);
+  return res.json();
+}
+
+/** Verify a Razorpay webhook signature. Razorpay sends the signature
+ *  in the `x-razorpay-signature` header, computed as HMAC-SHA256 of
+ *  the raw request body keyed with the WEBHOOK SECRET (configured in
+ *  the Razorpay dashboard, distinct from the API key secret).
+ *
+ *  IMPORTANT: pass the raw request body string — do NOT JSON.parse +
+ *  re-stringify first. Razorpay computes the HMAC over the exact
+ *  bytes they sent, and Node's stringify is not byte-identical.
+ *
+ *  Returns `true` only when the computed hex digest exactly matches.
+ *  Anything else → false; the webhook handler MUST 401 in that case
+ *  (otherwise an attacker can mark any order paid). */
+export function verifyRazorpayWebhookSignature(
+  rawBody: string,
+  signature: string | null | undefined,
+): boolean {
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  if (!secret || !signature) return false;
+
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(rawBody)
+    .digest("hex");
+
+  const a = Buffer.from(expected, "hex");
+  const b = Buffer.from(signature, "hex");
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}

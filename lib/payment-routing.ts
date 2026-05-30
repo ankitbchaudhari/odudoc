@@ -18,8 +18,15 @@
 
 import { getSettings } from "./settings-store";
 import { isCashfreeConfigured } from "./cashfree";
+import { isRazorpayConfigured } from "./razorpay";
 
-export type PaymentProviderId = "stripe" | "payu" | "tazapay" | "connectpay" | "cashfree";
+export type PaymentProviderId =
+  | "stripe"
+  | "payu"
+  | "tazapay"
+  | "connectpay"
+  | "cashfree"
+  | "razorpay";
 
 export interface PaymentProvider {
   id: PaymentProviderId;
@@ -57,14 +64,29 @@ const PROVIDER_META: Record<PaymentProviderId, PaymentProvider> = {
   cashfree: {
     id: "cashfree",
     name: "Cashfree",
-    description: "UPI, Indian cards, net banking, Paytm — India-first",
+    description: "UPI, Indian cards, net banking, Paytm — India fallback",
+    icon: "🇮🇳",
+  },
+  razorpay: {
+    id: "razorpay",
+    name: "Razorpay",
+    description: "UPI, Indian cards, net banking, wallets — India primary",
     icon: "🇮🇳",
   },
 };
 
-const CASHFREE_COUNTRIES = new Set([
+// Razorpay is our primary domestic merchant — same countries as
+// Cashfree's UPI rail, plus everywhere else INR settles (Razorpay
+// supports international cards too, but the India-list is where it
+// wins on conversion + fees).
+const RAZORPAY_COUNTRIES = new Set([
   "IN", // primary
-  // Cashfree's cards rail also supports cross-border for these:
+  // Razorpay's international cards rail also handles cross-border for these:
+  "BD", "LK", "NP", "BT",
+]);
+
+const CASHFREE_COUNTRIES = new Set([
+  "IN", // legacy primary, now fallback behind Razorpay
   "BD", "LK", "NP", "BT",
 ]);
 
@@ -94,28 +116,43 @@ export function providersForCountry(country?: string): PaymentProvider[] {
   const settings = getSettings();
   for (const gw of settings.paymentGateways) {
     if (!gw.enabled) continue;
-    if (gw.id === "stripe" || gw.id === "payu" || gw.id === "tazapay" || gw.id === "connectpay" || gw.id === "cashfree") {
+    if (
+      gw.id === "stripe" ||
+      gw.id === "payu" ||
+      gw.id === "tazapay" ||
+      gw.id === "connectpay" ||
+      gw.id === "cashfree" ||
+      gw.id === "razorpay"
+    ) {
       // Some providers also need keys to be non-empty before the lib
       // helpers will accept a request. Enabled-without-keys is a
       // half-configured state that should not be offered.
-      const hasKeys = gw.id === "stripe"
-        ? Boolean(process.env.STRIPE_SECRET_KEY) // Stripe uses env, not the row
-        : gw.id === "cashfree"
-          ? isCashfreeConfigured() // Cashfree uses env vars too
-          : Boolean(gw.publicKey && gw.secretKey);
+      const hasKeys =
+        gw.id === "stripe"
+          ? Boolean(process.env.STRIPE_SECRET_KEY) // Stripe uses env, not the row
+          : gw.id === "cashfree"
+            ? isCashfreeConfigured() // Cashfree uses env vars too
+            : gw.id === "razorpay"
+              ? isRazorpayConfigured() // Razorpay uses env vars too
+              : Boolean(gw.publicKey && gw.secretKey);
       if (hasKeys) enabled.add(gw.id);
     }
   }
   // Stripe is always present if configured — it's our global default.
   if (process.env.STRIPE_SECRET_KEY) enabled.add("stripe");
-  // Cashfree is enabled by env presence, no admin row needed.
+  // Razorpay + Cashfree are enabled by env presence, no admin row needed.
+  if (isRazorpayConfigured()) enabled.add("razorpay");
   if (isCashfreeConfigured()) enabled.add("cashfree");
 
   // Build the regional preference list for this country, then any
   // remaining enabled providers in a stable fallback order.
   const preferred: PaymentProviderId[] = [];
-  // Cashfree leads in India + neighbouring countries — UPI is native,
-  // settlement is fast, and it's the lowest-friction rail for INR.
+  // Razorpay leads in India + neighbouring countries — it's the
+  // platform's primary merchant (Account & Settings), the lowest-
+  // friction rail for UPI, and matches the BookingModal default.
+  // Cashfree stays as the domestic fallback when Razorpay isn't
+  // configured.
+  if (cc && RAZORPAY_COUNTRIES.has(cc) && enabled.has("razorpay")) preferred.push("razorpay");
   if (cc && CASHFREE_COUNTRIES.has(cc) && enabled.has("cashfree")) preferred.push("cashfree");
   if (cc && PAYU_COUNTRIES.has(cc) && enabled.has("payu")) preferred.push("payu");
   if (cc && TAZAPAY_COUNTRIES.has(cc) && enabled.has("tazapay")) preferred.push("tazapay");
@@ -125,7 +162,14 @@ export function providersForCountry(country?: string): PaymentProvider[] {
   // Append any enabled providers we haven't surfaced yet (e.g. PayU is
   // enabled but the visitor isn't in a PayU country — still offer it
   // as a secondary option for travellers / VPN users).
-  for (const id of ["stripe", "cashfree", "payu", "tazapay", "connectpay"] as const) {
+  for (const id of [
+    "stripe",
+    "razorpay",
+    "cashfree",
+    "payu",
+    "tazapay",
+    "connectpay",
+  ] as const) {
     if (enabled.has(id) && !preferred.includes(id)) preferred.push(id);
   }
 

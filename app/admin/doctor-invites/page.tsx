@@ -303,13 +303,19 @@ export default function DoctorInvitesPage() {
                           doctor actually got the message or needs the
                           manual wa.me follow-up. */}
                       {r.ok && r.phone && r.waAutoSent && r.waChannel === "template" && (
-                        <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800" title="Marketing template delivered via sent.dm. Recipient sees the OduDoc-branded template card.">
-                          ✓ Marketing template delivered
+                        <span
+                          className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800"
+                          title="sent.dm accepted the marketing template for delivery. Meta's actual delivery + read status arrives asynchronously - check sent.dm dashboard or WhatsApp Business Manager. If the recipient says they didn't receive: (1) confirm the template is APPROVED in Meta WA Manager, (2) confirm the number is on WhatsApp, (3) confirm they haven't opted out, (4) try the wa.me fallback button on the row below."
+                        >
+                          ✓ Marketing template accepted by sent.dm
                         </span>
                       )}
                       {r.ok && r.phone && r.waAutoSent && r.waChannel === "freeform" && (
-                        <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-semibold text-sky-800" title="Marketing template was rejected by Meta (recipient not marketing-opted-in). Freeform text sent via Meta Cloud API inside the open 24h window instead. Free.">
-                          ✓ Freeform message delivered (24h window)
+                        <span
+                          className="ml-2 inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-semibold text-sky-800"
+                          title="Marketing template was rejected by Meta (recipient not opted in). Freeform text sent via Meta Cloud API inside the open 24h window instead. Free. Delivered live to the recipient."
+                        >
+                          ✓ Freeform message sent (24h window)
                         </span>
                       )}
                       {r.ok && r.phone && r.waAutoSent === false && (
@@ -423,8 +429,12 @@ export default function DoctorInvitesPage() {
                           )}
                         </div>
                         {i.whatsappSentAt && (
-                          <p className="mt-1 text-[10px] text-emerald-700">
-                            WhatsApp opened {new Date(i.whatsappSentAt).toLocaleDateString()}
+                          <p
+                            className="mt-1 text-[10px] text-emerald-700"
+                            title="sent.dm accepted the message. Actual delivery to the recipient's phone depends on Meta — check sent.dm dashboard or WhatsApp Business Manager for the live status."
+                          >
+                            WhatsApp dispatched{" "}
+                            {new Date(i.whatsappSentAt).toLocaleString()}
                           </p>
                         )}
                       </td>

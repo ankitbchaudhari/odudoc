@@ -128,15 +128,27 @@ function score(entry: PageEntry, q: string): number {
   return 0;
 }
 
+interface RecordHit {
+  /** "patient" / "doctor" — drives the icon + landing route. */
+  kind: "patient" | "doctor";
+  id: string;
+  title: string;
+  /** Sub-line shown under the title — MRN for patients, specialty for doctors. */
+  subtitle?: string;
+  href: string;
+}
+
 export default function GlobalAdminSearch() {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
+  const [records, setRecords] = useState<RecordHit[]>([]);
+  const [recordsLoading, setRecordsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const results = useMemo(() => {
+  const pageResults = useMemo(() => {
     if (!q.trim()) return [] as Array<PageEntry & { score: number }>;
     return INDEX
       .map((e) => ({ ...e, score: score(e, q.trim()) }))
@@ -145,10 +157,109 @@ export default function GlobalAdminSearch() {
       .slice(0, 8);
   }, [q]);
 
+  // Single flat list the keyboard navigates through. Pages come
+  // first so muscle memory ("type 'rep', hit Enter, land on Reports")
+  // never breaks when API results arrive late.
+  const flatResults = useMemo(
+    () => [
+      ...pageResults.map((p) => ({ kind: "page" as const, page: p })),
+      ...records.map((r) => ({ kind: "record" as const, record: r })),
+    ],
+    [pageResults, records],
+  );
+
   // Reset highlight when results list shifts under us so Enter never
   // navigates to a result the user can't see.
   useEffect(() => {
     setHighlight(0);
+  }, [q]);
+
+  // Debounced live record search. Fires patient + doctor lookups in
+  // parallel after a 250ms keystroke pause. AbortController cancels
+  // in-flight requests when the query changes again so a slow patient
+  // query can't overwrite a faster newer one. Silently ignores 401/403
+  // — non-admins simply see admin-page results without records.
+  useEffect(() => {
+    const needle = q.trim();
+    if (needle.length < 2) {
+      setRecords([]);
+      setRecordsLoading(false);
+      return;
+    }
+    const ctrl = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setRecordsLoading(true);
+      try {
+        const [patientRes, doctorRes] = await Promise.allSettled([
+          fetch("/api/admin/patients/search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: "name", value: needle }),
+            signal: ctrl.signal,
+          }),
+          fetch(`/api/admin/doctors?search=${encodeURIComponent(needle)}`, {
+            signal: ctrl.signal,
+          }),
+        ]);
+
+        const hits: RecordHit[] = [];
+
+        if (patientRes.status === "fulfilled" && patientRes.value.ok) {
+          const data = (await patientRes.value.json()) as {
+            results?: Array<{
+              patient?: { id?: string };
+              mrn?: string;
+              fullName?: string;
+            }>;
+          };
+          for (const r of (data.results || []).slice(0, 4)) {
+            const id = r.patient?.id;
+            if (!id) continue;
+            // No /admin/patients/[id] detail route exists yet — route
+            // to the lookup page with the patient's MRN pre-filled so
+            // the existing widget shows the full record in one step.
+            const lookupQ = r.mrn || r.fullName || "";
+            hits.push({
+              kind: "patient",
+              id,
+              title: r.fullName || "(redacted)",
+              subtitle: r.mrn ? `MRN ${r.mrn}` : undefined,
+              href: `/admin/patient-lookup?q=${encodeURIComponent(lookupQ)}`,
+            });
+          }
+        }
+
+        if (doctorRes.status === "fulfilled" && doctorRes.value.ok) {
+          const data = (await doctorRes.value.json()) as {
+            doctors?: Array<{ id: string; name?: string; specialty?: string }>;
+          };
+          for (const d of (data.doctors || []).slice(0, 3)) {
+            // No /admin/doctors/[id] detail route yet — route to the
+            // listing with the search pre-filled. Listing page can
+            // pick this up later via useSearchParams.
+            hits.push({
+              kind: "doctor",
+              id: d.id,
+              title: d.name || "Doctor",
+              subtitle: d.specialty || undefined,
+              href: `/admin/doctors?search=${encodeURIComponent(d.name || d.id)}`,
+            });
+          }
+        }
+
+        if (!ctrl.signal.aborted) setRecords(hits);
+      } catch {
+        // Aborted or network — drop silently. The UI stays on
+        // page-results which is the more common case anyway.
+      } finally {
+        if (!ctrl.signal.aborted) setRecordsLoading(false);
+      }
+    }, 250);
+
+    return () => {
+      window.clearTimeout(timer);
+      ctrl.abort();
+    };
   }, [q]);
 
   // Close on outside click — common dropdown pattern; without this the
@@ -163,17 +274,18 @@ export default function GlobalAdminSearch() {
   }, []);
 
   function pick(idx: number) {
-    const hit = results[idx];
+    const hit = flatResults[idx];
     if (!hit) return;
     setOpen(false);
     setQ("");
-    router.push(hit.href);
+    const href = hit.kind === "page" ? hit.page.href : hit.record.href;
+    router.push(href);
   }
 
   function onKey(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setHighlight((h) => Math.min(h + 1, Math.max(results.length - 1, 0)));
+      setHighlight((h) => Math.min(h + 1, Math.max(flatResults.length - 1, 0)));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setHighlight((h) => Math.max(h - 1, 0));
@@ -186,7 +298,9 @@ export default function GlobalAdminSearch() {
     }
   }
 
-  const showDropdown = open && results.length > 0;
+  const showDropdown = open && flatResults.length > 0;
+  const showEmpty =
+    open && q.trim() && flatResults.length === 0 && !recordsLoading;
 
   return (
     <div ref={containerRef} className="relative hidden md:block">
@@ -223,39 +337,93 @@ export default function GlobalAdminSearch() {
         <div
           role="listbox"
           aria-label="Admin search results"
-          className="absolute left-0 right-0 top-full z-50 mt-1 max-h-[420px] overflow-auto rounded-lg border border-slate-200 bg-white shadow-2xl ring-1 ring-black/5"
+          className="absolute left-0 right-0 top-full z-50 mt-1 max-h-[480px] w-[360px] overflow-auto rounded-lg border border-slate-200 bg-white shadow-2xl ring-1 ring-black/5"
         >
-          {results.map((r, idx) => (
-            <button
-              key={`${r.href}-${idx}`}
-              type="button"
-              role="option"
-              aria-selected={idx === highlight}
-              onMouseEnter={() => setHighlight(idx)}
-              onMouseDown={(e) => {
-                // mouseDown not click — click fires after blur which
-                // closes the dropdown and unmounts this button.
-                e.preventDefault();
-                pick(idx);
-              }}
-              className={`flex w-full items-center justify-between gap-3 border-b border-slate-100 px-3 py-2 text-left text-sm last:border-b-0 ${
-                idx === highlight
-                  ? "bg-indigo-50 text-indigo-900"
-                  : "text-slate-700 hover:bg-slate-50"
-              }`}
-            >
-              <span className="truncate font-medium">{r.label}</span>
-              <span className="shrink-0 text-[10.5px] uppercase tracking-wider text-slate-400">
-                {r.group}
-              </span>
-            </button>
-          ))}
+          {pageResults.length > 0 && (
+            <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              <span>Pages</span>
+              <span className="text-slate-400">{pageResults.length}</span>
+            </div>
+          )}
+          {pageResults.map((r, pageIdx) => {
+            const idx = pageIdx;
+            return (
+              <button
+                key={`page-${r.href}-${idx}`}
+                type="button"
+                role="option"
+                aria-selected={idx === highlight}
+                onMouseEnter={() => setHighlight(idx)}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  pick(idx);
+                }}
+                className={`flex w-full items-center justify-between gap-3 border-b border-slate-100 px-3 py-2 text-left text-sm ${
+                  idx === highlight
+                    ? "bg-indigo-50 text-indigo-900"
+                    : "text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                <span className="truncate font-medium">{r.label}</span>
+                <span className="shrink-0 text-[10.5px] uppercase tracking-wider text-slate-400">
+                  {r.group}
+                </span>
+              </button>
+            );
+          })}
+
+          {records.length > 0 && (
+            <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              <span>Records</span>
+              <span className="text-slate-400">{records.length}</span>
+            </div>
+          )}
+          {records.map((r, recordIdx) => {
+            const idx = pageResults.length + recordIdx;
+            const kindLabel = r.kind === "patient" ? "Patient" : "Doctor";
+            return (
+              <button
+                key={`record-${r.kind}-${r.id}`}
+                type="button"
+                role="option"
+                aria-selected={idx === highlight}
+                onMouseEnter={() => setHighlight(idx)}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  pick(idx);
+                }}
+                className={`flex w-full items-center justify-between gap-3 border-b border-slate-100 px-3 py-2 text-left text-sm last:border-b-0 ${
+                  idx === highlight
+                    ? "bg-indigo-50 text-indigo-900"
+                    : "text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                <span className="flex min-w-0 flex-col">
+                  <span className="truncate font-medium">{r.title}</span>
+                  {r.subtitle && (
+                    <span className="truncate text-[11px] text-slate-500">
+                      {r.subtitle}
+                    </span>
+                  )}
+                </span>
+                <span className="shrink-0 text-[10.5px] uppercase tracking-wider text-slate-400">
+                  {kindLabel}
+                </span>
+              </button>
+            );
+          })}
+
+          {recordsLoading && (
+            <div className="border-t border-slate-100 px-3 py-2 text-[11px] text-slate-400">
+              Searching records…
+            </div>
+          )}
         </div>
       )}
 
-      {open && q.trim() && results.length === 0 && (
+      {showEmpty && (
         <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-500 shadow-lg">
-          No admin page matches “{q.trim()}”.
+          No page or record matches “{q.trim()}”.
         </div>
       )}
     </div>

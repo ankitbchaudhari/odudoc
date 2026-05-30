@@ -93,6 +93,25 @@ export default function RxImportPage() {
   }, [rawText]);
 
   const onPhotoPick = (file: File) => {
+    // Hard MIME-type gate. `accept="image/*"` is loose on Windows file
+    // pickers and lets users pick PDFs anyway. Tesseract.js can't read
+    // PDFs and an <img> tag can't render them either — both fail
+    // silently with a broken-image icon. Bail early with a clear hint.
+    const isImage = file.type.startsWith("image/");
+    if (!isImage) {
+      const isPdf =
+        file.type === "application/pdf" ||
+        /\.pdf$/i.test(file.name);
+      setPhotoFile(null);
+      setPhotoUrl(null);
+      setOcrPhase("idle");
+      setOcrError(
+        isPdf
+          ? "PDFs aren't supported here yet. Open the PDF, take a screenshot of each prescription page, and upload the screenshots as PNG or JPG."
+          : `Only image files (JPG, PNG, HEIC, WebP) work. Picked file type: ${file.type || "unknown"}.`,
+      );
+      return;
+    }
     setPhotoFile(file);
     const url = URL.createObjectURL(file);
     setPhotoUrl(url);
@@ -186,10 +205,15 @@ export default function RxImportPage() {
               <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Add prescription image</p>
             </div>
             <input
-              type="file" accept="image/*" capture="environment"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+              capture="environment"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) onPhotoPick(f); }}
               className="block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-orange-500 file:to-amber-500 file:px-3 file:py-1.5 file:text-white file:font-semibold"
             />
+            <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
+              JPG / PNG / HEIC / WebP. PDFs aren&apos;t supported yet — screenshot each page first.
+            </p>
             {photoUrl && (
               <div className="mt-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -88,19 +88,33 @@ export async function POST(request: NextRequest) {
   }
 
   // Deliver via the channel matching the identifier. WhatsApp uses an
-  // approved Meta template (configured via sent.dm or Twilio ContentSid)
-  // — we can't send freeform cold-contact OTPs outside the 24h CS window.
-  // Both delivery paths fail open: the fixed-shape success response is
-  // already in flight; we just won't have a code to send.
+  // approved Meta template — we can't send freeform cold-contact OTPs
+  // outside the 24h CS window. Three provider paths in priority order:
+  //   1. Meta Cloud API direct (cheapest, no BSP markup) — name set by
+  //      env META_WA_TEMPLATE_LOGIN_OTP, language by META_WA_LOCALE.
+  //   2. sent.dm BSP — env SENTDM_TEMPLATE_OTP. (Also accepts the
+  //      legacy SENTDM_TEMPLATE_LOGIN_OTP name; whichever is set wins.
+  //      The canonical name aligns with lib/sent-dm + lib/otp-store.)
+  //   3. Twilio Content API — env TWILIO_WA_OTP_CONTENT_SID.
+  // sendWhatsAppTemplate picks the first one configured. Fail-open:
+  // the fixed-shape success response is already in flight; we just
+  // won't have a code to send if every path is unconfigured.
   if (idType === "phone" && user.phone) {
     const tplSid = process.env.TWILIO_WA_OTP_CONTENT_SID;
-    const sentDmTpl = process.env.SENTDM_TEMPLATE_LOGIN_OTP;
-    if (tplSid || sentDmTpl) {
+    const sentDmTpl =
+      process.env.SENTDM_TEMPLATE_OTP ||
+      process.env.SENTDM_TEMPLATE_LOGIN_OTP;
+    const metaTpl = process.env.META_WA_TEMPLATE_LOGIN_OTP;
+    if (tplSid || sentDmTpl || metaTpl) {
       await sendWhatsAppTemplate(
         user.phone,
         tplSid,
         { var_1: issued.code, "1": issued.code, code: issued.code },
-        { sentDmTemplate: sentDmTpl },
+        {
+          sentDmTemplate: sentDmTpl,
+          metaTemplate: metaTpl,
+          metaLanguageCode: process.env.META_WA_LOCALE || "en",
+        },
       ).catch(() => {});
     }
   } else {

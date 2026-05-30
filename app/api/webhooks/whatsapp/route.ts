@@ -22,7 +22,7 @@
 // blocking external calls beyond the reply send).
 
 import { NextRequest, NextResponse } from "next/server";
-import { chatbotRespond } from "@/lib/whatsapp-chatbot";
+import { chatbotRespond, chatbotRespondWithAI } from "@/lib/whatsapp-chatbot";
 import { sendFreeformWhatsApp } from "@/lib/whatsapp-cloud";
 import { recordOptOut, removeOptOut } from "@/lib/notifications/phone-opt-out-store";
 import { log } from "@/lib/log";
@@ -124,15 +124,27 @@ export async function POST(req: NextRequest) {
           continue;
         }
 
-        const reply = chatbotRespond({
-          body,
-          from: msg.from,
-          receivedAt: new Date(Number(msg.timestamp) * 1000).toISOString(),
-        });
+        // Use the AI-augmented path when the post-visit feature is on
+        // (WA_AI_POST_VISIT_ENABLED=1). Falls back internally to the
+        // deterministic chatbot for everything except "unknown" intents
+        // from senders who have a recent visit on file.
+        const useAi = process.env.WA_AI_POST_VISIT_ENABLED === "1";
+        const reply = useAi
+          ? await chatbotRespondWithAI({
+              body,
+              from: msg.from,
+              receivedAt: new Date(Number(msg.timestamp) * 1000).toISOString(),
+            })
+          : chatbotRespond({
+              body,
+              from: msg.from,
+              receivedAt: new Date(Number(msg.timestamp) * 1000).toISOString(),
+            });
 
         log.info("whatsapp_webhook.chatbot_reply", {
           from: msg.from,
           intent: reply.intent,
+          ai: useAi,
           inboundPreview: body.slice(0, 60),
         });
 

@@ -22,7 +22,7 @@ import {
 import { sendEmail } from "@/lib/email";
 import { sendToUser, sendToEmail } from "@/lib/fcm";
 import { notify } from "@/lib/notifications/notify";
-import { sendAppointmentReminderViaSentDm } from "@/lib/sent-dm";
+import { sendWhatsAppTemplate } from "@/lib/sms";
 
 import { log } from "@/lib/log";
 const SITE_URL = "https://www.odudoc.com";
@@ -92,17 +92,36 @@ export async function GET(req: Request) {
         notify({ channel: "sms", to: c.patientPhone, body: sms, category: "reminder" })
           .catch((err) => log.warn("cron.appointment_reminders.sms_failed", { id: c.id, err: String(err) }));
         // Best-effort WhatsApp template alongside SMS/email/FCM.
+        // sendWhatsAppTemplate prefers Meta Cloud API direct (no BSP
+        // markup) → falls back to sent.dm → finally Twilio. Whichever
+        // is configured first wins.
         (async () => {
           try {
-            const r = await sendAppointmentReminderViaSentDm(c.patientPhone!, {
-              patientName: c.patientName || "there",
-              doctorName: c.doctorName || "Doctor",
-              date: c.dateLabel,
-              time: c.timeSlot,
-            });
-            if (!r.ok) log.warn("cron.appointment_reminders.wa_template_failed", { error: r.error || "unknown" });
+            const vars = {
+              "1": c.patientName || "there",
+              "2": c.doctorName || "Doctor",
+              "3": c.dateLabel,
+              "4": c.timeSlot,
+            };
+            const r = await sendWhatsAppTemplate(
+              c.patientPhone!,
+              process.env.TWILIO_WA_APPT_REMINDER_CONTENT_SID,
+              vars,
+              {
+                metaTemplate: process.env.META_WA_TEMPLATE_APPT_REMINDER,
+                metaLanguageCode: process.env.META_WA_LOCALE || "en",
+                sentDmTemplate: process.env.SENTDM_TEMPLATE_APPOINTMENT_REMINDER,
+              },
+            );
+            if (!r.ok && !r.skipped) {
+              log.warn("cron.appointment_reminders.wa_template_failed", {
+                error: r.error || "unknown",
+              });
+            }
           } catch (err) {
-            log.warn("cron.appointment_reminders.wa_template_threw", { error: err instanceof Error ? err.message : "send threw" });
+            log.warn("cron.appointment_reminders.wa_template_threw", {
+              error: err instanceof Error ? err.message : "send threw",
+            });
           }
         })();
       }

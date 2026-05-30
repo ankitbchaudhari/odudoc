@@ -173,3 +173,56 @@ export function chatbotRespond(input: ChatbotInput): ChatbotReply {
       `• Visit ${BASE_URL}/support`,
   };
 }
+
+// ────────────────────────────────────────────────────────────────────
+// AI-augmented variant: same deterministic pass first, but when the
+// inbound classifies as "unknown" AND the sender has a recent
+// consultation, we route the question through Gemini grounded in that
+// visit's notes. Lets us turn the post-visit follow-up flow into a
+// useful Q&A without breaking the fast deterministic path for
+// STOP/HELP/MENU/etc.
+// ────────────────────────────────────────────────────────────────────
+
+import {
+  answerPostVisitQuestion,
+  findRecentVisitContextForPhone,
+} from "./whatsapp-post-visit";
+
+export async function chatbotRespondWithAI(
+  input: ChatbotInput,
+): Promise<ChatbotReply> {
+  const det = chatbotRespond(input);
+  // For everything except "unknown" the deterministic answer is the
+  // right one — never want Gemini overriding a STOP intent.
+  if (det.intent !== "unknown") return det;
+
+  // Look up a recent visit. No visit → keep the deterministic fallback.
+  const ctx = findRecentVisitContextForPhone(input.from);
+  if (!ctx) return det;
+
+  const ans = await answerPostVisitQuestion(input.body, ctx);
+  if (ans.type === "off_topic") return det;
+
+  if (ans.type === "escalate") {
+    return {
+      intent: "unknown",
+      body:
+        "⚠️ Based on what you described, please reach urgent care right away.\n\n" +
+        "If this is an emergency, call your local emergency number now.\n\n" +
+        `For non-emergency follow-up, reply *DOCTOR* to reach a clinician on OduDoc, or visit ${BASE_URL}/support.\n\n` +
+        (ans.body
+          ? ans.body
+          : "I'm an AI, not your doctor — I can't safely answer this one."),
+    };
+  }
+
+  // "answer"
+  return {
+    intent: "unknown",
+    body:
+      ans.body +
+      "\n\nReply *DOCTOR* to follow up with " +
+      ctx.doctorName +
+      `, or *MENU* for more options. — Team OduDoc`,
+  };
+}

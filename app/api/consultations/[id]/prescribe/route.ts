@@ -6,6 +6,7 @@ import { addPrescription } from "@/lib/prescriptions-store";
 import type { PrescriptionData } from "@/lib/prescription-templates";
 import { sendPrescriptionToPatient } from "@/lib/consultation-emails";
 import { sendPrescriptionReadyViaSentDm } from "@/lib/sent-dm";
+import { sendWhatsAppTemplate } from "@/lib/sms";
 
 import { log } from "@/lib/log";
 export const runtime = "nodejs";
@@ -116,16 +117,40 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     viewUrl,
   }).catch(console.error);
 
-  // WhatsApp template — fires when odudoc_prescription_ready is
-  // approved + SENTDM_TEMPLATE_PRESCRIPTION_READY env var is set.
+  // WhatsApp template — prefers Meta Cloud API direct (no BSP markup)
+  // when META_WA_TEMPLATE_PRESCRIPTION_READY is set, falls back to
+  // sent.dm (SENTDM_TEMPLATE_PRESCRIPTION_READY) → Twilio. The template
+  // header is a PDF document so the patient receives the actual
+  // prescription attached, not just a link. View URL is included as
+  // the URL-button substitution.
   const patientPhone = data.patientPhone || c.patientPhone;
   if (patientPhone) {
-    sendPrescriptionReadyViaSentDm(patientPhone, {
-      patientName: c.patientName || "there",
-      doctorName: c.doctorName || "your doctor",
-    })
+    sendWhatsAppTemplate(
+      patientPhone,
+      process.env.TWILIO_WA_PRESCRIPTION_CONTENT_SID,
+      {
+        "1": c.patientName || "there",
+        "2": c.doctorName || "your doctor",
+        "3": rx.id,
+      },
+      {
+        metaTemplate: process.env.META_WA_TEMPLATE_PRESCRIPTION_READY,
+        metaLanguageCode: process.env.META_WA_LOCALE || "en",
+        sentDmTemplate: process.env.SENTDM_TEMPLATE_PRESCRIPTION_READY,
+      },
+    )
       .then((r) => {
-        if (!r.ok) log.warn("prescription.wa_template_failed", { error: r.error || "unknown" });
+        if (!r.ok && !r.skipped) {
+          log.warn("prescription.wa_template_failed", { error: r.error || "unknown" });
+          // Fallback to legacy sent.dm direct call if the chained path
+          // returned an error (e.g. all template names missing). Keeps
+          // existing deployments working until Meta templates are
+          // approved.
+          sendPrescriptionReadyViaSentDm(patientPhone, {
+            patientName: c.patientName || "there",
+            doctorName: c.doctorName || "your doctor",
+          }).catch(() => {});
+        }
       })
       .catch((err) =>
         log.warn("prescription.wa_template_threw", {

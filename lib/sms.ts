@@ -14,6 +14,10 @@
 
 import { log } from "./log";
 import { sentDmSend, isSentDmConfigured } from "./sent-dm";
+import {
+  isWhatsAppCloudConfigured,
+  sendTemplateWhatsApp,
+} from "./whatsapp-cloud";
 
 const SID = process.env.TWILIO_ACCOUNT_SID?.trim();
 const TOKEN = process.env.TWILIO_AUTH_TOKEN?.trim();
@@ -116,12 +120,43 @@ export async function sendWhatsAppTemplate(
   to: string,
   contentSid: string | undefined,
   variables: Record<string, string>,
-  options?: { sentDmTemplate?: string },
+  options?: {
+    sentDmTemplate?: string;
+    /** Direct Cloud API template name (HSM name in WA Manager). When
+     *  WHATSAPP_CLOUD_API_TOKEN + WHATSAPP_PHONE_NUMBER_ID are set
+     *  this is preferred — saves the BSP fee Twilio/sent.dm add on top
+     *  of Meta's per-template cost. */
+    metaTemplate?: string;
+    /** Language code for the Meta template — must match the locale
+     *  the template was approved in. Defaults to "en". */
+    metaLanguageCode?: string;
+  },
 ): Promise<SmsResult> {
-  // Try sent.dm first when its API key + a matching template name
-  // are configured. Sent.dm passes Meta's per-template fees through
-  // at cost, but skips Twilio's WhatsApp markup — typically 6-7×
-  // cheaper for the same approved Meta template.
+  // Path 1: Meta WhatsApp Cloud API direct — no BSP markup, cheapest.
+  // Preferred when both the template name is provided and Cloud is
+  // configured. Falls through to sent.dm / Twilio on failure so any
+  // transient Meta hiccup still gets delivered.
+  if (isWhatsAppCloudConfigured() && options?.metaTemplate) {
+    // Cloud API uses positional body params. Caller passes variables
+    // keyed by "1","2",..., matching the {{1}}, {{2}} substitutions
+    // in the approved Meta template.
+    const bodyVariables = Object.keys(variables)
+      .filter((k) => /^\d+$/.test(k))
+      .sort((a, b) => Number(a) - Number(b))
+      .map((k) => variables[k]);
+    const r = await sendTemplateWhatsApp({
+      to,
+      templateName: options.metaTemplate,
+      languageCode: options.metaLanguageCode,
+      bodyVariables,
+    });
+    if (r.ok) return { ok: true, sid: r.messageId };
+    log.warn("wa.meta_cloud_failed_falling_back", { error: r.error });
+  }
+
+  // Path 2: sent.dm BSP — cheaper than Twilio for template traffic
+  // when Cloud isn't configured, or when the template hasn't been
+  // synced to Meta Cloud yet.
   if (isSentDmConfigured() && options?.sentDmTemplate) {
     const r = await sentDmSend({
       to,
@@ -132,7 +167,9 @@ export async function sendWhatsAppTemplate(
     if (r.ok) return { ok: true, sid: r.messageId };
     log.warn("wa.sent_dm_failed_falling_back_to_twilio", { error: r.error });
   }
-  // Twilio fallback (or primary when sent.dm isn't configured).
+
+  // Path 3: Twilio fallback (or primary when neither Meta nor sent.dm
+  // is configured).
   if (!WA_FROM) return { ok: true, skipped: true };
   if (!contentSid) return { ok: true, skipped: true };
   const normalizedTo = to.startsWith("whatsapp:") ? to : `whatsapp:${to}`;

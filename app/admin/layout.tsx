@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import OrgSwitcher from "@/components/admin/OrgSwitcher";
 import PatientSearchLauncher from "@/components/admin/PatientSearchLauncher";
+import GlobalAdminSearch from "@/components/admin/GlobalAdminSearch";
 import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
 import RequestModulesCard from "@/components/admin/RequestModulesCard";
 import TempPasswordBanner from "@/components/TempPasswordBanner";
@@ -912,17 +913,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Global patient lookup — every admin role can open this;
                 visible fields are governed per-role server-side. */}
             <PatientSearchLauncher />
-            {/* Search */}
-            <div className="relative hidden md:block">
-              <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search…"
-                className="w-60 rounded-lg border border-indigo-100 bg-indigo-50/40 py-2 pl-9 pr-3 text-sm text-slate-700 placeholder-slate-400 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-200"
-              />
-            </div>
+            {/* Global admin search — fuzzy-jumps to any admin page.
+                Patient lookup lives in PatientSearchLauncher above. */}
+            <GlobalAdminSearch />
             <button className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700" title="View site">
               <Link href="/">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

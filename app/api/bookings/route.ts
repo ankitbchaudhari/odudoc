@@ -6,7 +6,7 @@ import { listConsultations, reloadConsultations } from '@/lib/consultations-stor
 import { validateSlot } from '@/lib/slot-utils';
 import { notifyAppointmentBooked } from '@/lib/notifications';
 import { parseJson } from '@/lib/api-validate';
-import { findUserById, findUserByEmail } from '@/lib/users-store';
+import { findUserById, findUserByEmail, reloadUsers } from '@/lib/users-store';
 import { computeVerificationStatus } from '@/lib/verification-gate';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -69,6 +69,10 @@ export async function POST(request: NextRequest) {
   // route entirely. Doctor / admin / staff bookings (from a dashboard)
   // bypass the gate — they're identified via session, not the form.
   const session = await getServerSession(authOptions);
+  // Hydrate users-store before any lookup — Vercel cold-Lambda races
+  // can leave the in-memory cache empty even when the JWT is valid.
+  // Same race that surfaced as user_not_found on /api/wallet/topup-create.
+  await reloadUsers();
   const sessionUser = session?.user
     ? findUserById((session.user as { id?: string }).id || '')
     : null;

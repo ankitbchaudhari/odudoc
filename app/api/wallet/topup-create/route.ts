@@ -13,7 +13,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { findUserById } from "@/lib/users-store";
+import { findUserById, reloadUsers } from "@/lib/users-store";
 import { createCheckoutSession, isCashfreeConfigured } from "@/lib/cashfree";
 import { createStripeWalletCheckout, isStripeConfigured } from "@/lib/stripe-wallet";
 import { createRazorpayOrder, isRazorpayConfigured, razorpayPublicKey } from "@/lib/razorpay";
@@ -57,6 +57,12 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  // Cold-Lambda race: the users-store cache is empty until hydrated
+  // from postgres. The JWT session is valid (userId is real) but
+  // findUserById returns null without an explicit reload. Caused the
+  // "Top-up via Razorpay failed (user_not_found)" banner on first
+  // visit after a deploy.
+  await reloadUsers();
   const user = findUserById(userId);
   if (!user) return NextResponse.json({ error: "user_not_found" }, { status: 404 });
 

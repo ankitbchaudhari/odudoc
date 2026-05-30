@@ -46,16 +46,17 @@ const PACKAGES: Record<
 > = {
   patient: {
     android: "https://play.google.com/store/apps/details?id=com.odudoc.patient",
-    androidLive: false, // closed testing — flip after Production approval
+    androidLive: true, // live on Production track since May 30 2026
     ios: null,
     iosLive: false,
   },
   doctor: {
-    // Package is com.odudoc.doctor (the earlier rename to com.saluent.doctor
-    // during the verification dispute was reverted once OduDoc became the
-    // public brand again).
-    android: "https://play.google.com/store/apps/details?id=com.odudoc.doctor",
-    androidLive: false, // closed testing → in review
+    // Package is com.saluent.doctor (the doctor app kept the saluent
+    // package after the verification dispute because the original
+    // submission was already in review and the package can't be
+    // changed for a published app).
+    android: "https://play.google.com/store/apps/details?id=com.saluent.doctor",
+    androidLive: false, // vc5 in Google review, awaiting approval
     ios: null,
     iosLive: false,
   },

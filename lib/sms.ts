@@ -1,22 +1,30 @@
-// Outbound SMS / WhatsApp / Voice via Twilio.
+// Outbound SMS / WhatsApp / Voice.
 //
-// Thin wrapper around the Twilio REST API — we call it via `fetch` directly
-// rather than pulling the SDK into every Lambda. Mirrors the pattern used by
-// `lib/email.ts`: if the Twilio env isn't configured, `send*()` no-ops and
-// returns `{ ok: true, skipped: true }` so local/dev flows keep working.
+// Routing (after Twilio account was disabled May 2026):
+//   - SMS templates → sent.dm (channel: "sms")
+//   - WhatsApp templates → Meta Cloud API direct > sent.dm (no Twilio)
+//   - WhatsApp freeform → Meta Cloud API direct (free inside 24h window)
+//   - Voice → not supported (Twilio gone, no sent.dm equivalent)
 //
-// Required env:
-//   TWILIO_ACCOUNT_SID        — starts with "AC..."
-//   TWILIO_AUTH_TOKEN         — API token
-//   TWILIO_FROM_NUMBER        — default SMS sender (E.164, e.g. "+15551230000")
-//   TWILIO_WHATSAPP_FROM      — WhatsApp sender (e.g. "whatsapp:+14155238886")
-//   TWILIO_VOICE_FROM         — optional, defaults to TWILIO_FROM_NUMBER
+// Freeform SMS isn't supported anywhere now — sent.dm is template-only.
+// Callers that used to `sendSms(to, freeformBody)` for ad-hoc alerts
+// need to either (a) register a sent.dm template for that alert and
+// switch to `sendTemplatedSms`, or (b) route via WhatsApp Cloud
+// freeform inside the 24h window. Existing call sites continue to
+// return `{ok:true, skipped:true}` so they don't crash, but no SMS
+// actually sends. The log line "sms.freeform_unsupported" surfaces
+// every such call so we can find + migrate them.
+//
+// The Twilio code paths are kept as dead branches (gated on
+// `SID && TOKEN`) so re-enabling Twilio is one env-var flip away
+// if the account is reinstated.
 
 import { log } from "./log";
 import { sentDmSend, isSentDmConfigured } from "./sent-dm";
 import {
   isWhatsAppCloudConfigured,
   sendTemplateWhatsApp,
+  sendFreeformWhatsApp,
 } from "./whatsapp-cloud";
 
 const SID = process.env.TWILIO_ACCOUNT_SID?.trim();
@@ -59,24 +67,40 @@ async function twilioPost(body: Record<string, string>): Promise<SmsResult> {
   }
 }
 
-/** Send a free-form SMS body. Routes to Twilio because sent.dm is
- *  strictly template-driven — callers that need a templated path
- *  should call sentDmSend() / sendOtpViaSentDm() directly from
- *  lib/sent-dm. Keeping this Twilio-only avoids silent breakage
- *  for arbitrary one-off texts (withdrawal alerts, vital alerts,
- *  etc.) that aren't registered as sent.dm templates. */
+/** Send a free-form SMS body.
+ *
+ *  WARNING: freeform SMS is unsupported after the Twilio account was
+ *  disabled (May 2026). Sent.dm is strictly template-driven so
+ *  arbitrary one-off bodies have nowhere to go. Returns
+ *  `{ok:true, skipped:true}` so existing callers don't crash, but no
+ *  SMS is actually sent. Migrate to `sendTemplatedSms()` with an
+ *  approved sent.dm template, or use WhatsApp Cloud freeform when
+ *  the recipient has messaged us in the last 24h.
+ *
+ *  The Twilio path is left in place behind the `SID && TOKEN` gate so
+ *  re-enabling Twilio is one env-var flip away. */
 export async function sendSms(to: string, body: string): Promise<SmsResult> {
-  if (!SMS_FROM) return { ok: true, skipped: true };
-  return twilioPost({ To: to, From: SMS_FROM, Body: body });
+  if (SID && TOKEN && SMS_FROM) {
+    // Twilio path — only taken if creds get re-enabled.
+    return twilioPost({ To: to, From: SMS_FROM, Body: body });
+  }
+  log.warn("sms.freeform_unsupported", {
+    to,
+    bodyPreview: body.slice(0, 60),
+    hint: "Twilio disabled; sent.dm is template-only. Use sendTemplatedSms or migrate the alert to an approved template.",
+  });
+  return { ok: true, skipped: true };
 }
 
-/** Send a templated SMS — tries sent.dm first (cheaper rates +
- *  unified billing with WhatsApp), falls back to Twilio with a
- *  rendered free-form body. `fallbackBody` is the literal text we'd
- *  send via Twilio if sent.dm is unavailable / the template fails.
+/** Send a templated SMS — routes through sent.dm.
  *
  *  templateRef: sent.dm template id (UUID) or name.
- *  variables: substitutions matching the template placeholders. */
+ *  variables: substitutions matching the template placeholders.
+ *  fallbackBody: kept in the signature for backwards compat. Used by
+ *    the Twilio fallback (if creds get re-enabled) AND surfaced in
+ *    the log line when no path is available so an admin can spot
+ *    what would have been sent.
+ */
 export async function sendTemplatedSms(
   to: string,
   templateRef: string | undefined,
@@ -91,16 +115,31 @@ export async function sendTemplatedSms(
       variables,
     });
     if (r.ok) return { ok: true, sid: r.messageId };
-    log.warn("sms.sent_dm_failed_falling_back_to_twilio", { error: r.error });
+    log.warn("sms.sent_dm_failed", { error: r.error, template: templateRef });
+    // Fall through to Twilio if still configured — usually a no-op
+    // since the account is disabled.
   }
-  // Fallback: Twilio with the literal body.
   return sendSms(to, fallbackBody);
 }
 
+/** Send a freeform WhatsApp text. Routes through Meta Cloud API
+ *  direct — works only inside the 24h customer-service window opened
+ *  by an inbound message from the recipient. Outside that window,
+ *  Meta returns error 131047 (re-engagement required) and callers
+ *  must fall back to a template send via sendWhatsAppTemplate. */
 export async function sendWhatsApp(to: string, body: string): Promise<SmsResult> {
-  if (!WA_FROM) return { ok: true, skipped: true };
-  const normalizedTo = to.startsWith("whatsapp:") ? to : `whatsapp:${to}`;
-  return twilioPost({ To: normalizedTo, From: WA_FROM, Body: body });
+  if (isWhatsAppCloudConfigured()) {
+    const r = await sendFreeformWhatsApp(to, body);
+    if (r.ok) return { ok: true, sid: r.messageId };
+    return { ok: false, error: r.error };
+  }
+  // Twilio path — only taken if creds get re-enabled.
+  if (SID && TOKEN && WA_FROM) {
+    const normalizedTo = to.startsWith("whatsapp:") ? to : `whatsapp:${to}`;
+    return twilioPost({ To: normalizedTo, From: WA_FROM, Body: body });
+  }
+  log.info("whatsapp.freeform_skipped_unconfigured", { to });
+  return { ok: true, skipped: true };
 }
 
 /** Send an approved WhatsApp Business template via Twilio's
@@ -168,22 +207,31 @@ export async function sendWhatsAppTemplate(
     log.warn("wa.sent_dm_failed_falling_back_to_twilio", { error: r.error });
   }
 
-  // Path 3: Twilio fallback (or primary when neither Meta nor sent.dm
-  // is configured).
-  if (!WA_FROM) return { ok: true, skipped: true };
-  if (!contentSid) return { ok: true, skipped: true };
-  const normalizedTo = to.startsWith("whatsapp:") ? to : `whatsapp:${to}`;
-  return twilioPost({
-    To: normalizedTo,
-    From: WA_FROM,
-    ContentSid: contentSid,
-    ContentVariables: JSON.stringify(variables),
-  });
+  // Path 3: Twilio fallback — dead branch since the Twilio account
+  // was disabled. Kept gated on SID + TOKEN so flipping creds back
+  // on instantly restores it without a code change.
+  if (SID && TOKEN && WA_FROM && contentSid) {
+    const normalizedTo = to.startsWith("whatsapp:") ? to : `whatsapp:${to}`;
+    return twilioPost({
+      To: normalizedTo,
+      From: WA_FROM,
+      ContentSid: contentSid,
+      ContentVariables: JSON.stringify(variables),
+    });
+  }
+  return { ok: true, skipped: true };
 }
 
+/** Voice calls via Twilio. Sent.dm doesn't offer voice; if Twilio is
+ *  disabled, returns `{ok:true, skipped:true}` and logs a warning so
+ *  the missing voice channel is visible without crashing the caller.
+ *  Re-enabling Twilio creds restores voice. */
 export async function sendVoice(to: string, twiml: string): Promise<SmsResult> {
   if (!SID || !TOKEN || !VOICE_FROM) {
-    log.info("voice.twilio_not_configured", { to });
+    log.warn("voice.unsupported", {
+      to,
+      hint: "Twilio disabled and no replacement voice provider wired. Voice alerts won't fire.",
+    });
     return { ok: true, skipped: true };
   }
   try {
@@ -210,6 +258,9 @@ export function sayTwiml(text: string): string {
   return `<Response><Say voice="alice">${escaped}</Say></Response>`;
 }
 
+/** True when *any* configured channel can deliver a templated SMS.
+ *  Twilio (disabled) returns true only if creds are back. sent.dm is
+ *  the live path while Twilio is down. */
 export function isSmsConfigured(): boolean {
-  return Boolean(SID && TOKEN && SMS_FROM);
+  return isSentDmConfigured() || Boolean(SID && TOKEN && SMS_FROM);
 }

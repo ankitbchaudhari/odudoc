@@ -21,7 +21,11 @@ import {
 } from "@/lib/doctor-invites-store";
 import { sendDoctorInvitationEmail } from "@/lib/email";
 import { sendDoctorInviteViaSentDm } from "@/lib/sent-dm";
-import { sendFreeformWhatsApp } from "@/lib/whatsapp-cloud";
+import {
+  sendFreeformWhatsApp,
+  sendTemplateWhatsApp,
+  isWhatsAppCloudConfigured,
+} from "@/lib/whatsapp-cloud";
 import { markInviteWhatsappSent } from "@/lib/doctor-invites-store";
 import { awaitAllFlushesStrict } from "@/lib/persistent-array";
 import { log } from "@/lib/log";
@@ -161,22 +165,62 @@ export async function POST(req: NextRequest) {
         `Apply in under 2 minutes:\n${inviteUrl}\n\n` +
         `Reply to this chat with any questions.\n\n— Team OduDoc`;
 
-      // Step 1 — Marketing template.
-      try {
-        const r = await sendDoctorInviteViaSentDm(phoneE164, { doctorName });
-        if (r.ok) {
-          waAutoSent = true;
-          waChannel = "template";
-          try { await markInviteWhatsappSent(invite.id); } catch { /* best-effort */ }
-        } else {
-          waError = r.error;
-          log.warn("admin.doctor_invite.wa_template_failed_trying_freeform", {
-            error: r.error || "unknown",
+      // Step 1 — Marketing template. Two paths in priority order:
+      //   1a. Meta Cloud direct (cheapest, no BSP fees, no case-name
+      //       issues that broke sent.dm sends). Template name comes
+      //       from META_WA_TEMPLATE_DOCTOR_INVITE — must match the
+      //       lowercase HSM name approved at Meta (e.g.
+      //       odudoc_doctor_invite).
+      //   1b. sent.dm BSP — legacy path, kept as fallback while
+      //       we observe the new Meta-direct path in production.
+      const metaTplName = process.env.META_WA_TEMPLATE_DOCTOR_INVITE;
+      if (isWhatsAppCloudConfigured() && metaTplName) {
+        try {
+          const r = await sendTemplateWhatsApp({
+            to: phoneE164,
+            templateName: metaTplName,
+            languageCode: process.env.META_WA_LOCALE || "en",
+            bodyVariables: [doctorName],
           });
+          if (r.ok) {
+            waAutoSent = true;
+            waChannel = "template";
+            try { await markInviteWhatsappSent(invite.id); } catch { /* best-effort */ }
+            log.info("admin.doctor_invite.wa_meta_template_sent", {
+              messageId: r.messageId,
+            });
+          } else if (!r.skipped) {
+            waError = r.error;
+            log.warn("admin.doctor_invite.wa_meta_template_failed_trying_sentdm", {
+              error: r.error || "unknown",
+            });
+          }
+        } catch (err) {
+          waError = err instanceof Error ? err.message : "send threw";
+          log.warn("admin.doctor_invite.wa_meta_template_threw", { error: waError });
         }
-      } catch (err) {
-        waError = err instanceof Error ? err.message : "send threw";
-        log.warn("admin.doctor_invite.wa_template_threw", { error: waError });
+      }
+
+      // Step 1b — sent.dm BSP fallback if Meta-direct didn't fire OR
+      // failed. Same template, BSP routing.
+      if (!waAutoSent) {
+        try {
+          const r = await sendDoctorInviteViaSentDm(phoneE164, { doctorName });
+          if (r.ok) {
+            waAutoSent = true;
+            waChannel = "template";
+            waError = undefined;
+            try { await markInviteWhatsappSent(invite.id); } catch { /* best-effort */ }
+          } else if (!waError) {
+            waError = r.error;
+            log.warn("admin.doctor_invite.wa_template_failed_trying_freeform", {
+              error: r.error || "unknown",
+            });
+          }
+        } catch (err) {
+          if (!waError) waError = err instanceof Error ? err.message : "send threw";
+          log.warn("admin.doctor_invite.wa_template_threw", { error: waError });
+        }
       }
 
       // Step 2 — Freeform inside the 24h customer-service window via

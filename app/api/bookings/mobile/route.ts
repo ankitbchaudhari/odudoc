@@ -21,6 +21,7 @@ import { findUserByEmail, reloadUsers } from "@/lib/users-store";
 import { resolveActiveProfile } from "@/lib/family-active";
 import { notifyAppointmentBooked } from "@/lib/notifications";
 import { requireMobileUser } from "@/lib/mobile-auth";
+import { applySpend, reloadWallet } from "@/lib/wallet/store";
 import { sendToUser, sendToEmail } from "@/lib/fcm";
 import { sendPush } from "@/lib/push";
 import { parseJson, z } from "@/lib/validate";
@@ -93,6 +94,69 @@ export async function POST(request: NextRequest) {
       /* missing/invalid cookie → fall through as self */
     }
 
+    // ── Payment gate ────────────────────────────────────────────────
+    // The mobile app didn't have a real payment step until now — it
+    // POSTed paymentStatus:"pending" with no paymentIntentId and the
+    // server happily created a free booking. Revenue leak.
+    //
+    // New rules, in priority order:
+    //   1. Free consultations (doctor.fee === 0): allow as-is.
+    //   2. Client says paymentStatus="paid" + paymentIntentId set:
+    //      trust it (came from a completed Razorpay/Cashfree flow).
+    //   3. Wallet covers the fee: debit the wallet here, mark paid.
+    //   4. Otherwise: reject with 402 Payment Required + tell the
+    //      client to top up + retry, OR pass a paid paymentIntentId.
+    //
+    // Until react-native-razorpay is wired into the patient app, path
+    // 3 is the primary success path — patients pay once into the
+    // wallet (which DOES have a working Razorpay flow), then bookings
+    // are debited from the wallet balance.
+    const totalFeeRupees = Math.floor(doctor.fee ?? 0);
+    let paymentStatus: "paid" | "pending" = "pending";
+    let paymentIntentId = "";
+
+    if (totalFeeRupees === 0) {
+      paymentStatus = "paid";
+      paymentIntentId = "free";
+    } else if (body.paymentStatus === "paid" && body.paymentIntentId) {
+      paymentStatus = "paid";
+      paymentIntentId = body.paymentIntentId;
+    } else {
+      // Try wallet debit. reloadWallet covers the cold-Lambda race
+      // where the wallet cache hasn't been hydrated yet.
+      await reloadWallet();
+      const r = applySpend({
+        userId: patient.id,
+        amountRupees: totalFeeRupees,
+        category: "consultation",
+        reference: `booking:${doctor.id}:${body.date}:${body.timeSlot}`,
+        note: `Consultation with ${doctor.name}`,
+      });
+      if (r.ok && r.tx) {
+        paymentStatus = "paid";
+        paymentIntentId = `wallet:${r.tx.id}`;
+      } else {
+        // Booking blocked: not paid, no payment intent, wallet short.
+        log.warn("mobile-booking.payment_required", {
+          userId: patient.id,
+          fee: totalFeeRupees,
+          shortfall: r.shortfallRupees,
+        });
+        return NextResponse.json(
+          {
+            error: "payment_required",
+            message:
+              r.error === "insufficient_funds"
+                ? `Your wallet has ₹${(totalFeeRupees - (r.shortfallRupees || 0)).toLocaleString("en-IN")}, but the consult costs ₹${totalFeeRupees.toLocaleString("en-IN")}. Top up the difference, then try booking again.`
+                : "Payment couldn't be completed. Top up your wallet, then try again.",
+            shortfallRupees: r.shortfallRupees,
+            feeRupees: totalFeeRupees,
+          },
+          { status: 402 },
+        );
+      }
+    }
+
     const booking = createBooking({
       doctorId: doctor.id,
       doctorName: doctor.name,
@@ -100,9 +164,9 @@ export async function POST(request: NextRequest) {
       patientPhone: patient.phone,
       ...depMeta,
       timeSlot: body.timeSlot,
-      fee: doctor.fee ?? 0,
-      paymentStatus: body.paymentStatus || "pending",
-      paymentIntentId: body.paymentIntentId || "",
+      fee: totalFeeRupees,
+      paymentStatus,
+      paymentIntentId,
       // Mobile-only fields — let the My Consultations screen find this
       // booking and decide upcoming/past from `date`.
       patientUserId: patient.id,

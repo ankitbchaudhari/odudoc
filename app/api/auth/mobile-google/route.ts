@@ -75,8 +75,22 @@ export async function POST(request: NextRequest) {
   if (parsed instanceof NextResponse) return parsed;
   const { idToken } = parsed;
 
-  const expectedClientId = process.env.GOOGLE_CLIENT_ID?.trim();
-  if (!expectedClientId) {
+  // Accept either the website Google OAuth client (GOOGLE_CLIENT_ID,
+  // used by NextAuth on the web) OR the mobile app's web-flavored
+  // OAuth client (GOOGLE_MOBILE_CLIENT_ID, passed as `webClientId` to
+  // @react-native-google-signin in the patient app). Same backend
+  // verifies tokens from both surfaces - we just need to recognise
+  // both audiences as legitimate.
+  //
+  // GOOGLE_MOBILE_CLIENT_ID is optional: deployments that haven't
+  // wired the mobile app yet can leave it unset and only the web
+  // flow works. Setting it doesn't affect web sign-in.
+  const webClientId = process.env.GOOGLE_CLIENT_ID?.trim();
+  const mobileClientId = process.env.GOOGLE_MOBILE_CLIENT_ID?.trim();
+  const acceptedClientIds = [webClientId, mobileClientId].filter(
+    (v): v is string => Boolean(v),
+  );
+  if (acceptedClientIds.length === 0) {
     return NextResponse.json(
       { error: "google_not_configured", message: "Google sign-in is not configured." },
       { status: 503 }
@@ -91,15 +105,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // The token's audience must be our OAuth client. `aud` is the audience
-  // and `azp` is the authorising party (the same value when issued for
-  // the same client). Accept either matching to handle both Android and
-  // web flows that share the web client id.
-  if (info.aud !== expectedClientId && info.azp !== expectedClientId) {
+  // The token's audience must match one of our accepted OAuth clients.
+  // `aud` is the audience and `azp` is the authorising party (same
+  // value when issued for the same client). Both fields checked
+  // against both clientIds so any matching pair passes.
+  const audienceMatches = acceptedClientIds.some(
+    (cid) => info.aud === cid || info.azp === cid,
+  );
+  if (!audienceMatches) {
     log.warn("google_tokeninfo.wrong_audience", {
       aud: info.aud,
       azp: info.azp,
-      expected: expectedClientId,
+      accepted: acceptedClientIds,
     });
     return NextResponse.json(
       { error: "wrong_audience", message: "Token wasn't issued for this app." },
